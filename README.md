@@ -69,3 +69,5 @@ Click here: <a href='https://github.com/rexm/handlebars.net'>Handlebars.Net</a>
 - [ ] Object enumeration
 - [ ] @key, @index, @first, @last context variables
 - [ ] **Add unit tests!**
+- [ ] MVC view engine
+- [ ] Nancy view engine
