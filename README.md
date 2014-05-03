@@ -1,11 +1,13 @@
 Handlebars.Net
 ==============
 
-Blistering-fast [Handlebars.js templates](http://handlebars.js) in your .NET application.
+Blistering-fast, native [Handlebars.js templates](http://handlebarsjs.com) in your .NET application.
 
 >Handlebars.js is an extension to the Mustache templating language created by Chris Wanstrath. Handlebars.js and Mustache are both logicless templating languages that keep the view and the code separated like we all know they should be.
 
-Check out the handlebars.js documentation for how to write Handlebars templates.
+Check out the [handlebars.js documentation](http://handlebarsjs.com) for how to write Handlebars templates.
+
+Handlebars.Net doesn't use a scripting engine to run the Javascript library - it compiles Handlebars templates directly to native .NET code. It also mimics the JS library's API as closely as possible.
 
 ##Usage
 
