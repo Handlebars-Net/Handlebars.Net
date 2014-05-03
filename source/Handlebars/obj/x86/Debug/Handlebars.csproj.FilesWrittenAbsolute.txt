@@ -1,0 +1,5 @@
+/Users/rexm/Projects/HandlebarsDotNet/source/Handlebars/obj/x86/Debug/.NETFramework,Version=v4.5.AssemblyAttribute.cs
+/Users/rexm/Projects/HandlebarsDotNet/source/Handlebars/bin/Debug/Handlebars.dll.mdb
+/Users/rexm/Projects/HandlebarsDotNet/source/Handlebars/bin/Debug/Handlebars.dll
+/Users/rexm/Projects/HandlebarsDotNet/source/Handlebars/obj/x86/Debug/Handlebars.dll
+/Users/rexm/Projects/HandlebarsDotNet/source/Handlebars/obj/x86/Debug/Handlebars.dll.mdb
