@@ -68,3 +68,4 @@ Click here: <a href='https://github.com/rexm/handlebars.net'>Handlebars.Net</a>
 - [ ] HTML escaping expressions (triple-stash, {{{ }}})
 - [ ] Object enumeration
 - [ ] @key, @index, @first, @last context variables
+- [ ] **Add unit tests!**
