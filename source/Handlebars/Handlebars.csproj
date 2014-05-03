@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>12.0.0</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{A09CFF95-B671-48FE-96A8-D3CBDC110B75}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Handlebars</RootNamespace>
+    <AssemblyName>Handlebars</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Externalconsole>true</Externalconsole>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Externalconsole>true</Externalconsole>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Compiler\FunctionBuilder.cs" />
+    <Compile Include="Compiler\Structure\HandlebarsExpression.cs" />
+    <Compile Include="Compiler\Structure\HelperExpression.cs" />
+    <Compile Include="Compiler\Structure\PathExpression.cs" />
+    <Compile Include="HandlebarsConfiguration.cs" />
+    <Compile Include="Compiler\Structure\StaticExpression.cs" />
+    <Compile Include="HandlebarsException.cs" />
+    <Compile Include="Compiler\Structure\BindingContext.cs" />
+    <Compile Include="Compiler\HandlebarsCompilerException.cs" />
+    <Compile Include="Compiler\Structure\ContextAccessorExpression.cs" />
+    <Compile Include="Compiler\Structure\StatementExpression.cs" />
+    <Compile Include="Compiler\Structure\BlockHelperExpression.cs" />
+    <Compile Include="Compiler\Translation\Token\BlockHelperAccumulator.cs" />
+    <Compile Include="Compiler\Translation\Token\ExpressionScopeConverter.cs" />
+    <Compile Include="Compiler\Translation\Token\HelperArgumentAccumulator.cs" />
+    <Compile Include="Compiler\Translation\Token\HelperConverter.cs" />
+    <Compile Include="Compiler\Translation\Token\LiteralConverter.cs" />
+    <Compile Include="Compiler\Translation\Token\PathConverter.cs" />
+    <Compile Include="Compiler\Translation\Token\StaticConverter.cs" />
+    <Compile Include="Compiler\Translation\Token\TokenConverter.cs" />
+    <Compile Include="Compiler\Translation\Expression\BlockHelperFunctionBinder.cs" />
+    <Compile Include="Compiler\Translation\Expression\ContextBinder.cs" />
+    <Compile Include="Compiler\Translation\Expression\FunctionWrapper.cs" />
+    <Compile Include="Compiler\Translation\Expression\HandlebarsExpressionVisitor.cs" />
+    <Compile Include="Compiler\Translation\Expression\HelperFunctionBinder.cs" />
+    <Compile Include="Compiler\Translation\Expression\PathBinder.cs" />
+    <Compile Include="Compiler\Translation\Expression\StaticReplacer.cs" />
+    <Compile Include="Handlebars.cs" />
+    <Compile Include="Compiler\Lexer\Parsers\LiteralParser.cs" />
+    <Compile Include="Compiler\Lexer\Parsers\Parser.cs" />
+    <Compile Include="Compiler\Lexer\Parsers\WordParser.cs" />
+    <Compile Include="Compiler\Lexer\Tokenizer.cs" />
+    <Compile Include="Compiler\Lexer\Tokens\EndExpressionToken.cs" />
+    <Compile Include="Compiler\Lexer\Tokens\ExpressionScopeToken.cs" />
+    <Compile Include="Compiler\Lexer\Tokens\ExpressionToken.cs" />
+    <Compile Include="Compiler\Lexer\Tokens\LiteralExpressionToken.cs" />
+    <Compile Include="Compiler\Lexer\Tokens\StartExpressionToken.cs" />
+    <Compile Include="Compiler\Lexer\Tokens\StaticToken.cs" />
+    <Compile Include="Compiler\Lexer\Tokens\Token.cs" />
+    <Compile Include="Compiler\Lexer\Tokens\TokenType.cs" />
+    <Compile Include="Compiler\Lexer\Tokens\WordExpressionToken.cs" />
+    <Compile Include="Compiler\HandlebarsCompiler.cs" />
+    <Compile Include="Compiler\Lexer\HandlebarsParserException.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Folder Include="Compiler\" />
+    <Folder Include="Compiler\Structure\" />
+    <Folder Include="Compiler\Translation\" />
+    <Folder Include="Compiler\Translation\Token\" />
+    <Folder Include="Compiler\Translation\Expression\" />
+  </ItemGroup>
+</Project>

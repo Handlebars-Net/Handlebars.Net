@@ -1,0 +1,58 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Handlebars", "Handlebars\Handlebars.csproj", "{A09CFF95-B671-48FE-96A8-D3CBDC110B75}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Handlebars.Test", "Handlebars.Test\Handlebars.Test.csproj", "{2BD48FB6-C852-4141-B734-12E501B1D761}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2BD48FB6-C852-4141-B734-12E501B1D761}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2BD48FB6-C852-4141-B734-12E501B1D761}.Debug|x86.Build.0 = Debug|Any CPU
+		{2BD48FB6-C852-4141-B734-12E501B1D761}.Release|x86.ActiveCfg = Release|Any CPU
+		{2BD48FB6-C852-4141-B734-12E501B1D761}.Release|x86.Build.0 = Release|Any CPU
+		{A09CFF95-B671-48FE-96A8-D3CBDC110B75}.Debug|x86.ActiveCfg = Debug|x86
+		{A09CFF95-B671-48FE-96A8-D3CBDC110B75}.Debug|x86.Build.0 = Debug|x86
+		{A09CFF95-B671-48FE-96A8-D3CBDC110B75}.Release|x86.ActiveCfg = Release|x86
+		{A09CFF95-B671-48FE-96A8-D3CBDC110B75}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = Handlebars\Handlebars.csproj
+		Policies = $0
+		$0.TextStylePolicy = $1
+		$1.inheritsSet = null
+		$1.scope = text/x-csharp
+		$0.CSharpFormattingPolicy = $2
+		$2.IndentSwitchBody = True
+		$2.PropertyGetBraceStyle = NextLine
+		$2.PropertySetBraceStyle = NextLine
+		$2.StatementBraceStyle = NextLine
+		$2.ElseNewLinePlacement = NewLine
+		$2.CatchNewLinePlacement = NewLine
+		$2.FinallyNewLinePlacement = NewLine
+		$2.WhileNewLinePlacement = NewLine
+		$2.BeforeMethodDeclarationParentheses = False
+		$2.BeforeMethodCallParentheses = False
+		$2.BeforeConstructorDeclarationParentheses = False
+		$2.BeforeIndexerDeclarationBracket = False
+		$2.BeforeDelegateDeclarationParentheses = False
+		$2.AfterDelegateDeclarationParameterComma = True
+		$2.NewParentheses = False
+		$2.IfParentheses = False
+		$2.WhileParentheses = False
+		$2.ForParentheses = False
+		$2.ForeachParentheses = False
+		$2.CatchParentheses = False
+		$2.SwitchParentheses = False
+		$2.LockParentheses = False
+		$2.UsingParentheses = False
+		$2.SpacesBeforeBrackets = False
+		$2.inheritsSet = Mono
+		$2.inheritsScope = text/x-csharp
+		$2.scope = text/x-csharp
+	EndGlobalSection
+EndGlobal

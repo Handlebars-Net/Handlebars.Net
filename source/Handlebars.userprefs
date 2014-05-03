@@ -1,0 +1,19 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Handlebars.Test/IntegrationTests.cs">
+    <Files>
+      <File FileName="Handlebars/Handlebars.cs" Line="59" Column="52" />
+      <File FileName="Handlebars/Compiler/Lexer/Tokenizer.cs" Line="26" Column="38" />
+      <File FileName="Handlebars/Compiler/FunctionBuilder.cs" Line="35" Column="131" />
+      <File FileName="Handlebars/Compiler/HandlebarsCompilerException.cs" Line="5" Column="45" />
+      <File FileName="Handlebars/Compiler/HandlebarsCompiler.cs" Line="13" Column="10" />
+      <File FileName="Handlebars/Compiler/Lexer/HandlebarsParserException.cs" Line="1" Column="1" />
+      <File FileName="Handlebars/HandlebarsConfiguration.cs" Line="14" Column="28" />
+      <File FileName="Handlebars.Test/IntegrationTests.cs" Line="12" Column="45" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>
