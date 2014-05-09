@@ -9,6 +9,8 @@ Check out the [handlebars.js documentation](http://handlebarsjs.com) for how to 
 
 Handlebars.Net doesn't use a scripting engine to run the Javascript library - it **compiles Handlebars templates directly to native .NET code**. It also mimics the JS library's API as closely as possible.
 
+Handlebars.Net is in alpha right now - check out the [todo](#todo) to see what's missing.
+
 ##Usage
 
 ```c#
