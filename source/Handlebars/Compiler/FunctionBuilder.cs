@@ -32,7 +32,7 @@ namespace Handlebars.Compiler
             }
             catch(Exception ex)
             {
-                throw new HandlebarsCompilerException("An unhandled exception occurred while trying to compile the template", ex);
+                    throw new HandlebarsCompilerException("An unhandled exception occurred while trying to compile the template", ex);
             }
         }
 
@@ -44,6 +44,7 @@ namespace Handlebars.Compiler
             tokens = PathConverter.Convert(tokens);
             tokens = HelperArgumentAccumulator.Accumulate(tokens);
             tokens = ExpressionScopeConverter.Convert(tokens);
+            tokens = ConditionalBlockAccumulator.Accumulate(tokens, _configuration);
             tokens = BlockHelperAccumulator.Accumulate(tokens, _configuration);
             return tokens.Cast<Expression>();
         }

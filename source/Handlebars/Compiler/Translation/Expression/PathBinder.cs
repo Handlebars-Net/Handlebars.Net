@@ -23,6 +23,22 @@ namespace Handlebars.Compiler
                 node.Expressions.Select(expr => Visit(expr)));
         }
 
+        protected override Expression VisitUnary(UnaryExpression node)
+        {
+            return Expression.MakeUnary(
+                node.NodeType,
+                Visit(node.Operand),
+                node.Type);
+        }
+
+        protected override Expression VisitConditional(ConditionalExpression node)
+        {
+            return Expression.Condition(
+                Visit(node.Test),
+                Visit(node.IfTrue),
+                Visit(node.IfFalse));
+        }
+
         protected override Expression VisitStatementExpression(StatementExpression sex)
         {
             if(sex.Body is PathExpression)

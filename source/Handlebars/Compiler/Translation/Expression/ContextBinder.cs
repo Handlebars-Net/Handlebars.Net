@@ -20,10 +20,10 @@ namespace Handlebars.Compiler
 
         protected override Expression VisitBlock(BlockExpression node)
         {
-            return Expression.Lambda(
+            return Expression.Invoke(Expression.Lambda(
                 Expression.Block(
                     node.Expressions.Select(expr => Visit(expr))),
-                _contextParameter);
+                _contextParameter), new Expression[] { _contextParameter });
         }
             
         protected override Expression VisitContextAccessorExpression(ContextAccessorExpression caex)

@@ -21,6 +21,10 @@ namespace Handlebars.Compiler
             ParameterExpression writerParameter,
             ParameterExpression objectParameter)
         {
+            if(body is InvocationExpression)
+            {
+                body = ((InvocationExpression)body).Expression;
+            }
             var bindingContext = Expression.New(
                  typeof(BindingContext).GetConstructor(
                      new [] { typeof(object), typeof(TextWriter), typeof(BindingContext) }),

@@ -7,6 +7,7 @@ namespace Handlebars.Compiler
 {
     internal class HelperConverter : TokenConverter
     {
+        private static readonly string[] builtInHelpers = new [] { "if", "else", "unless" };
         public static IEnumerable<object> Convert(
             IEnumerable<object> sequence,
             HandlebarsConfiguration configuration)
@@ -55,7 +56,9 @@ namespace Handlebars.Compiler
 
         private bool IsRegisteredHelperName(string name)
         {
-            return _configuration.Helpers.ContainsKey(name) || _configuration.BlockHelpers.ContainsKey(name);
+            return _configuration.Helpers.ContainsKey(name)
+                || _configuration.BlockHelpers.ContainsKey(name)
+                || builtInHelpers.Select(h => h.Replace("#", "")).Contains(name);
         }
 
         private static object GetNext(IEnumerator<object> enumerator)

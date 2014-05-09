@@ -3,8 +3,6 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
-    <ProductVersion>12.0.0</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{A09CFF95-B671-48FE-96A8-D3CBDC110B75}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>Handlebars</RootNamespace>
@@ -79,6 +77,11 @@
     <Compile Include="Compiler\Lexer\Tokens\WordExpressionToken.cs" />
     <Compile Include="Compiler\HandlebarsCompiler.cs" />
     <Compile Include="Compiler\Lexer\HandlebarsParserException.cs" />
+    <Compile Include="Compiler\Structure\IfExpression.cs" />
+    <Compile Include="Compiler\Translation\Token\ConditionalBlockAccumulator.cs" />
+    <Compile Include="Compiler\EncodedTextWriter.cs" />
+    <Compile Include="ISafeString.cs" />
+    <Compile Include="HandlebarsExtensions.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

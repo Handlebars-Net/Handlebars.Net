@@ -1,15 +1,15 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Handlebars.Test/IntegrationTests.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Handlebars/Compiler/Translation/Token/ConditionalBlockAccumulator.cs">
     <Files>
-      <File FileName="Handlebars/Handlebars.cs" Line="59" Column="52" />
-      <File FileName="Handlebars/Compiler/Lexer/Tokenizer.cs" Line="26" Column="38" />
-      <File FileName="Handlebars/Compiler/FunctionBuilder.cs" Line="35" Column="131" />
-      <File FileName="Handlebars/Compiler/HandlebarsCompilerException.cs" Line="5" Column="45" />
-      <File FileName="Handlebars/Compiler/HandlebarsCompiler.cs" Line="13" Column="10" />
-      <File FileName="Handlebars/Compiler/Lexer/HandlebarsParserException.cs" Line="1" Column="1" />
-      <File FileName="Handlebars/HandlebarsConfiguration.cs" Line="14" Column="28" />
-      <File FileName="Handlebars.Test/IntegrationTests.cs" Line="12" Column="45" />
+      <File FileName="Handlebars/Compiler/Translation/Token/ConditionalBlockAccumulator.cs" Line="114" Column="1" />
+      <File FileName="Handlebars/Compiler/Translation/Token/HelperConverter.cs" Line="61" Column="17" />
+      <File FileName="Handlebars/Compiler/Translation/Token/BlockHelperAccumulator.cs" Line="60" Column="21" />
+      <File FileName="Handlebars/Compiler/Structure/HandlebarsExpression.cs" Line="60" Column="54" />
+      <File FileName="Handlebars/Compiler/FunctionBuilder.cs" Line="35" Column="1" />
+      <File FileName="Handlebars/Compiler/Translation/Expression/StaticReplacer.cs" Line="18" Column="9" />
+      <File FileName="Handlebars/Compiler/Translation/Expression/PathBinder.cs" Line="39" Column="36" />
+      <File FileName="Handlebars.Test/IntegrationTests.cs" Line="22" Column="32" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
