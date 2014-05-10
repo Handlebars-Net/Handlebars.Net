@@ -67,7 +67,7 @@ Click here: <a href='https://github.com/rexm/handlebars.net'>Handlebars.Net</a>
 - [x] Support for block helpers
 - [ ] Give helpers access to current context
 - [x] `if` / `else` / `unless` helper
-- [ ] `with` helper
+- [x] `with` helper
 - [ ] Escape everything by default
 - [ ] HTML escaping expressions (triple-stash, {{{ }}})
 - [ ] Object enumeration
