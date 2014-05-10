@@ -8,7 +8,9 @@ namespace Handlebars.Compiler
     {
         public static Expression Bind(Expression expr)
         {
-            return new ContextBinder().Visit(expr);
+            var contextBinder = new ContextBinder();
+            return Expression.Lambda(contextBinder.Visit(expr),
+                new [] { contextBinder._contextParameter });
         }
 
         private readonly ParameterExpression _contextParameter;
@@ -20,10 +22,8 @@ namespace Handlebars.Compiler
 
         protected override Expression VisitBlock(BlockExpression node)
         {
-            return Expression.Invoke(Expression.Lambda(
-                Expression.Block(
-                    node.Expressions.Select(expr => Visit(expr))),
-                _contextParameter), new Expression[] { _contextParameter });
+            return Expression.Block(
+                node.Expressions.Select(expr => Visit(expr)));
         }
             
         protected override Expression VisitContextAccessorExpression(ContextAccessorExpression caex)
