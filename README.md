@@ -69,10 +69,10 @@ Click here: <a href='https://github.com/rexm/handlebars.net'>Handlebars.Net</a>
 - [x] `if` / `else` / `unless` helper
 - [x] `with` helper
 - [ ] Escape everything by default
-- [ ] HTML escaping expressions (triple-stash, {{{ }}})
+- [ ] HTML escaping expressions ("triple-stash" `{{{ }}}`)
 - [ ] Object enumeration
-- [ ] @key, @index, @first, @last context variables
-- [ ] Implement > partials
+- [ ] `@key`, `@index`, `@first`, `@last` context variables
+- [ ] Implement `>` partials
 - [ ] **Add unit tests!**
 - [ ] MVC view engine
 - [ ] Nancy view engine
