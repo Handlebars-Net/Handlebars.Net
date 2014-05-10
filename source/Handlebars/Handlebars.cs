@@ -13,6 +13,11 @@ namespace Handlebars
         private static readonly HandlebarsConfiguration _configuration = new HandlebarsConfiguration();
         private static readonly HandlebarsCompiler _compiler = new HandlebarsCompiler(_configuration);
 
+        static Handlebars()
+        {
+            RegisterBuiltinHelpers();
+        }
+
         public static Action<TextWriter, object> Compile(TextReader template)
         {
             return _compiler.Compile(template);
@@ -59,6 +64,18 @@ namespace Handlebars
                         _configuration.BlockHelpers.Add(helperName, helperFunction);
                     }
                 }
+            }
+        }
+
+        private static void RegisterBuiltinHelpers()
+        {
+            foreach(var helperDefinition in BuiltinHelpers.Helpers)
+            {
+                RegisterHelper(helperDefinition.Key, helperDefinition.Value);
+            }
+            foreach(var helperDefinition in BuiltinHelpers.BlockHelpers)
+            {
+                RegisterHelper(helperDefinition.Key, helperDefinition.Value);
             }
         }
     }

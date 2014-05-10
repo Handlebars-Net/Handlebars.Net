@@ -1,15 +1,19 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Handlebars/Compiler/Translation/Token/ConditionalBlockAccumulator.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release|x86" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Handlebars/Compiler/Translation/Expression/ContextBinder.cs">
     <Files>
       <File FileName="Handlebars/Compiler/Translation/Token/ConditionalBlockAccumulator.cs" Line="114" Column="1" />
-      <File FileName="Handlebars/Compiler/Translation/Token/HelperConverter.cs" Line="61" Column="17" />
-      <File FileName="Handlebars/Compiler/Translation/Token/BlockHelperAccumulator.cs" Line="60" Column="21" />
-      <File FileName="Handlebars/Compiler/Structure/HandlebarsExpression.cs" Line="60" Column="54" />
-      <File FileName="Handlebars/Compiler/FunctionBuilder.cs" Line="35" Column="1" />
-      <File FileName="Handlebars/Compiler/Translation/Expression/StaticReplacer.cs" Line="18" Column="9" />
+      <File FileName="Handlebars/Compiler/Translation/Token/HelperConverter.cs" Line="1" Column="1" />
+      <File FileName="Handlebars/Compiler/Translation/Token/BlockHelperAccumulator.cs" Line="1" Column="1" />
+      <File FileName="Handlebars/Compiler/Structure/HandlebarsExpression.cs" Line="1" Column="1" />
+      <File FileName="Handlebars/Compiler/FunctionBuilder.cs" Line="30" Column="1" />
+      <File FileName="Handlebars/Compiler/Translation/Expression/StaticReplacer.cs" Line="1" Column="1" />
       <File FileName="Handlebars/Compiler/Translation/Expression/PathBinder.cs" Line="39" Column="36" />
-      <File FileName="Handlebars.Test/IntegrationTests.cs" Line="22" Column="32" />
+      <File FileName="Handlebars.Test/IntegrationTests.cs" Line="1" Column="1" />
+      <File FileName="Handlebars/Compiler/Translation/Expression/ContextBinder.cs" Line="1" Column="1" />
+      <File FileName="Handlebars/Compiler/Translation/Expression/HandlebarsExpressionVisitor.cs" Line="31" Column="1" />
+      <File FileName="Handlebars/Compiler/Translation/Expression/FunctionWrapper.cs" Line="1" Column="1" />
+      <File FileName="Handlebars/Compiler/Translation/Expression/BlockHelperFunctionBinder.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

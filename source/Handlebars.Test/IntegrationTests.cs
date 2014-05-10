@@ -34,6 +34,20 @@ namespace Handlebars.Test
             Assert.AreEqual("Hello, Bob!", resultTrue);
             Assert.AreEqual("Hello, Sam!", resultFalse);
         }
+
+        [Test]
+        public void BasicWith()
+        {
+            var source = "Hello,{{with person}} my good friend {{name}}{{/with}}!";
+            var template = Handlebars.Compile(source);
+            var data = new {
+                person = new {
+                    name = "Erik"
+                }
+            };
+            var result = template(data);
+            Assert.AreEqual("Hello, my good friend Erik!", result);
+        }
     }
 }
 

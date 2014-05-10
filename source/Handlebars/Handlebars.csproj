@@ -82,6 +82,7 @@
     <Compile Include="Compiler\EncodedTextWriter.cs" />
     <Compile Include="ISafeString.cs" />
     <Compile Include="HandlebarsExtensions.cs" />
+    <Compile Include="BuiltinHelpers.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
