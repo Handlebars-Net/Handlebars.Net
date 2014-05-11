@@ -64,6 +64,7 @@ Click here: <a href='https://github.com/rexm/handlebars.net'>Handlebars.Net</a>
 
 
 ##Todo
+_Release Candidate prerequisites_:
 - [x] Support for block helpers
 - [ ] Give helpers access to current context
 - [x] `if` / `else` / `unless` helper
@@ -74,6 +75,8 @@ Click here: <a href='https://github.com/rexm/handlebars.net'>Handlebars.Net</a>
 - [ ] Object enumeration
 - [ ] `@key`, `@index`, `@first`, `@last` context variables
 - [ ] Implement `>` partials
+
+_Future roadmap_:
 - [ ] **Add unit tests!**
 - [ ] MVC view engine
 - [ ] Nancy view engine
