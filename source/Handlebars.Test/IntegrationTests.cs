@@ -67,6 +67,18 @@ namespace Handlebars.Test
             var result = template(data);
             Assert.AreEqual("Hello,\n- Erik\n- Helen", result);
         }
+
+        [Test]
+        public void BasicEmptyIterator()
+        {
+            var source = "Hello,{{each people}}\n- {{name}}{{else}} (no one listed){{/each}}";
+            var template = Handlebars.Compile(source);
+            var data = new {
+                people = new object[]{}
+            };
+            var result = template(data);
+            Assert.AreEqual("Hello, (no one listed)", result);
+        }
     }
 }
 
