@@ -46,12 +46,10 @@
     <Compile Include="Compiler\Structure\ContextAccessorExpression.cs" />
     <Compile Include="Compiler\Structure\StatementExpression.cs" />
     <Compile Include="Compiler\Structure\BlockHelperExpression.cs" />
-    <Compile Include="Compiler\Translation\Token\BlockHelperAccumulator.cs" />
     <Compile Include="Compiler\Translation\Token\ExpressionScopeConverter.cs" />
     <Compile Include="Compiler\Translation\Token\HelperArgumentAccumulator.cs" />
     <Compile Include="Compiler\Translation\Token\HelperConverter.cs" />
     <Compile Include="Compiler\Translation\Token\LiteralConverter.cs" />
-    <Compile Include="Compiler\Translation\Token\PathConverter.cs" />
     <Compile Include="Compiler\Translation\Token\StaticConverter.cs" />
     <Compile Include="Compiler\Translation\Token\TokenConverter.cs" />
     <Compile Include="Compiler\Translation\Expression\BlockHelperFunctionBinder.cs" />
@@ -77,12 +75,18 @@
     <Compile Include="Compiler\Lexer\Tokens\WordExpressionToken.cs" />
     <Compile Include="Compiler\HandlebarsCompiler.cs" />
     <Compile Include="Compiler\Lexer\HandlebarsParserException.cs" />
-    <Compile Include="Compiler\Structure\IfExpression.cs" />
-    <Compile Include="Compiler\Translation\Token\ConditionalBlockAccumulator.cs" />
     <Compile Include="Compiler\EncodedTextWriter.cs" />
     <Compile Include="ISafeString.cs" />
     <Compile Include="HandlebarsExtensions.cs" />
     <Compile Include="BuiltinHelpers.cs" />
+    <Compile Include="Compiler\Translation\Token\PathConverter.cs" />
+    <Compile Include="Compiler\Translation\Token\BlockAccumulator.cs" />
+    <Compile Include="Compiler\Translation\Token\BlockAccumulators\ConditionalBlockAccumulatorContext.cs" />
+    <Compile Include="Compiler\Translation\Token\BlockAccumulators\BlockAccumulatorContext.cs" />
+    <Compile Include="Compiler\Translation\Token\BlockAccumulators\BlockHelperAccumulatorContext.cs" />
+    <Compile Include="Compiler\Translation\Token\BlockAccumulators\IteratorBlockAccumulatorContext.cs" />
+    <Compile Include="Compiler\Structure\IteratorExpression.cs" />
+    <Compile Include="Compiler\Translation\Expression\IteratorBinder.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -91,5 +95,6 @@
     <Folder Include="Compiler\Translation\" />
     <Folder Include="Compiler\Translation\Token\" />
     <Folder Include="Compiler\Translation\Expression\" />
+    <Folder Include="Compiler\Translation\Token\BlockAccumulators\" />
   </ItemGroup>
 </Project>

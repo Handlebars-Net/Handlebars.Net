@@ -25,6 +25,8 @@ namespace Handlebars.Compiler
                     return VisitPathExpression((PathExpression)exp);
                 case HandlebarsExpressionType.ContextAccessorExpression:
                     return VisitContextAccessorExpression((ContextAccessorExpression)exp);
+                case HandlebarsExpressionType.IteratorExpression:
+                    return VisitIteratorExpression((IteratorExpression)exp);
                 default:
                     return base.Visit(exp);
             }
@@ -58,6 +60,11 @@ namespace Handlebars.Compiler
         protected virtual Expression VisitStaticExpression(StaticExpression stex)
         {
             return stex;
+        }
+
+        protected virtual Expression VisitIteratorExpression(IteratorExpression iex)
+        {
+            return iex;
         }
     }
 }

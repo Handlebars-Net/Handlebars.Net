@@ -23,6 +23,7 @@ namespace Handlebars.Compiler
                 var expressions = ConvertTokensToExpressions(tokens);
                 var expression = CreateExpressionBlock(expressions);
                 expression = StaticReplacer.Replace(expression);
+                expression = IteratorBinder.Bind(expression, _configuration);
                 expression = BlockHelperFunctionBinder.Bind(expression, _configuration);
                 expression = HelperFunctionBinder.Bind(expression, _configuration);
                 expression = PathBinder.Bind(expression);
@@ -44,8 +45,7 @@ namespace Handlebars.Compiler
             tokens = PathConverter.Convert(tokens);
             tokens = HelperArgumentAccumulator.Accumulate(tokens);
             tokens = ExpressionScopeConverter.Convert(tokens);
-            tokens = ConditionalBlockAccumulator.Accumulate(tokens, _configuration);
-            tokens = BlockHelperAccumulator.Accumulate(tokens, _configuration);
+            tokens = BlockAccumulator.Accumulate(tokens, _configuration);
             return tokens.Cast<Expression>();
         }
 

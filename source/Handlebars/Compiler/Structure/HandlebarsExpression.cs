@@ -12,7 +12,7 @@ namespace Handlebars.Compiler
         HelperExpression = 6003,
         PathExpression = 6004,
         ContextAccessorExpression = 6005,
-        IfExpression = 6006
+        IteratorExpression = 6006
     }
 
     internal abstract class HandlebarsExpression : Expression
@@ -55,9 +55,19 @@ namespace Handlebars.Compiler
             return new StatementExpression (body);
         }
 
-        public static IfExpression IfBlock(Expression condition, Expression body)
+        public static IteratorExpression Iterator(
+            Expression sequence,
+            Expression template)
         {
-            return new IfExpression(condition, body);
+            return new IteratorExpression(sequence, template);
+        }
+
+        public static IteratorExpression Iterator(
+            Expression sequence,
+            Expression template,
+            Expression ifEmpty)
+        {
+            return new IteratorExpression (sequence, template, ifEmpty);
         }
     }
 }

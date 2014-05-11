@@ -14,6 +14,10 @@ namespace Handlebars
 
         public override void Write(object value)
         {
+            if(value == null)
+            {
+                return;
+            }
             if(value is ISafeString)
             {
                 base.Write(value.ToString());

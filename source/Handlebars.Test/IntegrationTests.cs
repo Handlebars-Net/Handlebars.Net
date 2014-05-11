@@ -48,6 +48,25 @@ namespace Handlebars.Test
             var result = template(data);
             Assert.AreEqual("Hello, my good friend Erik!", result);
         }
+
+        [Test]
+        public void BasicIterator()
+        {
+            var source = "Hello,{{each people}}\n- {{name}}{{/each}}";
+            var template = Handlebars.Compile(source);
+            var data = new {
+                people = new []{
+                    new { 
+                        name = "Erik"
+                    },
+                    new {
+                        name = "Helen"
+                    }
+                }
+            };
+            var result = template(data);
+            Assert.AreEqual("Hello,\n- Erik\n- Helen", result);
+        }
     }
 }
 
