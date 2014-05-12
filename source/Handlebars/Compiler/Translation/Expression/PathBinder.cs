@@ -7,19 +7,23 @@ using System.IO;
 namespace Handlebars.Compiler
 {
     internal class PathBinder : HandlebarsExpressionVisitor
-    {
-        public static Expression Bind(Expression expr)
+    {        
+        public static Expression Bind(Expression expr, CompilationContext context)
         {
-            return new PathBinder().Visit(expr);
+            return new PathBinder(context).Visit(expr);
         }
 
-        private PathBinder()
+        private readonly CompilationContext _context;
+
+        private PathBinder(CompilationContext context)
         {
+            _context = context;
         }
 
         protected override Expression VisitBlock(BlockExpression node)
         {
             return Expression.Block(
+                node.Variables,
                 node.Expressions.Select(expr => Visit(expr)));
         }
 
@@ -46,7 +50,7 @@ namespace Handlebars.Compiler
                 var writeMethod = typeof(TextWriter).GetMethod("Write", new [] { typeof(object) });
                 return Expression.Call(
                     Expression.Property(
-                        HandlebarsExpression.ContextAccessor(),
+                        _context.BindingContext,
                         "TextWriter"),
                     writeMethod,
                     new[] { Visit(sex.Body) });
@@ -61,7 +65,7 @@ namespace Handlebars.Compiler
         {
             return Expression.Call(
                 new Func<BindingContext, string, object>(ResolvePath).Method,
-                HandlebarsExpression.ContextAccessor(),
+                _context.BindingContext,
                 Expression.Constant(pex.Path));
         }
 
@@ -90,15 +94,25 @@ namespace Handlebars.Compiler
                 {
                     continue;
                 }
+                else if (segment.StartsWith("@"))
+                {
+                    var contextValue = context.GetContextVariable(segment.Substring(1));
+                    if (contextValue == null)
+                    {
+                        throw new HandlebarsRuntimeException("Couldn't bind to context variable");
+                    }
+                    instance = contextValue;
+                    break;
+                }
                 else
                 {
-                    foreach(var memberName in segment.Split('.'))
+                    foreach (var memberName in segment.Split('.'))
                     {
                         try
                         {
                             instance = AccessMember(instance, memberName);
                         }
-                        catch(Exception ex)
+                        catch (Exception ex)
                         {
                             throw new HandlebarsCompilerException("Path expression could not be resolved", ex);
                         }

@@ -16,19 +16,31 @@ namespace Handlebars.Compiler
             _parent = parent;
         }
 
-        public object Value
+        public virtual object Value
         {
             get { return _value; }
         }
 
-        public BindingContext ParentContext
+        public virtual BindingContext ParentContext
         {
             get { return _parent; }
         }
 
-        public TextWriter TextWriter
+        public virtual TextWriter TextWriter
         {
             get { return _writer; }
+        }
+
+        public virtual object GetContextVariable(string variableName)
+        {
+            object returnValue = null;
+            var parent = _parent;
+            while (returnValue == null && parent != null)
+            {
+                returnValue = parent.GetContextVariable(variableName);
+                parent = parent.ParentContext;
+            }
+            return returnValue;
         }
     }
 }

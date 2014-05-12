@@ -7,21 +7,22 @@ namespace Handlebars.Compiler
 {
     internal class HelperFunctionBinder : HandlebarsExpressionVisitor
     {
-        public static Expression Bind(Expression expr, HandlebarsConfiguration configuration)
+        public static Expression Bind(Expression expr, CompilationContext context)
         {
-            return new HelperFunctionBinder(configuration).Visit(expr);
+            return new HelperFunctionBinder(context).Visit(expr);
         }
 
-        private readonly HandlebarsConfiguration _configuration;
+        private readonly CompilationContext _context;
 
-        private HelperFunctionBinder(HandlebarsConfiguration configuration)
+        private HelperFunctionBinder(CompilationContext context)
         {
-            _configuration = configuration;
+            _context = context;
         }
 
         protected override Expression VisitBlock(BlockExpression node)
         {
             return Expression.Block(
+                node.Variables,
                 node.Expressions.Select(expr => Visit(expr)));
         }
 
@@ -47,26 +48,21 @@ namespace Handlebars.Compiler
 
         protected override Expression VisitHelperExpression(HelperExpression hex)
         {
-            if(_configuration.Helpers.ContainsKey(hex.HelperName))
+            if (_context.Configuration.Helpers.ContainsKey(hex.HelperName))
             {
-                return BindHelper(hex, _configuration.Helpers[hex.HelperName].Method);
+                return Expression.Call(
+                    _context.Configuration.Helpers[hex.HelperName].Method,
+                    new Expression[] {
+                        Expression.Property(
+                            _context.BindingContext,
+                            typeof(BindingContext).GetProperty("TextWriter")),
+                        Expression.NewArrayInit(typeof(object), hex.Arguments)
+                    });
             }
             else
             {
                 return hex;
             }
-        }
-
-        private static Expression BindHelper(HelperExpression hex, MethodInfo method)
-        {
-            return Expression.Call(
-                method,
-                new Expression[] {
-                    Expression.Property(
-                        HandlebarsExpression.ContextAccessor(),
-                        typeof(BindingContext).GetProperty("TextWriter")),
-                    Expression.NewArrayInit(typeof(object), hex.Arguments)
-                });
         }
     }
 }

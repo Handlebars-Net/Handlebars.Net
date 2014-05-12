@@ -69,12 +69,73 @@ namespace Handlebars.Test
         }
 
         [Test]
-        public void BasicEmptyIterator()
+        public void BasicIteratorWithIndex()
+        {
+            var source = "Hello,{{each people}}\n{{@index}}. {{name}}{{/each}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                people = new[]{
+                    new { 
+                        name = "Erik"
+                    },
+                    new {
+                        name = "Helen"
+                    }
+                }
+            };
+            var result = template(data);
+            Assert.AreEqual("Hello,\n0. Erik\n1. Helen", result);
+        }
+
+        [Test]
+        public void BasicIteratorWithFirst()
+        {
+            var source = "Hello,{{each people}}\n{{@index}}. {{name}} ({{with @first}}{{name}} is first{{/with}}){{/each}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                people = new[]{
+                    new { 
+                        name = "Erik"
+                    },
+                    new {
+                        name = "Helen"
+                    }
+                }
+            };
+            var result = template(data);
+            Assert.AreEqual("Hello,\n0. Erik (Erik is first)\n1. Helen (Erik is first)", result);
+        }
+
+        [Test]
+        public void BasicIteratorWithLast()
+        {
+            var source = "Hello,{{each people}}\n{{@index}}. {{name}} ({{with @last}}{{name}} is last{{/with}}){{/each}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                people = new[]{
+                    new { 
+                        name = "Erik"
+                    },
+                    new {
+                        name = "Helen"
+                    }
+                }
+            };
+            var result = template(data);
+            Assert.AreEqual("Hello,\n0. Erik (Helen is last)\n1. Helen (Helen is last)", result);
+        }
+
+        [Test]
+        public void BasicIteratorEmpty()
         {
             var source = "Hello,{{each people}}\n- {{name}}{{else}} (no one listed){{/each}}";
             var template = Handlebars.Compile(source);
-            var data = new {
-                people = new object[]{}
+            var data = new
+            {
+                people = new object[] { }
             };
             var result = template(data);
             Assert.AreEqual("Hello, (no one listed)", result);

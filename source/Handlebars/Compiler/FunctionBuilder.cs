@@ -16,38 +16,39 @@ namespace Handlebars.Compiler
             _configuration = configuration;
         }
 
-        public Action<TextWriter, object> Compile(IEnumerable<object> tokens)
+        public Expression Compile(IEnumerable<Expression> expressions, Expression parentContext)
         {
             try
             {
-                var expressions = ConvertTokensToExpressions(tokens);
+                var compilationContext = new CompilationContext(_configuration);
                 var expression = CreateExpressionBlock(expressions);
-                expression = StaticReplacer.Replace(expression);
-                expression = IteratorBinder.Bind(expression, _configuration);
-                expression = BlockHelperFunctionBinder.Bind(expression, _configuration);
-                expression = HelperFunctionBinder.Bind(expression, _configuration);
-                expression = PathBinder.Bind(expression);
-                expression = ContextBinder.Bind(expression);
-                expression = FunctionWrapper.Wrap(expression);
-                return ((Expression<Action<TextWriter, object>>)expression).Compile();
+                expression = StaticReplacer.Replace(expression, compilationContext);
+                expression = IteratorBinder.Bind(expression, compilationContext);
+                expression = BlockHelperFunctionBinder.Bind(expression, compilationContext);
+                expression = HelperFunctionBinder.Bind(expression, compilationContext);
+                expression = PathBinder.Bind(expression, compilationContext);
+                expression = ContextBinder.Bind(expression, compilationContext, parentContext);
+                return expression;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                    throw new HandlebarsCompilerException("An unhandled exception occurred while trying to compile the template", ex);
+                throw new HandlebarsCompilerException("An unhandled exception occurred while trying to compile the template", ex);
             }
         }
 
-        private IEnumerable<Expression> ConvertTokensToExpressions(IEnumerable<object> tokens)
+        public Action<TextWriter, object> Compile(IEnumerable<Expression> expressions)
         {
-            tokens = StaticConverter.Convert(tokens);
-            tokens = LiteralConverter.Convert(tokens);
-            tokens = HelperConverter.Convert(tokens, _configuration);
-            tokens = PathConverter.Convert(tokens);
-            tokens = HelperArgumentAccumulator.Accumulate(tokens);
-            tokens = ExpressionScopeConverter.Convert(tokens);
-            tokens = BlockAccumulator.Accumulate(tokens, _configuration);
-            return tokens.Cast<Expression>();
+            try
+            {
+                var expression = Compile(expressions, null);
+                return ((Expression<Action<TextWriter, object>>)expression).Compile();
+            }
+            catch (Exception ex)
+            {
+                throw new HandlebarsCompilerException("An unhandled exception occurred while trying to compile the template", ex);
+            }
         }
+
 
         private Expression CreateExpressionBlock(IEnumerable<Expression> expressions)
         {

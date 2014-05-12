@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -33,6 +33,9 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Compiler\CompilationContext.cs" />
+    <Compile Include="Compiler\ExpressionBuilder.cs" />
+    <Compile Include="HandlebarsRuntimeException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Compiler\FunctionBuilder.cs" />
     <Compile Include="Compiler\Structure\HandlebarsExpression.cs" />
@@ -46,12 +49,12 @@
     <Compile Include="Compiler\Structure\ContextAccessorExpression.cs" />
     <Compile Include="Compiler\Structure\StatementExpression.cs" />
     <Compile Include="Compiler\Structure\BlockHelperExpression.cs" />
-    <Compile Include="Compiler\Translation\Token\ExpressionScopeConverter.cs" />
-    <Compile Include="Compiler\Translation\Token\HelperArgumentAccumulator.cs" />
-    <Compile Include="Compiler\Translation\Token\HelperConverter.cs" />
-    <Compile Include="Compiler\Translation\Token\LiteralConverter.cs" />
-    <Compile Include="Compiler\Translation\Token\StaticConverter.cs" />
-    <Compile Include="Compiler\Translation\Token\TokenConverter.cs" />
+    <Compile Include="Compiler\Lexer\Converter\ExpressionScopeConverter.cs" />
+    <Compile Include="Compiler\Lexer\Converter\HelperArgumentAccumulator.cs" />
+    <Compile Include="Compiler\Lexer\Converter\HelperConverter.cs" />
+    <Compile Include="Compiler\Lexer\Converter\LiteralConverter.cs" />
+    <Compile Include="Compiler\Lexer\Converter\StaticConverter.cs" />
+    <Compile Include="Compiler\Lexer\Converter\TokenConverter.cs" />
     <Compile Include="Compiler\Translation\Expression\BlockHelperFunctionBinder.cs" />
     <Compile Include="Compiler\Translation\Expression\ContextBinder.cs" />
     <Compile Include="Compiler\Translation\Expression\FunctionWrapper.cs" />
@@ -79,22 +82,17 @@
     <Compile Include="ISafeString.cs" />
     <Compile Include="HandlebarsExtensions.cs" />
     <Compile Include="BuiltinHelpers.cs" />
-    <Compile Include="Compiler\Translation\Token\PathConverter.cs" />
-    <Compile Include="Compiler\Translation\Token\BlockAccumulator.cs" />
-    <Compile Include="Compiler\Translation\Token\BlockAccumulators\ConditionalBlockAccumulatorContext.cs" />
-    <Compile Include="Compiler\Translation\Token\BlockAccumulators\BlockAccumulatorContext.cs" />
-    <Compile Include="Compiler\Translation\Token\BlockAccumulators\BlockHelperAccumulatorContext.cs" />
-    <Compile Include="Compiler\Translation\Token\BlockAccumulators\IteratorBlockAccumulatorContext.cs" />
+    <Compile Include="Compiler\Lexer\Converter\PathConverter.cs" />
+    <Compile Include="Compiler\Lexer\Converter\BlockAccumulator.cs" />
+    <Compile Include="Compiler\Lexer\Converter\BlockAccumulators\ConditionalBlockAccumulatorContext.cs" />
+    <Compile Include="Compiler\Lexer\Converter\BlockAccumulators\BlockAccumulatorContext.cs" />
+    <Compile Include="Compiler\Lexer\Converter\BlockAccumulators\BlockHelperAccumulatorContext.cs" />
+    <Compile Include="Compiler\Lexer\Converter\BlockAccumulators\IteratorBlockAccumulatorContext.cs" />
     <Compile Include="Compiler\Structure\IteratorExpression.cs" />
     <Compile Include="Compiler\Translation\Expression\IteratorBinder.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <Folder Include="Compiler\" />
-    <Folder Include="Compiler\Structure\" />
-    <Folder Include="Compiler\Translation\" />
     <Folder Include="Compiler\Translation\Token\" />
-    <Folder Include="Compiler\Translation\Expression\" />
-    <Folder Include="Compiler\Translation\Token\BlockAccumulators\" />
   </ItemGroup>
 </Project>
