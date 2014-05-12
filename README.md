@@ -14,7 +14,8 @@ _Handlebars.Net is in alpha right now - check out the [todo](#todo) to see what'
 ##Usage
 
 ```c#
-string source = @"<div class=""entry"">
+string source =
+@"<div class=""entry"">
   <h1>{{title}}</h1>
   <div class=""body"">
     {{body}}
@@ -73,7 +74,7 @@ _Release Candidate prerequisites_:
 - [ ] Escape everything by default
 - [ ] HTML escaping expressions ("triple-stash" `{{{ }}}`)
 - [ ] Object enumeration
-- [ ] `@key`, `@index`, `@first`, `@last` context variables
+- [x] `@key`, `@index`, `@first`, `@last` context variables
 - [ ] Implement `>` partials
 
 _Future roadmap_:
