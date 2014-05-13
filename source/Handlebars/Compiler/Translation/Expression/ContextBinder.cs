@@ -18,7 +18,7 @@ namespace Handlebars.Compiler
             var bindingContext = Expression.New(
                  typeof(BindingContext).GetConstructor(
                      new[] { typeof(object), typeof(TextWriter), typeof(BindingContext) }),
-                new Expression[] { objectParameter, writerParameter, parentContext });
+                new Expression[] { objectParameter, Expression.Call(new Func<TextWriter, TextWriter>(GetEncodedWriter).Method,writerParameter), parentContext });
             return Expression.Lambda<Action<TextWriter, object>>(
                 Expression.Block(
                     new [] { context.BindingContext },
@@ -29,7 +29,18 @@ namespace Handlebars.Compiler
                     )),
                 new[] { writerParameter, objectParameter });
         }
-        
+
+        private static TextWriter GetEncodedWriter(TextWriter writer)
+        {
+            if(typeof(EncodedTextWriter).IsAssignableFrom(writer.GetType()))
+            {
+                return writer;
+            }
+            else
+            {
+                return new EncodedTextWriter(writer);
+            }
+        }
     }
 }
 

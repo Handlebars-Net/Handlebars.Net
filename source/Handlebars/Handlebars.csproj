@@ -78,7 +78,6 @@
     <Compile Include="Compiler\Lexer\Tokens\WordExpressionToken.cs" />
     <Compile Include="Compiler\HandlebarsCompiler.cs" />
     <Compile Include="Compiler\Lexer\HandlebarsParserException.cs" />
-    <Compile Include="Compiler\EncodedTextWriter.cs" />
     <Compile Include="ISafeString.cs" />
     <Compile Include="HandlebarsExtensions.cs" />
     <Compile Include="BuiltinHelpers.cs" />
@@ -90,9 +89,9 @@
     <Compile Include="Compiler\Lexer\Converter\BlockAccumulators\IteratorBlockAccumulatorContext.cs" />
     <Compile Include="Compiler\Structure\IteratorExpression.cs" />
     <Compile Include="Compiler\Translation\Expression\IteratorBinder.cs" />
+    <Compile Include="EncodedTextWriter.cs">
+      <DependentUpon>Handlebars.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <ItemGroup>
-    <Folder Include="Compiler\Translation\Token\" />
-  </ItemGroup>
 </Project>

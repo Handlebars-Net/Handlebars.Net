@@ -9,6 +9,11 @@ namespace Handlebars
         {
             writer.Write(new SafeString(value));
         }
+
+        public static void WriteSafeString(this TextWriter writer, object value)
+        {
+            writer.WriteSafeString(value.ToString());
+        }
             
         private class SafeString : ISafeString
         {

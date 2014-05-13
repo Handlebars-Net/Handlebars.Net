@@ -28,13 +28,13 @@ namespace Handlebars.Compiler
 
         protected override Expression VisitStaticExpression(StaticExpression stex)
         {
-            var writeMethod = typeof(TextWriter).GetMethod("Write", new [] { typeof(string) });
+            var writeMethod = typeof(HandlebarsExtensions).GetMethod("WriteSafeString", new [] { typeof(TextWriter), typeof(string) });
             return Expression.Call(
+                writeMethod,
                 Expression.Property(
                     _context.BindingContext,
                     "TextWriter"),
-                writeMethod,
-                new[] { Expression.Constant(stex.Value) });
+                Expression.Constant(stex.Value));
         }
     }
 }

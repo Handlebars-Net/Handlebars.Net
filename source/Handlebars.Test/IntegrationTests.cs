@@ -140,6 +140,19 @@ namespace Handlebars.Test
             var result = template(data);
             Assert.AreEqual("Hello, (no one listed)", result);
         }
+
+        [Test]
+        public void BasicEncoding()
+        {
+            var source = "Hello, {{name}}!";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                name = "<b>Bob</b>"
+            };
+            var result = template(data);
+            Assert.AreEqual("Hello, &lt;b&gt;Bob&lt;/b&gt;!", result);
+        }
     }
 }
 
