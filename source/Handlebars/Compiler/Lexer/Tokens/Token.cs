@@ -31,6 +31,11 @@ namespace Handlebars.Compiler.Lexer
         {
             return new EndExpressionToken();
         }
+
+        public static CommentToken Comment(string comment)
+        {
+            return new CommentToken(comment);
+        }
     }
 }
 

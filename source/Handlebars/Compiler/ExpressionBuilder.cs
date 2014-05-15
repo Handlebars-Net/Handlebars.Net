@@ -19,6 +19,7 @@ namespace Handlebars.Compiler
         public IEnumerable<Expression> ConvertTokensToExpressions(IEnumerable<object> tokens)
         {
             tokens = StaticConverter.Convert(tokens);
+            tokens = CommentRemover.Remove(tokens);
             tokens = LiteralConverter.Convert(tokens);
             tokens = HelperConverter.Convert(tokens, _configuration);
             tokens = PathConverter.Convert(tokens);

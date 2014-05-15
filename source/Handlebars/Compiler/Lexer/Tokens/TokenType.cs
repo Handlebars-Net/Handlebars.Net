@@ -9,7 +9,8 @@ namespace Handlebars.Compiler.Lexer
         EndExpression = 2,
         Word = 3,
         Literal = 4,
-        Structure = 5
+        Structure = 5,
+        Comment = 6
 	}
 }
 
