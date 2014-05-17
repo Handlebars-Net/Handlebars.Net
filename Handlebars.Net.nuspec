@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>Handlebars.Net</id>
-        <version>1.0.0-alpha5</version>
+        <version>1.0.0-beta2</version>
         <title>Handlebars.Net</title>
         <authors>Rex Morgan</authors>
         <projectUrl>https://github.com/rexm/Handlebars.Net</projectUrl>
