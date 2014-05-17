@@ -72,7 +72,7 @@ _Release Candidate prerequisites_:
 - [x] `with` helper
 - [x] `each` / `else` helper
 - [x] Escape everything by default
-- [ ] HTML escaping expressions ("triple-stash" `{{{ }}}`)
+- [ ] Non-escaping expressions ("triple-stash" `{{{ }}}`)
 - [x] Object enumeration
 - [x] `@key`, `@index`, `@first`, `@last` context variables
 - [x] Comments
