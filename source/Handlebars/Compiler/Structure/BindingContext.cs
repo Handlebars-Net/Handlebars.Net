@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Reflection;
 
 namespace Handlebars.Compiler
 {
@@ -33,12 +34,31 @@ namespace Handlebars.Compiler
 
         public virtual object GetContextVariable(string variableName)
         {
-            object returnValue = null;
-            var parent = _parent;
-            while (returnValue == null && parent != null)
+            object returnValue;
+            variableName = variableName.Trim('@');
+            var member = this.GetType().GetMember(variableName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+            if(member.Length > 0)
             {
-                returnValue = parent.GetContextVariable(variableName);
-                parent = parent.ParentContext;
+                if(member[0].MemberType == MemberTypes.Property)
+                {
+                    returnValue = ((PropertyInfo)member[0]).GetValue(this);
+                }
+                else if(member[0].MemberType == MemberTypes.Field)
+                {
+                    returnValue = ((FieldInfo)member[0]).GetValue(this);
+                }
+                else
+                {
+                    throw new HandlebarsRuntimeException("Context variable references a member that is not a field or property");
+                }
+            }
+            else if(_parent != null)
+            {
+                returnValue = _parent.GetContextVariable(variableName);
+            }
+            else
+            {
+                returnValue = null;
             }
             return returnValue;
         }

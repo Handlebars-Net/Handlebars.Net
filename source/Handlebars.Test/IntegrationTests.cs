@@ -166,6 +166,40 @@ namespace Handlebars.Test
             var result = template(data);
             Assert.AreEqual("Hello, Carl!", result);
         }
+
+        [Test]
+        public void BasicObjectEnumerator()
+        {
+            var source = "{{each enumerateMe}}{{this}} {{/each}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                enumerateMe = new
+                {
+                    foo = "hello",
+                    bar = "world"
+                }
+            };
+            var result = template(data);
+            Assert.AreEqual("hello world ", result);
+        }
+
+        [Test]
+        public void BasicObjectEnumeratorWithKey()
+        {
+            var source = "{{each enumerateMe}}{{@key}}: {{this}} {{/each}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                enumerateMe = new
+                {
+                    foo = "hello",
+                    bar = "world"
+                }
+            };
+            var result = template(data);
+            Assert.AreEqual("foo: hello bar: world ", result);
+        }
     }
 }
 
