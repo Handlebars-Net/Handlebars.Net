@@ -75,7 +75,8 @@ _Release Candidate prerequisites_:
 - [ ] HTML escaping expressions ("triple-stash" `{{{ }}}`)
 - [x] Object enumeration
 - [x] `@key`, `@index`, `@first`, `@last` context variables
-- [ ] Implement `>` partials
+- [x] Comments
+- [ ] `>` partials
 
 _Future roadmap_:
 - [ ] **Add unit tests!**
