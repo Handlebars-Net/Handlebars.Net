@@ -71,7 +71,7 @@ _Release Candidate prerequisites_:
 - [x] `if` / `else` / `unless` helper
 - [x] `with` helper
 - [x] `each` / `else` helper
-- [x] `#` sections
+- [ ] `#` sections
 - [x] Escape everything by default
 - [ ] Non-escaping expressions ("triple-stash" `{{{ }}}`)
 - [x] Object enumeration
