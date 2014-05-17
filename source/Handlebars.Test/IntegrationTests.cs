@@ -157,7 +157,20 @@ namespace Handlebars.Test
         [Test]
         public void BasicComment()
         {
-            var source = "Hello, {{!--don't render me!--}}{{name}}!";
+            var source = "Hello, {{!don't render me!}}{{name}}!";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                name = "Carl"
+            };
+            var result = template(data);
+            Assert.AreEqual("Hello, Carl!", result);
+        }
+
+        [Test]
+        public void BasicCommentEscaped()
+        {
+            var source = "Hello, {{!--don't {{render}} me!--}}{{name}}!";
             var template = Handlebars.Compile(source);
             var data = new
             {

@@ -25,11 +25,16 @@ namespace Handlebars.Compiler.Lexer
 
         private string AccumulateComment(TextReader reader)
         {
+            reader.Read();
+            bool? escaped = null;
             StringBuilder buffer = new StringBuilder ();
             while (true)
             {
-                var peek = (char)reader.Peek ();
-                if (peek == '}')
+                if(escaped == null)
+                {
+                    escaped = CheckIfEscaped(reader, buffer);
+                }
+                if(IsClosed(reader, buffer, escaped.Value))
                 {
                     break;
                 }
@@ -44,6 +49,40 @@ namespace Handlebars.Compiler.Lexer
                 }
             }
             return buffer.ToString ();
+        }
+
+        private static bool IsClosed(TextReader reader, StringBuilder buffer, bool isEscaped)
+        {
+            return (isEscaped && CheckIfEscaped(reader, buffer) && CheckIfStatementClosed(reader)) || (isEscaped == false && CheckIfStatementClosed(reader));
+        }
+
+        private static bool CheckIfStatementClosed(TextReader reader)
+        {
+            var isClosed = false;
+            if((char)reader.Peek() == '}')
+            {
+                isClosed = true;
+            }
+            return isClosed;
+        }
+
+        private static bool CheckIfEscaped(TextReader reader, StringBuilder buffer)
+        {
+            bool escaped = false;
+            if((char)reader.Peek() == '-')
+            {
+                var first = reader.Read();
+                if((char)reader.Peek() == '-')
+                {
+                    reader.Read();
+                    escaped = true;
+                }
+                else
+                {
+                    buffer.Append(first);
+                }
+            }
+            return escaped;
         }
     }
 }

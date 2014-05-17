@@ -8,7 +8,6 @@ namespace Handlebars.Compiler
     internal class BlockHelperAccumulatorContext : BlockAccumulatorContext
 	{
         private readonly HelperExpression _startingNode;
-        private Expression _accumulatedExpression;
         private List<Expression> _body = new List<Expression>();
 
         public BlockHelperAccumulatorContext(Expression startingNode)
