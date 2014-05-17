@@ -44,7 +44,7 @@ var result = template(data);
 ###Registering Helpers
 ```c#
 Handlebars.RegisterHelper("link_to", (writer, parameters) => {
-  writer.Write("<a href='" + parameters[0] + "'>" + parameters[1] + "</a>");
+  writer.WriteSafeString("<a href='" + parameters[0] + "'>" + parameters[1] + "</a>");
 });
 
 string source = @"Click here: {{link_to url text}}";
