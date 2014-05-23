@@ -1,13 +1,13 @@
 Handlebars.Net [![Build Status](https://travis-ci.org/rexm/Handlebars.Net.svg?branch=master)](https://travis-ci.org/rexm/Handlebars.Net)
 ==============
 
-Blistering-fast, native [Handlebars.js templates](http://handlebarsjs.com) in your .NET application.
+Blistering-fast [Handlebars.js templates](http://handlebarsjs.com) in your .NET application.
 
 >Handlebars.js is an extension to the Mustache templating language created by Chris Wanstrath. Handlebars.js and Mustache are both logicless templating languages that keep the view and the code separated like we all know they should be.
 
 Check out the [handlebars.js documentation](http://handlebarsjs.com) for how to write Handlebars templates.
 
-Handlebars.Net doesn't use a scripting engine to run the Javascript library - it **compiles Handlebars templates directly to native .NET code**. It also mimics the JS library's API as closely as possible.
+Handlebars.Net doesn't use a scripting engine to run a Javascript library - it **compiles Handlebars templates directly to IL bytecode**. It also mimics the JS library's API as closely as possible.
 
 _Handlebars.Net is in beta right now - check out the [todo](#todo) to see what's missing._
 
