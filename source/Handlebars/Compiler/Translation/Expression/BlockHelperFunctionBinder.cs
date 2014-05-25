@@ -36,7 +36,7 @@ namespace Handlebars.Compiler
             var fb = new FunctionBuilder(_context.Configuration);
             var body = fb.Compile(((BlockExpression)bhex.Body).Expressions, _context.BindingContext);
             return Expression.Call(
-                _context.Configuration.BlockHelpers[bhex.HelperName].Method,
+                _context.Configuration.BlockHelpers[bhex.HelperName.Replace("#", "")].Method,
                 new Expression[] {
                     Expression.Property(
                         _context.BindingContext,

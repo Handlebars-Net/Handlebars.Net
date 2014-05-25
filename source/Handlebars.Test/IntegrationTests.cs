@@ -21,7 +21,7 @@ namespace Handlebars.Test
         [Test]
         public void BasicIfElse()
         {
-            var source = "Hello, {{if basic_bool}}Bob{{else}}Sam{{/if}}!";
+            var source = "Hello, {{#if basic_bool}}Bob{{else}}Sam{{/if}}!";
             var template = Handlebars.Compile(source);
             var trueData = new {
                 basic_bool = true
@@ -38,7 +38,7 @@ namespace Handlebars.Test
         [Test]
         public void BasicWith()
         {
-            var source = "Hello,{{with person}} my good friend {{name}}{{/with}}!";
+            var source = "Hello,{{#with person}} my good friend {{name}}{{/with}}!";
             var template = Handlebars.Compile(source);
             var data = new {
                 person = new {
@@ -52,7 +52,7 @@ namespace Handlebars.Test
         [Test]
         public void BasicIterator()
         {
-            var source = "Hello,{{each people}}\n- {{name}}{{/each}}";
+            var source = "Hello,{{#each people}}\n- {{name}}{{/each}}";
             var template = Handlebars.Compile(source);
             var data = new {
                 people = new []{
@@ -71,7 +71,7 @@ namespace Handlebars.Test
         [Test]
         public void BasicIteratorWithIndex()
         {
-            var source = "Hello,{{each people}}\n{{@index}}. {{name}}{{/each}}";
+            var source = "Hello,{{#each people}}\n{{@index}}. {{name}}{{/each}}";
             var template = Handlebars.Compile(source);
             var data = new
             {
@@ -91,7 +91,7 @@ namespace Handlebars.Test
         [Test]
         public void BasicIteratorWithFirst()
         {
-            var source = "Hello,{{each people}}\n{{@index}}. {{name}} ({{with @first}}{{name}} is first{{/with}}){{/each}}";
+            var source = "Hello,{{#each people}}\n{{@index}}. {{name}} ({{#with @first}}{{name}} is first{{/with}}){{/each}}";
             var template = Handlebars.Compile(source);
             var data = new
             {
@@ -111,7 +111,7 @@ namespace Handlebars.Test
         [Test]
         public void BasicIteratorWithLast()
         {
-            var source = "Hello,{{each people}}\n{{@index}}. {{name}} ({{with @last}}{{name}} is last{{/with}}){{/each}}";
+            var source = "Hello,{{#each people}}\n{{@index}}. {{name}} ({{#with @last}}{{name}} is last{{/with}}){{/each}}";
             var template = Handlebars.Compile(source);
             var data = new
             {
@@ -131,7 +131,7 @@ namespace Handlebars.Test
         [Test]
         public void BasicIteratorEmpty()
         {
-            var source = "Hello,{{each people}}\n- {{name}}{{else}} (no one listed){{/each}}";
+            var source = "Hello,{{#each people}}\n- {{name}}{{else}} (no one listed){{/each}}";
             var template = Handlebars.Compile(source);
             var data = new
             {
@@ -183,7 +183,7 @@ namespace Handlebars.Test
         [Test]
         public void BasicObjectEnumerator()
         {
-            var source = "{{each enumerateMe}}{{this}} {{/each}}";
+            var source = "{{#each enumerateMe}}{{this}} {{/each}}";
             var template = Handlebars.Compile(source);
             var data = new
             {
@@ -200,7 +200,7 @@ namespace Handlebars.Test
         [Test]
         public void BasicObjectEnumeratorWithKey()
         {
-            var source = "{{each enumerateMe}}{{@key}}: {{this}} {{/each}}";
+            var source = "{{#each enumerateMe}}{{@key}}: {{this}} {{/each}}";
             var template = Handlebars.Compile(source);
             var data = new
             {

@@ -27,7 +27,7 @@ namespace Handlebars.Compiler
         private static bool IsConditionalBlock(Expression item)
         {
             item = UnwrapStatement(item);
-            return (item is HelperExpression) && new[] { "if", "unless" }.Contains(((HelperExpression)item).HelperName.Replace("#", ""));
+            return (item is HelperExpression) && new[] { "#if", "#unless" }.Contains(((HelperExpression)item).HelperName);
         }
 
         private static bool IsBlockHelper(Expression item, HandlebarsConfiguration configuration)
@@ -39,7 +39,7 @@ namespace Handlebars.Compiler
         private static bool IsIteratorAccumulatorContext(Expression item)
         {
             item = UnwrapStatement(item);
-            return (item is HelperExpression) && new[] { "each" }.Contains(((HelperExpression)item).HelperName.Replace("#", ""));
+            return (item is HelperExpression) && new[] { "#each" }.Contains(((HelperExpression)item).HelperName);
         }
 
         protected static Expression UnwrapStatement(Expression item)

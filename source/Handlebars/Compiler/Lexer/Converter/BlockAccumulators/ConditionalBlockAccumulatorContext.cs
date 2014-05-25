@@ -75,11 +75,11 @@ namespace Handlebars.Compiler
         private static Expression CreateIfBlock(HelperExpression startingNode, IEnumerable<Expression> body)
         {
             var condition = Expression.Convert(startingNode.Arguments.Single(), typeof(bool));
-            if(startingNode.HelperName.Replace("#", "") == "if")
+            if(startingNode.HelperName == "#if")
             {
                 return Expression.IfThen(condition, Expression.Block(body));
             }
-            else if(startingNode.HelperName.Replace("#", "") == "unless")
+            else if(startingNode.HelperName == "#unless")
             {
                 return Expression.IfThen(Expression.Not(condition), Expression.Block(body));
             }

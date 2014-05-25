@@ -56,9 +56,10 @@ namespace Handlebars.Compiler
 
         private bool IsRegisteredHelperName(string name)
         {
+            name = name.Replace("#", "");
             return _configuration.Helpers.ContainsKey(name)
                 || _configuration.BlockHelpers.ContainsKey(name)
-                || builtInHelpers.Contains(name.Replace("#", ""));
+                || builtInHelpers.Contains(name);
         }
 
         private static object GetNext(IEnumerator<object> enumerator)
