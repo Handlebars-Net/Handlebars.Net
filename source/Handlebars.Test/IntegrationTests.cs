@@ -233,6 +233,41 @@ namespace Handlebars.Test
             var result = template(data);
             Assert.AreEqual("Click here: <a href='https://github.com/rexm/handlebars.net'>Handlebars.Net</a>", result);
         }
+
+        [Test]
+        public void BasicDeferredBlock()
+        {
+            string source = "Hello, {{#person}}{{name}}{{/person}}!";
+
+            var template = Handlebars.Compile(source);
+
+            var data = new {
+                person = new {
+                    name = "Bill"
+                }
+            };
+
+            var result = template(data);
+            Assert.AreEqual("Hello, Bill!", result);
+        }
+
+        [Test]
+        public void BasicDeferredBlockEnumerable()
+        {
+            string source = "Hello, {{#people}}{{this}} {{/people}}!";
+
+            var template = Handlebars.Compile(source);
+
+            var data = new {
+                people = new [] {
+                    "Bill",
+                    "Mary"
+                }
+            };
+
+            var result = template(data);
+            Assert.AreEqual("Hello, Bill Mary !", result);
+        }
     }
 }
 

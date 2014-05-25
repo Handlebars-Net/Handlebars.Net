@@ -12,7 +12,8 @@ namespace Handlebars.Compiler
         HelperExpression = 6003,
         PathExpression = 6004,
         ContextAccessorExpression = 6005,
-        IteratorExpression = 6006
+        IteratorExpression = 6006,
+        DeferredSection = 6007
     }
 
     internal abstract class HandlebarsExpression : Expression
@@ -68,6 +69,14 @@ namespace Handlebars.Compiler
             Expression ifEmpty)
         {
             return new IteratorExpression (sequence, template, ifEmpty);
+        }
+
+        public static DeferredSectionExpression DeferredSection(
+            PathExpression path,
+            IEnumerable<Expression> body,
+            SectionEvaluationMode evalMode)
+        {
+            return new DeferredSectionExpression(path, body, evalMode);
         }
     }
 }

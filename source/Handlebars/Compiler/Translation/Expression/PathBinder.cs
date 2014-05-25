@@ -35,6 +35,14 @@ namespace Handlebars.Compiler
                 node.Type);
         }
 
+        protected override Expression VisitMethodCall(MethodCallExpression node)
+        {
+            return Expression.Call(
+                Visit(node.Object),
+                node.Method,
+                node.Arguments.Select(n => Visit(n)));
+        }
+
         protected override Expression VisitConditional(ConditionalExpression node)
         {
             return Expression.Condition(

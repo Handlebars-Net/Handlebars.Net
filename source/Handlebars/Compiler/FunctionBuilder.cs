@@ -25,6 +25,7 @@ namespace Handlebars.Compiler
                 expression = StaticReplacer.Replace(expression, compilationContext);
                 expression = IteratorBinder.Bind(expression, compilationContext);
                 expression = BlockHelperFunctionBinder.Bind(expression, compilationContext);
+                expression = DeferredSectionVisitor.Bind(expression, compilationContext);
                 expression = HelperFunctionBinder.Bind(expression, compilationContext);
                 expression = PathBinder.Bind(expression, compilationContext);
                 expression = ContextBinder.Bind(expression, compilationContext, parentContext);

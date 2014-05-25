@@ -94,6 +94,9 @@
     <Compile Include="Compiler\Lexer\Parsers\CommentParser.cs" />
     <Compile Include="Compiler\Lexer\Tokens\CommentToken.cs" />
     <Compile Include="Compiler\Lexer\Converter\CommentRemover.cs" />
+    <Compile Include="Compiler\Lexer\Converter\BlockAccumulators\DeferredBlockAccumulatorContext.cs" />
+    <Compile Include="Compiler\Structure\DeferredSectionExpression.cs" />
+    <Compile Include="Compiler\Translation\Expression\DeferredSectionVisitor.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

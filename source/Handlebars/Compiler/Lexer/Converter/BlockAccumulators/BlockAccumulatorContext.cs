@@ -17,9 +17,13 @@ namespace Handlebars.Compiler
             {
                 context = new BlockHelperAccumulatorContext(item);
             }
-            else if(IsIteratorAccumulatorContext(item))
+            else if(IsIteratorBlock(item))
             {
                 context = new IteratorBlockAccumulatorContext(item);
+            }
+            else if(IsDeferredBlock(item))
+            {
+                context = new DeferredBlockAccumulatorContext(item);
             }
             return context;
         }
@@ -36,10 +40,16 @@ namespace Handlebars.Compiler
             return (item is HelperExpression) && configuration.BlockHelpers.ContainsKey(((HelperExpression)item).HelperName.Replace("#", ""));
         }
 
-        private static bool IsIteratorAccumulatorContext(Expression item)
+        private static bool IsIteratorBlock(Expression item)
         {
             item = UnwrapStatement(item);
             return (item is HelperExpression) && new[] { "#each" }.Contains(((HelperExpression)item).HelperName);
+        }
+
+        private static bool IsDeferredBlock(Expression item)
+        {
+            item = UnwrapStatement(item);
+            return (item is PathExpression) && (((PathExpression)item).Path.StartsWith("#") || ((PathExpression)item).Path.StartsWith("^"));
         }
 
         protected static Expression UnwrapStatement(Expression item)

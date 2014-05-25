@@ -27,6 +27,8 @@ namespace Handlebars.Compiler
                     return VisitContextAccessorExpression((ContextAccessorExpression)exp);
                 case HandlebarsExpressionType.IteratorExpression:
                     return VisitIteratorExpression((IteratorExpression)exp);
+                case HandlebarsExpressionType.DeferredSection:
+                    return VisitDeferredSectionExpression((DeferredSectionExpression)exp);
                 default:
                     return base.Visit(exp);
             }
@@ -65,6 +67,11 @@ namespace Handlebars.Compiler
         protected virtual Expression VisitIteratorExpression(IteratorExpression iex)
         {
             return iex;
+        }
+
+        protected virtual Expression VisitDeferredSectionExpression(DeferredSectionExpression dsex)
+        {
+            return dsex;
         }
     }
 }
