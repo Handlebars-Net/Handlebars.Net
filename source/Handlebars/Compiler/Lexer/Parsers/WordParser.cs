@@ -7,7 +7,7 @@ namespace Handlebars.Compiler.Lexer
 {
     internal class WordParser : Parser
     {
-        private const string validWordStartCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_$.@#/";
+        private const string validWordStartCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_$.@#/^";
 
         public override Token Parse (TextReader reader)
         {

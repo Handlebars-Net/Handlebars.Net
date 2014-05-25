@@ -268,6 +268,22 @@ namespace Handlebars.Test
             var result = template(data);
             Assert.AreEqual("Hello, Bill Mary !", result);
         }
+
+        [Test]
+        public void BasicDeferredBlockNegated()
+        {
+            string source = "Hello, {{^people}}nobody{{/people}}!";
+
+            var template = Handlebars.Compile(source);
+
+            var data = new {
+                people = new string[] {
+                }
+            };
+
+            var result = template(data);
+            Assert.AreEqual("Hello, nobody!", result);
+        }
     }
 }
 

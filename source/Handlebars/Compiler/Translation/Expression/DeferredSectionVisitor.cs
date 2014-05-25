@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
 using System.Collections;
+using System.Linq;
 using System.IO;
 
 namespace Handlebars.Compiler
@@ -43,7 +44,7 @@ namespace Handlebars.Compiler
 
         private static void RenderEmptySection(object value, BindingContext context, Action<TextWriter, object> template)
         {
-            if(IsFalsey(value) == false)
+            if(IsFalseyOrEmpty(value) == false)
             {
                 return;
             }
@@ -52,7 +53,7 @@ namespace Handlebars.Compiler
 
         private static void RenderSection(object value, BindingContext context, Action<TextWriter, object> template)
         {
-            if(IsFalsey(value))
+            if(IsFalseyOrEmpty(value))
             {
                 return;
             }
@@ -69,7 +70,7 @@ namespace Handlebars.Compiler
             }
         }
 
-        private static bool IsFalsey(object value)
+        private static bool IsFalseyOrEmpty(object value)
         {
             if(value == null)
             {
@@ -79,7 +80,11 @@ namespace Handlebars.Compiler
             {
                 return true;
             }
-            //TODO: more falsey values
+            if(value is IEnumerable && ((IEnumerable)value).OfType<object>().Any() == false)
+            {
+                return true;
+            }
+            //TODO: more falsey conditions
             return false;
         }
     }
