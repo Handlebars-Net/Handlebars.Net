@@ -213,6 +213,26 @@ namespace Handlebars.Test
             var result = template(data);
             Assert.AreEqual("foo: hello bar: world ", result);
         }
+
+        [Test]
+        public void BasicHelper()
+        {
+            Handlebars.RegisterHelper("link_to", (writer, parameters) => {
+                writer.WriteSafeString("<a href='" + parameters[0] + "'>" + parameters[1] + "</a>");
+            });
+
+            string source = @"Click here: {{link_to url text}}";
+
+            var template = Handlebars.Compile(source);
+
+            var data = new {
+                url = "https://github.com/rexm/handlebars.net",
+                text = "Handlebars.Net"
+            };
+
+            var result = template(data);
+            Assert.AreEqual("Click here: <a href='https://github.com/rexm/handlebars.net'>Handlebars.Net</a>", result);
+        }
     }
 }
 
