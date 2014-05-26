@@ -97,6 +97,11 @@
     <Compile Include="Compiler\Lexer\Converter\BlockAccumulators\DeferredBlockAccumulatorContext.cs" />
     <Compile Include="Compiler\Structure\DeferredSectionExpression.cs" />
     <Compile Include="Compiler\Translation\Expression\DeferredSectionVisitor.cs" />
+    <Compile Include="Compiler\Lexer\Tokens\PartialToken.cs" />
+    <Compile Include="Compiler\Lexer\Parsers\PartialParser.cs" />
+    <Compile Include="Compiler\Lexer\Converter\PartialConverter.cs" />
+    <Compile Include="Compiler\Structure\PartialExpression.cs" />
+    <Compile Include="Compiler\Translation\Expression\PartialBinder.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

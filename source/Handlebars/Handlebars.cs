@@ -39,6 +39,20 @@ namespace Handlebars
             }
         }
 
+        public static void RegisterTemplate(string templateName, Action<TextWriter, object> template)
+        {
+            if(_configuration.RegisteredTemplates.ContainsKey(templateName) == false)
+            {
+                lock(typeof(Handlebars))
+                {
+                    if(_configuration.RegisteredTemplates.ContainsKey(templateName) == false)
+                    {
+                        _configuration.RegisteredTemplates.Add(templateName, template);
+                    }
+                }
+            }
+        }
+
         public static void RegisterHelper(string helperName, HandlebarsHelper helperFunction)
         {
             if(_configuration.Helpers.ContainsKey(helperName) == false)

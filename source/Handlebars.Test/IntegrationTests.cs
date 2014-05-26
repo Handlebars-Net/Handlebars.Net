@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using System;
+using System.IO;
 
 namespace Handlebars.Test
 {
@@ -283,6 +284,28 @@ namespace Handlebars.Test
 
             var result = template(data);
             Assert.AreEqual("Hello, nobody!", result);
+        }
+
+        [Test]
+        public void BasicPartial()
+        {
+            var partialSource = "{{name}}";
+            using(var reader = new StringReader(partialSource))
+            {
+                var partialTemplate = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("person", partialTemplate);
+            }
+
+            string source = "Hello, {{>person}}!";
+
+            var template = Handlebars.Compile(source);
+
+            var data = new {
+                name = "Marc"
+            };
+
+            var result = template(data);
+            Assert.AreEqual("Hello, Marc!", result);
         }
     }
 }

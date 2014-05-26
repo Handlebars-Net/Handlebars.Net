@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Handlebars.Compiler.Lexer;
+using System.Linq.Expressions;
 
 namespace Handlebars.Compiler
 {
@@ -32,6 +33,11 @@ namespace Handlebars.Compiler
                 {
                     yield return item;
                     item = GetNext(enumerator);
+                    if(item is Expression)
+                    {
+                        yield return item;
+                        continue;
+                    }
                     if((item is WordExpressionToken) == false)
                     {
                         throw new HandlebarsCompilerException("Encountered a non-word symbol at the beginning of the handlebars expression.");

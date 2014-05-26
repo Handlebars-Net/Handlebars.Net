@@ -46,7 +46,7 @@ namespace Handlebars.Compiler
         {
             if(IsFalseyOrEmpty(value) == false)
             {
-                return;
+                throw new HandlebarsRuntimeException("Tried to render a truthy or non-empty object in an inverted section");
             }
             template(context.TextWriter, null);
         }
@@ -55,7 +55,7 @@ namespace Handlebars.Compiler
         {
             if(IsFalseyOrEmpty(value))
             {
-                return;
+                throw new HandlebarsRuntimeException("Tried to render a falsey or empty object in a section");
             }
             if(value is IEnumerable)
             {
@@ -67,6 +67,10 @@ namespace Handlebars.Compiler
             else if(value != null)
             {
                 template(context.TextWriter, value);
+            }
+            else
+            {
+                throw new HandlebarsRuntimeException("Could not render value for the section");
             }
         }
 

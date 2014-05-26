@@ -10,7 +10,8 @@ namespace Handlebars.Compiler.Lexer
         Word = 3,
         Literal = 4,
         Structure = 5,
-        Comment = 6
+        Comment = 6,
+        Partial = 7
 	}
 }
 

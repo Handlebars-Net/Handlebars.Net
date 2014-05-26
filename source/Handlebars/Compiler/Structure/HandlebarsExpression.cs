@@ -13,7 +13,8 @@ namespace Handlebars.Compiler
         PathExpression = 6004,
         ContextAccessorExpression = 6005,
         IteratorExpression = 6006,
-        DeferredSection = 6007
+        DeferredSection = 6007,
+        PartialExpression = 6008,
     }
 
     internal abstract class HandlebarsExpression : Expression
@@ -77,6 +78,11 @@ namespace Handlebars.Compiler
             SectionEvaluationMode evalMode)
         {
             return new DeferredSectionExpression(path, body, evalMode);
+        }
+
+        public static PartialExpression Partial(string partialName)
+        {
+            return new PartialExpression(partialName);
         }
     }
 }

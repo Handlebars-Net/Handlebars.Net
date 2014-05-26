@@ -13,6 +13,7 @@ namespace Handlebars.Compiler.Lexer
         private static Parser _wordParser = new WordParser ();
         private static Parser _literalParser = new LiteralParser();
         private static Parser _commentParser = new CommentParser();
+        private static Parser _partialParser = new PartialParser();
         //TODO: structure parser
 
         public Tokenizer(HandlebarsConfiguration configuration)
@@ -60,6 +61,7 @@ namespace Handlebars.Compiler.Lexer
                     token = token ?? _wordParser.Parse (source);
                     token = token ?? _literalParser.Parse (source);
                     token = token ?? _commentParser.Parse(source);
+                    token = token ?? _partialParser.Parse(source);
 
                     if(token != null)
                     {
@@ -68,13 +70,20 @@ namespace Handlebars.Compiler.Lexer
 
                     if((char)node == '}' && (char)source.Peek() == '}')
                     {
-                        yield return Token.EndExpression ();
+                        yield return Token.EndExpression();
                         source.Read();
                         inExpression = false;
                     }
-                    else
+                    else if(char.IsWhiteSpace((char)node))
                     {
                         continue;
+                    }
+                    else
+                    {
+                        if(token == null)
+                        {
+                            throw new HandlebarsParserException("Reached unparseable token in expression");
+                        }
                     }
                 }
                 else
