@@ -289,13 +289,6 @@ namespace Handlebars.Test
         [Test]
         public void BasicPartial()
         {
-            var partialSource = "{{name}}";
-            using(var reader = new StringReader(partialSource))
-            {
-                var partialTemplate = Handlebars.Compile(reader);
-                Handlebars.RegisterTemplate("person", partialTemplate);
-            }
-
             string source = "Hello, {{>person}}!";
 
             var template = Handlebars.Compile(source);
@@ -303,6 +296,13 @@ namespace Handlebars.Test
             var data = new {
                 name = "Marc"
             };
+
+            var partialSource = "{{name}}";
+            using(var reader = new StringReader(partialSource))
+            {
+                var partialTemplate = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("person", partialTemplate);
+            }
 
             var result = template(data);
             Assert.AreEqual("Hello, Marc!", result);

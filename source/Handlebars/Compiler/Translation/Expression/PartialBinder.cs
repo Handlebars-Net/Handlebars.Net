@@ -31,10 +31,6 @@ namespace Handlebars.Compiler
 
         protected override Expression VisitPartialExpression(PartialExpression pex)
         {
-            if(_context.Configuration.RegisteredTemplates.ContainsKey(pex.PartialName) == false)
-            {
-                throw new HandlebarsCompilerException("Referenced partial name could not be resolved");
-            }
             return Expression.Call(
                 new Action<string, BindingContext, HandlebarsConfiguration>(InvokePartial).Method,
                 Expression.Constant(pex.PartialName),

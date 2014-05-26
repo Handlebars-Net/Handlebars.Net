@@ -10,7 +10,6 @@ namespace Handlebars.Compiler.Lexer
             PartialToken token = null;
             if((char)reader.Peek() == '>')
             {
-                //reader.Read();
                 token = Token.Partial();
             }
             return token;
