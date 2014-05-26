@@ -75,9 +75,9 @@ _Release Candidate prerequisites_:
 - [x] Object enumeration
 - [x] `@key`, `@index`, `@first`, `@last` context variables
 - [x] Comments
+- [x] `>` partials
 - [ ] Give helpers access to current context
 - [ ] Non-escaping expressions ("triple-stash" `{{{ }}}`)
-- [ ] `>` partials
 
 _Future roadmap_:
 - [ ] **Add unit tests!**
