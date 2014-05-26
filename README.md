@@ -81,5 +81,7 @@ _Release Candidate prerequisites_:
 
 _Future roadmap_:
 - [ ] **Add unit tests!**
+- [ ] Set delimiters
+- [ ] Mustache(5) Lambdas
 - [ ] MVC view engine
 - [ ] Nancy view engine
