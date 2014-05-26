@@ -11,6 +11,10 @@ Handlebars.Net doesn't use a scripting engine to run a Javascript library - it *
 
 _Handlebars.Net is in beta right now - check out the [todo](#todo) to see what's missing._
 
+##Install
+
+    nuget install Handlebars.Net -PreRelease
+
 ##Usage
 
 ```c#
