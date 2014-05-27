@@ -47,7 +47,7 @@ namespace Handlebars.Compiler
             {
                 throw new HandlebarsRuntimeException("Referenced partial name could not be resolved");
             }
-            configuration.RegisteredTemplates[partialName](context.TextWriter, context.Value);
+            configuration.RegisteredTemplates[partialName](context.TextWriter, context);
         }
     }
 }

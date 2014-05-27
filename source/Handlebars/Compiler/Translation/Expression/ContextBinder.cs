@@ -23,7 +23,10 @@ namespace Handlebars.Compiler
                 Expression.Block(
                     new [] { context.BindingContext },
                     new Expression[] {
-                        Expression.Assign(context.BindingContext, bindingContext)
+                        Expression.IfThenElse(
+                            Expression.TypeIs(objectParameter, typeof(BindingContext)),
+                            Expression.Assign(context.BindingContext, Expression.TypeAs(objectParameter, typeof(BindingContext))),
+                            Expression.Assign(context.BindingContext, bindingContext))
                     }.Concat(
                         ((BlockExpression)body).Expressions
                     )),
