@@ -15,7 +15,7 @@ namespace Handlebars.Compiler
             {
                 parentContext = Expression.Constant(null, typeof(BindingContext));
             }
-            var bindingContext = Expression.New(
+            var newBindingContext = Expression.New(
                  typeof(BindingContext).GetConstructor(
                      new[] { typeof(object), typeof(TextWriter), typeof(BindingContext) }),
                 new Expression[] { objectParameter, Expression.Call(new Func<TextWriter, TextWriter>(GetEncodedWriter).Method,writerParameter), parentContext });
@@ -26,7 +26,7 @@ namespace Handlebars.Compiler
                         Expression.IfThenElse(
                             Expression.TypeIs(objectParameter, typeof(BindingContext)),
                             Expression.Assign(context.BindingContext, Expression.TypeAs(objectParameter, typeof(BindingContext))),
-                            Expression.Assign(context.BindingContext, bindingContext))
+                            Expression.Assign(context.BindingContext, newBindingContext))
                     }.Concat(
                         ((BlockExpression)body).Expressions
                     )),
