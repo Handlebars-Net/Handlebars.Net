@@ -10,6 +10,11 @@ namespace Handlebars.Compiler
     internal class FunctionBuilder
     {
         private readonly HandlebarsConfiguration _configuration;
+        private static readonly Expression _emptyLambda =
+            Expression.Lambda<Action<TextWriter, object>>(
+                        Expression.Empty(),
+                        Expression.Parameter(typeof(TextWriter)),
+                        Expression.Parameter(typeof(object)));
 
         public FunctionBuilder(HandlebarsConfiguration configuration)
         {
@@ -20,6 +25,14 @@ namespace Handlebars.Compiler
         {
             try
             {
+                if (expressions.Any() == false)
+                {
+                    return _emptyLambda;
+                }
+                if (expressions.IsOneOf<Expression, DefaultExpression>() == true)
+                {
+                    return _emptyLambda;
+                }
                 var compilationContext = new CompilationContext(_configuration);
                 var expression = CreateExpressionBlock(expressions);
                 expression = StaticReplacer.Replace(expression, compilationContext);

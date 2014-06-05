@@ -9,8 +9,8 @@ namespace Handlebars.Compiler
     {
         public static Expression Bind(Expression body, CompilationContext context, Expression parentContext)
         {
-            var writerParameter = Expression.Parameter(typeof(TextWriter));
-            var objectParameter = Expression.Parameter(typeof(object));
+            var writerParameter = Expression.Parameter(typeof(TextWriter), "buffer");
+            var objectParameter = Expression.Parameter(typeof(object), "data");
             if (parentContext == null)
             {
                 parentContext = Expression.Constant(null, typeof(BindingContext));
