@@ -46,7 +46,7 @@ namespace Handlebars.Compiler
 
         protected override Expression VisitIteratorExpression(IteratorExpression iex)
         {
-            var iteratorBindingContext = Expression.Variable(typeof(BindingContext));
+            var iteratorBindingContext = Expression.Variable(typeof(BindingContext), "context");
             return Expression.Block(
                 new ParameterExpression[] {
                     iteratorBindingContext

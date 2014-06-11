@@ -3,8 +3,6 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>12.0.0</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{2BD48FB6-C852-4141-B734-12E501B1D761}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>Handlebars.Test</RootNamespace>
@@ -38,7 +36,8 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IntegrationTests.cs" />
+    <Compile Include="BasicIntegrationTests.cs" />
+    <Compile Include="ComplexIntegrationTests.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

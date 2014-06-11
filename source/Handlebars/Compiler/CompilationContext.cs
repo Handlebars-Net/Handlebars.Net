@@ -15,7 +15,7 @@ namespace Handlebars.Compiler
         public CompilationContext(HandlebarsConfiguration configuration)
         {
             _configuration = configuration;
-            _bindingContext = Expression.Variable(typeof(BindingContext), "bindingContext");
+            _bindingContext = Expression.Variable(typeof(BindingContext), "context");
         }
 
         public HandlebarsConfiguration Configuration

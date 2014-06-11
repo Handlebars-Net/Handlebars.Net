@@ -5,7 +5,7 @@ using System.IO;
 namespace Handlebars.Test
 {
     [TestFixture]
-    public class IntegrationTests
+    public class BasicIntegrationTests
     {
         [Test]
         public void BasicPath()
