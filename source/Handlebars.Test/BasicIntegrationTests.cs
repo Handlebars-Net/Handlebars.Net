@@ -218,7 +218,7 @@ namespace Handlebars.Test
         [Test]
         public void BasicHelper()
         {
-            Handlebars.RegisterHelper("link_to", (writer, parameters) => {
+            Handlebars.RegisterHelper("link_to", (writer, context, parameters) => {
                 writer.WriteSafeString("<a href='" + parameters[0] + "'>" + parameters[1] + "</a>");
             });
 

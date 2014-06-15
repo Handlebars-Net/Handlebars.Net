@@ -5,8 +5,8 @@ using System.Text;
 
 namespace Handlebars
 {
-    public delegate void HandlebarsHelper(TextWriter output, params object[] arguments);
-    public delegate void HandlebarsBlockHelper(TextWriter output, Action<TextWriter, object> template, params object[] arguments);
+    public delegate void HandlebarsHelper(TextWriter output, dynamic context, params object[] arguments);
+    public delegate void HandlebarsBlockHelper(TextWriter output, Action<TextWriter, object> template, dynamic context, params object[] arguments);
 
     public sealed class Handlebars
     {

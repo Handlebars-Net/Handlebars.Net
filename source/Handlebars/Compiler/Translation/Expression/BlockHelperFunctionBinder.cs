@@ -42,6 +42,9 @@ namespace Handlebars.Compiler
                         _context.BindingContext,
                         typeof(BindingContext).GetProperty("TextWriter")),
                     body,
+                    Expression.Property(
+                        _context.BindingContext,
+                        typeof(BindingContext).GetProperty("Value")),
                     Expression.NewArrayInit(typeof(object), bhex.Arguments)
                 });
         }

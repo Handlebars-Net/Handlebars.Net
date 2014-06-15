@@ -9,7 +9,7 @@ namespace Handlebars
     internal static class BuiltinHelpers
     {
         [Description("with")]
-        public static void With(TextWriter output, Action<TextWriter, object> template, params object[] arguments)
+        public static void With(TextWriter output, Action<TextWriter, object> template, dynamic context, params object[] arguments)
         {
             if(arguments.Length != 1)
             {

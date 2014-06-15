@@ -68,7 +68,7 @@ namespace Handlebars.Test
                 }
             };
 
-            Handlebars.RegisterHelper("link_to", (writer, parameters) => {
+            Handlebars.RegisterHelper("link_to", (writer, context, parameters) => {
                 writer.WriteSafeString("<a href='" + parameters[0] + "'>" + parameters[1] + "</a>");
             });
 
@@ -91,11 +91,11 @@ namespace Handlebars.Test
                 }
             };
 
-            Handlebars.RegisterHelper("link_to", (writer, parameters) => {
+            Handlebars.RegisterHelper("link_to", (writer, context, parameters) => {
                 writer.WriteSafeString("<a href='" + parameters[0] + "'>" + parameters[1] + "</a>");
             });
 
-            Handlebars.RegisterHelper("block_helper", (writer, blockTemplate, arguments) => {
+            Handlebars.RegisterHelper("block_helper", (writer, blockTemplate, context, arguments) => {
                 foreach(var item in arguments[0] as IEnumerable)
                 {
                     blockTemplate(writer, item);
