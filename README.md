@@ -80,7 +80,7 @@ _Release Candidate prerequisites_:
 - [x] `@key`, `@index`, `@first`, `@last` context variables
 - [x] Comments
 - [x] `>` partials
-- [ ] Give helpers access to current context
+- [x] Give helpers access to current context
 - [ ] Non-escaping expressions ("triple-stash" `{{{ }}}`)
 
 _Future roadmap_:
