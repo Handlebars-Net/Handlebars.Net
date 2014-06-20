@@ -47,7 +47,7 @@ var result = template(data);
 
 ###Registering Helpers
 ```c#
-Handlebars.RegisterHelper("link_to", (writer, parameters) => {
+Handlebars.RegisterHelper("link_to", (writer, context, parameters) => {
   writer.WriteSafeString("<a href='" + parameters[0] + "'>" + parameters[1] + "</a>");
 });
 
