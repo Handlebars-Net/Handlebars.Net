@@ -50,17 +50,29 @@ namespace Handlebars.Compiler
         {
             if (_context.Configuration.Helpers.ContainsKey(hex.HelperName))
             {
-                return Expression.Call(
-                    _context.Configuration.Helpers[hex.HelperName].Method,
-                    new Expression[] {
-                        Expression.Property(
-                            _context.BindingContext,
-                            typeof(BindingContext).GetProperty("TextWriter")),
-                        Expression.Property(
-                            _context.BindingContext,
-                            typeof(BindingContext).GetProperty("Value")),
-                        Expression.NewArrayInit(typeof(object), hex.Arguments)
-                    });
+                var helper = _context.Configuration.Helpers[hex.HelperName];
+                var arguments = new Expression[] {
+                    Expression.Property(
+                        _context.BindingContext,
+                        typeof(BindingContext).GetProperty("TextWriter")),
+                    Expression.Property(
+                        _context.BindingContext,
+                        typeof(BindingContext).GetProperty("Value")),
+                    Expression.NewArrayInit(typeof(object), hex.Arguments)
+                };
+                if(helper.Target != null)
+                {
+                    return Expression.Call(
+                        Expression.Constant(helper.Target),
+                        helper.Method,
+                        arguments);
+                }
+                else
+                {
+                    return Expression.Call(
+                        helper.Method,
+                        arguments);
+                }
             }
             else
             {

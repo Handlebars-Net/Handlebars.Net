@@ -35,18 +35,30 @@ namespace Handlebars.Compiler
         {
             var fb = new FunctionBuilder(_context.Configuration);
             var body = fb.Compile(((BlockExpression)bhex.Body).Expressions, _context.BindingContext);
-            return Expression.Call(
-                _context.Configuration.BlockHelpers[bhex.HelperName.Replace("#", "")].Method,
-                new Expression[] {
-                    Expression.Property(
-                        _context.BindingContext,
-                        typeof(BindingContext).GetProperty("TextWriter")),
-                    body,
-                    Expression.Property(
-                        _context.BindingContext,
-                        typeof(BindingContext).GetProperty("Value")),
-                    Expression.NewArrayInit(typeof(object), bhex.Arguments)
-                });
+            var helper = _context.Configuration.BlockHelpers[bhex.HelperName.Replace("#", "")];
+            var arguments = new Expression[] {
+                Expression.Property(
+                    _context.BindingContext,
+                    typeof(BindingContext).GetProperty("TextWriter")),
+                body,
+                Expression.Property(
+                    _context.BindingContext,
+                    typeof(BindingContext).GetProperty("Value")),
+                Expression.NewArrayInit(typeof(object), bhex.Arguments)
+            };
+            if(helper.Target != null)
+            {
+                return Expression.Call(
+                    Expression.Constant(helper.Target),
+                    helper.Method,
+                    arguments);
+            }
+            else
+            {
+                return Expression.Call(
+                    helper.Method,
+                    arguments);
+            }
         }
     }
 }
