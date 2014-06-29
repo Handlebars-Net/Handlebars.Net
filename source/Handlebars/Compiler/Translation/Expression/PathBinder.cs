@@ -3,6 +3,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.IO;
+using System.Dynamic;
+using Microsoft.CSharp.RuntimeBinder;
 
 namespace Handlebars.Compiler
 {
@@ -132,6 +134,18 @@ namespace Handlebars.Compiler
 
         private static object AccessMember(object instance, string memberName)
         {
+            //crude handling for dynamic objects that don't have metadata
+            if(typeof(IDynamicMetaObjectProvider).IsAssignableFrom(instance.GetType()))
+            {
+                try
+                {
+                    return GetProperty(instance, memberName);
+                }
+                catch(Exception ex)
+                {
+                    throw new HandlebarsRuntimeException("Could not resolve dynamic member name", ex);
+                }
+            }
             var members = instance.GetType().GetMember(memberName);
             if(members.Length == 0)
             {
@@ -146,6 +160,12 @@ namespace Handlebars.Compiler
                 return ((FieldInfo)members[0]).GetValue(instance);
             }
             throw new InvalidOperationException("Requested member was not a field or property");
+        }
+
+        private static object GetProperty(object target, string name)
+        {
+            var site = System.Runtime.CompilerServices.CallSite<Func<System.Runtime.CompilerServices.CallSite, object, object>>.Create(Microsoft.CSharp.RuntimeBinder.Binder.GetMember(0, name, target.GetType(), new[]{Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo.Create(0,null)}));
+            return site.Target(site, target);
         }
     }
 }
