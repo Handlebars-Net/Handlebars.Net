@@ -5,11 +5,15 @@ using System.Reflection;
 using System.IO;
 using System.Dynamic;
 using Microsoft.CSharp.RuntimeBinder;
+using System.Collections.Generic;
 
 namespace Handlebars.Compiler
 {
     internal class PathBinder : HandlebarsExpressionVisitor
-    {        
+    {
+        private Dictionary<BindingContext, Dictionary<string, object>> _resolutionCache
+            = new Dictionary<BindingContext, Dictionary<string, object>>();
+
         public static Expression Bind(Expression expr, CompilationContext context)
         {
             return new PathBinder(context).Visit(expr);
@@ -74,6 +78,7 @@ namespace Handlebars.Compiler
         protected override Expression VisitPathExpression(PathExpression pex)
         {
             return Expression.Call(
+                Expression.Constant(this),
                 new Func<BindingContext, string, object>(ResolvePath).Method,
                 _context.BindingContext,
                 Expression.Constant(pex.Path));
@@ -87,8 +92,12 @@ namespace Handlebars.Compiler
         }
 
         //TODO: make path resolution logic smarter
-        private static object ResolvePath(BindingContext context, string path)
+        private object ResolvePath(BindingContext context, string path)
         {
+            if (_resolutionCache.ContainsKey(context) && _resolutionCache[context].ContainsKey(path))
+            {
+                return _resolutionCache[context][path];
+            }
             var instance = context.Value;
             foreach(var segment in path.Split ('/'))
             {
@@ -122,13 +131,19 @@ namespace Handlebars.Compiler
                         {
                             instance = AccessMember(instance, memberName);
                         }
-                        catch (Exception ex)
+                        catch (Exception)
                         {
-							return new UndefinedBindingResult();
+                            instance = new UndefinedBindingResult();
+                            break;
                         }
                     }
                 }
             }
+            if (_resolutionCache.ContainsKey(context) == false)
+            {
+                _resolutionCache.Add(context, new Dictionary<string, object>());
+            }
+            _resolutionCache[context].Add(path, instance);
 			return instance;
         }
 
