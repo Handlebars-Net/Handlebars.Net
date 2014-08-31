@@ -104,6 +104,9 @@
     <Compile Include="Compiler\Lexer\Converter\PartialConverter.cs" />
     <Compile Include="Compiler\Structure\PartialExpression.cs" />
     <Compile Include="Compiler\Translation\Expression\PartialBinder.cs" />
+    <Compile Include="Compiler\Structure\BoolishExpression.cs" />
+    <Compile Include="Compiler\Translation\Expression\BoolishConverter.cs" />
+    <Compile Include="Compiler\Structure\UndefinedBindingResult.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -41,6 +41,7 @@ namespace Handlebars.Compiler
                 expression = BlockHelperFunctionBinder.Bind(expression, compilationContext);
                 expression = DeferredSectionVisitor.Bind(expression, compilationContext);
                 expression = HelperFunctionBinder.Bind(expression, compilationContext);
+				expression = BoolishConverter.Convert(expression, compilationContext);
                 expression = PathBinder.Bind(expression, compilationContext);
                 expression = ContextBinder.Bind(expression, compilationContext, parentContext);
                 return expression;

@@ -124,12 +124,12 @@ namespace Handlebars.Compiler
                         }
                         catch (Exception ex)
                         {
-                            throw new HandlebarsCompilerException("Path expression could not be resolved", ex);
+							return new UndefinedBindingResult();
                         }
                     }
                 }
             }
-            return instance;
+			return instance;
         }
 
         private static object AccessMember(object instance, string memberName)

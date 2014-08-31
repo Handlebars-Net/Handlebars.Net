@@ -74,7 +74,7 @@ namespace Handlebars.Compiler
 
         private static Expression CreateIfBlock(HelperExpression startingNode, IEnumerable<Expression> body)
         {
-            var condition = Expression.Convert(startingNode.Arguments.Single(), typeof(bool));
+            var condition = HandlebarsExpression.Boolish(startingNode.Arguments.Single());
             if(startingNode.HelperName == "#if")
             {
                 return Expression.IfThen(condition, Expression.Block(body));

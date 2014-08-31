@@ -15,6 +15,7 @@ namespace Handlebars.Compiler
         IteratorExpression = 6006,
         DeferredSection = 6007,
         PartialExpression = 6008,
+		BoolishExpression = 6009
     }
 
     internal abstract class HandlebarsExpression : Expression
@@ -84,6 +85,11 @@ namespace Handlebars.Compiler
         {
             return new PartialExpression(partialName);
         }
+
+		public static BoolishExpression Boolish(Expression condition)
+		{
+			return new BoolishExpression(condition);
+		}
     }
 }
 
