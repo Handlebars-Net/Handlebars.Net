@@ -32,7 +32,7 @@ namespace Handlebars.Test
         [Test]
         public void HelperWithLiteralArgumentsWithQuotes()
         {
-            var helperName = Guid.NewGuid().ToString(); //randomize helper name
+            var helperName = "helper-" + Guid.NewGuid().ToString(); //randomize helper name
             Handlebars.RegisterHelper(helperName, (writer, context, args) => {
                 var count = 0;
                 foreach(var arg in args)
