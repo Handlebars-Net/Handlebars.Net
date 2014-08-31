@@ -307,6 +307,66 @@ namespace Handlebars.Test
             var result = template(data);
             Assert.AreEqual("Hello, Marc!", result);
         }
+
+		[Test]
+		public void BasicPropertyMissing()
+		{
+			string source = "Hello, {{first}} {{last}}!";
+
+			var template = Handlebars.Compile(source);
+
+			var data = new {
+				first = "Marc"
+			};
+
+			var result = template(data);
+			Assert.AreEqual("Hello, Marc !", result);
+		}
+
+		[Test]
+		public void BasicNumericFalsy()
+		{
+			string source = "Hello, {{#if falsy}}Truthy!{{/if}}";
+
+			var template = Handlebars.Compile(source);
+
+			var data = new {
+				falsy = 0
+			};
+
+			var result = template(data);
+			Assert.AreEqual("Hello, ", result);
+		}
+
+		[Test]
+		public void BasicNumericTruthy()
+		{
+			string source = "Hello, {{#if truthy}}Truthy!{{/if}}";
+
+			var template = Handlebars.Compile(source);
+
+			var data = new {
+				truthy = -0.1
+			};
+
+			var result = template(data);
+			Assert.AreEqual("Hello, Truthy!", result);
+		}
+
+		[Test]
+		public void BasicStringFalsy()
+		{
+			string source = "Hello, {{#if falsy}}Truthy!{{/if}}";
+
+			var template = Handlebars.Compile(source);
+
+			var data = new {
+				falsy = ""
+			};
+
+			var result = template(data);
+			Assert.AreEqual("Hello, ", result);
+		}
     }
 }
 

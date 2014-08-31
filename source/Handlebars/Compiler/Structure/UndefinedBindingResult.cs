@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace Handlebars.Compiler
 {
+	[DebuggerDisplay("undefined")]
 	internal class UndefinedBindingResult
 	{
 		public UndefinedBindingResult()
@@ -10,7 +12,7 @@ namespace Handlebars.Compiler
 
 		public override string ToString()
 		{
-			return "undefined";
+			return string.Empty;
 		}
 	}
 }
