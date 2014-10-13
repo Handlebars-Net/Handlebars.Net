@@ -41,7 +41,7 @@ namespace Handlebars.Compiler
             {
                 if(member[0].MemberType == MemberTypes.Property)
                 {
-                    returnValue = ((PropertyInfo)member[0]).GetValue(this);
+                    returnValue = ((PropertyInfo)member[0]).GetValue(this, BindingFlags.Default, null, null, null);
                 }
                 else if(member[0].MemberType == MemberTypes.Field)
                 {

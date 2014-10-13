@@ -43,7 +43,7 @@ namespace Handlebars
                 if(possibleDelegate != null)
                 {
                     yield return new KeyValuePair<string, T>(
-                        method.GetCustomAttribute<DescriptionAttribute>().Description,
+                        ((DescriptionAttribute)Attribute.GetCustomAttribute (method, typeof (DescriptionAttribute))).Description,
                         (T)(object)possibleDelegate);
                 }
             }
