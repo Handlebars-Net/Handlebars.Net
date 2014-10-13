@@ -46,10 +46,10 @@ namespace Handlebars.Test
             var resultTrueFalse = template(trueFalse);
             var resultFalseTrue = template(falseTrue);
             var resultFalseFalse = template(falseFalse);
-            Assert.AreEqual("\na is true\n", resultTrueTrue);
-            Assert.AreEqual("\na is false\n", resultTrueFalse);
-            Assert.AreEqual("\nb is true\n", resultFalseTrue);
-            Assert.AreEqual("\nb is false\n", resultFalseFalse);
+            Assert.AreEqual(Environment.NewLine + "a is true" + Environment.NewLine, resultTrueTrue);
+            Assert.AreEqual(Environment.NewLine + "a is false" + Environment.NewLine, resultTrueFalse);
+            Assert.AreEqual(Environment.NewLine + "b is true" + Environment.NewLine, resultFalseTrue);
+            Assert.AreEqual(Environment.NewLine + "b is false" + Environment.NewLine, resultFalseFalse);
         }
 
         [Test]
@@ -104,6 +104,31 @@ namespace Handlebars.Test
 
             var result = template(data);
             Assert.AreEqual("<a href='http://google.com/'>Google</a><a href='http://yahoo.com/'>Yahoo!</a>", result);
+        }
+
+        [Test]
+        public void ContextTest()
+        {
+            var template = Handlebars.Compile(@"{{#each Foo}}{{../Bar}}: {{#each this}}{{../../Bar}}{{this}},{{/each}};{{/each}}");
+
+            var expected = @"Foo: FooAA,FooAAA,;Foo: FooBB,FooBBB,;";
+
+            var result = template(new
+            {
+                Bar = "Foo",
+                Foo = new[] { 
+                    new [] {
+                        "AA",
+                        "AAA"
+                    },
+                    new [] {
+                        "BB",
+                        "BBB"
+                    }
+                }
+            });
+
+            Assert.AreEqual(expected, result);
         }
     }
 }

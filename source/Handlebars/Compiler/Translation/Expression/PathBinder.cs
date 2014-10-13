@@ -94,20 +94,25 @@ namespace Handlebars.Compiler
         //TODO: make path resolution logic smarter
         private object ResolvePath(BindingContext context, string path)
         {
-            if (_resolutionCache.ContainsKey(context) && _resolutionCache[context].ContainsKey(path))
+            // Context reference will be changed during path evaluation
+            var initialContext = context;
+
+            if (_resolutionCache.ContainsKey(initialContext) && _resolutionCache[initialContext].ContainsKey(path))
             {
-                return _resolutionCache[context][path];
+                return _resolutionCache[initialContext][path];
             }
+
             var instance = context.Value;
             foreach(var segment in path.Split ('/'))
             {
                 if(segment == "..")
                 {
                     context = context.ParentContext;
-                    if(context == null)
+                    if (context == null)
                     {
                         throw new HandlebarsCompilerException("Path expression tried to reference parent of root");
                     }
+                    instance = context.Value;
                 }
                 else if(segment == "this")
                 {
@@ -139,11 +144,12 @@ namespace Handlebars.Compiler
                     }
                 }
             }
-            if (_resolutionCache.ContainsKey(context) == false)
+            if (_resolutionCache.ContainsKey(initialContext) == false)
             {
-                _resolutionCache.Add(context, new Dictionary<string, object>());
+                _resolutionCache.Add(initialContext, new Dictionary<string, object>());
             }
-            _resolutionCache[context].Add(path, instance);
+
+            _resolutionCache[initialContext].Add(path, instance);
 			return instance;
         }
 
