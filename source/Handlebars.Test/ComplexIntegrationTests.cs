@@ -76,12 +76,10 @@ namespace Handlebars.Test
             Assert.AreEqual("<a href='http://google.com/'>Google</a><a href='http://yahoo.com/'>Yahoo!</a>", result);
         }
 
-        //[Test]
+        [Test]
         public void BlockHelperHelper()
         {
             var source = "{{#block_helper foo}}{{link_to url text}}{{/block_helper}}";
-            
-            var template = Handlebars.Compile(source);
 
             var data = new {
                 foo = new [] 
@@ -101,6 +99,8 @@ namespace Handlebars.Test
                     blockTemplate(writer, item);
                 }
             });
+
+			var template = Handlebars.Compile(source);
 
             var result = template(data);
             Assert.AreEqual("<a href='http://google.com/'>Google</a><a href='http://yahoo.com/'>Yahoo!</a>", result);
