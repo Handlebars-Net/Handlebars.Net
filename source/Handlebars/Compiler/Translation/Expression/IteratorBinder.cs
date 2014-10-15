@@ -100,7 +100,7 @@ namespace Handlebars.Compiler
             Action<TextWriter, object> template,
             Action<TextWriter, object> ifEmpty)
         {
-            bool firstSet = false;
+			context.Index = 0;
             foreach(MemberInfo member in target.GetType()
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public).OfType<MemberInfo>()
                 .Concat(
@@ -109,13 +109,11 @@ namespace Handlebars.Compiler
             {
                 context.Key = member.Name;
                 var value = AccessMember(target, member);
-                if(firstSet == false)
-                {
-                    context.First = value;
-                }
+				context.First = (context.Index == 0);
                 template(context.TextWriter, value);
+				context.Index++;
             }
-            if(firstSet == false)
+			if(context.Index == 0)
             {
                 ifEmpty(context.TextWriter, context.Value);
             }
@@ -129,10 +127,11 @@ namespace Handlebars.Compiler
             Action<TextWriter, object> ifEmpty)
         {
             context.Index = 0;
-            context.First = sequence.Cast<object>().FirstOrDefault(); //TODO: don't enumerate multiple times
-            context.Last = sequence.Cast<object>().LastOrDefault(); //TODO: don't enumerate multiple times
+			int length = (sequence is IList ? ((IList)sequence).Count : sequence.Cast<object>().Count());
             foreach(object item in sequence)
             {
+				context.First = (context.Index == 0);
+				context.Last = (context.Index == length - 1);
                 template(context.TextWriter, item);
                 context.Index++;
             }
@@ -151,9 +150,9 @@ namespace Handlebars.Compiler
 
             public int Index { get; set; }
 
-            public object First { get; set; }
+            public bool First { get; set; }
 
-            public object Last { get; set; }
+			public bool Last { get; set; }
         }
 
         private class ObjectEnumeratorBindingContext : BindingContext
@@ -165,7 +164,9 @@ namespace Handlebars.Compiler
 
             public string Key { get;set; }
 
-            public object First { get; set; }
+			public int Index { get; set; }
+
+            public bool First { get; set; }
         }
 
         private static object AccessMember(object instance, MemberInfo member)

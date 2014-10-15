@@ -92,7 +92,7 @@ namespace Handlebars.Test
         [Test]
         public void BasicIteratorWithFirst()
         {
-            var source = "Hello,{{#each people}}\n{{@index}}. {{name}} ({{#with @first}}{{name}} is first{{/with}}){{/each}}";
+			var source = "Hello,{{#each people}}\n{{@index}}. {{name}} ({{name}} is {{#if @first}}first{{else}}not first{{/if}}){{/each}}";
             var template = Handlebars.Compile(source);
             var data = new
             {
@@ -106,13 +106,13 @@ namespace Handlebars.Test
                 }
             };
             var result = template(data);
-            Assert.AreEqual("Hello,\n0. Erik (Erik is first)\n1. Helen (Erik is first)", result);
+            Assert.AreEqual("Hello,\n0. Erik (Erik is first)\n1. Helen (Helen is not first)", result);
         }
 
         [Test]
         public void BasicIteratorWithLast()
         {
-            var source = "Hello,{{#each people}}\n{{@index}}. {{name}} ({{#with @last}}{{name}} is last{{/with}}){{/each}}";
+			var source = "Hello,{{#each people}}\n{{@index}}. {{name}} ({{name}} is {{#if @last}}last{{else}}not last{{/if}}){{/each}}";
             var template = Handlebars.Compile(source);
             var data = new
             {
@@ -126,7 +126,7 @@ namespace Handlebars.Test
                 }
             };
             var result = template(data);
-            Assert.AreEqual("Hello,\n0. Erik (Helen is last)\n1. Helen (Helen is last)", result);
+            Assert.AreEqual("Hello,\n0. Erik (Erik is not last)\n1. Helen (Helen is last)", result);
         }
 
         [Test]

@@ -8,6 +8,18 @@ namespace Handlebars.Test
     [TestFixture]
     public class ComplexIntegrationTests
     {
+		private const string naturalLanguageListTemplate = "{{#each County}}" +
+			"{{#if @first}}" + 
+			"{{this}}" +
+			"{{else}}" +
+			"{{#if @last}}" +
+			" and {{this}}" +
+			"{{else}}" +
+			", {{this}}" +
+			"{{/if}}" +
+			"{{/if}}" +
+			"{{/each}}";
+
         [Test]
         public void DeepIf()
         {
@@ -130,6 +142,51 @@ namespace Handlebars.Test
 
             Assert.AreEqual(expected, result);
         }
+			
+		[Test]
+		public void CountyHasOneValue()
+		{
+			var data = new
+			{
+				County = new[] { "Kane" }
+			};
+
+			var template = Handlebars.Compile(naturalLanguageListTemplate);
+
+			var result = template(data);
+
+			Assert.That(result, Is.EqualTo("Kane"));
+		}
+
+		[Test]
+		public void CountyHasTwoValue()
+		{
+			var data = new
+			{
+				County = new[] { "Kane", "Salt Lake" }
+			};
+
+			var template = Handlebars.Compile(naturalLanguageListTemplate);
+
+			var result = template(data);
+
+			Assert.That(result, Is.EqualTo("Kane and Salt Lake"));
+		}
+
+		[Test]
+		public void CountyHasMoreThanTwoValue()
+		{
+			var data = new
+			{
+				County = new[] { "Kane", "Salt Lake", "Weber" }
+			};
+
+			var template = Handlebars.Compile(naturalLanguageListTemplate);
+
+			var result = template(data);
+
+			Assert.That(result, Is.EqualTo("Kane, Salt Lake and Weber"));
+		}
     }
 }
 
