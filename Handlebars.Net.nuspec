@@ -9,7 +9,7 @@
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>Blistering-fast Handlebars.js templates in your .NET application.</description>
         <summary>Blistering-fast Handlebars.js templates in your .NET application.</summary>
-        <releaseNotes>Added a context argument to the helper delegate contract (breaking change!)</releaseNotes>
+        <releaseNotes>Breaking change: @first and @last context variables used to refer to the first and last items in the set. They are now boolean values that indicate whether the current index is the first or last in the enumeration.</releaseNotes>
     </metadata>
     <files>
         <file src="source/Handlebars/bin/Release/Handlebars.dll" target="lib/Handlebars.dll" />
