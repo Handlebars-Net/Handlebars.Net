@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Collections.Generic;
 
 namespace Handlebars.Compiler
 {
@@ -76,9 +77,29 @@ namespace Handlebars.Compiler
             }
             else
             {
-                return hex;
+				return Expression.Call(
+					Expression.Constant(this),
+					new Action<BindingContext, string, IEnumerable<object>>(LateBindHelperExpression).Method,
+					_context.BindingContext,
+					Expression.Constant(hex.HelperName),
+					Expression.NewArrayInit(typeof(object), hex.Arguments));
             }
         }
+
+		private void LateBindHelperExpression(
+			BindingContext context,
+			string helperName,
+			IEnumerable<object> arguments)
+		{
+			if(_context.Configuration.Helpers.ContainsKey(helperName))
+			{
+				var helper = _context.Configuration.Helpers[helperName];
+				helper(context.TextWriter, context.Value, arguments.ToArray());
+			}
+			else
+			{
+				throw new HandlebarsRuntimeException("Template references a helper that is not registered");
+			}
+		}
     }
 }
-

@@ -235,6 +235,28 @@ namespace Handlebars.Test
             Assert.AreEqual("Click here: <a href='https://github.com/rexm/handlebars.net'>Handlebars.Net</a>", result);
         }
 
+		[Test]
+		public void BasicHelperPostRegister()
+		{
+			string source = @"Click here: {{link_to_post_reg url text}}";
+
+			var template = Handlebars.Compile(source);
+
+			Handlebars.RegisterHelper("link_to_post_reg", (writer, context, parameters) => {
+				writer.WriteSafeString("<a href='" + parameters[0] + "'>" + parameters[1] + "</a>");
+			});
+
+			var data = new {
+				url = "https://github.com/rexm/handlebars.net",
+				text = "Handlebars.Net"
+			};
+
+			var result = template(data);
+
+
+			Assert.AreEqual("Click here: <a href='https://github.com/rexm/handlebars.net'>Handlebars.Net</a>", result);
+		}
+
         [Test]
         public void BasicDeferredBlock()
         {
