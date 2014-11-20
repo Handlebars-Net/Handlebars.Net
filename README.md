@@ -82,7 +82,7 @@ _Release Candidate prerequisites_:
 - [x] ~~`>` partials~~
 - [x] ~~Give helpers access to current context~~
 - [x] ~~Support for JS-like truthy and falsy values~~
-- [ ] Non-escaping expressions ("triple-stash" `{{{ }}}`)
+- [x] Non-escaping expressions ("triple-stash" `{{{ }}}`)
 
 _Future roadmap_:
 - [ ] **Add unit tests!**
