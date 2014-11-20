@@ -389,6 +389,21 @@ namespace Handlebars.Test
 			var result = template(data);
 			Assert.AreEqual("Hello, ", result);
 		}
+
+		[Test]
+		public void BasicTripleStash()
+		{
+			string source = "Hello, {{{dangerous_value}}}!";
+
+			var template = Handlebars.Compile(source);
+
+			var data = new {
+				dangerous_value = "<div>There's HTML here</div>"
+			};
+
+			var result = template(data);
+			Assert.AreEqual("Hello, <div>There's HTML here</div>!", result);
+		}
     }
 }
 

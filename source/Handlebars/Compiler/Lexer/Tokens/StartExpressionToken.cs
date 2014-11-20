@@ -4,15 +4,32 @@ namespace Handlebars.Compiler.Lexer
 {
     internal class StartExpressionToken : ExpressionScopeToken
     {
-        public override string Value
-        {
-            get { return "{{"; }
-        }
+		private readonly bool _isEscaped;
 
-        public override TokenType Type
-        {
-            get { return TokenType.StartExpression; }
-        }
+		public StartExpressionToken(bool isEscaped)
+		{
+			_isEscaped = isEscaped;
+		}
+
+		public bool IsEscaped
+		{
+			get { return _isEscaped; }
+		}
+
+		public override string Value
+		{
+			get { return IsEscaped ? "{{" : "{{{"; }
+		}
+
+		public override TokenType Type
+		{
+			get { return TokenType.EndExpression; }
+		}
+
+		public override string ToString()
+		{
+			return this.Value;
+		}
     }
 }
 

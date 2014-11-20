@@ -5,6 +5,18 @@ namespace Handlebars.Compiler
 {
     internal abstract class HandlebarsExpressionVisitor : ExpressionVisitor
     {
+		private readonly CompilationContext _compilationContext;
+
+		protected HandlebarsExpressionVisitor(CompilationContext compilationContext)
+		{
+			_compilationContext = compilationContext;
+		}
+
+		protected virtual CompilationContext CompilationContext
+		{
+			get { return _compilationContext; }
+		}
+
         public override Expression Visit(Expression exp)
         {
             if(exp == null)
@@ -14,7 +26,7 @@ namespace Handlebars.Compiler
             switch((HandlebarsExpressionType)exp.NodeType)
             {
                 case HandlebarsExpressionType.StatementExpression:
-                    return VisitStatementExpression((StatementExpression)exp);
+                    return VisitStatementExpressionCore((StatementExpression)exp);
                 case HandlebarsExpressionType.StaticExpression:
                     return VisitStaticExpression((StaticExpression)exp);
                 case HandlebarsExpressionType.HelperExpression:
@@ -37,6 +49,15 @@ namespace Handlebars.Compiler
                     return base.Visit(exp);
             }
         }
+
+		private Expression VisitStatementExpressionCore(StatementExpression sex)
+		{
+			return Expression.Block(
+				Expression.Assign(
+					Expression.Property(CompilationContext.BindingContext, "OutputMode"),
+					Expression.Constant(sex.IsEscaped ? OutputMode.Encoded : OutputMode.Unencoded)),
+				VisitStatementExpression(sex));
+		}
 
         protected virtual Expression VisitContextAccessorExpression(ContextAccessorExpression caex)
         {

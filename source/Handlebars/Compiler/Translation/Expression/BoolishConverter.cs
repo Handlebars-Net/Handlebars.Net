@@ -12,11 +12,9 @@ namespace Handlebars.Compiler
 			return new BoolishConverter(context).Visit(expr);
 		}
 
-		private readonly CompilationContext _context;
-
 		private BoolishConverter(CompilationContext context)
+			: base(context)
 		{
-			_context = context;
 		}
 
 		protected override Expression VisitBoolishExpression(BoolishExpression bex)

@@ -7,6 +7,11 @@ namespace Handlebars.Compiler
 {
     internal class ContextBinder : HandlebarsExpressionVisitor
     {
+		private ContextBinder()
+			: base(null)
+		{
+		}
+
         public static Expression Bind(Expression body, CompilationContext context, Expression parentContext)
         {
             var writerParameter = Expression.Parameter(typeof(TextWriter), "buffer");
@@ -18,7 +23,7 @@ namespace Handlebars.Compiler
             var newBindingContext = Expression.New(
                  typeof(BindingContext).GetConstructor(
                      new[] { typeof(object), typeof(TextWriter), typeof(BindingContext) }),
-                new Expression[] { objectParameter, Expression.Call(new Func<TextWriter, TextWriter>(GetEncodedWriter).Method,writerParameter), parentContext });
+				new Expression[] { objectParameter, writerParameter, parentContext });
             return Expression.Lambda<Action<TextWriter, object>>(
                 Expression.Block(
                     new [] { context.BindingContext },
@@ -31,18 +36,6 @@ namespace Handlebars.Compiler
                         ((BlockExpression)body).Expressions
                     )),
                 new[] { writerParameter, objectParameter });
-        }
-
-        private static TextWriter GetEncodedWriter(TextWriter writer)
-        {
-            if(typeof(EncodedTextWriter).IsAssignableFrom(writer.GetType()))
-            {
-                return writer;
-            }
-            else
-            {
-                return new EncodedTextWriter(writer);
-            }
         }
     }
 }

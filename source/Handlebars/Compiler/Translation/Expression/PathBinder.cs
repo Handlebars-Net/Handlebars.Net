@@ -19,11 +19,9 @@ namespace Handlebars.Compiler
             return new PathBinder(context).Visit(expr);
         }
 
-        private readonly CompilationContext _context;
-
         private PathBinder(CompilationContext context)
+			: base(context)
         {
-            _context = context;
         }
 
         protected override Expression VisitBlock(BlockExpression node)
@@ -64,7 +62,7 @@ namespace Handlebars.Compiler
                 var writeMethod = typeof(TextWriter).GetMethod("Write", new [] { typeof(object) });
                 return Expression.Call(
                     Expression.Property(
-                        _context.BindingContext,
+                        CompilationContext.BindingContext,
                         "TextWriter"),
                     writeMethod,
                     new[] { Visit(sex.Body) });
@@ -80,7 +78,7 @@ namespace Handlebars.Compiler
             return Expression.Call(
                 Expression.Constant(this),
                 new Func<BindingContext, string, object>(ResolvePath).Method,
-                _context.BindingContext,
+                CompilationContext.BindingContext,
                 Expression.Constant(pex.Path));
         }
 

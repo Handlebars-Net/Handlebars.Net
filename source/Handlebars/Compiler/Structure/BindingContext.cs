@@ -8,12 +8,14 @@ namespace Handlebars.Compiler
     {
         private readonly object _value;
         private readonly BindingContext _parent;
-        private readonly TextWriter _writer;
+        private readonly TextWriter _encodedWriter;
+		private readonly TextWriter _unencodedWriter;
 
         public BindingContext(object value, TextWriter writer, BindingContext parent)
         {
             _value = value;
-            _writer = writer;
+			_unencodedWriter = GetUnencodedWriter(writer);
+			_encodedWriter = GetEncodedWriter(_unencodedWriter);
             _parent = parent;
         }
 
@@ -29,8 +31,24 @@ namespace Handlebars.Compiler
 
         public virtual TextWriter TextWriter
         {
-            get { return _writer; }
+			get
+			{
+				if(OutputMode == OutputMode.Encoded)
+				{
+					return _encodedWriter;
+				}
+				else
+				{
+					return _unencodedWriter;
+				}
+			}
         }
+
+		public OutputMode OutputMode
+		{
+			get;
+			set; 
+		}
 
         public virtual object GetContextVariable(string variableName)
         {
@@ -62,6 +80,30 @@ namespace Handlebars.Compiler
             }
             return returnValue;
         }
+
+		private static TextWriter GetEncodedWriter(TextWriter writer)
+		{
+			if(typeof(EncodedTextWriter).IsAssignableFrom(writer.GetType()))
+			{
+				return writer;
+			}
+			else
+			{
+				return new EncodedTextWriter(writer);
+			}
+		}
+
+		private static TextWriter GetUnencodedWriter(TextWriter writer)
+		{
+			if(typeof(EncodedTextWriter).IsAssignableFrom(writer.GetType()))
+			{
+				return ((EncodedTextWriter)writer).UnderlyingWriter;
+			}
+			else
+			{
+				return writer;
+			}
+		}
     }
 }
 

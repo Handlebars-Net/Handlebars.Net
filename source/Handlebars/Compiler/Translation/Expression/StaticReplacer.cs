@@ -11,12 +11,10 @@ namespace Handlebars.Compiler
         {
             return new StaticReplacer(context).Visit(expr);
         }
-
-        readonly private CompilationContext _context;
-
+			
         private StaticReplacer(CompilationContext context)
+			: base(context)
         {
-            _context = context;
         }
 
         protected override Expression VisitBlock(BlockExpression node)
@@ -32,7 +30,7 @@ namespace Handlebars.Compiler
             return Expression.Call(
                 writeMethod,
                 Expression.Property(
-                    _context.BindingContext,
+                    CompilationContext.BindingContext,
                     "TextWriter"),
                 Expression.Constant(stex.Value));
         }

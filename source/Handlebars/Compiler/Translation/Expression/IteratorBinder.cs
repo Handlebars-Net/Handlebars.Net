@@ -13,12 +13,10 @@ namespace Handlebars.Compiler
         {
             return new IteratorBinder(context).Visit(expr);
         }
-
-        private readonly CompilationContext _context;
-
+			
         private IteratorBinder(CompilationContext context)
+			: base(context)
         {
-            _context = context;
         }
 
         protected override Expression VisitBlock(BlockExpression node)
@@ -60,37 +58,37 @@ namespace Handlebars.Compiler
 
         private Expression GetEnumerableIterator(Expression contextParameter, IteratorExpression iex)
         {
-            var fb = new FunctionBuilder(_context.Configuration);
+            var fb = new FunctionBuilder(CompilationContext.Configuration);
             return Expression.Block(
                 Expression.Assign(contextParameter,
                     Expression.New(
                         typeof(IteratorBindingContext).GetConstructor(new[] { typeof(BindingContext) }),
-                        new Expression[] { _context.BindingContext })),
+                        new Expression[] { CompilationContext.BindingContext })),
                 Expression.Call(
                     new Action<IteratorBindingContext, IEnumerable, Action<TextWriter, object>, Action<TextWriter, object>>(Iterate).Method,
                     new Expression[] {
                         Expression.Convert(contextParameter, typeof(IteratorBindingContext)),
                         Expression.Convert(iex.Sequence, typeof(IEnumerable)),
                         fb.Compile(new [] { iex.Template }, contextParameter),
-                        fb.Compile(new [] { iex.IfEmpty }, _context.BindingContext) 
+                        fb.Compile(new [] { iex.IfEmpty }, CompilationContext.BindingContext) 
                     }));
         }
 
         private Expression GetObjectIterator(Expression contextParameter, IteratorExpression iex)
         {
-            var fb = new FunctionBuilder(_context.Configuration);
+            var fb = new FunctionBuilder(CompilationContext.Configuration);
             return Expression.Block(
                 Expression.Assign(contextParameter,
                     Expression.New(
                         typeof(ObjectEnumeratorBindingContext).GetConstructor(new[] { typeof(BindingContext) }),
-                        new Expression[] { _context.BindingContext })),
+                        new Expression[] { CompilationContext.BindingContext })),
                 Expression.Call(
                     new Action<ObjectEnumeratorBindingContext, object, Action<TextWriter, object>, Action<TextWriter, object>>(Iterate).Method,
                     new Expression[] {
                         Expression.Convert(contextParameter, typeof(ObjectEnumeratorBindingContext)),
                         iex.Sequence,
                         fb.Compile(new [] { iex.Template }, contextParameter),
-                        fb.Compile(new [] { iex.IfEmpty }, _context.BindingContext) 
+                        fb.Compile(new [] { iex.IfEmpty }, CompilationContext.BindingContext) 
                     }));
         }
 

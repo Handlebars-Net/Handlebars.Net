@@ -35,6 +35,11 @@ namespace Handlebars
             }
         }
 
+		public TextWriter UnderlyingWriter
+		{
+			get { return _underlyingWriter; }
+		}
+
         public override Encoding Encoding
         {
             get { return _underlyingWriter.Encoding; }

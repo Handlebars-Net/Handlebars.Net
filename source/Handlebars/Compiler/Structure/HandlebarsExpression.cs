@@ -22,7 +22,7 @@ namespace Handlebars.Compiler
     {
         public static HelperExpression Helper(string helperName, IEnumerable<Expression> arguments)
         {
-            return new HelperExpression (helperName, arguments);
+            return new HelperExpression(helperName, arguments);
         }
 
         public static HelperExpression Helper(string helperName)
@@ -45,17 +45,17 @@ namespace Handlebars.Compiler
 
         public static StaticExpression Static(string value)
         {
-            return new StaticExpression (value);
+            return new StaticExpression(value);
         }
 
         public static ContextAccessorExpression ContextAccessor()
         {
-            return new ContextAccessorExpression ();
+            return new ContextAccessorExpression();
         }
 
-        public static StatementExpression Statement(Expression body)
+		public static StatementExpression Statement(Expression body, bool isEscaped)
         {
-            return new StatementExpression (body);
+			return new StatementExpression(body, isEscaped);
         }
 
         public static IteratorExpression Iterator(
@@ -70,7 +70,7 @@ namespace Handlebars.Compiler
             Expression template,
             Expression ifEmpty)
         {
-            return new IteratorExpression (sequence, template, ifEmpty);
+            return new IteratorExpression(sequence, template, ifEmpty);
         }
 
         public static DeferredSectionExpression DeferredSection(

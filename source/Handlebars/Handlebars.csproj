@@ -19,7 +19,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Externalconsole>true</Externalconsole>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>false</Optimize>
@@ -104,6 +103,7 @@
     <Compile Include="Compiler\Structure\BoolishExpression.cs" />
     <Compile Include="Compiler\Translation\Expression\BoolishConverter.cs" />
     <Compile Include="Compiler\Structure\UndefinedBindingResult.cs" />
+    <Compile Include="Compiler\Structure\OutputMode.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -10,11 +10,9 @@ namespace Handlebars.Compiler
             return new PartialBinder(context).Visit(expr);
         }
 
-        private readonly CompilationContext _context;
-
         private PartialBinder(CompilationContext context)
+			: base(context)
         {
-            _context = context;
         }
 
         protected override Expression VisitStatementExpression(StatementExpression sex)
@@ -34,8 +32,8 @@ namespace Handlebars.Compiler
             return Expression.Call(
                 new Action<string, BindingContext, HandlebarsConfiguration>(InvokePartial).Method,
                 Expression.Constant(pex.PartialName),
-                _context.BindingContext,
-                Expression.Constant(_context.Configuration));
+                CompilationContext.BindingContext,
+                Expression.Constant(CompilationContext.Configuration));
         }
 
         private static void InvokePartial(

@@ -12,12 +12,10 @@ namespace Handlebars.Compiler
         {
             return new DeferredSectionVisitor(context).Visit(expr);
         }
-
-        private readonly CompilationContext _context;
-
-        private DeferredSectionVisitor(CompilationContext context)
+			        
+		private DeferredSectionVisitor(CompilationContext context)
+			: base(context)
         {
-            _context = context;
         }
 
         protected override Expression VisitDeferredSectionExpression(DeferredSectionExpression dsex)
@@ -38,8 +36,8 @@ namespace Handlebars.Compiler
             return Expression.Call(
                 method.Method,
                 HandlebarsExpression.Path(dsex.Path.Path.Substring(1)),
-                _context.BindingContext,
-                new FunctionBuilder(_context.Configuration).Compile(dsex.Body, _context.BindingContext));
+                CompilationContext.BindingContext,
+                new FunctionBuilder(CompilationContext.Configuration).Compile(dsex.Body, CompilationContext.BindingContext));
         }
 
         private static void RenderEmptySection(object value, BindingContext context, Action<TextWriter, object> template)

@@ -11,12 +11,10 @@ namespace Handlebars.Compiler
         {
             return new BlockHelperFunctionBinder(context).Visit(expr);
         }
-
-        private readonly CompilationContext _context;
-
+			
         private BlockHelperFunctionBinder(CompilationContext context)
+			: base(context)
         {
-            _context = context;
         }
 
         protected override Expression VisitStatementExpression(StatementExpression sex)
@@ -33,16 +31,16 @@ namespace Handlebars.Compiler
 
         protected override Expression VisitBlockHelperExpression(BlockHelperExpression bhex)
         {
-            var fb = new FunctionBuilder(_context.Configuration);
-            var body = fb.Compile(((BlockExpression)bhex.Body).Expressions, _context.BindingContext);
-            var helper = _context.Configuration.BlockHelpers[bhex.HelperName.Replace("#", "")];
+            var fb = new FunctionBuilder(CompilationContext.Configuration);
+            var body = fb.Compile(((BlockExpression)bhex.Body).Expressions, CompilationContext.BindingContext);
+            var helper = CompilationContext.Configuration.BlockHelpers[bhex.HelperName.Replace("#", "")];
             var arguments = new Expression[] {
                 Expression.Property(
-                    _context.BindingContext,
+                    CompilationContext.BindingContext,
                     typeof(BindingContext).GetProperty("TextWriter")),
                 body,
                 Expression.Property(
-                    _context.BindingContext,
+                    CompilationContext.BindingContext,
                     typeof(BindingContext).GetProperty("Value")),
                 Expression.NewArrayInit(typeof(object), bhex.Arguments)
             };

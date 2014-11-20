@@ -1,26 +1,27 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Handlebars/BuiltinHelpers.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Handlebars.Test/BasicIntegrationTests.cs">
     <Files>
-      <File FileName="Handlebars/Compiler/Translation/Token/ConditionalBlockAccumulator.cs" Line="1" Column="1" />
-      <File FileName="Handlebars/Compiler/Translation/Token/HelperConverter.cs" Line="58" Column="1" />
-      <File FileName="Handlebars/Compiler/Translation/Token/BlockHelperAccumulator.cs" Line="1" Column="1" />
-      <File FileName="Handlebars/Compiler/Structure/HandlebarsExpression.cs" Line="1" Column="1" />
-      <File FileName="Handlebars/Compiler/FunctionBuilder.cs" Line="23" Column="1" />
-      <File FileName="Handlebars/Compiler/Translation/Expression/StaticReplacer.cs" Line="1" Column="1" />
-      <File FileName="Handlebars/Compiler/Translation/Expression/PathBinder.cs" Line="1" Column="1" />
-      <File FileName="Handlebars.Test/IntegrationTests.cs" Line="41" Column="33" />
-      <File FileName="Handlebars/Compiler/Translation/Expression/ContextBinder.cs" Line="18" Column="32" />
-      <File FileName="Handlebars/Compiler/Translation/Expression/HandlebarsExpressionVisitor.cs" Line="1" Column="1" />
-      <File FileName="Handlebars/Compiler/Translation/Expression/FunctionWrapper.cs" Line="1" Column="1" />
-      <File FileName="Handlebars/Compiler/Translation/Expression/BlockHelperFunctionBinder.cs" Line="1" Column="1" />
-      <File FileName="Handlebars/Handlebars.cs" Line="80" Column="1" />
-      <File FileName="Handlebars/BuiltinHelpers.cs" Line="38" Column="1" />
-      <File FileName="Handlebars/HandlebarsConfiguration.cs" Line="1" Column="1" />
-      <File FileName="Handlebars/Compiler/Translation/Token/HelperArgumentAccumulator.cs" Line="14" Column="1" />
-      <File FileName="Handlebars/Compiler/Translation/Token/TokenConverter.cs" Line="1" Column="1" />
-      <File FileName="Handlebars/Compiler/Translation/Token/PathConverter.cs" Line="1" Column="1" />
+      <File FileName="Handlebars/Compiler/Lexer/Tokenizer.cs" Line="27" Column="27" />
+      <File FileName="Handlebars/Compiler/Lexer/Parsers/WordParser.cs" Line="1" Column="1" />
+      <File FileName="Handlebars.Test/BasicIntegrationTests.cs" Line="1" Column="1" />
+      <File FileName="Handlebars/Compiler/Lexer/Converter/StaticConverter.cs" Line="1" Column="1" />
     </Files>
+    <Pads>
+      <Pad Id="MonoDevelop.NUnit.TestPad">
+        <State expanded="True">
+          <Node name="Handlebars.Test" expanded="True">
+            <Node name="Handlebars" expanded="True">
+              <Node name="Test" expanded="True">
+                <Node name="BasicIntegrationTests" expanded="True">
+                  <Node name="BasicIfElse" selected="True" />
+                </Node>
+              </Node>
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+    </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore>

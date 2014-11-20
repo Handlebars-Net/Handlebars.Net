@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using Handlebars.Compiler.Lexer;
 
 namespace Handlebars.Compiler
@@ -19,7 +20,7 @@ namespace Handlebars.Compiler
 
         public Action<TextWriter, object> Compile(TextReader source)
         {
-            var tokens = _tokenizer.Tokenize(source);
+			var tokens = _tokenizer.Tokenize(source).ToList();
             var expressions = _expressionBuilder.ConvertTokensToExpressions(tokens);
             return _functionBuilder.Compile(expressions);
         }

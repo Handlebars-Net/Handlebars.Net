@@ -18,12 +18,12 @@ namespace Handlebars.Compiler
             _bindingContext = Expression.Variable(typeof(BindingContext), "context");
         }
 
-        public HandlebarsConfiguration Configuration
+        public virtual HandlebarsConfiguration Configuration
         {
             get { return _configuration; }
         }
 
-        public ParameterExpression BindingContext
+        public virtual ParameterExpression BindingContext
         {
             get { return _bindingContext; }
         }

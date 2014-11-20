@@ -12,12 +12,10 @@ namespace Handlebars.Compiler
         {
             return new HelperFunctionBinder(context).Visit(expr);
         }
-
-        private readonly CompilationContext _context;
-
+			
         private HelperFunctionBinder(CompilationContext context)
+			: base(context)
         {
-            _context = context;
         }
 
         protected override Expression VisitBlock(BlockExpression node)
@@ -49,15 +47,15 @@ namespace Handlebars.Compiler
 
         protected override Expression VisitHelperExpression(HelperExpression hex)
         {
-            if (_context.Configuration.Helpers.ContainsKey(hex.HelperName))
+            if (CompilationContext.Configuration.Helpers.ContainsKey(hex.HelperName))
             {
-                var helper = _context.Configuration.Helpers[hex.HelperName];
+                var helper = CompilationContext.Configuration.Helpers[hex.HelperName];
                 var arguments = new Expression[] {
                     Expression.Property(
-                        _context.BindingContext,
+                        CompilationContext.BindingContext,
                         typeof(BindingContext).GetProperty("TextWriter")),
                     Expression.Property(
-                        _context.BindingContext,
+                        CompilationContext.BindingContext,
                         typeof(BindingContext).GetProperty("Value")),
                     Expression.NewArrayInit(typeof(object), hex.Arguments)
                 };
@@ -80,7 +78,7 @@ namespace Handlebars.Compiler
 				return Expression.Call(
 					Expression.Constant(this),
 					new Action<BindingContext, string, IEnumerable<object>>(LateBindHelperExpression).Method,
-					_context.BindingContext,
+					CompilationContext.BindingContext,
 					Expression.Constant(hex.HelperName),
 					Expression.NewArrayInit(typeof(object), hex.Arguments));
             }
@@ -91,9 +89,9 @@ namespace Handlebars.Compiler
 			string helperName,
 			IEnumerable<object> arguments)
 		{
-			if(_context.Configuration.Helpers.ContainsKey(helperName))
+			if(CompilationContext.Configuration.Helpers.ContainsKey(helperName))
 			{
-				var helper = _context.Configuration.Helpers[helperName];
+				var helper = CompilationContext.Configuration.Helpers[helperName];
 				helper(context.TextWriter, context.Value, arguments.ToArray());
 			}
 			else
