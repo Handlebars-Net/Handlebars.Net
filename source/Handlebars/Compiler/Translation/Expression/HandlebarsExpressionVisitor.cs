@@ -52,6 +52,8 @@ namespace Handlebars.Compiler
 
 		private Expression VisitStatementExpressionCore(StatementExpression sex)
 		{
+			//TODO: make this less naive. Currently puts the same assignment operation over and over,
+			//which isn't the end of the world but is pretty ugly.
 			return Expression.Block(
 				Expression.Assign(
 					Expression.Property(CompilationContext.BindingContext, "OutputMode"),
