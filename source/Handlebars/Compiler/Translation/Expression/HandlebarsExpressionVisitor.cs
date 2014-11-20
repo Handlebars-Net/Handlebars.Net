@@ -5,25 +5,25 @@ namespace Handlebars.Compiler
 {
     internal abstract class HandlebarsExpressionVisitor : ExpressionVisitor
     {
-		private readonly CompilationContext _compilationContext;
+        private readonly CompilationContext _compilationContext;
 
-		protected HandlebarsExpressionVisitor(CompilationContext compilationContext)
-		{
-			_compilationContext = compilationContext;
-		}
+        protected HandlebarsExpressionVisitor(CompilationContext compilationContext)
+        {
+            _compilationContext = compilationContext;
+        }
 
-		protected virtual CompilationContext CompilationContext
-		{
-			get { return _compilationContext; }
-		}
+        protected virtual CompilationContext CompilationContext
+        {
+            get { return _compilationContext; }
+        }
 
         public override Expression Visit(Expression exp)
         {
-            if(exp == null)
+            if (exp == null)
             {
                 return null;
             }
-            switch((HandlebarsExpressionType)exp.NodeType)
+            switch ((HandlebarsExpressionType)exp.NodeType)
             {
                 case HandlebarsExpressionType.StatementExpression:
                     return VisitStatementExpressionCore((StatementExpression)exp);
@@ -43,23 +43,23 @@ namespace Handlebars.Compiler
                     return VisitDeferredSectionExpression((DeferredSectionExpression)exp);
                 case HandlebarsExpressionType.PartialExpression:
                     return VisitPartialExpression((PartialExpression)exp);
-				case HandlebarsExpressionType.BoolishExpression:
-					return VisitBoolishExpression((BoolishExpression)exp);
+                case HandlebarsExpressionType.BoolishExpression:
+                    return VisitBoolishExpression((BoolishExpression)exp);
                 default:
                     return base.Visit(exp);
             }
         }
 
-		private Expression VisitStatementExpressionCore(StatementExpression sex)
-		{
-			//TODO: make this less naive. Currently puts the same assignment operation over and over,
-			//which isn't the end of the world but is pretty ugly.
-			return Expression.Block(
-				Expression.Assign(
-					Expression.Property(CompilationContext.BindingContext, "OutputMode"),
-					Expression.Constant(sex.IsEscaped ? OutputMode.Encoded : OutputMode.Unencoded)),
-				VisitStatementExpression(sex));
-		}
+        private Expression VisitStatementExpressionCore(StatementExpression sex)
+        {
+            //TODO: make this less naive. Currently puts the same assignment operation over and over,
+            //which isn't the end of the world but is pretty ugly.
+            return Expression.Block(
+                Expression.Assign(
+                    Expression.Property(CompilationContext.BindingContext, "OutputMode"),
+                    Expression.Constant(sex.IsEscaped ? OutputMode.Encoded : OutputMode.Unencoded)),
+                VisitStatementExpression(sex));
+        }
 
         protected virtual Expression VisitContextAccessorExpression(ContextAccessorExpression caex)
         {
@@ -106,10 +106,10 @@ namespace Handlebars.Compiler
             return pex;
         }
 
-		protected virtual Expression VisitBoolishExpression(BoolishExpression bex)
-		{
-			return bex;
-		}
+        protected virtual Expression VisitBoolishExpression(BoolishExpression bex)
+        {
+            return bex;
+        }
     }
 }
 

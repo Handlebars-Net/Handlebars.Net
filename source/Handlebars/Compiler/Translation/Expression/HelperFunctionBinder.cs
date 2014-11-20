@@ -12,9 +12,9 @@ namespace Handlebars.Compiler
         {
             return new HelperFunctionBinder(context).Visit(expr);
         }
-			
+
         private HelperFunctionBinder(CompilationContext context)
-			: base(context)
+            : base(context)
         {
         }
 
@@ -27,7 +27,7 @@ namespace Handlebars.Compiler
 
         protected override Expression VisitStatementExpression(StatementExpression sex)
         {
-            if(sex.Body is HelperExpression)
+            if (sex.Body is HelperExpression)
             {
                 return Visit(sex.Body);
             }
@@ -50,7 +50,8 @@ namespace Handlebars.Compiler
             if (CompilationContext.Configuration.Helpers.ContainsKey(hex.HelperName))
             {
                 var helper = CompilationContext.Configuration.Helpers[hex.HelperName];
-                var arguments = new Expression[] {
+                var arguments = new Expression[]
+                {
                     Expression.Property(
                         CompilationContext.BindingContext,
                         typeof(BindingContext).GetProperty("TextWriter")),
@@ -59,7 +60,7 @@ namespace Handlebars.Compiler
                         typeof(BindingContext).GetProperty("Value")),
                     Expression.NewArrayInit(typeof(object), hex.Arguments)
                 };
-                if(helper.Target != null)
+                if (helper.Target != null)
                 {
                     return Expression.Call(
                         Expression.Constant(helper.Target),
@@ -75,29 +76,29 @@ namespace Handlebars.Compiler
             }
             else
             {
-				return Expression.Call(
-					Expression.Constant(this),
-					new Action<BindingContext, string, IEnumerable<object>>(LateBindHelperExpression).Method,
-					CompilationContext.BindingContext,
-					Expression.Constant(hex.HelperName),
-					Expression.NewArrayInit(typeof(object), hex.Arguments));
+                return Expression.Call(
+                    Expression.Constant(this),
+                    new Action<BindingContext, string, IEnumerable<object>>(LateBindHelperExpression).Method,
+                    CompilationContext.BindingContext,
+                    Expression.Constant(hex.HelperName),
+                    Expression.NewArrayInit(typeof(object), hex.Arguments));
             }
         }
 
-		private void LateBindHelperExpression(
-			BindingContext context,
-			string helperName,
-			IEnumerable<object> arguments)
-		{
-			if(CompilationContext.Configuration.Helpers.ContainsKey(helperName))
-			{
-				var helper = CompilationContext.Configuration.Helpers[helperName];
-				helper(context.TextWriter, context.Value, arguments.ToArray());
-			}
-			else
-			{
-				throw new HandlebarsRuntimeException("Template references a helper that is not registered");
-			}
-		}
+        private void LateBindHelperExpression(
+            BindingContext context,
+            string helperName,
+            IEnumerable<object> arguments)
+        {
+            if (CompilationContext.Configuration.Helpers.ContainsKey(helperName))
+            {
+                var helper = CompilationContext.Configuration.Helpers[helperName];
+                helper(context.TextWriter, context.Value, arguments.ToArray());
+            }
+            else
+            {
+                throw new HandlebarsRuntimeException("Template references a helper that is not registered");
+            }
+        }
     }
 }

@@ -10,7 +10,7 @@ namespace Handlebars.Compiler.Lexer
     {
         private readonly HandlebarsConfiguration _configuration;
 
-        private static Parser _wordParser = new WordParser ();
+        private static Parser _wordParser = new WordParser();
         private static Parser _literalParser = new LiteralParser();
         private static Parser _commentParser = new CommentParser();
         private static Parser _partialParser = new PartialParser();
@@ -27,7 +27,7 @@ namespace Handlebars.Compiler.Lexer
             {
                 return Parse(source);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new HandlebarsParserException("An unhandled exception occurred while trying to compile the template", ex);
             }
@@ -37,14 +37,14 @@ namespace Handlebars.Compiler.Lexer
         {
             bool inExpression = false;
             var buffer = new StringBuilder();
-			var node = source.Read();
-            while(true)
+            var node = source.Read();
+            while (true)
             {
-                if(node == -1) 
+                if (node == -1)
                 {
-                    if(buffer.Length > 0)
+                    if (buffer.Length > 0)
                     {
-                        if(inExpression)
+                        if (inExpression)
                         {
                             throw new InvalidOperationException("Reached end of template before expression was closed");
                         }
@@ -55,65 +55,65 @@ namespace Handlebars.Compiler.Lexer
                     }
                     break;
                 }
-                if(inExpression)
+                if (inExpression)
                 {
                     Token token = null;
-					token = token ?? _wordParser.Parse(source);
-					token = token ?? _literalParser.Parse(source);
-					token = token ?? _commentParser.Parse(source);
-					token = token ?? _partialParser.Parse(source);
+                    token = token ?? _wordParser.Parse(source);
+                    token = token ?? _literalParser.Parse(source);
+                    token = token ?? _commentParser.Parse(source);
+                    token = token ?? _partialParser.Parse(source);
 
-                    if(token != null)
+                    if (token != null)
                     {
                         yield return token;
                     }
 
-                    if((char)node == '}' && (char)source.Read() == '}')
+                    if ((char)node == '}' && (char)source.Read() == '}')
                     {
-						bool escaped = true;
-						if((char)source.Peek() == '}')
-						{
-							node = source.Read();
-							escaped = false;
-						}
-						node = source.Read();
+                        bool escaped = true;
+                        if ((char)source.Peek() == '}')
+                        {
+                            node = source.Read();
+                            escaped = false;
+                        }
+                        node = source.Read();
                         yield return Token.EndExpression(escaped);
                         inExpression = false;
                     }
-                    else if(char.IsWhiteSpace((char)node))
+                    else if (char.IsWhiteSpace((char)node))
                     {
-						node = source.Read();
+                        node = source.Read();
                         continue;
                     }
                     else
                     {
-                        if(token == null)
+                        if (token == null)
                         {
                             throw new HandlebarsParserException("Reached unparseable token in expression");
                         }
-						node = source.Read();
+                        node = source.Read();
                     }
                 }
                 else
                 {
-					if((char)node == '{' && (char)source.Peek() == '{')
+                    if ((char)node == '{' && (char)source.Peek() == '{')
                     {
-						bool escaped = true;
-						node = source.Read();
-						if((char)source.Peek() == '{')
-						{
-							node = source.Read();
-							escaped = false;
-						}
-						yield return Token.Static(buffer.ToString());
+                        bool escaped = true;
+                        node = source.Read();
+                        if ((char)source.Peek() == '{')
+                        {
+                            node = source.Read();
+                            escaped = false;
+                        }
+                        yield return Token.Static(buffer.ToString());
                         yield return Token.StartExpression(escaped);
-						buffer = new StringBuilder();
+                        buffer = new StringBuilder();
                         inExpression = true;
                     }
                     else
                     {
                         buffer.Append((char)node);
-						node = source.Read();
+                        node = source.Read();
                     }
                 }
             }

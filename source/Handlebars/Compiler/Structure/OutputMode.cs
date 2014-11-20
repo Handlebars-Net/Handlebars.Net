@@ -4,11 +4,11 @@ using System.Reflection;
 
 namespace Handlebars.Compiler
 {
-	internal enum OutputMode
-	{
-		Encoded = 0,
-		Unencoded = 1
-	}
+    internal enum OutputMode
+    {
+        Encoded = 0,
+        Unencoded = 1
+    }
 
 }
 
