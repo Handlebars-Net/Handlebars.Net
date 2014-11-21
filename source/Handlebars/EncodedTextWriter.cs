@@ -21,11 +21,11 @@ namespace Handlebars
 
         public override void Write(object value)
         {
-            if(value == null)
+            if (value == null)
             {
                 return;
             }
-            if(value is ISafeString)
+            if (value is ISafeString)
             {
                 _underlyingWriter.Write(value.ToString());
             }
@@ -35,10 +35,10 @@ namespace Handlebars
             }
         }
 
-		public TextWriter UnderlyingWriter
-		{
-			get { return _underlyingWriter; }
-		}
+        public TextWriter UnderlyingWriter
+        {
+            get { return _underlyingWriter; }
+        }
 
         public override Encoding Encoding
         {

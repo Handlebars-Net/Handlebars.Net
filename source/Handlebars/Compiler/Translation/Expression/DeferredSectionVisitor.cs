@@ -12,20 +12,20 @@ namespace Handlebars.Compiler
         {
             return new DeferredSectionVisitor(context).Visit(expr);
         }
-			        
-		private DeferredSectionVisitor(CompilationContext context)
-			: base(context)
+
+        private DeferredSectionVisitor(CompilationContext context)
+            : base(context)
         {
         }
 
         protected override Expression VisitDeferredSectionExpression(DeferredSectionExpression dsex)
         {
             Action<object, BindingContext, Action<TextWriter, object>> method;
-            if(dsex.Path.Path.StartsWith("#"))
+            if (dsex.Path.Path.StartsWith("#"))
             {
                 method = RenderSection;
             }
-            else if(dsex.Path.Path.StartsWith("^"))
+            else if (dsex.Path.Path.StartsWith("^"))
             {
                 method = RenderEmptySection;
             }
@@ -42,7 +42,7 @@ namespace Handlebars.Compiler
 
         private static void RenderEmptySection(object value, BindingContext context, Action<TextWriter, object> template)
         {
-            if(IsFalseyOrEmpty(value) == false)
+            if (IsFalseyOrEmpty(value) == false)
             {
                 throw new HandlebarsRuntimeException("Tried to render a truthy or non-empty object in an inverted section");
             }
@@ -51,18 +51,18 @@ namespace Handlebars.Compiler
 
         private static void RenderSection(object value, BindingContext context, Action<TextWriter, object> template)
         {
-            if(IsFalseyOrEmpty(value))
+            if (IsFalseyOrEmpty(value))
             {
                 throw new HandlebarsRuntimeException("Tried to render a falsey or empty object in a section");
             }
-            if(value is IEnumerable)
+            if (value is IEnumerable)
             {
-                foreach(var item in ((IEnumerable)value))
+                foreach (var item in ((IEnumerable)value))
                 {
                     template(context.TextWriter, item);
                 }
             }
-            else if(value != null)
+            else if (value != null)
             {
                 template(context.TextWriter, value);
             }
@@ -74,15 +74,15 @@ namespace Handlebars.Compiler
 
         private static bool IsFalseyOrEmpty(object value)
         {
-            if(value == null)
+            if (value == null)
             {
                 return true;
             }
-            if(value is string && string.IsNullOrEmpty(value as string))
+            if (value is string && string.IsNullOrEmpty(value as string))
             {
                 return true;
             }
-            if(value is IEnumerable && ((IEnumerable)value).OfType<object>().Any() == false)
+            if (value is IEnumerable && ((IEnumerable)value).OfType<object>().Any() == false)
             {
                 return true;
             }

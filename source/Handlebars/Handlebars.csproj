@@ -86,9 +86,7 @@
     <Compile Include="Compiler\Lexer\Converter\BlockAccumulators\IteratorBlockAccumulatorContext.cs" />
     <Compile Include="Compiler\Structure\IteratorExpression.cs" />
     <Compile Include="Compiler\Translation\Expression\IteratorBinder.cs" />
-    <Compile Include="EncodedTextWriter.cs">
-      <DependentUpon>Handlebars.cs</DependentUpon>
-    </Compile>
+    <Compile Include="EncodedTextWriter.cs" />
     <Compile Include="Compiler\Lexer\Parsers\CommentParser.cs" />
     <Compile Include="Compiler\Lexer\Tokens\CommentToken.cs" />
     <Compile Include="Compiler\Lexer\Converter\CommentRemover.cs" />
