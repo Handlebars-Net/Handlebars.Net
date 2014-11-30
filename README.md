@@ -73,3 +73,10 @@ Click here: <a href='https://github.com/rexm/handlebars.net'>Handlebars.Net</a>
 - [ ] Mustache(5) Lambdas
 - [ ] MVC view engine
 - [ ] Nancy view engine
+
+##Contributing
+
+Pull requests are welcome! The guidelines are pretty straightforward:
+- Only add capabilities that are already in the Mustache / Handlebars specs
+- Avoid dependencies outside of the .NET BCL
+- Follow the established code format
