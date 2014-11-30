@@ -65,7 +65,8 @@ Click here: <a href='https://github.com/rexm/handlebars.net'>Handlebars.Net</a>
 */
 ```
 
-_Future roadmap_:
+##Future roadmap
+
 - [ ] **Add unit tests!**
 - [ ] `lookup`, `log`, and `helperMissing` helpers
 - [ ] Set delimiters
