@@ -65,23 +65,6 @@ Click here: <a href='https://github.com/rexm/handlebars.net'>Handlebars.Net</a>
 */
 ```
 
-
-##Todo
-_Release Candidate prerequisites_:
-- [x] ~~Support for block helpers~~
-- [x] ~~`if` / `else` / `unless` helper~~
-- [x] ~~`with` helper~~
-- [x] ~~`each` / `else` helper~~
-- [x] ~~`#` / `^` sections~~
-- [x] ~~Escape everything by default~~
-- [x] ~~Object enumeration~~
-- [x] ~~`@key`, `@index`, `@first`, `@last` context variables~~
-- [x] ~~Comments~~
-- [x] ~~`>` partials~~
-- [x] ~~Give helpers access to current context~~
-- [x] ~~Support for JS-like truthy and falsy values~~
-- [x] ~~Non-escaping expressions ("triple-stash" `{{{ }}}`)~~
-
 _Future roadmap_:
 - [ ] **Add unit tests!**
 - [ ] `lookup`, `log`, and `helperMissing` helpers
