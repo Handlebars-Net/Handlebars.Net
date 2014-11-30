@@ -11,15 +11,15 @@ namespace Handlebars.Compiler
         {
             return new BlockHelperFunctionBinder(context).Visit(expr);
         }
-			
+
         private BlockHelperFunctionBinder(CompilationContext context)
-			: base(context)
+            : base(context)
         {
         }
 
         protected override Expression VisitStatementExpression(StatementExpression sex)
         {
-            if(sex.Body is BlockHelperExpression)
+            if (sex.Body is BlockHelperExpression)
             {
                 return Visit(sex.Body);
             }
@@ -34,7 +34,8 @@ namespace Handlebars.Compiler
             var fb = new FunctionBuilder(CompilationContext.Configuration);
             var body = fb.Compile(((BlockExpression)bhex.Body).Expressions, CompilationContext.BindingContext);
             var helper = CompilationContext.Configuration.BlockHelpers[bhex.HelperName.Replace("#", "")];
-            var arguments = new Expression[] {
+            var arguments = new Expression[]
+            {
                 Expression.Property(
                     CompilationContext.BindingContext,
                     typeof(BindingContext).GetProperty("TextWriter")),
@@ -44,7 +45,7 @@ namespace Handlebars.Compiler
                     typeof(BindingContext).GetProperty("Value")),
                 Expression.NewArrayInit(typeof(object), bhex.Arguments)
             };
-            if(helper.Target != null)
+            if (helper.Target != null)
             {
                 return Expression.Call(
                     Expression.Constant(helper.Target),

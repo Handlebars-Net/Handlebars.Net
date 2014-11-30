@@ -19,9 +19,9 @@ namespace Handlebars.Compiler
 
         public override IEnumerable<object> ConvertTokens(IEnumerable<object> sequence)
         {
-            foreach(var item in sequence)
+            foreach (var item in sequence)
             {
-                if(item is LiteralExpressionToken)
+                if (item is LiteralExpressionToken)
                 {
                     yield return Expression.Constant(((LiteralExpressionToken)item).Value);
                 }

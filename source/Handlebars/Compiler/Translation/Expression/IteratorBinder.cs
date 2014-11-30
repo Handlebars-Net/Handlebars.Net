@@ -13,9 +13,9 @@ namespace Handlebars.Compiler
         {
             return new IteratorBinder(context).Visit(expr);
         }
-			
+
         private IteratorBinder(CompilationContext context)
-			: base(context)
+            : base(context)
         {
         }
 
@@ -46,14 +46,15 @@ namespace Handlebars.Compiler
         {
             var iteratorBindingContext = Expression.Variable(typeof(BindingContext), "context");
             return Expression.Block(
-                new ParameterExpression[] {
+                new ParameterExpression[]
+                {
                     iteratorBindingContext
                 },
                 Expression.IfThenElse(
                     Expression.NotEqual(Expression.TypeAs(iex.Sequence, typeof(IEnumerable)), Expression.Constant(null)),
                     GetEnumerableIterator(iteratorBindingContext, iex),
                     GetObjectIterator(iteratorBindingContext, iex))
-                );
+            );
         }
 
         private Expression GetEnumerableIterator(Expression contextParameter, IteratorExpression iex)
@@ -66,7 +67,8 @@ namespace Handlebars.Compiler
                         new Expression[] { CompilationContext.BindingContext })),
                 Expression.Call(
                     new Action<IteratorBindingContext, IEnumerable, Action<TextWriter, object>, Action<TextWriter, object>>(Iterate).Method,
-                    new Expression[] {
+                    new Expression[]
+                    {
                         Expression.Convert(contextParameter, typeof(IteratorBindingContext)),
                         Expression.Convert(iex.Sequence, typeof(IEnumerable)),
                         fb.Compile(new [] { iex.Template }, contextParameter),
@@ -84,7 +86,8 @@ namespace Handlebars.Compiler
                         new Expression[] { CompilationContext.BindingContext })),
                 Expression.Call(
                     new Action<ObjectEnumeratorBindingContext, object, Action<TextWriter, object>, Action<TextWriter, object>>(Iterate).Method,
-                    new Expression[] {
+                    new Expression[]
+                    {
                         Expression.Convert(contextParameter, typeof(ObjectEnumeratorBindingContext)),
                         iex.Sequence,
                         fb.Compile(new [] { iex.Template }, contextParameter),
@@ -98,8 +101,8 @@ namespace Handlebars.Compiler
             Action<TextWriter, object> template,
             Action<TextWriter, object> ifEmpty)
         {
-			context.Index = 0;
-            foreach(MemberInfo member in target.GetType()
+            context.Index = 0;
+            foreach (MemberInfo member in target.GetType()
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public).OfType<MemberInfo>()
                 .Concat(
                     target.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance)
@@ -107,11 +110,11 @@ namespace Handlebars.Compiler
             {
                 context.Key = member.Name;
                 var value = AccessMember(target, member);
-				context.First = (context.Index == 0);
+                context.First = (context.Index == 0);
                 template(context.TextWriter, value);
-				context.Index++;
+                context.Index++;
             }
-			if(context.Index == 0)
+            if (context.Index == 0)
             {
                 ifEmpty(context.TextWriter, context.Value);
             }
@@ -125,15 +128,15 @@ namespace Handlebars.Compiler
             Action<TextWriter, object> ifEmpty)
         {
             context.Index = 0;
-			int length = (sequence is IList ? ((IList)sequence).Count : sequence.Cast<object>().Count());
-            foreach(object item in sequence)
+            int length = (sequence is IList ? ((IList)sequence).Count : sequence.Cast<object>().Count());
+            foreach (object item in sequence)
             {
-				context.First = (context.Index == 0);
-				context.Last = (context.Index == length - 1);
+                context.First = (context.Index == 0);
+                context.Last = (context.Index == length - 1);
                 template(context.TextWriter, item);
                 context.Index++;
             }
-            if(context.Index == 0)
+            if (context.Index == 0)
             {
                 ifEmpty(context.TextWriter, context.Value);
             }
@@ -150,7 +153,7 @@ namespace Handlebars.Compiler
 
             public bool First { get; set; }
 
-			public bool Last { get; set; }
+            public bool Last { get; set; }
         }
 
         private class ObjectEnumeratorBindingContext : BindingContext
@@ -160,20 +163,20 @@ namespace Handlebars.Compiler
             {
             }
 
-            public string Key { get;set; }
+            public string Key { get; set; }
 
-			public int Index { get; set; }
+            public int Index { get; set; }
 
             public bool First { get; set; }
         }
 
         private static object AccessMember(object instance, MemberInfo member)
         {
-            if(member.MemberType == System.Reflection.MemberTypes.Property)
+            if (member.MemberType == System.Reflection.MemberTypes.Property)
             {
                 return ((PropertyInfo)member).GetValue(instance, null);
             }
-            else if(member.MemberType == System.Reflection.MemberTypes.Field)
+            else if (member.MemberType == System.Reflection.MemberTypes.Field)
             {
                 return ((FieldInfo)member).GetValue(instance);
             }

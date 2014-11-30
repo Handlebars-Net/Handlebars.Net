@@ -9,7 +9,7 @@ namespace Handlebars
         {
         }
 
-        public HandlebarsCompilerException (string message, Exception innerException)
+        public HandlebarsCompilerException(string message, Exception innerException)
             : base(message, innerException)
         {
         }

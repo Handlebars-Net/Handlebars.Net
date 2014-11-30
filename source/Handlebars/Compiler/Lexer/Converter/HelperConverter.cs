@@ -9,6 +9,7 @@ namespace Handlebars.Compiler
     internal class HelperConverter : TokenConverter
     {
         private static readonly string[] builtInHelpers = new [] { "if", "else", "unless", "each" };
+
         public static IEnumerable<object> Convert(
             IEnumerable<object> sequence,
             HandlebarsConfiguration configuration)
@@ -26,24 +27,24 @@ namespace Handlebars.Compiler
         public override IEnumerable<object> ConvertTokens(IEnumerable<object> sequence)
         {
             var enumerator = sequence.GetEnumerator();
-            while(enumerator.MoveNext())
+            while (enumerator.MoveNext())
             {
                 var item = enumerator.Current;
-                if(item is StartExpressionToken)
+                if (item is StartExpressionToken)
                 {
                     yield return item;
                     item = GetNext(enumerator);
-                    if(item is Expression)
+                    if (item is Expression)
                     {
                         yield return item;
                         continue;
                     }
-                    if((item is WordExpressionToken) == false)
+                    if ((item is WordExpressionToken) == false)
                     {
                         throw new HandlebarsCompilerException("Encountered a non-word symbol at the beginning of the handlebars expression.");
                     }
                     var word = item as WordExpressionToken;
-                    if(IsRegisteredHelperName(word.Value))
+                    if (IsRegisteredHelperName(word.Value))
                     {
                         yield return HandlebarsExpression.Helper(word.Value);
                     }
@@ -64,8 +65,8 @@ namespace Handlebars.Compiler
         {
             name = name.Replace("#", "");
             return _configuration.Helpers.ContainsKey(name)
-                || _configuration.BlockHelpers.ContainsKey(name)
-                || builtInHelpers.Contains(name);
+            || _configuration.BlockHelpers.ContainsKey(name)
+            || builtInHelpers.Contains(name);
         }
 
         private static object GetNext(IEnumerator<object> enumerator)

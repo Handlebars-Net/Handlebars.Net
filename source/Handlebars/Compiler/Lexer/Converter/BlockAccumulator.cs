@@ -20,15 +20,15 @@ namespace Handlebars.Compiler
         {
             _configuration = configuration;
         }
-            
+
         public override IEnumerable<object> ConvertTokens(IEnumerable<object> sequence)
         {
             var enumerator = sequence.GetEnumerator();
-            while(enumerator.MoveNext())
+            while (enumerator.MoveNext())
             {
                 var item = (Expression)enumerator.Current;
                 var context = BlockAccumulatorContext.Create(item, _configuration);
-                if(context != null)
+                if (context != null)
                 {
                     item = UnwrapStatement(item);
                     yield return AccumulateBlock(enumerator, context);
@@ -44,15 +44,15 @@ namespace Handlebars.Compiler
             IEnumerator<object> enumerator, 
             BlockAccumulatorContext context)
         {
-            while(enumerator.MoveNext())
+            while (enumerator.MoveNext())
             {
                 var item = (Expression)enumerator.Current;
                 var innerContext = BlockAccumulatorContext.Create(item, _configuration);
-                if(innerContext != null)
+                if (innerContext != null)
                 {
                     context.HandleElement(AccumulateBlock(enumerator, innerContext));
                 }
-                else if(context.IsClosingElement(item))
+                else if (context.IsClosingElement(item))
                 {
                     return context.GetAccumulatedBlock();
                 }
@@ -66,7 +66,7 @@ namespace Handlebars.Compiler
 
         private Expression UnwrapStatement(Expression item)
         {
-            if(item is StatementExpression)
+            if (item is StatementExpression)
             {
                 return ((StatementExpression)item).Body;
             }

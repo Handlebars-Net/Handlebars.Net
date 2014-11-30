@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace Handlebars.Compiler
 {
     internal class IteratorBlockAccumulatorContext : BlockAccumulatorContext
-	{
+    {
         private readonly HelperExpression _startingNode;
         private Expression _accumulatedExpression;
         private List<Expression> _body = new List<Expression>();
@@ -20,7 +20,7 @@ namespace Handlebars.Compiler
 
         public override void HandleElement(Expression item)
         {
-            if(IsElseBlock(item))
+            if (IsElseBlock(item))
             {
                 _accumulatedExpression = HandlebarsExpression.Iterator(
                     _startingNode.Arguments.Single(),
@@ -35,9 +35,9 @@ namespace Handlebars.Compiler
 
         public override bool IsClosingElement(Expression item)
         {
-            if(IsClosingNode(item))
+            if (IsClosingNode(item))
             {
-                if(_accumulatedExpression == null)
+                if (_accumulatedExpression == null)
                 {
                     _accumulatedExpression = HandlebarsExpression.Iterator(
                         _startingNode.Arguments.Single(),
@@ -74,6 +74,6 @@ namespace Handlebars.Compiler
             item = UnwrapStatement(item);
             return item is HelperExpression && ((HelperExpression)item).HelperName == "else";
         }
-	}
+    }
 }
 

@@ -20,18 +20,18 @@ namespace Handlebars.Compiler
         public override IEnumerable<object> ConvertTokens(IEnumerable<object> sequence)
         {
             var enumerator = sequence.GetEnumerator();
-            while(enumerator.MoveNext())
+            while (enumerator.MoveNext())
             {
                 var item = enumerator.Current;
-                if(item is PartialToken)
+                if (item is PartialToken)
                 {
                     var partialName = GetNext(enumerator) as WordExpressionToken;
-                    if(partialName == null)
+                    if (partialName == null)
                     {
                         throw new HandlebarsParserException("Partial indicator not followed by a parseable partial name");
                     }
                     var endExpression = GetNext(enumerator) as EndExpressionToken;
-                    if(endExpression == null)
+                    if (endExpression == null)
                     {
                         throw new HandlebarsParserException("Partial reference followed by unexpected token");
                     }

@@ -20,7 +20,7 @@ namespace Handlebars.Compiler
 
         public override void HandleElement(Expression item)
         {
-            if(IsElseBlock(item))
+            if (IsElseBlock(item))
             {
                 _accumulatedExpression = CreateIfBlock(_startingNode, _body);
                 _body = new List<Expression>();
@@ -33,9 +33,9 @@ namespace Handlebars.Compiler
 
         public override bool IsClosingElement(Expression item)
         {
-            if(IsClosingNode(item))
+            if (IsClosingNode(item))
             {
-                if(_accumulatedExpression == null)
+                if (_accumulatedExpression == null)
                 {
                     _accumulatedExpression = CreateIfBlock(_startingNode, _body);
                 }
@@ -75,18 +75,18 @@ namespace Handlebars.Compiler
         private static Expression CreateIfBlock(HelperExpression startingNode, IEnumerable<Expression> body)
         {
             var condition = HandlebarsExpression.Boolish(startingNode.Arguments.Single());
-            if(startingNode.HelperName == "#if")
+            if (startingNode.HelperName == "#if")
             {
                 return Expression.IfThen(condition, Expression.Block(body));
             }
-            else if(startingNode.HelperName == "#unless")
+            else if (startingNode.HelperName == "#unless")
             {
                 return Expression.IfThen(Expression.Not(condition), Expression.Block(body));
             }
             else
             {
                 throw new HandlebarsCompilerException(string.Format(
-                    "Tried to create a conditional expression for '{0}'", startingNode.HelperName));
+                        "Tried to create a conditional expression for '{0}'", startingNode.HelperName));
             }
         }
     }

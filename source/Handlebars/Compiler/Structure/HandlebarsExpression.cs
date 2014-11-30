@@ -15,7 +15,7 @@ namespace Handlebars.Compiler
         IteratorExpression = 6006,
         DeferredSection = 6007,
         PartialExpression = 6008,
-		BoolishExpression = 6009
+        BoolishExpression = 6009
     }
 
     internal abstract class HandlebarsExpression : Expression
@@ -53,9 +53,9 @@ namespace Handlebars.Compiler
             return new ContextAccessorExpression();
         }
 
-		public static StatementExpression Statement(Expression body, bool isEscaped)
+        public static StatementExpression Statement(Expression body, bool isEscaped)
         {
-			return new StatementExpression(body, isEscaped);
+            return new StatementExpression(body, isEscaped);
         }
 
         public static IteratorExpression Iterator(
@@ -86,10 +86,10 @@ namespace Handlebars.Compiler
             return new PartialExpression(partialName);
         }
 
-		public static BoolishExpression Boolish(Expression condition)
-		{
-			return new BoolishExpression(condition);
-		}
+        public static BoolishExpression Boolish(Expression condition)
+        {
+            return new BoolishExpression(condition);
+        }
     }
 }
 

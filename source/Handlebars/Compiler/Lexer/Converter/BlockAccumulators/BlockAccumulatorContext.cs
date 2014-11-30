@@ -9,19 +9,19 @@ namespace Handlebars.Compiler
         public static BlockAccumulatorContext Create(Expression item, HandlebarsConfiguration configuration)
         {
             BlockAccumulatorContext context = null;
-            if(IsConditionalBlock(item))
+            if (IsConditionalBlock(item))
             {
                 context = new ConditionalBlockAccumulatorContext(item);
             }
-            else if(IsBlockHelper(item, configuration))
+            else if (IsBlockHelper(item, configuration))
             {
                 context = new BlockHelperAccumulatorContext(item);
             }
-            else if(IsIteratorBlock(item))
+            else if (IsIteratorBlock(item))
             {
                 context = new IteratorBlockAccumulatorContext(item);
             }
-            else if(IsDeferredBlock(item))
+            else if (IsDeferredBlock(item))
             {
                 context = new DeferredBlockAccumulatorContext(item);
             }
@@ -54,7 +54,7 @@ namespace Handlebars.Compiler
 
         protected static Expression UnwrapStatement(Expression item)
         {
-            if(item is StatementExpression)
+            if (item is StatementExpression)
             {
                 return ((StatementExpression)item).Body;
             }

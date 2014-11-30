@@ -2,8 +2,8 @@ using System;
 
 namespace Handlebars
 {
-	public class HandlebarsException : Exception
-	{
+    public class HandlebarsException : Exception
+    {
         public HandlebarsException(string message)
             : base(message)
         {
@@ -13,6 +13,6 @@ namespace Handlebars
             : base(message, innerException)
         {
         }
-	}
+    }
 }
 

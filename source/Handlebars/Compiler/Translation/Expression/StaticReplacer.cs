@@ -11,9 +11,9 @@ namespace Handlebars.Compiler
         {
             return new StaticReplacer(context).Visit(expr);
         }
-			
+
         private StaticReplacer(CompilationContext context)
-			: base(context)
+            : base(context)
         {
         }
 

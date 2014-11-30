@@ -20,7 +20,7 @@ namespace Handlebars.Compiler
         }
 
         private PathBinder(CompilationContext context)
-			: base(context)
+            : base(context)
         {
         }
 
@@ -57,7 +57,7 @@ namespace Handlebars.Compiler
 
         protected override Expression VisitStatementExpression(StatementExpression sex)
         {
-            if(sex.Body is PathExpression)
+            if (sex.Body is PathExpression)
             {
                 var writeMethod = typeof(TextWriter).GetMethod("Write", new [] { typeof(object) });
                 return Expression.Call(
@@ -101,9 +101,9 @@ namespace Handlebars.Compiler
             }
 
             var instance = context.Value;
-            foreach(var segment in path.Split ('/'))
+            foreach (var segment in path.Split ('/'))
             {
-                if(segment == "..")
+                if (segment == "..")
                 {
                     context = context.ParentContext;
                     if (context == null)
@@ -112,7 +112,7 @@ namespace Handlebars.Compiler
                     }
                     instance = context.Value;
                 }
-                else if(segment == "this")
+                else if (segment == "this")
                 {
                     continue;
                 }
@@ -148,33 +148,33 @@ namespace Handlebars.Compiler
             }
 
             _resolutionCache[initialContext].Add(path, instance);
-			return instance;
+            return instance;
         }
 
         private static object AccessMember(object instance, string memberName)
         {
             //crude handling for dynamic objects that don't have metadata
-            if(typeof(IDynamicMetaObjectProvider).IsAssignableFrom(instance.GetType()))
+            if (typeof(IDynamicMetaObjectProvider).IsAssignableFrom(instance.GetType()))
             {
                 try
                 {
                     return GetProperty(instance, memberName);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     throw new HandlebarsRuntimeException("Could not resolve dynamic member name", ex);
                 }
             }
             var members = instance.GetType().GetMember(memberName);
-            if(members.Length == 0)
+            if (members.Length == 0)
             {
                 throw new InvalidOperationException("Template referenced property name that does not exist.");
             }
-            if(members[0].MemberType == System.Reflection.MemberTypes.Property)
+            if (members[0].MemberType == System.Reflection.MemberTypes.Property)
             {
                 return ((PropertyInfo)members[0]).GetValue(instance, null);
             }
-            else if(members[0].MemberType == System.Reflection.MemberTypes.Field)
+            else if (members[0].MemberType == System.Reflection.MemberTypes.Field)
             {
                 return ((FieldInfo)members[0]).GetValue(instance);
             }
@@ -183,7 +183,7 @@ namespace Handlebars.Compiler
 
         private static object GetProperty(object target, string name)
         {
-            var site = System.Runtime.CompilerServices.CallSite<Func<System.Runtime.CompilerServices.CallSite, object, object>>.Create(Microsoft.CSharp.RuntimeBinder.Binder.GetMember(0, name, target.GetType(), new[]{Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo.Create(0,null)}));
+            var site = System.Runtime.CompilerServices.CallSite<Func<System.Runtime.CompilerServices.CallSite, object, object>>.Create(Microsoft.CSharp.RuntimeBinder.Binder.GetMember(0, name, target.GetType(), new[]{ Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo.Create(0, null) }));
             return site.Target(site, target);
         }
     }

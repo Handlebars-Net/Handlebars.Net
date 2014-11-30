@@ -11,13 +11,13 @@ namespace Handlebars.Compiler
         }
 
         private PartialBinder(CompilationContext context)
-			: base(context)
+            : base(context)
         {
         }
 
         protected override Expression VisitStatementExpression(StatementExpression sex)
         {
-            if(sex.Body is PartialExpression)
+            if (sex.Body is PartialExpression)
             {
                 return Visit(sex.Body);
             }
@@ -41,7 +41,7 @@ namespace Handlebars.Compiler
             BindingContext context,
             HandlebarsConfiguration configuration)
         {
-            if(configuration.RegisteredTemplates.ContainsKey(partialName) == false)
+            if (configuration.RegisteredTemplates.ContainsKey(partialName) == false)
             {
                 throw new HandlebarsRuntimeException("Referenced partial name could not be resolved");
             }

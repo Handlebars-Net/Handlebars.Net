@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace Handlebars.Compiler
 {
     internal class DeferredBlockAccumulatorContext : BlockAccumulatorContext
-	{
+    {
         private readonly PathExpression _startingNode;
         private List<Expression> _body = new List<Expression>();
         private Expression _accumulatedExpression;
@@ -30,7 +30,7 @@ namespace Handlebars.Compiler
 
         public override bool IsClosingElement(Expression item)
         {
-            if(IsClosingNode(item))
+            if (IsClosingNode(item))
             {
                 var evalMode = _startingNode.Path.StartsWith("#")
                     ? SectionEvaluationMode.NonEmpty : SectionEvaluationMode.Empty;
@@ -52,6 +52,6 @@ namespace Handlebars.Compiler
             var blockName = _startingNode.Path.Replace("#", "").Replace("^", "");
             return item is PathExpression && ((PathExpression)item).Path == "/" + blockName;
         }
-	}
+    }
 }
 

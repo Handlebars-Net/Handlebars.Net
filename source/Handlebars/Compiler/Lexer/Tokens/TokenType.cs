@@ -3,7 +3,7 @@ using System;
 namespace Handlebars.Compiler.Lexer
 {
     internal enum TokenType
-	{
+    {
         Static = 0,
         StartExpression = 1,
         EndExpression = 2,
@@ -12,6 +12,6 @@ namespace Handlebars.Compiler.Lexer
         Structure = 5,
         Comment = 6,
         Partial = 7
-	}
+    }
 }
 

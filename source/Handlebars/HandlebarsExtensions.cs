@@ -14,7 +14,7 @@ namespace Handlebars
         {
             writer.WriteSafeString(value.ToString());
         }
-            
+
         private class SafeString : ISafeString
         {
             private readonly string _value;

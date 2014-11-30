@@ -20,30 +20,30 @@ namespace Handlebars.Compiler
         public override IEnumerable<object> ConvertTokens(IEnumerable<object> sequence)
         {
             var enumerator = sequence.GetEnumerator();
-            while(enumerator.MoveNext())
+            while (enumerator.MoveNext())
             {
                 var item = enumerator.Current;
-                if(item is StartExpressionToken)
+                if (item is StartExpressionToken)
                 {
-					var startExpression = item as StartExpressionToken;
+                    var startExpression = item as StartExpressionToken;
                     item = GetNext(enumerator);
-                    if((item is Expression) == false)
+                    if ((item is Expression) == false)
                     {
                         throw new HandlebarsCompilerException(
                             string.Format("Token '{0}' could not be converted to an expression", item));
                     }
                     yield return HandlebarsExpression.Statement(
-						(Expression)item,
-						startExpression.IsEscaped);
+                        (Expression)item,
+                        startExpression.IsEscaped);
                     item = GetNext(enumerator);
-                    if((item is EndExpressionToken) == false)
+                    if ((item is EndExpressionToken) == false)
                     {
                         throw new HandlebarsCompilerException("Handlebars statement was not reduced to a single expression");
                     }
-					if(((EndExpressionToken)item).IsEscaped != startExpression.IsEscaped)
-					{
-						throw new HandlebarsCompilerException("Starting and ending handleabars do not match");
-					}
+                    if (((EndExpressionToken)item).IsEscaped != startExpression.IsEscaped)
+                    {
+                        throw new HandlebarsCompilerException("Starting and ending handleabars do not match");
+                    }
                 }
                 else
                 {

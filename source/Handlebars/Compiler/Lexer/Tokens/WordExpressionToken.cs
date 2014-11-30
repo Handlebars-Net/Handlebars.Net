@@ -19,7 +19,7 @@ namespace Handlebars.Compiler.Lexer
         public override string Value
         {
             get { return _word; }
-        }          
+        }
     }
 }
 

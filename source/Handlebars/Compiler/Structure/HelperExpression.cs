@@ -19,7 +19,7 @@ namespace Handlebars.Compiler
         public HelperExpression(string helperName)
         {
             _helperName = helperName;
-            _arguments = Enumerable.Empty<Expression> ();
+            _arguments = Enumerable.Empty<Expression>();
         }
 
         public override ExpressionType NodeType

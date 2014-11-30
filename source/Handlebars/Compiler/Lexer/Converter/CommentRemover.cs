@@ -20,16 +20,16 @@ namespace Handlebars.Compiler
         public override IEnumerable<object> ConvertTokens(IEnumerable<object> sequence)
         {
             var enumerator = sequence.GetEnumerator();
-            while(enumerator.MoveNext())
+            while (enumerator.MoveNext())
             {
                 var item = enumerator.Current;
-                if(item is StartExpressionToken)
+                if (item is StartExpressionToken)
                 {
                     var possibleComment = GetNext(enumerator);
                     var possibleEndExpression = GetNext(enumerator);
-                    if(possibleComment is CommentToken)
+                    if (possibleComment is CommentToken)
                     {
-                        if((possibleEndExpression is EndExpressionToken) == false)
+                        if ((possibleEndExpression is EndExpressionToken) == false)
                         {
                             throw new HandlebarsCompilerException("Encountered an unexpected symbol at the end of a comment expression");
                         }
@@ -48,7 +48,7 @@ namespace Handlebars.Compiler
                 }
             }
         }
-        
+
         private static object GetNext(IEnumerator<object> enumerator)
         {
             enumerator.MoveNext();

@@ -9,17 +9,17 @@ namespace Handlebars.Compiler.Lexer
         public override Token Parse(TextReader reader)
         {
             CommentToken token = null;
-            if (IsComment (reader))
+            if (IsComment(reader))
             {
-                var buffer = AccumulateComment (reader);
-                token = Token.Comment (buffer);
+                var buffer = AccumulateComment(reader);
+                token = Token.Comment(buffer);
             }
             return token;
         }
 
         private bool IsComment(TextReader reader)
         {
-            var peek = (char)reader.Peek ();
+            var peek = (char)reader.Peek();
             return peek == '!';
         }
 
@@ -27,28 +27,28 @@ namespace Handlebars.Compiler.Lexer
         {
             reader.Read();
             bool? escaped = null;
-            StringBuilder buffer = new StringBuilder ();
+            StringBuilder buffer = new StringBuilder();
             while (true)
             {
-                if(escaped == null)
+                if (escaped == null)
                 {
                     escaped = CheckIfEscaped(reader, buffer);
                 }
-                if(IsClosed(reader, buffer, escaped.Value))
+                if (IsClosed(reader, buffer, escaped.Value))
                 {
                     break;
                 }
-                var node = reader.Read ();
-                if(node == -1)
+                var node = reader.Read();
+                if (node == -1)
                 {
                     throw new InvalidOperationException("Reached end of template in the middle of a comment");
                 }
                 else
                 {
-                    buffer.Append ((char)node);
+                    buffer.Append((char)node);
                 }
             }
-            return buffer.ToString ();
+            return buffer.ToString();
         }
 
         private static bool IsClosed(TextReader reader, StringBuilder buffer, bool isEscaped)
@@ -59,7 +59,7 @@ namespace Handlebars.Compiler.Lexer
         private static bool CheckIfStatementClosed(TextReader reader)
         {
             var isClosed = false;
-            if((char)reader.Peek() == '}')
+            if ((char)reader.Peek() == '}')
             {
                 isClosed = true;
             }
@@ -69,10 +69,10 @@ namespace Handlebars.Compiler.Lexer
         private static bool CheckIfEscaped(TextReader reader, StringBuilder buffer)
         {
             bool escaped = false;
-            if((char)reader.Peek() == '-')
+            if ((char)reader.Peek() == '-')
             {
                 var first = reader.Read();
-                if((char)reader.Peek() == '-')
+                if ((char)reader.Peek() == '-')
                 {
                     reader.Read();
                     escaped = true;

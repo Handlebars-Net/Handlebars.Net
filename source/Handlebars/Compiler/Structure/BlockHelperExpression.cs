@@ -8,7 +8,7 @@ namespace Handlebars.Compiler
     {
         private readonly Expression _body;
 
-        public BlockHelperExpression (
+        public BlockHelperExpression(
             string helperName,
             IEnumerable<Expression> arguments,
             Expression body)

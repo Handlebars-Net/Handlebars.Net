@@ -19,9 +19,9 @@ namespace Handlebars.Compiler
 
         public override IEnumerable<object> ConvertTokens(IEnumerable<object> sequence)
         {
-            foreach(var item in sequence)
+            foreach (var item in sequence)
             {
-                if(item is WordExpressionToken)
+                if (item is WordExpressionToken)
                 {
                     yield return HandlebarsExpression.Path(((WordExpressionToken)item).Value);
                 }

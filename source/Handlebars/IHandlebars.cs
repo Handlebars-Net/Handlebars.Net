@@ -5,8 +5,8 @@ using System.Text;
 
 namespace Handlebars
 {
-	public interface IHandlebars
-	{
+    public interface IHandlebars
+    {
         Action<TextWriter, object> Compile(TextReader template);
 
         Func<object, string> Compile(string template);
@@ -16,6 +16,6 @@ namespace Handlebars
         void RegisterHelper(string helperName, HandlebarsHelper helperFunction);
 
         void RegisterHelper(string helperName, HandlebarsBlockHelper helperFunction);
-	}
+    }
 }
 

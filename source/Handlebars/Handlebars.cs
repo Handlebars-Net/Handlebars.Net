@@ -16,7 +16,7 @@ namespace Handlebars
         {
             return new HandlebarsEnvironment(new HandlebarsConfiguration());
         }
-           
+
         public static Action<TextWriter, object> Compile(TextReader template)
         {
             return _singleton.Compile(template);
@@ -61,12 +61,13 @@ namespace Handlebars
 
             public Func<object, string> Compile(string template)
             {
-                using(var reader = new StringReader(template))
+                using (var reader = new StringReader(template))
                 {
                     var compiledTemplate = Compile(reader);
-                    return context => {
+                    return context =>
+                    {
                         var builder = new StringBuilder();
-                        using(var writer = new StringWriter(builder))
+                        using (var writer = new StringWriter(builder))
                         {
                             compiledTemplate(writer, context);
                         }
@@ -77,11 +78,11 @@ namespace Handlebars
 
             public void RegisterTemplate(string templateName, Action<TextWriter, object> template)
             {
-                if(_configuration.RegisteredTemplates.ContainsKey(templateName) == false)
+                if (_configuration.RegisteredTemplates.ContainsKey(templateName) == false)
                 {
-                    lock(typeof(Handlebars))
+                    lock (typeof(Handlebars))
                     {
-                        if(_configuration.RegisteredTemplates.ContainsKey(templateName) == false)
+                        if (_configuration.RegisteredTemplates.ContainsKey(templateName) == false)
                         {
                             _configuration.RegisteredTemplates.Add(templateName, template);
                         }
@@ -91,11 +92,11 @@ namespace Handlebars
 
             public void RegisterHelper(string helperName, HandlebarsHelper helperFunction)
             {
-                if(_configuration.Helpers.ContainsKey(helperName) == false)
+                if (_configuration.Helpers.ContainsKey(helperName) == false)
                 {
-                    lock(typeof(Handlebars))
+                    lock (typeof(Handlebars))
                     {
-                        if(_configuration.Helpers.ContainsKey(helperName) == false)
+                        if (_configuration.Helpers.ContainsKey(helperName) == false)
                         {
                             _configuration.Helpers.Add(helperName, helperFunction);
                         }
@@ -105,11 +106,11 @@ namespace Handlebars
 
             public void RegisterHelper(string helperName, HandlebarsBlockHelper helperFunction)
             {
-                if(_configuration.BlockHelpers.ContainsKey(helperName) == false)
+                if (_configuration.BlockHelpers.ContainsKey(helperName) == false)
                 {
-                    lock(typeof(Handlebars))
+                    lock (typeof(Handlebars))
                     {
-                        if(_configuration.BlockHelpers.ContainsKey(helperName) == false)
+                        if (_configuration.BlockHelpers.ContainsKey(helperName) == false)
                         {
                             _configuration.BlockHelpers.Add(helperName, helperFunction);
                         }
@@ -119,11 +120,11 @@ namespace Handlebars
 
             private void RegisterBuiltinHelpers()
             {
-                foreach(var helperDefinition in BuiltinHelpers.Helpers)
+                foreach (var helperDefinition in BuiltinHelpers.Helpers)
                 {
                     RegisterHelper(helperDefinition.Key, helperDefinition.Value);
                 }
-                foreach(var helperDefinition in BuiltinHelpers.BlockHelpers)
+                foreach (var helperDefinition in BuiltinHelpers.BlockHelpers)
                 {
                     RegisterHelper(helperDefinition.Key, helperDefinition.Value);
                 }

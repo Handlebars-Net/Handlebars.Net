@@ -7,7 +7,7 @@ namespace Handlebars.Compiler
     {
         private readonly string _value;
 
-        public StaticExpression (string value)
+        public StaticExpression(string value)
         {
             _value = value;
         }

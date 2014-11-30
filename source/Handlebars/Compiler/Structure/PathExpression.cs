@@ -7,7 +7,7 @@ namespace Handlebars.Compiler
     {
         private readonly string _path;
 
-        public PathExpression (string path)
+        public PathExpression(string path)
         {
             _path = path;
         }

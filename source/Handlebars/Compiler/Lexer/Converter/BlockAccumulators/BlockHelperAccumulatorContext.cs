@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace Handlebars.Compiler
 {
     internal class BlockHelperAccumulatorContext : BlockAccumulatorContext
-	{
+    {
         private readonly HelperExpression _startingNode;
         private List<Expression> _body = new List<Expression>();
 
@@ -37,6 +37,6 @@ namespace Handlebars.Compiler
                 Expression.Block(_body));
         }
 
-	}
+    }
 }
 

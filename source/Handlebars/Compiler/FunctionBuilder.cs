@@ -12,9 +12,9 @@ namespace Handlebars.Compiler
         private readonly HandlebarsConfiguration _configuration;
         private static readonly Expression _emptyLambda =
             Expression.Lambda<Action<TextWriter, object>>(
-                        Expression.Empty(),
-                        Expression.Parameter(typeof(TextWriter)),
-                        Expression.Parameter(typeof(object)));
+                Expression.Empty(),
+                Expression.Parameter(typeof(TextWriter)),
+                Expression.Parameter(typeof(object)));
 
         public FunctionBuilder(HandlebarsConfiguration configuration)
         {
@@ -41,7 +41,7 @@ namespace Handlebars.Compiler
                 expression = BlockHelperFunctionBinder.Bind(expression, compilationContext);
                 expression = DeferredSectionVisitor.Bind(expression, compilationContext);
                 expression = HelperFunctionBinder.Bind(expression, compilationContext);
-				expression = BoolishConverter.Convert(expression, compilationContext);
+                expression = BoolishConverter.Convert(expression, compilationContext);
                 expression = PathBinder.Bind(expression, compilationContext);
                 expression = ContextBinder.Bind(expression, compilationContext, parentContext);
                 return expression;

@@ -11,7 +11,7 @@ namespace Handlebars
         [Description("with")]
         public static void With(TextWriter output, Action<TextWriter, object> template, dynamic context, params object[] arguments)
         {
-            if(arguments.Length != 1)
+            if (arguments.Length != 1)
             {
                 throw new HandlebarsException("{{with}} helper must have exactly one argument"); 
             }
@@ -37,13 +37,13 @@ namespace Handlebars
         private static IEnumerable<KeyValuePair<string, T>> GetHelpers<T>()
         {
             var builtInHelpersType = typeof(BuiltinHelpers);
-            foreach(var method in builtInHelpersType.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Public))
+            foreach (var method in builtInHelpersType.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Public))
             {
                 var possibleDelegate = Delegate.CreateDelegate(typeof(T), method, false);
-                if(possibleDelegate != null)
+                if (possibleDelegate != null)
                 {
                     yield return new KeyValuePair<string, T>(
-                        ((DescriptionAttribute)Attribute.GetCustomAttribute (method, typeof (DescriptionAttribute))).Description,
+                        ((DescriptionAttribute)Attribute.GetCustomAttribute(method, typeof(DescriptionAttribute))).Description,
                         (T)(object)possibleDelegate);
                 }
             }

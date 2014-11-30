@@ -18,11 +18,11 @@ namespace Handlebars.Compiler
 
         public override IEnumerable<object> ConvertTokens(IEnumerable<object> sequence)
         {
-            foreach(var item in sequence)
+            foreach (var item in sequence)
             {
-                if(item is StaticToken)
+                if (item is StaticToken)
                 {
-                    if(((StaticToken)item).Value != string.Empty)
+                    if (((StaticToken)item).Value != string.Empty)
                     {
                         yield return HandlebarsExpression.Static(((StaticToken)item).Value);
                     }
