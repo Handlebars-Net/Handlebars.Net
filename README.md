@@ -9,11 +9,9 @@ Check out the [handlebars.js documentation](http://handlebarsjs.com) for how to 
 
 Handlebars.Net doesn't use a scripting engine to run a Javascript library - it **compiles Handlebars templates directly to IL bytecode**. It also mimics the JS library's API as closely as possible.
 
-_Handlebars.Net is in beta right now - check out the [todo](#todo) to see what's missing._
-
 ##Install
 
-    nuget install Handlebars.Net -PreRelease
+    nuget install Handlebars.Net
 
 ##Usage
 
@@ -83,10 +81,10 @@ _Release Candidate prerequisites_:
 - [x] ~~Give helpers access to current context~~
 - [x] ~~Support for JS-like truthy and falsy values~~
 - [x] ~~Non-escaping expressions ("triple-stash" `{{{ }}}`)~~
-- [ ] `lookup`, `log`, and `helperMissing` helpers
 
 _Future roadmap_:
 - [ ] **Add unit tests!**
+- [ ] `lookup`, `log`, and `helperMissing` helpers
 - [ ] Set delimiters
 - [ ] Mustache(5) Lambdas
 - [ ] MVC view engine
