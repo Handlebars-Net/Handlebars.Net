@@ -62,3 +62,4 @@ packages/
 *.testsettings
 [Tt]est-[Cc]ache/
 [Tt]est-[Rr]esults/
+*.snk
