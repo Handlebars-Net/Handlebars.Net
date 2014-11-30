@@ -102,6 +102,7 @@
     <Compile Include="Compiler\Translation\Expression\BoolishConverter.cs" />
     <Compile Include="Compiler\Structure\UndefinedBindingResult.cs" />
     <Compile Include="Compiler\Structure\OutputMode.cs" />
+    <Compile Include="IHandlebars.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
