@@ -11,9 +11,6 @@ namespace Handlebars.Compiler
 {
     internal class PathBinder : HandlebarsExpressionVisitor
     {
-        private Dictionary<BindingContext, Dictionary<string, object>> _resolutionCache
-            = new Dictionary<BindingContext, Dictionary<string, object>>();
-
         public static Expression Bind(Expression expr, CompilationContext context)
         {
             return new PathBinder(context).Visit(expr);
@@ -92,14 +89,6 @@ namespace Handlebars.Compiler
         //TODO: make path resolution logic smarter
         private object ResolvePath(BindingContext context, string path)
         {
-            // Context reference will be changed during path evaluation
-            var initialContext = context;
-
-            if (_resolutionCache.ContainsKey(initialContext) && _resolutionCache[initialContext].ContainsKey(path))
-            {
-                return _resolutionCache[initialContext][path];
-            }
-
             var instance = context.Value;
             foreach (var segment in path.Split ('/'))
             {
@@ -142,12 +131,6 @@ namespace Handlebars.Compiler
                     }
                 }
             }
-            if (_resolutionCache.ContainsKey(initialContext) == false)
-            {
-                _resolutionCache.Add(initialContext, new Dictionary<string, object>());
-            }
-
-            _resolutionCache[initialContext].Add(path, instance);
             return instance;
         }
 
