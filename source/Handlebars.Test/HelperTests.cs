@@ -52,6 +52,58 @@ namespace Handlebars.Test
 
             Assert.AreEqual(expected, output);
         }
+
+        [Test]
+        public void InversionNoKey()
+        {
+            var source = "{{^key}}No key!{{/key}}";
+            var template = Handlebars.Compile(source);
+            var output = template(new { });
+            var expected = "No key!";
+            Assert.AreEqual(expected, output);
+        }
+
+        [Test]
+        public void InversionFalsy()
+        {
+            var source = "{{^key}}Falsy value!{{/key}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                key = false
+            };
+            var output = template(data);
+            var expected = "Falsy value!";
+            Assert.AreEqual(expected, output);
+        }
+
+        [Test]
+        public void InversionEmptySequence()
+        {
+            var source = "{{^key}}Empty sequence!{{/key}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+                {
+                    key = new string[] { }
+                };
+            var output = template(data);
+            var expected = "Empty sequence!";
+            Assert.AreEqual(expected, output);
+        }
+
+        [Test]
+        public void InversionNonEmptySequence()
+        {
+            var source = "{{^key}}Empty sequence!{{/key}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+                {
+                    key = new string[] { "element" }
+                };
+            var output = template(data);
+            var expected = "";
+            Assert.AreEqual(expected, output);
+        }
     }
 }
 
