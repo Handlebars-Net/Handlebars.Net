@@ -32,11 +32,6 @@ namespace Handlebars
             _singleton.RegisterTemplate(templateName, template);
         }
 
-        public static void ClearRegisteredTemplates()
-        {
-            _singleton.ClearRegisteredTemplates();
-        }
-
         public static void RegisterHelper(string helperName, HandlebarsHelper helperFunction)
         {
             _singleton.RegisterHelper(helperName, helperFunction);
@@ -90,20 +85,6 @@ namespace Handlebars
                         if (_configuration.RegisteredTemplates.ContainsKey(templateName) == false)
                         {
                             _configuration.RegisteredTemplates.Add(templateName, template);
-                        }
-                    }
-                }
-            }
-
-            public void ClearRegisteredTemplates()
-            {
-                if (_configuration.RegisteredTemplates.Count > 0)
-                {
-                    lock (typeof(Handlebars))
-                    {
-                        if (_configuration.RegisteredTemplates.Count > 0)
-                        {
-                            _configuration.RegisteredTemplates.Clear();
                         }
                     }
                 }

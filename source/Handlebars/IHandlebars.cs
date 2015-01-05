@@ -13,8 +13,6 @@ namespace Handlebars
 
         void RegisterTemplate(string templateName, Action<TextWriter, object> template);
 
-        void ClearRegisteredTemplates();
-
         void RegisterHelper(string helperName, HandlebarsHelper helperFunction);
 
         void RegisterHelper(string helperName, HandlebarsBlockHelper helperFunction);
