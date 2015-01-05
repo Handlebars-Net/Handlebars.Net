@@ -78,15 +78,9 @@ namespace Handlebars
 
             public void RegisterTemplate(string templateName, Action<TextWriter, object> template)
             {
-                if (_configuration.RegisteredTemplates.ContainsKey(templateName) == false)
+                lock (typeof(Handlebars))
                 {
-                    lock (typeof(Handlebars))
-                    {
-                        if (_configuration.RegisteredTemplates.ContainsKey(templateName) == false)
-                        {
-                            _configuration.RegisteredTemplates.Add(templateName, template);
-                        }
-                    }
+                    _configuration.RegisteredTemplates[templateName] = template;
                 }
             }
 
