@@ -43,6 +43,41 @@ var result = template(data);
 */
 ```
 
+####Custom Configuration
+
+```c#
+string source =
+@"<div class=""entry"">
+  <h1>{{page_title}}</h1>
+  <div class=""body"">
+    {{pageBody}}
+  </div>
+</div>";
+
+var customConfiguration = new HandlebarsConfiguration();
+customConfiguration.ExpressionNameResolver = new UpperCamelCaseExpressionNameResolver();
+
+IHandlebars handlebars = new HandlebarsEnvironment(customConfiguration);
+
+var template = handlebars.Compile(source);
+
+var data = new {
+    PageTitle = "My new post",
+    PageBody = "This is my first post!"
+};
+
+var result = template(data);
+
+/* Would render:
+<div class="entry">
+  <h1>My New Post</h1>
+  <div class="body">
+    This is my first post!
+  </div>
+</div>
+*/
+```
+
 ###Registering Helpers
 ```c#
 Handlebars.RegisterHelper("link_to", (writer, context, parameters) => {

@@ -42,7 +42,7 @@ namespace Handlebars.Compiler
                 expression = DeferredSectionVisitor.Bind(expression, compilationContext);
                 expression = HelperFunctionBinder.Bind(expression, compilationContext);
                 expression = BoolishConverter.Convert(expression, compilationContext);
-                expression = PathBinder.Bind(expression, compilationContext);
+                expression = PathBinder.Bind(expression, compilationContext, _configuration);
                 expression = ContextBinder.Bind(expression, compilationContext, parentContext);
                 return expression;
             }

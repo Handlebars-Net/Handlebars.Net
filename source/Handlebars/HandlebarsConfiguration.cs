@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Handlebars.Compiler.Resolvers;
 
 namespace Handlebars
 {
@@ -11,6 +12,8 @@ namespace Handlebars
         public IDictionary<string, HandlebarsBlockHelper> BlockHelpers { get; private set; }
 
         public IDictionary<string, Action<TextWriter, object>> RegisteredTemplates { get; private set; }
+
+        public IExpressionNameResolver ExpressionNameResolver { get; set; }
 
         public HandlebarsConfiguration()
         {
