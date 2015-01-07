@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="BasicIntegrationTests.cs" />
     <Compile Include="ComplexIntegrationTests.cs" />
+    <Compile Include="CustomConfigurationTests.cs" />
     <Compile Include="DynamicTests.cs" />
     <Compile Include="HelperTests.cs" />
     <Compile Include="TripleStashTests.cs" />
