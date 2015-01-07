@@ -35,7 +35,10 @@
   <ItemGroup>
     <Compile Include="Compiler\CompilationContext.cs" />
     <Compile Include="Compiler\ExpressionBuilder.cs" />
+    <Compile Include="Compiler\Resolvers\UpperCamelCaseExpressionNameResolver.cs" />
+    <Compile Include="Compiler\Resolvers\IExpressionNameResolver.cs" />
     <Compile Include="EnumerableExtensions.cs" />
+    <Compile Include="HandlebarsEnvironment.cs" />
     <Compile Include="HandlebarsRuntimeException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Compiler\FunctionBuilder.cs" />
