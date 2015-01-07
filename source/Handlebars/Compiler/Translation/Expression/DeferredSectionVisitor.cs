@@ -42,18 +42,17 @@ namespace Handlebars.Compiler
 
         private static void RenderEmptySection(object value, BindingContext context, Action<TextWriter, object> template)
         {
-            if (IsFalseyOrEmpty(value) == false)
+            if (IsFalseyOrEmpty(value) == true)
             {
-                throw new HandlebarsRuntimeException("Tried to render a truthy or non-empty object in an inverted section");
+                template(context.TextWriter, value);
             }
-            template(context.TextWriter, null);
         }
 
         private static void RenderSection(object value, BindingContext context, Action<TextWriter, object> template)
         {
             if (IsFalseyOrEmpty(value))
             {
-                throw new HandlebarsRuntimeException("Tried to render a falsey or empty object in a section");
+                return;
             }
             if (value is IEnumerable)
             {
@@ -74,20 +73,62 @@ namespace Handlebars.Compiler
 
         private static bool IsFalseyOrEmpty(object value)
         {
+            if(IsFalsy(value))
+            {
+                return true;
+            }
+            else if (value is IEnumerable && ((IEnumerable)value).OfType<object>().Any() == false)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private static bool IsFalsy(object value)
+        {
+            if (value is UndefinedBindingResult)
+            {
+                return true;
+            }
             if (value == null)
             {
                 return true;
             }
-            if (value is string && string.IsNullOrEmpty(value as string))
+            else if (value is bool)
             {
-                return true;
+                return !(bool)value;
             }
-            if (value is IEnumerable && ((IEnumerable)value).OfType<object>().Any() == false)
+            else if (value is string)
             {
-                return true;
+                if ((string)value == "")
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
-            //TODO: more falsey conditions
+            else if (IsNumber(value))
+            {
+                return !System.Convert.ToBoolean(value);
+            }
             return false;
+        }
+
+        private static bool IsNumber(object value)
+        {
+            return value is sbyte
+                || value is byte
+                || value is short
+                || value is ushort
+                || value is int
+                || value is uint
+                || value is long
+                || value is ulong
+                || value is float
+                || value is double
+                || value is decimal;
         }
     }
 }

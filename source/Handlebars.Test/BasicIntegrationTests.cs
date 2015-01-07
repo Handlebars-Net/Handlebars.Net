@@ -275,6 +275,21 @@ namespace Handlebars.Test
         }
 
         [Test]
+        public void BasicDeferredBlockFalsy()
+        {
+            string source = "Hello, {{#person}}{{name}}{{/person}}!";
+
+            var template = Handlebars.Compile(source);
+
+            var data = new {
+                person = false
+            };
+
+            var result = template(data);
+            Assert.AreEqual("Hello, !", result);
+        }
+
+        [Test]
         public void BasicDeferredBlockEnumerable()
         {
             string source = "Hello, {{#people}}{{this}} {{/people}}!";
