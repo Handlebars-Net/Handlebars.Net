@@ -11,6 +11,8 @@ namespace Handlebars
 
         Func<object, string> Compile(string template);
 
+        HandlebarsConfiguration Configuration { get; }
+
         void RegisterTemplate(string templateName, Action<TextWriter, object> template);
 
         void RegisterHelper(string helperName, HandlebarsHelper helperFunction);
