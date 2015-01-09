@@ -56,42 +56,33 @@ namespace Handlebars
 
             public void RegisterTemplate(string templateName, Action<TextWriter, object> template)
             {
-                if (_configuration.RegisteredTemplates.ContainsKey(templateName) == false)
+                lock (typeof(Handlebars))
                 {
-                    lock (typeof(Handlebars))
+                    if (_configuration.RegisteredTemplates.ContainsKey(templateName) == false)
                     {
-                        if (_configuration.RegisteredTemplates.ContainsKey(templateName) == false)
-                        {
-                            _configuration.RegisteredTemplates.Add(templateName, template);
-                        }
+                        _configuration.RegisteredTemplates.Add(templateName, template);
                     }
                 }
             }
 
             public void RegisterHelper(string helperName, HandlebarsHelper helperFunction)
             {
-                if (_configuration.Helpers.ContainsKey(helperName) == false)
+                lock (typeof(Handlebars))
                 {
-                    lock (typeof(Handlebars))
+                    if (_configuration.Helpers.ContainsKey(helperName) == false)
                     {
-                        if (_configuration.Helpers.ContainsKey(helperName) == false)
-                        {
-                            _configuration.Helpers.Add(helperName, helperFunction);
-                        }
+                        _configuration.Helpers.Add(helperName, helperFunction);
                     }
                 }
             }
 
             public void RegisterHelper(string helperName, HandlebarsBlockHelper helperFunction)
             {
-                if (_configuration.BlockHelpers.ContainsKey(helperName) == false)
+                lock (typeof(Handlebars))
                 {
-                    lock (typeof(Handlebars))
+                    if (_configuration.BlockHelpers.ContainsKey(helperName) == false)
                     {
-                        if (_configuration.BlockHelpers.ContainsKey(helperName) == false)
-                        {
-                            _configuration.BlockHelpers.Add(helperName, helperFunction);
-                        }
+                        _configuration.BlockHelpers.Add(helperName, helperFunction);
                     }
                 }
             }
