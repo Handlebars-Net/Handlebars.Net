@@ -26,7 +26,7 @@ namespace Handlebars.Compiler
             switch ((HandlebarsExpressionType)exp.NodeType)
             {
                 case HandlebarsExpressionType.StatementExpression:
-                    return VisitStatementExpressionCore((StatementExpression)exp);
+                    return VisitStatementExpression((StatementExpression)exp);
                 case HandlebarsExpressionType.StaticExpression:
                     return VisitStaticExpression((StaticExpression)exp);
                 case HandlebarsExpressionType.HelperExpression:
@@ -47,24 +47,6 @@ namespace Handlebars.Compiler
                     return VisitBoolishExpression((BoolishExpression)exp);
                 default:
                     return base.Visit(exp);
-            }
-        }
-
-        private Expression VisitStatementExpressionCore(StatementExpression sex)
-        {
-            var outputMode = sex.IsEscaped ? OutputMode.Encoded : OutputMode.Unencoded;
-            if (outputMode != CompilationContext.CurrentOutputMode)
-            {
-                CompilationContext.CurrentOutputMode = outputMode;
-                return Expression.Block(
-                    Expression.Assign(
-                        Expression.Property(CompilationContext.BindingContext, "OutputMode"),
-                        Expression.Constant(outputMode)),
-                    VisitStatementExpression(sex));
-            }
-            else
-            {
-                return VisitStatementExpression(sex);
             }
         }
 

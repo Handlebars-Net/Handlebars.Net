@@ -75,6 +75,8 @@ namespace Handlebars.Compiler
         private static Expression CreateIfBlock(HelperExpression startingNode, IEnumerable<Expression> body)
         {
             var condition = HandlebarsExpression.Boolish(startingNode.Arguments.Single());
+            body = UnwrapBlockExpression(body);
+            body = body.Concat(new Expression[] { Expression.Empty() });
             if (startingNode.HelperName == "#if")
             {
                 return Expression.IfThen(condition, Expression.Block(body));
@@ -88,6 +90,15 @@ namespace Handlebars.Compiler
                 throw new HandlebarsCompilerException(string.Format(
                         "Tried to create a conditional expression for '{0}'", startingNode.HelperName));
             }
+        }
+
+        private static IEnumerable<Expression> UnwrapBlockExpression(IEnumerable<Expression> body)
+        {
+            if (body.IsOneOf<Expression, BlockExpression>())
+            {
+                body = body.OfType<BlockExpression>().First().Expressions;
+            }
+            return body;
         }
     }
 }

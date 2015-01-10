@@ -67,6 +67,23 @@ namespace Handlebars.Test
 			var result = template(data);
 			Assert.AreEqual("<div>hello</div> <div>world</div> ", result);
 		}
+
+        [Test]
+        public void FailingBasicTripleStash()
+        {
+            string source = "{{#if a_bool}}{{{dangerous_value}}}{{/if}}Hello, {{{dangerous_value}}}!";
+
+            var template = Handlebars.Compile(source);
+
+            var data = new
+                {
+                    a_bool = false,
+                    dangerous_value = "<div>There's HTML here</div>"
+                };
+
+            var result = template(data);
+            Assert.AreEqual("Hello, <div>There's HTML here</div>!", result);
+        }
 	}
 }
 

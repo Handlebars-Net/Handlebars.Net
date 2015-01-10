@@ -36,6 +36,7 @@ namespace Handlebars.Compiler
                 var compilationContext = new CompilationContext(_configuration);
                 var expression = CreateExpressionBlock(expressions);
                 expression = StaticReplacer.Replace(expression, compilationContext);
+                expression = UnencodedStatementVisitor.Visit(expression, compilationContext);
                 expression = PartialBinder.Bind(expression, compilationContext);
                 expression = IteratorBinder.Bind(expression, compilationContext);
                 expression = BlockHelperFunctionBinder.Bind(expression, compilationContext);
