@@ -1,0 +1,62 @@
+[1mdiff --git a/source/Handlebars/Compiler/Resolvers/UpperCamelCaseExpressionNameResolver.cs b/source/Handlebars/Compiler/Resolvers/UpperCamelCaseExpressionNameResolver.cs[m
+[1mindex 9e84d77..5609a94 100644[m
+[1m--- a/source/Handlebars/Compiler/Resolvers/UpperCamelCaseExpressionNameResolver.cs[m
+[1m+++ b/source/Handlebars/Compiler/Resolvers/UpperCamelCaseExpressionNameResolver.cs[m
+[36m@@ -7,25 +7,29 @@[m [mpublic class UpperCamelCaseExpressionNameResolver : IExpressionNameResolver[m
+         public string ResolveExpressionName(string expressionName)[m
+         {[m
+             if (string.IsNullOrEmpty(expressionName))[m
+[32m+[m[32m            {[m
+                 return expressionName;[m
+[32m+[m[32m            }[m
+ [m
+             var containsUnderScores = expressionName.IndexOf("_", StringComparison.OrdinalIgnoreCase) >= 0;[m
+             var containsDots = expressionName.IndexOf(".", StringComparison.OrdinalIgnoreCase) >= 0;[m
+ [m
+             if (char.IsUpper(expressionName[0]) && !containsUnderScores && !containsDots)[m
+[32m+[m[32m            {[m
+                 return expressionName;[m
+[32m+[m[32m            }[m
+ [m
+             var chars = expressionName.ToCharArray();[m
+[32m+[m[32m            var buffer = new char[chars.Length];[m
+ [m
+             if (containsUnderScores)[m
+             {[m
+                 var index = 0;[m
+[31m-                var buffer = new char[chars.Length];[m
+ [m
+                 chars[0] = char.ToUpperInvariant(chars[0]);[m
+                 for (var i = 0; i < chars.Length; i++)[m
+                 {[m
+[31m-                    var hasNext = (i + 1 < chars.Length);[m
+[32m+[m[32m                    var hasNext = i + 1 < chars.Length;[m
+                     var isUnderscore = chars[i] == '_';[m
+                     if (hasNext && isUnderscore)[m
+                     {[m
+[36m@@ -37,19 +41,21 @@[m [mpublic string ResolveExpressionName(string expressionName)[m
+                     }[m
+                 }[m
+ [m
+[31m-                return new string(buffer).TrimEnd('\0');[m
+[32m+[m[32m                chars = buffer;[m
+             }[m
+ [m
+             chars[0] = char.ToUpperInvariant(chars[0]);[m
+             for (var i = 0; i < chars.Length; i++)[m
+             {[m
+[31m-                var hasNext = (i + 1 < chars.Length);[m
+[32m+[m[32m                var hasNext = i + 1 < chars.Length;[m
+                 var isDot = chars[i] == '.';[m
+                 if (isDot && hasNext)[m
+[32m+[m[32m                {[m
+                     chars[i + 1] = char.ToUpperInvariant(chars[i + 1]);[m
+[32m+[m[32m                }[m
+             }[m
+ [m
+[31m-            return new string(chars);[m
+[32m+[m[32m            return new string(chars).TrimEnd('\0');[m
+         }[m
+     }[m
+ }[m
+\ No newline at end of file[m
