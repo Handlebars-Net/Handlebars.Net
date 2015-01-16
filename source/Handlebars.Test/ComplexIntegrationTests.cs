@@ -187,6 +187,29 @@ namespace Handlebars.Test
 
 			Assert.That(result, Is.EqualTo("Kane, Salt Lake and Weber"));
 		}
+
+        [Test]
+        public void PartialWithRoot()
+        {
+            string source = "{{>personcity}}!";
+
+            var template = Handlebars.Compile(source);
+
+            var data = new {
+                name = "Marc",
+                city = "Wilmington"
+            };
+
+            var partialSource = "{{name}} is from {{@root.city}}";
+            using(var reader = new StringReader(partialSource))
+            {
+                var partialTemplate = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("personcity", partialTemplate);
+            }
+
+            var result = template(data);
+            Assert.AreEqual("Marc is from Wilmington!", result);
+        }
     }
 }
 
