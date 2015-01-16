@@ -27,11 +27,5 @@ namespace Handlebars.Compiler
         {
             get { return _bindingContext; }
         }
-
-        public OutputMode CurrentOutputMode
-        {
-            get;
-            set;
-        }
     }
 }

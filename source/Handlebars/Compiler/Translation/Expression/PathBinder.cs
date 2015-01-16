@@ -105,23 +105,13 @@ namespace Handlebars.Compiler
                 {
                     continue;
                 }
-                else if (segment.StartsWith("@"))
-                {
-                    var contextValue = context.GetContextVariable(segment.Substring(1));
-                    if (contextValue == null)
-                    {
-                        throw new HandlebarsRuntimeException("Couldn't bind to context variable");
-                    }
-                    instance = contextValue;
-                    break;
-                }
                 else
                 {
                     foreach (var memberName in segment.Split('.'))
                     {
                         try
                         {
-                            instance = this.AccessMember(instance, memberName);
+                            instance = this.ResolveValue(context, instance, memberName);
                         }
                         catch (Exception)
                         {
@@ -132,6 +122,23 @@ namespace Handlebars.Compiler
                 }
             }
             return instance;
+        }
+
+        private object ResolveValue(BindingContext context, object instance, string segment)
+        {
+            if (segment.StartsWith("@"))
+            {
+                var contextValue = context.GetContextVariable(segment.Substring(1));
+                if (contextValue == null)
+                {
+                    throw new HandlebarsRuntimeException("Couldn't bind to context variable");
+                }
+                return contextValue;
+            }
+            else
+            {
+                return AccessMember(instance, segment);
+            }
         }
 
         private object AccessMember(object instance, string memberName)

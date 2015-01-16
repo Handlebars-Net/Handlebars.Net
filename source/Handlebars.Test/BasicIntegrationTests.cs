@@ -419,6 +419,26 @@ namespace Handlebars.Test
 			var result = template(data);
 			Assert.AreEqual("Hello, <div>There's HTML here</div>!", result);
 		}
+
+        [Test]
+        public void BasicRoot()
+        {
+            string source = "{{#people}}- {{this}} is member of {{@root.group}}\n{{/people}}";
+
+            var template = Handlebars.Compile(source);
+
+            var data = new {
+                group = "Engineering",
+                people = new []
+                    {
+                        "Rex",
+                        "Todd"
+                    }
+            };
+
+            var result = template(data);
+            Assert.AreEqual("- Rex is member of Engineering\n- Todd is member of Engineering\n", result);
+        }
     }
 }
 

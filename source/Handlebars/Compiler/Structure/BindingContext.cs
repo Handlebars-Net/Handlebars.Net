@@ -50,10 +50,23 @@ namespace Handlebars.Compiler
             set; 
         }
 
+        public virtual object Root
+        {
+            get
+            {
+                var currentContext = this;
+                while (currentContext.ParentContext != null)
+                {
+                    currentContext = currentContext.ParentContext;
+                }
+                return currentContext.Value;
+            }
+        }
+
         public virtual object GetContextVariable(string variableName)
         {
             object returnValue;
-            variableName = variableName.Trim('@');
+            variableName = variableName.TrimStart('@');
             var member = this.GetType().GetMember(variableName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
             if (member.Length > 0)
             {
