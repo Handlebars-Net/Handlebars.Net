@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Handlebars.Compiler
 {
@@ -33,13 +34,17 @@ namespace Handlebars.Compiler
         {
             var fb = new FunctionBuilder(CompilationContext.Configuration);
             var body = fb.Compile(((BlockExpression)bhex.Body).Expressions, CompilationContext.BindingContext);
+            var inversion = fb.Compile(((BlockExpression)bhex.Inversion).Expressions, CompilationContext.BindingContext);
             var helper = CompilationContext.Configuration.BlockHelpers[bhex.HelperName.Replace("#", "")];
             var arguments = new Expression[]
             {
                 Expression.Property(
                     CompilationContext.BindingContext,
                     typeof(BindingContext).GetProperty("TextWriter")),
-                body,
+                Expression.New(
+                        typeof(HelperOptions).GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic)[0],
+                        body,
+                        inversion),
                 Expression.Property(
                     CompilationContext.BindingContext,
                     typeof(BindingContext).GetProperty("Value")),

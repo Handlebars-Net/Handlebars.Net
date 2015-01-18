@@ -73,7 +73,7 @@ namespace Handlebars.Compiler
 
         private static bool IsFalseyOrEmpty(object value)
         {
-            if(IsFalsy(value))
+            if(HandlebarsUtils.IsFalsy(value))
             {
                 return true;
             }
@@ -82,53 +82,6 @@ namespace Handlebars.Compiler
                 return true;
             }
             return false;
-        }
-
-        private static bool IsFalsy(object value)
-        {
-            if (value is UndefinedBindingResult)
-            {
-                return true;
-            }
-            if (value == null)
-            {
-                return true;
-            }
-            else if (value is bool)
-            {
-                return !(bool)value;
-            }
-            else if (value is string)
-            {
-                if ((string)value == "")
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else if (IsNumber(value))
-            {
-                return !System.Convert.ToBoolean(value);
-            }
-            return false;
-        }
-
-        private static bool IsNumber(object value)
-        {
-            return value is sbyte
-                || value is byte
-                || value is short
-                || value is ushort
-                || value is int
-                || value is uint
-                || value is long
-                || value is ulong
-                || value is float
-                || value is double
-                || value is decimal;
         }
     }
 }

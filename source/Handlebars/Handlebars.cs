@@ -4,7 +4,7 @@ using System.IO;
 namespace Handlebars
 {
     public delegate void HandlebarsHelper(TextWriter output, dynamic context, params object[] arguments);
-    public delegate void HandlebarsBlockHelper(TextWriter output, Action<TextWriter, object> template, dynamic context, params object[] arguments);
+    public delegate void HandlebarsBlockHelper(TextWriter output, HelperOptions options, dynamic context, params object[] arguments);
 
     public sealed partial class Handlebars
     {

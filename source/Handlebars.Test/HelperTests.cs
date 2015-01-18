@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
 using System;
-using Handlebars;
+using System.Collections;
 
 namespace Handlebars.Test
 {
@@ -103,6 +103,44 @@ namespace Handlebars.Test
             var output = template(data);
             var expected = "";
             Assert.AreEqual(expected, output);
+        }
+
+        [Test]
+        public void BlockHelperWithArbitraryInversion()
+        {
+            var source = "{{#ifCond arg1 arg2}}Args are same{{else}}Args are not same{{/ifCond}}";
+
+            Handlebars.RegisterHelper("ifCond", (writer, options, context, arguments) => {
+                if(arguments[0] == arguments[1])
+                {
+                    options.Template(writer, (object)context);
+                }
+                else
+                {
+                    options.Inverse(writer, (object)context);
+                }
+            });
+
+            var dataWithSameValues = new
+                {
+                    arg1 = "a",
+                    arg2 = "a"
+                };
+            var dataWithDifferentValues = new
+                {
+                    arg1 = "a",
+                    arg2 = "b"
+                };
+
+            var template = Handlebars.Compile(source);
+
+            var outputIsSame = template(dataWithSameValues);
+            var expectedIsSame = "Args are same";
+            var outputIsDifferent = template(dataWithDifferentValues);
+            var expectedIsDifferent = "Args are not same";
+
+            Assert.AreEqual(expectedIsSame, outputIsSame);
+            Assert.AreEqual(expectedIsDifferent, outputIsDifferent);
         }
     }
 }

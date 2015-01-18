@@ -42,7 +42,8 @@ namespace Handlebars.Compiler
             return HandlebarsExpression.BlockHelper(
                 bhex.HelperName,
                 bhex.Arguments.Select(arg => Visit(arg)),
-                Visit(bhex.Body));
+                Visit(bhex.Body),
+                Visit(bhex.Inversion));
         }
 
         protected override Expression VisitHelperExpression(HelperExpression hex)
