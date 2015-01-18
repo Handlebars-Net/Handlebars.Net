@@ -26,7 +26,6 @@
     <OutputPath>bin\Release</OutputPath>
     <WarningLevel>4</WarningLevel>
     <AssemblyOriginatorKeyFile>..\..\handlebars.net.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -110,6 +109,8 @@
     <Compile Include="Compiler\Structure\OutputMode.cs" />
     <Compile Include="IHandlebars.cs" />
     <Compile Include="Compiler\Translation\Expression\UnencodedStatementVisitor.cs" />
+    <Compile Include="HandlebarsUtils.cs" />
+    <Compile Include="HelperOptions.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

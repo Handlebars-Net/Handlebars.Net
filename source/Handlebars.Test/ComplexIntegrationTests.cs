@@ -105,10 +105,10 @@ namespace Handlebars.Test
                 writer.WriteSafeString("<a href='" + parameters[0] + "'>" + parameters[1] + "</a>");
             });
 
-            Handlebars.RegisterHelper("block_helper", (writer, blockTemplate, context, arguments) => {
+            Handlebars.RegisterHelper("block_helper", (writer, options, context, arguments) => {
                 foreach(var item in arguments[0] as IEnumerable)
                 {
-                    blockTemplate(writer, item);
+                    options.Template(writer, item);
                 }
             });
 
