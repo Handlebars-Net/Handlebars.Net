@@ -30,12 +30,33 @@ namespace Handlebars.Compiler
                     {
                         throw new HandlebarsParserException("Partial indicator not followed by a parseable partial name");
                     }
-                    var endExpression = GetNext(enumerator) as EndExpressionToken;
-                    if (endExpression == null)
+
+                    var tempVariable = GetNext(enumerator);
+                    EndExpressionToken endExpression = null;
+                    var model = tempVariable as WordExpressionToken;
+                    if (model == null)
                     {
-                        throw new HandlebarsParserException("Partial reference followed by unexpected token");
+                        endExpression = tempVariable as EndExpressionToken;
                     }
-                    yield return HandlebarsExpression.Partial(partialName.Value);
+                    else
+                    {
+
+                        endExpression = GetNext(enumerator) as EndExpressionToken;
+                        if (endExpression == null)
+                        {
+                            throw new HandlebarsParserException("Partial reference followed by unexpected token");
+                        }
+                    }
+
+                    if (model != null)
+                    {
+                        yield return HandlebarsExpression.Partial(partialName.Value, model.Value);
+                    }
+                    else
+                    {
+                        yield return HandlebarsExpression.Partial(partialName.Value, "");
+                    }
+
                     yield return endExpression;
                 }
                 else

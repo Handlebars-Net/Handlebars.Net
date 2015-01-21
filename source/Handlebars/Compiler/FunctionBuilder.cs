@@ -44,6 +44,8 @@ namespace Handlebars.Compiler
                 expression = BoolishConverter.Convert(expression, compilationContext);
                 expression = PathBinder.Bind(expression, compilationContext);
                 expression = ContextBinder.Bind(expression, compilationContext, parentContext);
+
+
                 return expression;
             }
             catch (Exception ex)

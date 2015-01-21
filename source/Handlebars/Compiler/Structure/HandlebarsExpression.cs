@@ -81,9 +81,9 @@ namespace Handlebars.Compiler
             return new DeferredSectionExpression(path, body, evalMode);
         }
 
-        public static PartialExpression Partial(string partialName)
+        public static PartialExpression Partial(string partialName,string objectPassedIn)
         {
-            return new PartialExpression(partialName);
+            return new PartialExpression(partialName, objectPassedIn);
         }
 
         public static BoolishExpression Boolish(Expression condition)
