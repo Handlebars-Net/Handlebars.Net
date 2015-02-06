@@ -43,6 +43,50 @@ var result = template(data);
 */
 ```
 
+###Registering Partials
+```c#
+string partialSource =
+@"<div id=""partial"">
+  {{partial.content}}
+</div>";
+
+using (var reader = new StringReader(partialSource))
+{
+  var partialTemplate = Handlebars.Compile(reader);
+  Handlebars.RegisterTemplate("partialName", partialTemplate);
+}
+
+string source =
+@"<div id=""mainContainer"">
+  {{mainContent}}
+  <div id=""partialContainer"">
+    {{>partialName}}  
+  </div>
+</div>";
+
+var template = Handlebars.Compile(source);
+
+var data = new {
+  mainContent = "Main content",
+  partial = new {
+        content = "Partial content"
+  }
+};
+
+var result = template(data);
+
+/* Would render:
+<div id="mainContainer">
+  Main content
+  <div id="partialContainer">
+    <div id="partial">
+      Partial content
+    </div>  
+  </div>
+</div>
+*/
+```
+
 ###Registering Helpers
 ```c#
 Handlebars.RegisterHelper("link_to", (writer, context, parameters) => {
