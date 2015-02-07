@@ -40,6 +40,13 @@ namespace Handlebars
         {
             _singleton.RegisterHelper(helperName, helperFunction);
         }
+
+        /// <summary>
+        /// Expose the configuration on order to have access in all Helpers and Templates.
+        /// </summary>
+        public static HandlebarsConfiguration Configuration
+        {
+            get { return _singleton.Configuration; }
+        }
     }
 }
-
