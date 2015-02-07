@@ -21,9 +21,9 @@ namespace Handlebars.Compiler
             tokens = StaticConverter.Convert(tokens);
             tokens = CommentRemover.Remove(tokens);
             tokens = LiteralConverter.Convert(tokens);
-            tokens = PartialConverter.Convert(tokens);
             tokens = HelperConverter.Convert(tokens, _configuration);
             tokens = PathConverter.Convert(tokens);
+            tokens = PartialConverter.Convert(tokens);
             tokens = HelperArgumentAccumulator.Accumulate(tokens);
             tokens = ExpressionScopeConverter.Convert(tokens);
             tokens = BlockAccumulator.Accumulate(tokens, _configuration);

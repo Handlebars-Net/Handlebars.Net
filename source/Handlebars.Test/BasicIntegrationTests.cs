@@ -345,6 +345,30 @@ namespace Handlebars.Test
             Assert.AreEqual("Hello, Marc!", result);
         }
 
+        [Test]
+        public void BasicPartialWithContext()
+        {
+            string source = "Hello, {{>person leadDev}}!";
+
+            var template = Handlebars.Compile(source);
+
+            var data = new {
+                leadDev = new {
+                    name = "Marc"
+                }
+            };
+
+            var partialSource = "{{name}}";
+            using(var reader = new StringReader(partialSource))
+            {
+                var partialTemplate = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("person", partialTemplate);
+            }
+
+            var result = template(data);
+            Assert.AreEqual("Hello, Marc!", result);
+        }
+
 		[Test]
 		public void BasicPropertyMissing()
 		{

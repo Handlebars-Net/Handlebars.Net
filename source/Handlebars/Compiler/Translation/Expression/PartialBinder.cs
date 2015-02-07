@@ -29,10 +29,18 @@ namespace Handlebars.Compiler
 
         protected override Expression VisitPartialExpression(PartialExpression pex)
         {
+            Expression bindingContext = CompilationContext.BindingContext;
+            if (pex.Argument != null)
+            {
+                bindingContext = Expression.Call(
+                    bindingContext,
+                    typeof(BindingContext).GetMethod("CreateChildContext"),
+                    pex.Argument);
+            }
             return Expression.Call(
                 new Action<string, BindingContext, HandlebarsConfiguration>(InvokePartial).Method,
                 Expression.Constant(pex.PartialName),
-                CompilationContext.BindingContext,
+                bindingContext,
                 Expression.Constant(CompilationContext.Configuration));
         }
 

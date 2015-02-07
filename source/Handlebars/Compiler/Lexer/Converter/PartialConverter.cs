@@ -25,24 +25,44 @@ namespace Handlebars.Compiler
                 var item = enumerator.Current;
                 if (item is PartialToken)
                 {
-                    var partialName = GetNext(enumerator) as WordExpressionToken;
-                    if (partialName == null)
+                    var partialToken = item as PartialToken;
+                    var partialName = partialToken.Value.Substring(1);
+                    var arguments = AccumulateArguments(enumerator);
+                    if (arguments.Count == 0)
                     {
-                        throw new HandlebarsParserException("Partial indicator not followed by a parseable partial name");
+                        yield return HandlebarsExpression.Partial(partialName);
                     }
-                    var endExpression = GetNext(enumerator) as EndExpressionToken;
-                    if (endExpression == null)
+                    else if (arguments.Count == 1)
                     {
-                        throw new HandlebarsParserException("Partial reference followed by unexpected token");
+                        yield return HandlebarsExpression.Partial(partialName, arguments[0]);
                     }
-                    yield return HandlebarsExpression.Partial(partialName.Value);
-                    yield return endExpression;
+                    else
+                    {
+                        throw new HandlebarsCompilerException("Partial can only accept 0 or 1 arguments");
+                    }
+                    yield return enumerator.Current;
                 }
                 else
                 {
                     yield return item;
                 }
             }
+        }
+
+        private static List<Expression> AccumulateArguments(IEnumerator<object> enumerator)
+        {
+            var item = GetNext(enumerator);
+            List<Expression> helperArguments = new List<Expression>();
+            while ((item is EndExpressionToken) == false)
+            {
+                if ((item is Expression) == false)
+                {
+                    throw new HandlebarsCompilerException(string.Format("Token '{0}' could not be converted to an expression", item));
+                }
+                helperArguments.Add((Expression)item);
+                item = GetNext(enumerator);
+            }
+            return helperArguments;
         }
 
         private static object GetNext(IEnumerator<object> enumerator)

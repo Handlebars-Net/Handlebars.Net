@@ -94,6 +94,11 @@ namespace Handlebars.Compiler
             return returnValue;
         }
 
+        public virtual BindingContext CreateChildContext(object value)
+        {
+            return new BindingContext(value, this._encodedWriter, this);
+        }
+
         private static TextWriter GetEncodedWriter(TextWriter writer)
         {
             if (typeof(EncodedTextWriter).IsAssignableFrom(writer.GetType()))

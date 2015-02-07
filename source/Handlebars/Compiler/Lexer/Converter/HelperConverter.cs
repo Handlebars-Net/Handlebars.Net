@@ -39,18 +39,14 @@ namespace Handlebars.Compiler
                         yield return item;
                         continue;
                     }
-                    if ((item is WordExpressionToken) == false)
-                    {
-                        throw new HandlebarsCompilerException("Encountered a non-word symbol at the beginning of the handlebars expression.");
-                    }
                     var word = item as WordExpressionToken;
-                    if (IsRegisteredHelperName(word.Value))
+                    if (word != null && IsRegisteredHelperName(word.Value))
                     {
                         yield return HandlebarsExpression.Helper(word.Value);
                     }
                     else
                     {
-                        yield return word;
+                        yield return item;
                     }
                 }
                 else

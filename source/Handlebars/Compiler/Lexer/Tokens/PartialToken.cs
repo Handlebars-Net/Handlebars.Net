@@ -4,8 +4,11 @@ namespace Handlebars.Compiler.Lexer
 {
     internal class PartialToken : Token
     {
-        public PartialToken()
+        private readonly string _partialName;
+
+        public PartialToken(string partialName)
         {
+            _partialName = partialName;
         }
 
         public override TokenType Type
@@ -15,7 +18,12 @@ namespace Handlebars.Compiler.Lexer
 
         public override string Value
         {
-            get { return ">"; }
+            get { return _partialName; }
+        }
+
+        public override string ToString()
+        {
+            return this.Value;
         }
     }
 }

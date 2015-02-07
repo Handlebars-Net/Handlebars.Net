@@ -38,9 +38,9 @@ namespace Handlebars.Compiler.Lexer
             return new CommentToken(comment);
         }
 
-        public static PartialToken Partial()
+        public static PartialToken Partial(string partialName)
         {
-            return new PartialToken();
+            return new PartialToken(partialName);
         }
     }
 }
