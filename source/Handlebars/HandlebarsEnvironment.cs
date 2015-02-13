@@ -58,10 +58,7 @@ namespace Handlebars
             {
                 lock (typeof(Handlebars))
                 {
-                    if (_configuration.RegisteredTemplates.ContainsKey(templateName) == false)
-                    {
-                        _configuration.RegisteredTemplates.Add(templateName, template);
-                    }
+                    _configuration.RegisteredTemplates.AddOrUpdate(templateName, template);
                 }
             }
 
@@ -69,10 +66,7 @@ namespace Handlebars
             {
                 lock (typeof(Handlebars))
                 {
-                    if (_configuration.Helpers.ContainsKey(helperName) == false)
-                    {
-                        _configuration.Helpers.Add(helperName, helperFunction);
-                    }
+                    _configuration.Helpers.AddOrUpdate(helperName, helperFunction);
                 }
             }
 
@@ -80,10 +74,7 @@ namespace Handlebars
             {
                 lock (typeof(Handlebars))
                 {
-                    if (_configuration.BlockHelpers.ContainsKey(helperName) == false)
-                    {
-                        _configuration.BlockHelpers.Add(helperName, helperFunction);
-                    }
+                    _configuration.BlockHelpers.AddOrUpdate(helperName, helperFunction);
                 }
             }
 
