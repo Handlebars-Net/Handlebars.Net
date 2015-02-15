@@ -1,5 +1,6 @@
 ﻿using System;
 using NUnit.Framework;
+using System.Collections.Generic;
 
 namespace Handlebars.Test
 {
@@ -93,6 +94,32 @@ namespace Handlebars.Test
             var data = new
                 {
                     people = new object[] { }
+                };
+            var result = template(data);
+            Assert.AreEqual("Hello, (no one listed)", result);
+        }
+
+        [Test]
+        public void NullObject()
+        {
+            var source = "Hello,{{#each people}}\n- {{name}}{{else}} (no one listed){{/each}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+                {
+                    people = (object)null
+                };
+            var result = template(data);
+            Assert.AreEqual("Hello, (no one listed)", result);
+        }
+
+        [Test]
+        public void NullSequence()
+        {
+            var source = "Hello,{{#each people}}\n- {{name}}{{else}} (no one listed){{/each}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+                {
+                    people = (object[])null
                 };
             var result = template(data);
             Assert.AreEqual("Hello, (no one listed)", result);

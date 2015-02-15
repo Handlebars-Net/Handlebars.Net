@@ -210,6 +210,21 @@ namespace Handlebars.Test
         }
 
         [Test]
+        public void BasicDeferredBlockNull()
+        {
+            string source = "Hello, {{#person}}{{name}}{{/person}}!";
+
+            var template = Handlebars.Compile(source);
+
+            var data = new {
+                person = (object)null
+            };
+
+            var result = template(data);
+            Assert.AreEqual("Hello, !", result);
+        }
+
+        [Test]
         public void BasicDeferredBlockEnumerable()
         {
             string source = "Hello, {{#people}}{{this}} {{/people}}!";
@@ -272,6 +287,21 @@ namespace Handlebars.Test
 			var result = template(data);
 			Assert.AreEqual("Hello, ", result);
 		}
+
+        [Test]
+        public void BasicNullFalsy()
+        {
+            string source = "Hello, {{#if falsy}}Truthy!{{/if}}";
+
+            var template = Handlebars.Compile(source);
+
+            var data = new {
+                falsy = (object)null
+            };
+
+            var result = template(data);
+            Assert.AreEqual("Hello, ", result);
+        }
 
 		[Test]
 		public void BasicNumericTruthy()
