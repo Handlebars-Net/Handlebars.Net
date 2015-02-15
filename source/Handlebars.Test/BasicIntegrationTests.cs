@@ -20,6 +20,18 @@ namespace Handlebars.Test
         }
 
         [Test]
+        public void BasicPathWhiteSpace()
+        {
+            var source = "Hello, {{ name }}!";
+            var template = Handlebars.Compile(source);
+            var data = new {
+                name = "Handlebars.Net"
+            };
+            var result = template(data);
+            Assert.AreEqual("Hello, Handlebars.Net!", result);
+        }
+
+        [Test]
         public void BasicIfElse()
         {
             var source = "Hello, {{#if basic_bool}}Bob{{else}}Sam{{/if}}!";
@@ -48,98 +60,6 @@ namespace Handlebars.Test
             };
             var result = template(data);
             Assert.AreEqual("Hello, my good friend Erik!", result);
-        }
-
-        [Test]
-        public void BasicIterator()
-        {
-            var source = "Hello,{{#each people}}\n- {{name}}{{/each}}";
-            var template = Handlebars.Compile(source);
-            var data = new {
-                people = new []{
-                    new { 
-                        name = "Erik"
-                    },
-                    new {
-                        name = "Helen"
-                    }
-                }
-            };
-            var result = template(data);
-            Assert.AreEqual("Hello,\n- Erik\n- Helen", result);
-        }
-
-        [Test]
-        public void BasicIteratorWithIndex()
-        {
-            var source = "Hello,{{#each people}}\n{{@index}}. {{name}}{{/each}}";
-            var template = Handlebars.Compile(source);
-            var data = new
-            {
-                people = new[]{
-                    new { 
-                        name = "Erik"
-                    },
-                    new {
-                        name = "Helen"
-                    }
-                }
-            };
-            var result = template(data);
-            Assert.AreEqual("Hello,\n0. Erik\n1. Helen", result);
-        }
-
-        [Test]
-        public void BasicIteratorWithFirst()
-        {
-			var source = "Hello,{{#each people}}\n{{@index}}. {{name}} ({{name}} is {{#if @first}}first{{else}}not first{{/if}}){{/each}}";
-            var template = Handlebars.Compile(source);
-            var data = new
-            {
-                people = new[]{
-                    new { 
-                        name = "Erik"
-                    },
-                    new {
-                        name = "Helen"
-                    }
-                }
-            };
-            var result = template(data);
-            Assert.AreEqual("Hello,\n0. Erik (Erik is first)\n1. Helen (Helen is not first)", result);
-        }
-
-        [Test]
-        public void BasicIteratorWithLast()
-        {
-			var source = "Hello,{{#each people}}\n{{@index}}. {{name}} ({{name}} is {{#if @last}}last{{else}}not last{{/if}}){{/each}}";
-            var template = Handlebars.Compile(source);
-            var data = new
-            {
-                people = new[]{
-                    new { 
-                        name = "Erik"
-                    },
-                    new {
-                        name = "Helen"
-                    }
-                }
-            };
-            var result = template(data);
-            Assert.AreEqual("Hello,\n0. Erik (Erik is not last)\n1. Helen (Helen is last)", result);
-        }
-
-        [Test]
-        public void BasicIteratorEmpty()
-        {
-            var source = "Hello,{{#each people}}\n- {{name}}{{else}} (no one listed){{/each}}";
-            var template = Handlebars.Compile(source);
-            var data = new
-            {
-                people = new object[] { }
-            };
-            var result = template(data);
-            Assert.AreEqual("Hello, (no one listed)", result);
         }
 
         [Test]
@@ -321,52 +241,6 @@ namespace Handlebars.Test
 
             var result = template(data);
             Assert.AreEqual("Hello, nobody!", result);
-        }
-
-        [Test]
-        public void BasicPartial()
-        {
-            string source = "Hello, {{>person}}!";
-
-            var template = Handlebars.Compile(source);
-
-            var data = new {
-                name = "Marc"
-            };
-
-            var partialSource = "{{name}}";
-            using(var reader = new StringReader(partialSource))
-            {
-                var partialTemplate = Handlebars.Compile(reader);
-                Handlebars.RegisterTemplate("person", partialTemplate);
-            }
-
-            var result = template(data);
-            Assert.AreEqual("Hello, Marc!", result);
-        }
-
-        [Test]
-        public void BasicPartialWithContext()
-        {
-            string source = "Hello, {{>person leadDev}}!";
-
-            var template = Handlebars.Compile(source);
-
-            var data = new {
-                leadDev = new {
-                    name = "Marc"
-                }
-            };
-
-            var partialSource = "{{name}}";
-            using(var reader = new StringReader(partialSource))
-            {
-                var partialTemplate = Handlebars.Compile(reader);
-                Handlebars.RegisterTemplate("person", partialTemplate);
-            }
-
-            var result = template(data);
-            Assert.AreEqual("Hello, Marc!", result);
         }
 
 		[Test]

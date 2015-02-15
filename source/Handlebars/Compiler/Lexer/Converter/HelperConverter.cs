@@ -8,7 +8,7 @@ namespace Handlebars.Compiler
 {
     internal class HelperConverter : TokenConverter
     {
-        private static readonly string[] builtInHelpers = new [] { "if", "else", "unless", "each" };
+        private static readonly string[] builtInHelpers = new [] { "else", "each" };
 
         public static IEnumerable<object> Convert(
             IEnumerable<object> sequence,

@@ -47,6 +47,8 @@
     <Compile Include="DynamicTests.cs" />
     <Compile Include="HelperTests.cs" />
     <Compile Include="TripleStashTests.cs" />
+    <Compile Include="PartialTests.cs" />
+    <Compile Include="IteratorTests.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

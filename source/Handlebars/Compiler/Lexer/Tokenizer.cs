@@ -80,7 +80,7 @@ namespace Handlebars.Compiler.Lexer
                         yield return Token.EndExpression(escaped);
                         inExpression = false;
                     }
-                    else if (char.IsWhiteSpace((char)node))
+                    else if (char.IsWhiteSpace((char)node) || char.IsWhiteSpace((char)source.Peek()))
                     {
                         node = source.Read();
                         continue;
