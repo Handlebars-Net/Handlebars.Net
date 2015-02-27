@@ -163,7 +163,12 @@ namespace Handlebars.Compiler
             {
                 return ((IDictionary)instance)[resolvedMemberName];
             }
-
+            if (instanceType.GetInterfaces()
+                .Where(i => i.IsGenericType)
+                .Any(i => i.GetGenericTypeDefinition() == typeof(IDictionary<,>)))
+            {
+               return instanceType.GetMethod("get_Item").Invoke(instance, new object[] { resolvedMemberName });
+            }
             var members = instanceType.GetMember(resolvedMemberName);
             if (members.Length == 0)
             {

@@ -370,7 +370,7 @@ namespace Handlebars.Test
         }
 
         [Test]
-        public void DictionaryDataRender()
+        public void BasicDictionary()
         {
             var source =
                 "<div id='userInfo'>UserName: {{userInfo.userName}} Language: {{userInfo.language}}</div>"
@@ -398,6 +398,110 @@ namespace Handlebars.Test
                 + "<div id='main' style='width:120px; height:80px'>body</div>";
 
             Assert.AreEqual(result, expectedResult);
+        }
+
+        [Test]
+        public void BasicIDictionary()
+        {
+            var source = "{{dictionary.key}}";
+
+            var template = Handlebars.Compile(source);
+
+            var result = template(new
+            {
+                dictionary = new MockDictionary()
+            });
+            var expectedResult = 
+                "Hello world!";
+
+            Assert.AreEqual(result, expectedResult);
+        }
+
+        private class MockDictionary : IDictionary<string, string>
+        {
+            public void Add(string key, string value)
+            {
+                throw new NotImplementedException();
+            }
+            public bool ContainsKey(string key)
+            {
+                throw new NotImplementedException();
+            }
+            public bool Remove(string key)
+            {
+                throw new NotImplementedException();
+            }
+            public bool TryGetValue(string key, out string value)
+            {
+                throw new NotImplementedException();
+            }
+            public string this[string index]
+            {
+                get
+                {
+                    return "Hello world!";
+                }
+                set
+                {
+                    throw new NotImplementedException();
+                }
+            }
+            public ICollection<string> Keys
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+            public ICollection<string> Values
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+            public void Add(KeyValuePair<string, string> item)
+            {
+                throw new NotImplementedException();
+            }
+            public void Clear()
+            {
+                throw new NotImplementedException();
+            }
+            public bool Contains(KeyValuePair<string, string> item)
+            {
+                throw new NotImplementedException();
+            }
+            public void CopyTo(KeyValuePair<string, string>[] array, int arrayIndex)
+            {
+                throw new NotImplementedException();
+            }
+            public bool Remove(KeyValuePair<string, string> item)
+            {
+                throw new NotImplementedException();
+            }
+            public int Count
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+            public bool IsReadOnly
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+            public IEnumerator<KeyValuePair<string, string>> GetEnumerator()
+            {
+                throw new NotImplementedException();
+            }
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }
