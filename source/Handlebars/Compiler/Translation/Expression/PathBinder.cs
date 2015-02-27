@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -158,9 +159,9 @@ namespace Handlebars.Compiler
             }
 
             var instanceType = instance.GetType();
-            if (instanceType.IsGenericType && instanceType.GetGenericTypeDefinition() == typeof(Dictionary<,>))
+            if (instance is IDictionary)
             {
-                return instanceType.GetMethod("get_Item").Invoke(instance, new object[] { resolvedMemberName });
+                return ((IDictionary)instance)[resolvedMemberName];
             }
 
             var members = instanceType.GetMember(resolvedMemberName);
