@@ -109,33 +109,6 @@ Click here: <a href='https://github.com/rexm/handlebars.net'>Handlebars.Net</a>
 */
 ```
 
-###Using Dictionary
-```c#
-var source = "<div style='width:{{clientSettings.width}}px'>User: {{userInfo.userName}} Language: {{userInfo.language}}</div>";
-
-var template = Handlebars.Compile(source);
-
-var embeded = new Dictionary<string, object>();
-embeded.Add("userInfo", 
-  new
-  {
-      userName = "Ondrej",
-      language = "Slovak"
-  });
-embeded.Add("clientSettings",
-  new
-  {
-      width = 120,
-      height = 80
-  });
-
-var result = template(embeded);
-
-/* Would render:
-<div style='width:120px'>User: Ondrej Language: Slovak</div>
-*/
-```
-
 ##Future roadmap
 
 - [ ] **Add unit tests!**
