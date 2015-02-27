@@ -156,7 +156,14 @@ namespace Handlebars.Compiler
                     throw new HandlebarsRuntimeException("Could not resolve dynamic member name", ex);
                 }
             }
-            var members = instance.GetType().GetMember(resolvedMemberName);
+
+            var instanceType = instance.GetType();
+            if (instanceType.IsGenericType && instanceType.GetGenericTypeDefinition() == typeof(Dictionary<,>))
+            {
+                return instanceType.GetMethod("get_Item").Invoke(instance, new object[] { resolvedMemberName });
+            }
+
+            var members = instanceType.GetMember(resolvedMemberName);
             if (members.Length == 0)
             {
                 throw new InvalidOperationException("Template referenced property name that does not exist.");

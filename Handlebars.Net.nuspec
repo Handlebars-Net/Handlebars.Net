@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>Handlebars.Net</id>
-        <version>1.2.6</version>
+        <version>1.2.7</version>
         <title>Handlebars.Net</title>
         <authors>Rex Morgan</authors>
         <projectUrl>https://github.com/rexm/Handlebars.Net</projectUrl>
@@ -11,7 +11,7 @@
         <description>Blistering-fast Handlebars.js templates in your .NET application.</description>
         <summary>Blistering-fast Handlebars.js templates in your .NET application.</summary>
         <tags>handlebars mustache templating engine compiler</tags>
-        <releaseNotes>Now correctly handles whitespace around paths and partials. # and / still don’t like extra whitespace. See http://git.io/N1ED for details.</releaseNotes>
+        <releaseNotes>Now supporting accessing dictionary with dot notation. Correctly handles whitespace around paths and partials. # and / still don’t like extra whitespace. See http://git.io/N1ED for details.</releaseNotes>
     </metadata>
     <files>
         <file src="source/Handlebars/bin/Release/Handlebars.dll" target="lib/Handlebars.dll" />
