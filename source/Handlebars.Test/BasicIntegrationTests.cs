@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Handlebars.Test
@@ -366,6 +367,37 @@ namespace Handlebars.Test
 
             var result = template(data);
             Assert.AreEqual("- Rex is member of Engineering\n- Todd is member of Engineering\n", result);
+        }
+
+        [Test]
+        public void DictionaryDataRender()
+        {
+            var source =
+                "<div id='userInfo'>UserName: {{userInfo.userName}} Language: {{userInfo.language}}</div>"
+                + "<div id='main' style='width:{{clientSettings.width}}px; height:{{clientSettings.height}}px'>body</div>";
+
+            var template = Handlebars.Compile(source);
+
+            var embeded = new Dictionary<string, object>();
+            embeded.Add("userInfo", 
+                new
+                {
+                    userName = "Ondrej",
+                    language = "Slovak"
+                });
+            embeded.Add("clientSettings",
+                new
+                {
+                    width = 120,
+                    height = 80
+                });
+
+            var result = template(embeded);
+            var expectedResult = 
+                "<div id='userInfo'>UserName: Ondrej Language: Slovak</div>"
+                + "<div id='main' style='width:120px; height:80px'>body</div>";
+
+            Assert.AreEqual(result, expectedResult);
         }
     }
 }

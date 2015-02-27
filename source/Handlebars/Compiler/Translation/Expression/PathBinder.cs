@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -156,7 +157,14 @@ namespace Handlebars.Compiler
                     throw new HandlebarsRuntimeException("Could not resolve dynamic member name", ex);
                 }
             }
-            var members = instance.GetType().GetMember(resolvedMemberName);
+
+            var instanceType = instance.GetType();
+            if (instance is IDictionary)
+            {
+                return ((IDictionary)instance)[resolvedMemberName];
+            }
+
+            var members = instanceType.GetMember(resolvedMemberName);
             if (members.Length == 0)
             {
                 throw new InvalidOperationException("Template referenced property name that does not exist.");
