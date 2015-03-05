@@ -3,6 +3,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.IO;
 using System.Collections;
+using System.Collections.Generic;
+using System.Dynamic;
 using System.Reflection;
 
 namespace Handlebars.Compiler
@@ -51,8 +53,14 @@ namespace Handlebars.Compiler
                     iteratorBindingContext
                 },
                 Expression.IfThenElse(
-                    Expression.NotEqual(Expression.TypeAs(iex.Sequence, typeof(IEnumerable)), Expression.Constant(null)),
-                    GetEnumerableIterator(iteratorBindingContext, iex),
+                    Expression.TypeIs(iex.Sequence, typeof(IEnumerable)),
+                    Expression.IfThenElse(
+                        Expression.TypeIs(iex.Sequence, typeof(IDynamicMetaObjectProvider)),
+                        GetDynamicIterator(iteratorBindingContext, iex),
+                        Expression.IfThenElse(
+                            Expression.Call(new Func<object, bool>(IsGenericDictionary).Method, new[] {iex.Sequence}),
+                            GetDictionaryIterator(iteratorBindingContext, iex),
+                            GetEnumerableIterator(iteratorBindingContext, iex))),
                     GetObjectIterator(iteratorBindingContext, iex))
             );
         }
@@ -95,6 +103,53 @@ namespace Handlebars.Compiler
                     }));
         }
 
+        private Expression GetDictionaryIterator(Expression contextParameter, IteratorExpression iex)
+        {
+            var fb = new FunctionBuilder(CompilationContext.Configuration);
+            return Expression.Block(
+                Expression.Assign(contextParameter,
+                    Expression.New(
+                        typeof(ObjectEnumeratorBindingContext).GetConstructor(new[] { typeof(BindingContext) }),
+                        new Expression[] { CompilationContext.BindingContext })),
+                Expression.Call(
+                    new Action<ObjectEnumeratorBindingContext, IEnumerable, Action<TextWriter, object>, Action<TextWriter, object>>(Iterate).Method,
+                    new Expression[]
+                    {
+                        Expression.Convert(contextParameter, typeof(ObjectEnumeratorBindingContext)),
+                        Expression.Convert(iex.Sequence, typeof(IEnumerable)),
+                        fb.Compile(new [] { iex.Template }, contextParameter),
+                        fb.Compile(new [] { iex.IfEmpty }, CompilationContext.BindingContext) 
+                    }));
+        }
+
+        private Expression GetDynamicIterator(Expression contextParameter, IteratorExpression iex)
+        {
+            var fb = new FunctionBuilder(CompilationContext.Configuration);
+            return Expression.Block(
+                Expression.Assign(contextParameter,
+                    Expression.New(
+                        typeof(ObjectEnumeratorBindingContext).GetConstructor(new[] { typeof(BindingContext) }),
+                        new Expression[] { CompilationContext.BindingContext })),
+                Expression.Call(
+                    new Action<ObjectEnumeratorBindingContext, IDynamicMetaObjectProvider, Action<TextWriter, object>, Action<TextWriter, object>>(Iterate).Method,
+                    new Expression[]
+                    {
+                        Expression.Convert(contextParameter, typeof(ObjectEnumeratorBindingContext)),
+                        Expression.Convert(iex.Sequence, typeof(IDynamicMetaObjectProvider)),
+                        fb.Compile(new [] { iex.Template }, contextParameter),
+                        fb.Compile(new [] { iex.IfEmpty }, CompilationContext.BindingContext) 
+                    }));
+        }
+
+        private static bool IsGenericDictionary(object target)
+        {
+            return
+                target.GetType()
+                    .GetInterfaces()
+                    .Where(i => i.IsGenericType)
+                    .Any(i => i.GetGenericTypeDefinition() == typeof (IDictionary<,>));
+        }
+
         private static void Iterate(
             ObjectEnumeratorBindingContext context,
             object target,
@@ -112,6 +167,71 @@ namespace Handlebars.Compiler
                 {
                     context.Key = member.Name;
                     var value = AccessMember(target, member);
+                    context.First = (context.Index == 0);
+                    template(context.TextWriter, value);
+                    context.Index++;
+                }
+                if (context.Index == 0)
+                {
+                    ifEmpty(context.TextWriter, context.Value);
+                }
+            }
+            else
+            {
+                ifEmpty(context.TextWriter, context.Value);
+            }
+        }
+
+        private static void Iterate(
+            ObjectEnumeratorBindingContext context,
+            IEnumerable target,
+            Action<TextWriter, object> template,
+            Action<TextWriter, object> ifEmpty)
+        {
+            if (HandlebarsUtils.IsTruthy(target))
+            {
+                context.Index = 0;
+                var keysProperty = target.GetType().GetProperty("Keys");
+                if (keysProperty != null)
+                {
+                    var keys = keysProperty.GetGetMethod().Invoke(target, null) as IEnumerable<object>;
+                    if (keys != null)
+                    {
+                        foreach (var key in keys)
+                        {
+                            context.Key = key.ToString();
+                            var value = target.GetType().GetMethod("get_Item").Invoke(target, new[] { key });
+                            context.First = (context.Index == 0);
+                            template(context.TextWriter, value);
+                            context.Index++;
+                        }
+                    }
+                }
+                if (context.Index == 0)
+                {
+                    ifEmpty(context.TextWriter, context.Value);
+                }
+            }
+            else
+            {
+                ifEmpty(context.TextWriter, context.Value);
+            }
+        }
+
+        private static void Iterate(
+            ObjectEnumeratorBindingContext context,
+            IDynamicMetaObjectProvider target,
+            Action<TextWriter, object> template,
+            Action<TextWriter, object> ifEmpty)
+        {
+            if (HandlebarsUtils.IsTruthy(target))
+            {
+                context.Index = 0;
+                var meta = target.GetMetaObject(Expression.Constant(target));
+                foreach (var name in meta.GetDynamicMemberNames())
+                {
+                    context.Key = name;
+                    var value = GetProperty(target, name);
                     context.First = (context.Index == 0);
                     template(context.TextWriter, value);
                     context.Index++;
@@ -147,6 +267,12 @@ namespace Handlebars.Compiler
             {
                 ifEmpty(context.TextWriter, context.Value);
             }
+        }
+
+        private static object GetProperty(object target, string name)
+        {
+            var site = System.Runtime.CompilerServices.CallSite<Func<System.Runtime.CompilerServices.CallSite, object, object>>.Create(Microsoft.CSharp.RuntimeBinder.Binder.GetMember(0, name, target.GetType(), new[] { Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo.Create(0, null) }));
+            return site.Target(site, target);
         }
 
         private class IteratorBindingContext : BindingContext

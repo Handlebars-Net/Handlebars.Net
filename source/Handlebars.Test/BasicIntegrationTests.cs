@@ -1,6 +1,7 @@
 ﻿using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.IO;
 
 namespace Handlebars.Test
@@ -132,6 +133,66 @@ namespace Handlebars.Test
                     bar = "world"
                 }
             };
+            var result = template(data);
+            Assert.AreEqual("foo: hello bar: world ", result);
+        }
+
+        [Test]
+        public void BasicDictionaryEnumerator()
+        {
+            var source = "{{#each enumerateMe}}{{this}} {{/each}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                enumerateMe = new Dictionary<string, object>
+                {
+                    { "foo", "hello" },
+                    { "bar", "world" }
+                }
+            };
+            var result = template(data);
+            Assert.AreEqual("hello world ", result);
+        }
+
+        [Test]
+        public void BasicDictionaryEnumeratorWithKey()
+        {
+            var source = "{{#each enumerateMe}}{{@key}}: {{this}} {{/each}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                enumerateMe = new Dictionary<string, object>
+                {
+                    { "foo", "hello" },
+                    { "bar", "world" }
+                }
+            };
+            var result = template(data);
+            Assert.AreEqual("foo: hello bar: world ", result);
+        }
+
+        [Test]
+        public void DynamicWithMetadataEnumerator()
+        {
+            var source = "{{#each enumerateMe}}{{this}} {{/each}}";
+            var template = Handlebars.Compile(source);
+            dynamic data = new ExpandoObject();
+            data.enumerateMe = new ExpandoObject();
+            data.enumerateMe.foo = "hello";
+            data.enumerateMe.bar = "world";
+            var result = template(data);
+            Assert.AreEqual("hello world ", result);
+        }
+
+        [Test]
+        public void DynamicWithMetadataEnumeratorWithKey()
+        {
+            var source = "{{#each enumerateMe}}{{@key}}: {{this}} {{/each}}";
+            var template = Handlebars.Compile(source);
+            dynamic data = new ExpandoObject();
+            data.enumerateMe = new ExpandoObject();
+            data.enumerateMe.foo = "hello";
+            data.enumerateMe.bar = "world";
             var result = template(data);
             Assert.AreEqual("foo: hello bar: world ", result);
         }
