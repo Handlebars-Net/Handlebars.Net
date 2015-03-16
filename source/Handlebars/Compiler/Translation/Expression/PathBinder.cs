@@ -7,6 +7,7 @@ using System.IO;
 using System.Dynamic;
 using Microsoft.CSharp.RuntimeBinder;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace Handlebars.Compiler
 {
@@ -136,10 +137,21 @@ namespace Handlebars.Compiler
                 }
                 return contextValue;
             }
-            else
+
+            var enumerable = instance as IEnumerable<object>;
+            if (enumerable != null)
             {
-                return AccessMember(instance, segment);
+                var index = 0;
+                var indexRegex = new Regex(@"^\[?(\d+)\]?$");
+                var match = indexRegex.Match(segment);
+                if (!match.Success || match.Groups.Count < 2 || !int.TryParse(match.Groups[1].Value, out index))
+                {
+                    throw new HandlebarsRuntimeException("Invalid array index in path.");
+                }
+                return enumerable.ElementAt(index);
             }
+
+            return AccessMember(instance, segment);
         }
 
         private object AccessMember(object instance, string memberName)

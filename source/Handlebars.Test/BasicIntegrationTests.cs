@@ -34,6 +34,45 @@ namespace Handlebars.Test
         }
 
         [Test]
+        public void BasicPathArray()
+        {
+            var source = "Hello, {{ names.[1] }}!";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                names = new[] {"Foo", "Handlebars.Net"}
+            };
+            var result = template(data);
+            Assert.AreEqual("Hello, Handlebars.Net!", result);
+        }
+
+        [Test]
+        public void BasicPathArrayChildPath()
+        {
+            var source = "Hello, {{ names.[1].name }}!";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                names = new[] {new {name = "Foo"}, new {name = "Handlebars.Net"}}
+            };
+            var result = template(data);
+            Assert.AreEqual("Hello, Handlebars.Net!", result);
+        }
+
+        [Test]
+        public void BasicPathArrayNoSquareBracketsChildPath()
+        {
+            var source = "Hello, {{ names.1.name }}!";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                names = new[] { new { name = "Foo" }, new { name = "Handlebars.Net" } }
+            };
+            var result = template(data);
+            Assert.AreEqual("Hello, Handlebars.Net!", result);
+        }
+
+        [Test]
         public void BasicIfElse()
         {
             var source = "Hello, {{#if basic_bool}}Bob{{else}}Sam{{/if}}!";
