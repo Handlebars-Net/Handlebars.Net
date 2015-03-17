@@ -17,9 +17,8 @@ namespace Handlebars.Compiler.Lexer
             }
             else if (IsNonDelimitedLiteral(reader) == true)
             {
-                char delimiter = ' ';
-                var buffer = AccumulateLiteral(reader, delimiter);
-                token = Token.Literal(buffer, delimiter.ToString());
+                var buffer = AccumulateLiteral(reader, ' ');
+                token = Token.Literal(buffer);
             }
             return token;
         }
@@ -41,7 +40,7 @@ namespace Handlebars.Compiler.Lexer
             StringBuilder buffer = new StringBuilder();
             while (true)
             {
-                var node = reader.Read();
+                var node = reader.Peek();
                 if (node == -1)
                 {
                     throw new InvalidOperationException("Reached end of template before the expression was closed.");
@@ -50,11 +49,16 @@ namespace Handlebars.Compiler.Lexer
                 {
                     if ((char)node == delimiter)
                     {
+                        reader.Read();
+                        break;
+                    }
+                    else if ((char)node == '}')
+                    {
                         break;
                     }
                     else
                     {
-                        buffer.Append((char)node);
+                        buffer.Append((char)reader.Read());
                     }
                 }
             }

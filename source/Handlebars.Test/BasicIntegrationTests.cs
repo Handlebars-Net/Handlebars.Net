@@ -450,6 +450,22 @@ namespace Handlebars.Test
 		}
 
         [Test]
+        public void BasicNumberLiteral()
+        {
+            string source = "{{eval 2  3}}";
+
+            Handlebars.RegisterHelper("eval",
+                (writer, context, args) => writer.Write("{0} {1}", args[0], args[1]));
+
+            var template = Handlebars.Compile(source);
+
+            var data = new { };
+
+            var result = template(data);
+            Assert.AreEqual("2 3", result);
+        }
+
+        [Test]
         public void BasicRoot()
         {
             string source = "{{#people}}- {{this}} is member of {{@root.group}}\n{{/people}}";
