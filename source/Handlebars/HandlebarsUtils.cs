@@ -1,5 +1,7 @@
 ﻿using System;
 using Handlebars.Compiler;
+using System.Collections;
+using System.Linq;
 
 namespace Handlebars
 {
@@ -38,6 +40,24 @@ namespace Handlebars
             else if (IsNumber(value))
             {
                 return !System.Convert.ToBoolean(value);
+            }
+            return false;
+        }
+
+        public static bool IsTruthyOrNonEmpty(object value)
+        {
+            return !IsFalsyOrEmpty(value);
+        }
+
+        public static bool IsFalsyOrEmpty(object value)
+        {
+            if(IsFalsy(value))
+            {
+                return true;
+            }
+            else if (value is IEnumerable && ((IEnumerable)value).OfType<object>().Any() == false)
+            {
+                return true;
             }
             return false;
         }

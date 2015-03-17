@@ -25,7 +25,7 @@ namespace Handlebars
             {
                 throw new HandlebarsException("{{if}} helper must have exactly one argument");
             }
-            if (HandlebarsUtils.IsTruthy(arguments[0]))
+            if (HandlebarsUtils.IsTruthyOrNonEmpty(arguments[0]))
             {
                 options.Template(output, context);
             }

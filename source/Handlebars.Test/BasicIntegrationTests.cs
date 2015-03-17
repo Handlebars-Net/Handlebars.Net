@@ -434,6 +434,22 @@ namespace Handlebars.Test
 			Assert.AreEqual("Hello, ", result);
 		}
 
+        [Test]
+        public void BasicEmptyArrayFalsy()
+        {
+            var source = "{{#if Array}}stuff: {{#each Array}}{{this}}{{/each}}{{/if}}";
+
+            var template = Handlebars.Compile(source);
+
+            var data = new {
+                Array = new object[] {}
+            };
+
+            var result = template(data);
+
+            Assert.AreEqual("", result);
+        }
+
 		[Test]
 		public void BasicTripleStash()
 		{

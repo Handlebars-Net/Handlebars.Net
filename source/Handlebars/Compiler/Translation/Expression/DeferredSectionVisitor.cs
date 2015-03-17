@@ -42,7 +42,7 @@ namespace Handlebars.Compiler
 
         private static void RenderEmptySection(object value, BindingContext context, Action<TextWriter, object> template)
         {
-            if (IsFalseyOrEmpty(value) == true)
+            if (HandlebarsUtils.IsFalsyOrEmpty(value) == true)
             {
                 template(context.TextWriter, value);
             }
@@ -50,7 +50,7 @@ namespace Handlebars.Compiler
 
         private static void RenderSection(object value, BindingContext context, Action<TextWriter, object> template)
         {
-            if (IsFalseyOrEmpty(value))
+            if (HandlebarsUtils.IsFalsyOrEmpty(value))
             {
                 return;
             }
@@ -69,19 +69,6 @@ namespace Handlebars.Compiler
             {
                 throw new HandlebarsRuntimeException("Could not render value for the section");
             }
-        }
-
-        private static bool IsFalseyOrEmpty(object value)
-        {
-            if(HandlebarsUtils.IsFalsy(value))
-            {
-                return true;
-            }
-            else if (value is IEnumerable && ((IEnumerable)value).OfType<object>().Any() == false)
-            {
-                return true;
-            }
-            return false;
         }
     }
 }
