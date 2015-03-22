@@ -143,24 +143,38 @@ namespace Handlebars.Compiler
             }
         }
 
+        private static readonly Regex IndexRegex = new Regex(@"^\[?(?<index>\d+)\]?$", RegexOptions.Compiled);
+
         private object AccessMember(object instance, string memberName)
         {
             var enumerable = instance as IEnumerable<object>;
             if (enumerable != null)
             {
-                var index = 0;
-                var indexRegex = new Regex(@"^\[?(\d+)\]?$");
-                var match = indexRegex.Match(memberName);
-                if (!match.Success || match.Groups.Count < 2 || !int.TryParse(match.Groups[1].Value, out index))
+                int index = 0;
+                var match = IndexRegex.Match(memberName);
+                if (match.Success == true)
                 {
-                    throw new HandlebarsRuntimeException("Invalid array index in path.");
+                    if (match.Groups["index"].Success == false || int.TryParse(match.Groups["index"].Value, out index) == false)
+                    {
+                        throw new HandlebarsRuntimeException("Invalid array index in path");
+                    }
+                    else
+                    {
+                        try
+                        {
+                            return enumerable.ElementAt(index);
+                        }
+                        catch(ArgumentOutOfRangeException)
+                        {
+                            throw new HandlebarsRuntimeException("Array index in path was larger than array provided");
+                        }
+                    }
                 }
-                return enumerable.ElementAt(index);
             }
-
             var resolvedMemberName = this.ResolveMemberName(memberName);
+            var instanceType = instance.GetType();
             //crude handling for dynamic objects that don't have metadata
-            if (typeof(IDynamicMetaObjectProvider).IsAssignableFrom(instance.GetType()))
+            if (typeof(IDynamicMetaObjectProvider).IsAssignableFrom(instanceType))
             {
                 try
                 {
@@ -171,8 +185,6 @@ namespace Handlebars.Compiler
                     throw new HandlebarsRuntimeException("Could not resolve dynamic member name", ex);
                 }
             }
-
-            var instanceType = instance.GetType();
             if (instance is IDictionary)
             {
                 return ((IDictionary)instance)[resolvedMemberName];

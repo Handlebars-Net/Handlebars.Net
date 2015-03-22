@@ -73,6 +73,19 @@ namespace Handlebars.Test
         }
 
         [Test]
+        public void BasicPropertyOnArray()
+        {
+            var source = "Array is {{ names.Length }} item(s) long";
+            var template = Handlebars.Compile(source);
+            var data = new
+                {
+                    names = new[] { new { name = "Foo" }, new { name = "Handlebars.Net" } }
+                };
+            var result = template(data);
+            Assert.AreEqual("Array is 2 item(s) long", result);
+        }
+
+        [Test]
         public void BasicIfElse()
         {
             var source = "Hello, {{#if basic_bool}}Bob{{else}}Sam{{/if}}!";
