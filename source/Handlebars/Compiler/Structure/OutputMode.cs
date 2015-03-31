@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Reflection;
 
-namespace Handlebars.Compiler
+namespace HandlebarsDotNet.Compiler
 {
     internal enum OutputMode
     {

@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace Handlebars.Compiler
+namespace HandlebarsDotNet.Compiler
 {
     internal class ContextBinder : HandlebarsExpressionVisitor
     {

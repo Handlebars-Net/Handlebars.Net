@@ -9,7 +9,7 @@ using Microsoft.CSharp.RuntimeBinder;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace Handlebars.Compiler
+namespace HandlebarsDotNet.Compiler
 {
     internal class PathBinder : HandlebarsExpressionVisitor
     {

@@ -1,7 +1,7 @@
-﻿using Handlebars.Compiler.Resolvers;
+﻿using HandlebarsDotNet.Compiler.Resolvers;
 using NUnit.Framework;
 
-namespace Handlebars.Test
+namespace HandlebarsDotNet.Test
 {
     [TestFixture]
     public class CustomConfigurationTests

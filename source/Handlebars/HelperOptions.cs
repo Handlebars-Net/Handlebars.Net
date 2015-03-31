@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace Handlebars
+namespace HandlebarsDotNet
 {
     public sealed class HelperOptions
     {

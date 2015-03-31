@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Collections.Generic;
 
-namespace Handlebars.Compiler
+namespace HandlebarsDotNet.Compiler
 {
     internal class HelperFunctionBinder : HandlebarsExpressionVisitor
     {

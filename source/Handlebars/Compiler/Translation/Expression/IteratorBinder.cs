@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Reflection;
 
-namespace Handlebars.Compiler
+namespace HandlebarsDotNet.Compiler
 {
     internal class IteratorBinder : HandlebarsExpressionVisitor
     {

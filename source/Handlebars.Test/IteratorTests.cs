@@ -2,7 +2,7 @@
 using NUnit.Framework;
 using System.Collections.Generic;
 
-namespace Handlebars.Test
+namespace HandlebarsDotNet.Test
 {
     [TestFixture]
     public class IteratorTests

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
 
-namespace Handlebars.Test
+namespace HandlebarsDotNet.Test
 {
     [TestFixture]
     public class BasicIntegrationTests

@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 
-namespace Handlebars.Compiler.Lexer
+namespace HandlebarsDotNet.Compiler.Lexer
 {
     internal class CommentParser : Parser
     {

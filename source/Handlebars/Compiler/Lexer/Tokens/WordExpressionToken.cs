@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Handlebars.Compiler.Lexer
+namespace HandlebarsDotNet.Compiler.Lexer
 {
     internal class WordExpressionToken : ExpressionToken
     {

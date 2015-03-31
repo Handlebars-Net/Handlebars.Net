@@ -2,7 +2,7 @@
 using NUnit.Framework;
 using System.IO;
 
-namespace Handlebars.Test
+namespace HandlebarsDotNet.Test
 {
 	[TestFixture]
 	public class TripleStashTests

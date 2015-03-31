@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using Handlebars.Compiler.Lexer;
+using HandlebarsDotNet.Compiler.Lexer;
 using System.Linq;
 
-namespace Handlebars.Compiler
+namespace HandlebarsDotNet.Compiler
 {
     internal class StaticConverter : TokenConverter
     {

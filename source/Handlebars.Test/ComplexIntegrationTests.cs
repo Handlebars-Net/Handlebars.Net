@@ -3,7 +3,7 @@ using System;
 using System.IO;
 using System.Collections;
 
-namespace Handlebars.Test
+namespace HandlebarsDotNet.Test
 {
     [TestFixture]
     public class ComplexIntegrationTests

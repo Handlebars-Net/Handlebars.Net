@@ -1,9 +1,9 @@
 using System;
 using System.IO;
-using Handlebars.Compiler;
+using HandlebarsDotNet.Compiler;
 using System.Text;
 
-namespace Handlebars
+namespace HandlebarsDotNet
 {
     public interface IHandlebars
     {

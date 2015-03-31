@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
-using Handlebars.Compiler;
+using HandlebarsDotNet.Compiler;
 using System.Linq.Expressions;
 
-namespace Handlebars.Compiler
+namespace HandlebarsDotNet.Compiler
 {
     internal class BoolishConverter : HandlebarsExpressionVisitor
     {

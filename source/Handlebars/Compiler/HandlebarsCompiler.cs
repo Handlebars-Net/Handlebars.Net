@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using Handlebars.Compiler.Lexer;
+using HandlebarsDotNet.Compiler.Lexer;
 
-namespace Handlebars.Compiler
+namespace HandlebarsDotNet.Compiler
 {
     internal class HandlebarsCompiler
     {

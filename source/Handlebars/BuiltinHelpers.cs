@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Reflection;
 using System.Collections.Generic;
 
-namespace Handlebars
+namespace HandlebarsDotNet
 {
     internal static class BuiltinHelpers
     {

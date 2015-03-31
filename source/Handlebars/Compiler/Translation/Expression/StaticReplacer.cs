@@ -3,7 +3,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.IO;
 
-namespace Handlebars.Compiler
+namespace HandlebarsDotNet.Compiler
 {
     internal class StaticReplacer : HandlebarsExpressionVisitor
     {

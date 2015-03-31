@@ -3,7 +3,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 
-namespace Handlebars
+namespace HandlebarsDotNet
 {
     internal class EncodedTextWriter : TextWriter
     {

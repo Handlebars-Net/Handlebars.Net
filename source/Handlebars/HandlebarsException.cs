@@ -1,6 +1,6 @@
 using System;
 
-namespace Handlebars
+namespace HandlebarsDotNet
 {
     public class HandlebarsException : Exception
     {

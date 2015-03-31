@@ -2,9 +2,9 @@
 using System.Linq.Expressions;
 using System.Collections.Generic;
 using System.Linq;
-using Handlebars.Compiler.Lexer;
+using HandlebarsDotNet.Compiler.Lexer;
 
-namespace Handlebars.Compiler
+namespace HandlebarsDotNet.Compiler
 {
     internal class HelperArgumentAccumulator : TokenConverter
     {

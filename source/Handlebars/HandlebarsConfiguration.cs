@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Handlebars.Compiler.Resolvers;
+using HandlebarsDotNet.Compiler.Resolvers;
 
-namespace Handlebars
+namespace HandlebarsDotNet
 {
     public class HandlebarsConfiguration
     {

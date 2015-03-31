@@ -3,7 +3,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Collections.Generic;
 
-namespace Handlebars.Compiler
+namespace HandlebarsDotNet.Compiler
 {
     internal class BlockHelperAccumulatorContext : BlockAccumulatorContext
     {

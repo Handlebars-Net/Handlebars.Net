@@ -4,7 +4,7 @@ using System.Collections;
 using System.Linq;
 using System.IO;
 
-namespace Handlebars.Compiler
+namespace HandlebarsDotNet.Compiler
 {
     internal class DeferredSectionVisitor : HandlebarsExpressionVisitor
     {

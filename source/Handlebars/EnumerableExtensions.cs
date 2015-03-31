@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 
-namespace Handlebars
+namespace HandlebarsDotNet
 {
     internal static class EnumerableExtensions
     {

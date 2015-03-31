@@ -2,7 +2,7 @@
 using System.Linq.Expressions;
 using System.Collections.Generic;
 
-namespace Handlebars.Compiler
+namespace HandlebarsDotNet.Compiler
 {
     internal class BlockHelperExpression : HelperExpression
     {

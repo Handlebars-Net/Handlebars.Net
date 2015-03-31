@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace Handlebars.Compiler.Lexer
+namespace HandlebarsDotNet.Compiler.Lexer
 {
     internal abstract class Parser
     {

@@ -2,7 +2,7 @@
 using System;
 using System.Collections;
 
-namespace Handlebars.Test
+namespace HandlebarsDotNet.Test
 {
     [TestFixture]
     public class HelperTests

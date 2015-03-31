@@ -3,7 +3,7 @@ using System;
 using System.Dynamic;
 using System.Collections.Generic;
 
-namespace Handlebars.Test
+namespace HandlebarsDotNet.Test
 {
     [TestFixture]
     public class DynamicTests

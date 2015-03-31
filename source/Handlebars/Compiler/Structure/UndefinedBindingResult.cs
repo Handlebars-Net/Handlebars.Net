@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace Handlebars.Compiler
+namespace HandlebarsDotNet.Compiler
 {
     [DebuggerDisplay("undefined")]
     internal class UndefinedBindingResult

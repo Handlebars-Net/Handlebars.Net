@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Text;
-using Handlebars.Compiler;
+using HandlebarsDotNet.Compiler;
 
-namespace Handlebars
+namespace HandlebarsDotNet
 {
     public partial class Handlebars
     {
