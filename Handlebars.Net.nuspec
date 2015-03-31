@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>Handlebars.Net</id>
-        <version>1.2.10</version>
+        <version>1.3.0</version>
         <title>Handlebars.Net</title>
         <authors>Rex Morgan</authors>
         <projectUrl>https://github.com/rexm/Handlebars.Net</projectUrl>
@@ -11,7 +11,7 @@
         <description>Blistering-fast Handlebars.js templates in your .NET application.</description>
         <summary>Blistering-fast Handlebars.js templates in your .NET application.</summary>
         <tags>handlebars mustache templating engine compiler</tags>
-        <releaseNotes>Now supporting numeric indexer access (member[1] or member.1) in paths (see http://git.io/hOu5 for details). Also fixed basic support for numeric literals (see http://git.io/hOgh for details).</releaseNotes>
+        <releaseNotes>Changed the root namespace from Handlebars to HandlebarsDotNet</releaseNotes>
     </metadata>
     <files>
         <file src="source/Handlebars/bin/Release/Handlebars.dll" target="lib/Handlebars.dll" />
