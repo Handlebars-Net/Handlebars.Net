@@ -64,6 +64,18 @@ namespace HandlebarsDotNet.Test
 			Assert.AreEqual("test1", output);
 		}
 
+        [Test]
+        public void JsonTestArrays(){
+            var model = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>("[{\"Key\": \"Key1\", \"Value\": \"Val1\"},{\"Key\": \"Key2\", \"Value\": \"Val2\"}]");
+
+            var source = "{{#each this}}{{Key}}{{Value}}{{/each}}";
+
+            var template = Handlebars.Compile(source);
+
+            var output = template(model);
+
+            Assert.AreEqual("Key1Val1Key2Val2", output);
+        }
         private class MyDynamicModel : DynamicObject
         {
             private Dictionary<string, object> properties = new Dictionary<string, object>

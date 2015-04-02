@@ -55,7 +55,7 @@ namespace HandlebarsDotNet.Compiler
                 Expression.IfThenElse(
                     Expression.TypeIs(iex.Sequence, typeof(IEnumerable)),
                     Expression.IfThenElse(
-                        Expression.TypeIs(iex.Sequence, typeof(IDynamicMetaObjectProvider)),
+                        Expression.Call(new Func<object, bool>(IsNonListDynamic).Method, new [] {iex.Sequence}),
                         GetDynamicIterator(iteratorBindingContext, iex),
                         Expression.IfThenElse(
                             Expression.Call(new Func<object, bool>(IsGenericDictionary).Method, new[] {iex.Sequence}),
@@ -139,6 +139,11 @@ namespace HandlebarsDotNet.Compiler
                         fb.Compile(new [] { iex.Template }, contextParameter),
                         fb.Compile(new [] { iex.IfEmpty }, CompilationContext.BindingContext) 
                     }));
+        }
+
+        private static bool IsNonListDynamic(object target){
+            var interfaces = target.GetType().GetInterfaces();
+            return interfaces.Contains(typeof (IDynamicMetaObjectProvider)) && !interfaces.Contains(typeof(IList));
         }
 
         private static bool IsGenericDictionary(object target)
