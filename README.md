@@ -45,45 +45,40 @@ var result = template(data);
 
 ###Registering Partials
 ```c#
+string source =
+@"<h2>Names</h2>
+{{#names}}
+  {{> user}}
+{{/names}}";
+
 string partialSource =
-@"<div id=""partial"">
-  {{partial.content}}
-</div>";
+@"<strong>{{name}}</strong>";
 
 using (var reader = new StringReader(partialSource))
 {
   var partialTemplate = Handlebars.Compile(reader);
-  Handlebars.RegisterTemplate("partialName", partialTemplate);
+  Handlebars.RegisterTemplate("user", partialTemplate);
 }
-
-string source =
-@"<div id=""mainContainer"">
-  {{mainContent}}
-  <div id=""partialContainer"">
-    {{>partialName}}  
-  </div>
-</div>";
 
 var template = Handlebars.Compile(source);
 
 var data = new {
-  mainContent = "Main content",
-  partial = new {
-        content = "Partial content"
+  names = new [] {
+    new {
+        name = "Karen"
+    },
+    new {
+        name = "Jon"
+    }
   }
 };
 
 var result = template(data);
 
 /* Would render:
-<div id="mainContainer">
-  Main content
-  <div id="partialContainer">
-    <div id="partial">
-      Partial content
-    </div>  
-  </div>
-</div>
+<h2>Names</h2>
+  <strong>Karen</strong>
+  <strong>Jon</strong>
 */
 ```
 
