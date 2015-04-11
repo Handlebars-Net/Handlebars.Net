@@ -309,6 +309,23 @@ namespace HandlebarsDotNet.Test
         }
 
         [Test]
+        public void BasicDeferredBlockWithWhitespace()
+        {
+            string source = "Hello, {{ # person }}{{ name }}{{ / person }}!";
+
+            var template = Handlebars.Compile(source);
+
+            var data = new {
+                person = new {
+                    name = "Bill"
+                }
+            };
+
+            var result = template(data);
+            Assert.AreEqual("Hello, Bill!", result);
+        }
+
+        [Test]
         public void BasicDeferredBlockFalsy()
         {
             string source = "Hello, {{#person}}{{name}}{{/person}}!";

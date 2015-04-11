@@ -5,31 +5,36 @@ using System.Text;
 
 namespace HandlebarsDotNet.Compiler.Lexer
 {
-    internal class WordParser : Parser
+    internal class BlockWordParser : Parser
     {
-        private const string validWordStartCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_$.@";
+        private const string validBlockWordStartCharacters = "#^/";
 
         public override Token Parse(TextReader reader)
         {
             WordExpressionToken token = null;
-            if (IsWord(reader))
+            if (IsBlockWord(reader))
             {
-                var buffer = AccumulateWord(reader);
+                var buffer = AccumulateBlockWord(reader);
                 token = Token.Word(buffer);
             }
             return token;
         }
 
-        private bool IsWord(TextReader reader)
+        private bool IsBlockWord(TextReader reader)
         {
             var peek = (char)reader.Peek();
-            return validWordStartCharacters.Contains(peek);
+            return validBlockWordStartCharacters.Contains(peek);
         }
 
-        private string AccumulateWord(TextReader reader)
+        private string AccumulateBlockWord(TextReader reader)
         {
             StringBuilder buffer = new StringBuilder();
-            while (true)
+            buffer.Append((char)reader.Read());
+            while(char.IsWhiteSpace((char)reader.Peek()))
+            {
+                reader.Read();
+            }
+            while(true)
             {
                 var peek = (char)reader.Peek();
                 if (peek == '}' || char.IsWhiteSpace(peek))

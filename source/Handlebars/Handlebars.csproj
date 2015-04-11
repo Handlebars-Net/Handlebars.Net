@@ -111,6 +111,7 @@
     <Compile Include="Compiler\Translation\Expression\UnencodedStatementVisitor.cs" />
     <Compile Include="HandlebarsUtils.cs" />
     <Compile Include="HelperOptions.cs" />
+    <Compile Include="Compiler\Lexer\Parsers\BlockWordParser.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
