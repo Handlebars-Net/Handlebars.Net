@@ -1,7 +1,6 @@
-﻿using System;
-using System.Linq.Expressions;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using HandlebarsDotNet.Compiler.Lexer;
 
 namespace HandlebarsDotNet.Compiler
@@ -23,9 +22,9 @@ namespace HandlebarsDotNet.Compiler
             while (enumerator.MoveNext())
             {
                 var item = enumerator.Current;
-                if (item is PartialToken)
+                var partialToken = item as PartialToken;
+                if (partialToken != null)
                 {
-                    var partialToken = item as PartialToken;
                     var partialName = partialToken.Value.Substring(1);
                     var arguments = AccumulateArguments(enumerator);
                     if (arguments.Count == 0)
@@ -38,7 +37,7 @@ namespace HandlebarsDotNet.Compiler
                     }
                     else
                     {
-                        throw new HandlebarsCompilerException("Partial can only accept 0 or 1 arguments");
+                        throw new HandlebarsCompilerException(string.Format("Partial {0} can only accept 0 or 1 arguments", partialName));
                     }
                     yield return enumerator.Current;
                 }

@@ -51,7 +51,7 @@ namespace HandlebarsDotNet.Compiler
         {
             if (configuration.RegisteredTemplates.ContainsKey(partialName) == false)
             {
-                throw new HandlebarsRuntimeException("Referenced partial name could not be resolved");
+                throw new HandlebarsRuntimeException(string.Format("Referenced partial name {0} could not be resolved", partialName));
             }
             configuration.RegisteredTemplates[partialName](context.TextWriter, context);
         }
