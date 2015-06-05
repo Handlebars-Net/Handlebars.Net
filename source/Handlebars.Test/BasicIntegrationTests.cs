@@ -45,7 +45,7 @@ namespace HandlebarsDotNet.Test
             var result = template(data);
             Assert.AreEqual("Hello, Handlebars.Net!", result);
         }
-
+        
         [Test]
         public void BasicPathArrayChildPath()
         {
@@ -54,6 +54,102 @@ namespace HandlebarsDotNet.Test
             var data = new
             {
                 names = new[] {new {name = "Foo"}, new {name = "Handlebars.Net"}}
+            };
+            var result = template(data);
+            Assert.AreEqual("Hello, Handlebars.Net!", result);
+        }
+
+        [Test]
+        public void BasicPathDictionaryTextKeyNoSquareBrackets()
+        {
+            var source = "Hello, {{ names.Foo }}!";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                names = new Dictionary<string, string>
+                {
+                    { "Foo" , "Handlebars.Net" }
+                }
+            };
+            var result = template(data);
+            Assert.AreEqual("Hello, Handlebars.Net!", result);
+        }
+
+        [Test]
+        public void BasicPathDictionaryTextKey()
+        {
+            var source = "Hello, {{ names.[Foo] }}!";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                names = new Dictionary<string, string>
+                {
+                    { "Foo" , "Handlebars.Net" }
+                }
+            };
+            var result = template(data);
+            Assert.AreEqual("Hello, Handlebars.Net!", result);
+        }
+
+        [Test]
+        public void BasicPathDictionaryIntKeyNoSquareBrackets()
+        {
+            var source = "Hello, {{ names.42 }}!";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                names = new Dictionary<int, string>
+                {
+                    { 42 , "Handlebars.Net" }
+                }
+            };
+            var result = template(data);
+            Assert.AreEqual("Hello, Handlebars.Net!", result);
+        }
+
+        [Test]
+        public void BasicPathDictionaryLongKeyNoSquareBrackets()
+        {
+            var source = "Hello, {{ names.42 }}!";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                names = new Dictionary<long, string>
+                {
+                    { 42 , "Handlebars.Net" }
+                }
+            };
+            var result = template(data);
+            Assert.AreEqual("Hello, Handlebars.Net!", result);
+        }
+
+        [Test]
+        public void BasicPathDictionaryIntKey()
+        {
+            var source = "Hello, {{ names.[42] }}!";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                names = new Dictionary<int, string>
+                {
+                    { 42 , "Handlebars.Net" }
+                }
+            };
+            var result = template(data);
+            Assert.AreEqual("Hello, Handlebars.Net!", result);
+        }
+
+        [Test]
+        public void BasicPathDictionaryLongKey()
+        {
+            var source = "Hello, {{ names.[42] }}!";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                names = new Dictionary<long, string>
+                {
+                    { 42 , "Handlebars.Net" }
+                }
             };
             var result = template(data);
             Assert.AreEqual("Hello, Handlebars.Net!", result);
@@ -205,7 +301,7 @@ namespace HandlebarsDotNet.Test
             var result = template(data);
             Assert.AreEqual("hello world ", result);
         }
-
+        
         [Test]
         public void BasicDictionaryEnumeratorWithKey()
         {

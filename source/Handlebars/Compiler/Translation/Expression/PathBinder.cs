@@ -185,15 +185,27 @@ namespace HandlebarsDotNet.Compiler
                     throw new HandlebarsRuntimeException("Could not resolve dynamic member name", ex);
                 }
             }
+            
+            var iDictInstance = instanceType.GetInterfaces()
+                    .FirstOrDefault(i => i.IsGenericType
+                        && i.GetGenericTypeDefinition() == typeof(IDictionary<,>));
+            if (iDictInstance != null)
+            {
+                var genericArgs = iDictInstance.GetGenericArguments();
+                if (genericArgs.Length > 0)
+                {
+                    var keyName = resolvedMemberName.Trim('[', ']');    // Ensure square brackets removed.
+                    var key = Convert.ChangeType(keyName, genericArgs[0]);
+                    return instanceType.GetMethod("get_Item").Invoke(instance, new object[] { key });
+                }
+                return instanceType.GetMethod("get_Item").Invoke(instance, new object[] { resolvedMemberName });
+            }
             if (instance is IDictionary)
             {
-                return ((IDictionary)instance)[resolvedMemberName];
-            }
-            if (instanceType.GetInterfaces()
-                .Where(i => i.IsGenericType)
-                .Any(i => i.GetGenericTypeDefinition() == typeof(IDictionary<,>)))
-            {
-               return instanceType.GetMethod("get_Item").Invoke(instance, new object[] { resolvedMemberName });
+                if (((IDictionary)instance).Contains(resolvedMemberName))
+                {
+                    return ((IDictionary)instance)[resolvedMemberName];
+                }   
             }
             var members = instanceType.GetMember(resolvedMemberName);
             if (members.Length == 0)
@@ -210,7 +222,7 @@ namespace HandlebarsDotNet.Compiler
             }
             throw new InvalidOperationException("Requested member was not a field or property");
         }
-
+        
         private static object GetProperty(object target, string name)
         {
             var site = System.Runtime.CompilerServices.CallSite<Func<System.Runtime.CompilerServices.CallSite, object, object>>.Create(Microsoft.CSharp.RuntimeBinder.Binder.GetMember(0, name, target.GetType(), new[]{ Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo.Create(0, null) }));
