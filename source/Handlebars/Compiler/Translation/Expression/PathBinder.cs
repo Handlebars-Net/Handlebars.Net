@@ -188,7 +188,14 @@ namespace HandlebarsDotNet.Compiler
             
             var iDictInstance = instanceType.GetInterfaces()
                     .FirstOrDefault(i => i.IsGenericType
-                        && i.GetGenericTypeDefinition() == typeof(IDictionary<,>));
+                        &&
+                        (
+                        i.GetGenericTypeDefinition() == typeof(IDictionary<,>)
+#if NET45
+                        || i.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>)
+#endif
+                        )
+                    );
             if (iDictInstance != null)
             {
                 var genericArgs = iDictInstance.GetGenericArguments();

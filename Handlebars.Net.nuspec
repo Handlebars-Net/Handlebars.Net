@@ -14,6 +14,7 @@
         <releaseNotes>Note the root namespace changed from Handlebars to HandlebarsDotNet</releaseNotes>
     </metadata>
     <files>
-        <file src="source/Handlebars/bin/Release/Handlebars.dll" target="lib/Handlebars.dll" />
+        <file src="source/Handlebars/bin/Release/Net40/Handlebars.dll" target="lib/net40/Handlebars.dll" />
+        <file src="source/Handlebars/bin/Release/Net45/Handlebars.dll" target="lib/net45/Handlebars.dll" />
     </files>
 </package>

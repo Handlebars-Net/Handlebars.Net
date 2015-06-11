@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
+using System.Collections;
 
 namespace HandlebarsDotNet.Test
 {
@@ -76,6 +77,19 @@ namespace HandlebarsDotNet.Test
         }
 
         [Test]
+        public void BasicPathReadOnlyDictionaryTextKeyNoSquareBrackets()
+        {
+            var source = "Hello, {{ names.Foo }}!";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                names = new MockReadOnlyDictionary<string, string>("Foo", "Handlebars.Net")
+            };
+            var result = template(data);
+            Assert.AreEqual("Hello, Handlebars.Net!", result);
+        }
+
+        [Test]
         public void BasicPathDictionaryTextKey()
         {
             var source = "Hello, {{ names.[Foo] }}!";
@@ -92,6 +106,19 @@ namespace HandlebarsDotNet.Test
         }
 
         [Test]
+        public void BasicPathReadOnlyDictionaryTextKey()
+        {
+            var source = "Hello, {{ names.[Foo] }}!";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                names = new MockReadOnlyDictionary<string, string>("Foo", "Handlebars.Net")
+            };
+            var result = template(data);
+            Assert.AreEqual("Hello, Handlebars.Net!", result);
+        }
+
+        [Test]
         public void BasicPathDictionaryIntKeyNoSquareBrackets()
         {
             var source = "Hello, {{ names.42 }}!";
@@ -102,6 +129,19 @@ namespace HandlebarsDotNet.Test
                 {
                     { 42 , "Handlebars.Net" }
                 }
+            };
+            var result = template(data);
+            Assert.AreEqual("Hello, Handlebars.Net!", result);
+        }
+
+        [Test]
+        public void BasicPathReadOnlyDictionaryIntKeyNoSquareBrackets()
+        {
+            var source = "Hello, {{ names.42 }}!";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                names = new MockReadOnlyDictionary<int, string>(42, "Handlebars.Net")
             };
             var result = template(data);
             Assert.AreEqual("Hello, Handlebars.Net!", result);
@@ -134,6 +174,19 @@ namespace HandlebarsDotNet.Test
                 {
                     { 42 , "Handlebars.Net" }
                 }
+            };
+            var result = template(data);
+            Assert.AreEqual("Hello, Handlebars.Net!", result);
+        }
+
+        [Test]
+        public void BasicPathReadOnlyDictionaryIntKey()
+        {
+            var source = "Hello, {{ names.[42] }}!";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                names = new MockReadOnlyDictionary<int, string>(42, "Handlebars.Net")
             };
             var result = template(data);
             Assert.AreEqual("Hello, Handlebars.Net!", result);
@@ -673,6 +726,57 @@ namespace HandlebarsDotNet.Test
                 "Hello world!";
 
             Assert.AreEqual(result, expectedResult);
+        }
+
+        /// <summary>
+        /// Mock ReadOnlyDictionary.
+        /// </summary>
+        /// <typeparam name="TKey"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        private class MockReadOnlyDictionary<TKey, TValue> : IReadOnlyDictionary<TKey, TValue>
+        {
+            Dictionary<TKey, TValue> _internal;
+
+            public MockReadOnlyDictionary(TKey key, TValue value)
+            {
+                _internal = new Dictionary<TKey, TValue>
+                {
+                    { key, value }
+                };
+            }
+
+            public MockReadOnlyDictionary(Dictionary<TKey, TValue> dict)
+            {
+                _internal = dict;
+            }
+
+            public TValue this[TKey key] { get { return _internal[key]; } }
+
+            public int Count { get { return _internal.Count; } }
+
+            public IEnumerable<TKey> Keys { get { return _internal.Keys; } }
+
+            public IEnumerable<TValue> Values { get { return _internal.Values; } }
+
+            public bool ContainsKey(TKey key)
+            {
+                return _internal.ContainsKey(key);
+            }
+
+            public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
+            {
+                return _internal.GetEnumerator();
+            }
+
+            public bool TryGetValue(TKey key, out TValue value)
+            {
+                return _internal.TryGetValue(key, out value);
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return _internal.GetEnumerator();
+            }
         }
 
         private class MockDictionary : IDictionary<string, string>
