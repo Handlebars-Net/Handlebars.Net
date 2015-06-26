@@ -111,13 +111,9 @@ namespace HandlebarsDotNet.Compiler
                 {
                     foreach (var memberName in segment.Split('.'))
                     {
-                        try
+                        instance = this.ResolveValue(context, instance, memberName);
+                        if (instance is UndefinedBindingResult)
                         {
-                            instance = this.ResolveValue(context, instance, memberName);
-                        }
-                        catch (Exception)
-                        {
-                            instance = new UndefinedBindingResult();
                             break;
                         }
                     }
@@ -133,9 +129,12 @@ namespace HandlebarsDotNet.Compiler
                 var contextValue = context.GetContextVariable(segment.Substring(1));
                 if (contextValue == null)
                 {
-                    throw new HandlebarsRuntimeException("Couldn't bind to context variable");
+                    return new UndefinedBindingResult();
                 }
-                return contextValue;
+                else
+                {
+                    return contextValue;
+                }
             }
             else
             {
@@ -156,17 +155,18 @@ namespace HandlebarsDotNet.Compiler
                 {
                     if (match.Groups["index"].Success == false || int.TryParse(match.Groups["index"].Value, out index) == false)
                     {
-                        throw new HandlebarsRuntimeException("Invalid array index in path");
+                        return new UndefinedBindingResult();
                     }
                     else
                     {
-                        try
+                        var result = enumerable.ElementAtOrDefault(index);
+                        if(result != null)
                         {
-                            return enumerable.ElementAt(index);
+                            return result;
                         }
-                        catch(ArgumentOutOfRangeException)
+                        else
                         {
-                            throw new HandlebarsRuntimeException("Array index in path was larger than array provided");
+                            return new UndefinedBindingResult();
                         }
                     }
                 }
@@ -176,13 +176,14 @@ namespace HandlebarsDotNet.Compiler
             //crude handling for dynamic objects that don't have metadata
             if (typeof(IDynamicMetaObjectProvider).IsAssignableFrom(instanceType))
             {
+                //TODO: handle without try/catch
                 try
                 {
                     return GetProperty(instance, resolvedMemberName);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    throw new HandlebarsRuntimeException("Could not resolve dynamic member name", ex);
+                    return new UndefinedBindingResult();
                 }
             }
             if (instance is IDictionary)
@@ -198,7 +199,7 @@ namespace HandlebarsDotNet.Compiler
             var members = instanceType.GetMember(resolvedMemberName);
             if (members.Length == 0)
             {
-                throw new InvalidOperationException("Template referenced property name that does not exist.");
+                return new UndefinedBindingResult();
             }
             if (members[0].MemberType == System.Reflection.MemberTypes.Property)
             {
@@ -208,7 +209,10 @@ namespace HandlebarsDotNet.Compiler
             {
                 return ((FieldInfo)members[0]).GetValue(instance);
             }
-            throw new InvalidOperationException("Requested member was not a field or property");
+            else
+            {
+                return new UndefinedBindingResult();
+            }
         }
 
         private static object GetProperty(object target, string name)
