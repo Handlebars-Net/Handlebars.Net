@@ -11,7 +11,7 @@ namespace HandlebarsDotNet
         // Lazy-load Handlebars environment to ensure thread safety.  See Jon Skeet's excellent article on this for more info. http://csharpindepth.com/Articles/General/Singleton.aspx
         private static readonly Lazy<IHandlebars> lazy = new Lazy<IHandlebars>(() => new HandlebarsEnvironment(new HandlebarsConfiguration()));
 
-        private static IHandlebars Instance => lazy.Value;
+        private static IHandlebars Instance { get { return lazy.Value; } }
 
         public static IHandlebars Create(HandlebarsConfiguration configuration = null)
         {
