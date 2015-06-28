@@ -8,7 +8,10 @@ namespace HandlebarsDotNet
 
     public sealed partial class Handlebars
     {
-        private static readonly IHandlebars _singleton = new HandlebarsEnvironment(new HandlebarsConfiguration());
+        // Lazy-load Handlebars environment to ensure thread safety.  See Jon Skeet's excellent article on this for more info. http://csharpindepth.com/Articles/General/Singleton.aspx
+        private static readonly Lazy<IHandlebars> lazy = new Lazy<IHandlebars>(() => new HandlebarsEnvironment(new HandlebarsConfiguration()));
+
+        private static IHandlebars Instance => lazy.Value;
 
         public static IHandlebars Create(HandlebarsConfiguration configuration = null)
         {
@@ -18,27 +21,27 @@ namespace HandlebarsDotNet
 
         public static Action<TextWriter, object> Compile(TextReader template)
         {
-            return _singleton.Compile(template);
+            return Instance.Compile(template);
         }
 
         public static Func<object, string> Compile(string template)
         {
-            return _singleton.Compile(template);
+            return Instance.Compile(template);
         }
 
         public static void RegisterTemplate(string templateName, Action<TextWriter, object> template)
         {
-            _singleton.RegisterTemplate(templateName, template);
+            Instance.RegisterTemplate(templateName, template);
         }
 
         public static void RegisterHelper(string helperName, HandlebarsHelper helperFunction)
         {
-            _singleton.RegisterHelper(helperName, helperFunction);
+            Instance.RegisterHelper(helperName, helperFunction);
         }
 
         public static void RegisterHelper(string helperName, HandlebarsBlockHelper helperFunction)
         {
-            _singleton.RegisterHelper(helperName, helperFunction);
+            Instance.RegisterHelper(helperName, helperFunction);
         }
 
         /// <summary>
@@ -46,7 +49,7 @@ namespace HandlebarsDotNet
         /// </summary>
         public static HandlebarsConfiguration Configuration
         {
-            get { return _singleton.Configuration; }
+            get { return Instance.Configuration; }
         }
     }
 }
