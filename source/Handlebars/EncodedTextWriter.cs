@@ -16,10 +16,17 @@ namespace HandlebarsDotNet
 
         public override void Write(string value)
         {
-            _underlyingWriter.Write(WebUtility.HtmlEncode(value));
+            //_underlyingWriter.Write(WebUtility.HtmlEncode(value)); // todo dejand use pcl
+			_underlyingWriter.Write(value);
         }
 
-        public override void Write(object value)
+	    public override void Write(char value)
+	    {
+			//_underlyingWriter.Write(WebUtility.HtmlEncode(value));// todo dejand use pcl
+		    _underlyingWriter.Write(value);
+	    }
+
+	    public override void Write(object value)
         {
             if (value == null)
             {
