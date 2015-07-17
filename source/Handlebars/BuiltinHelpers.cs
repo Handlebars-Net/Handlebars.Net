@@ -5,16 +5,7 @@ using System.Collections.Generic;
 
 namespace HandlebarsDotNet
 {
-	public class DescriptionAttribute : Attribute // todo dejan move to own class
-	{
-		public string Description { get; set; }
-
-		public DescriptionAttribute(string description)
-		{
-			Description = description;
-		}
-	}
-    internal static class BuiltinHelpers
+	internal static class BuiltinHelpers
     {
         [Description("with")]
         public static void With(TextWriter output, HelperOptions options, dynamic context, params object[] arguments)
@@ -79,9 +70,8 @@ namespace HandlebarsDotNet
         private static IEnumerable<KeyValuePair<string, T>> GetHelpers<T>()
         {
             var builtInHelpersType = typeof(BuiltinHelpers);
-	        var methods =
-		        builtInHelpersType.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Public);//ok tle iteriraš skoz vse static ali public methode
-			foreach (var method in methods)
+	        
+			foreach (var method in builtInHelpersType.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Public))
             {
                 Delegate possibleDelegate;
 	            try

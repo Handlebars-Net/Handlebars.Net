@@ -179,7 +179,6 @@ namespace HandlebarsDotNet.Compiler
                 catch
 				{
 					return new UndefinedBindingResult();
-	                //   throw new HandlebarsRuntimeException("Could not resolve dynamic member name", ex);
                 }
             }
             if (instance is IDictionary)
@@ -195,11 +194,10 @@ namespace HandlebarsDotNet.Compiler
             var members = instanceType.GetMember(resolvedMemberName);
             if (members.Length != 1)
             {
-                throw new InvalidOperationException("Template referenced property name that does not exist.");
+	            return new UndefinedBindingResult();
             }
 	        
-			//// todo dejand			// i really think this should be an extension for pcl :)
-	        var info = members[0] as PropertyInfo;
+			var info = members[0] as PropertyInfo;
 	        if (info != null)
 			{
 				var b = info.GetValue(instance, null);
