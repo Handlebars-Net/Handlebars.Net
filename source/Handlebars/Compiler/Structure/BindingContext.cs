@@ -68,17 +68,17 @@ namespace HandlebarsDotNet.Compiler
             object returnValue;
             variableName = variableName.TrimStart('@');
             var member = this.GetType().GetMember(variableName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-			
+            
             if (member.Length > 0)
             {
-				if (member[0] is PropertyInfo)
-				{
-					returnValue = ((PropertyInfo)member[0]).GetValue(this, null);
-				}
-				else if (member[0] is FieldInfo)
-				{
-					returnValue = ((FieldInfo)member[0]).GetValue(this);
-				}
+                if (member[0] is PropertyInfo)
+                {
+                    returnValue = ((PropertyInfo)member[0]).GetValue(this, null);
+                }
+                else if (member[0] is FieldInfo)
+                {
+                    returnValue = ((FieldInfo)member[0]).GetValue(this);
+                }
                 else
                 {
                     throw new HandlebarsRuntimeException("Context variable references a member that is not a field or property");

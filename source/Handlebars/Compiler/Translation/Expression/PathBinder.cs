@@ -110,15 +110,15 @@ namespace HandlebarsDotNet.Compiler
                 {
                     foreach (var memberName in segment.Split('.'))
                     {
-						try
-						{
+                        try
+                        {
                             instance = this.ResolveValue(context, instance, memberName);
-	                    }
-	                    catch (Exception)
-	                    {
-	                    	instance = new UndefinedBindingResult();
-	                    	break;
-	                    }
+                        }
+                        catch (Exception)
+                        {
+                            instance = new UndefinedBindingResult();
+                            break;
+                        }
                     }
                 }
             }
@@ -142,7 +142,7 @@ namespace HandlebarsDotNet.Compiler
             }
         }
 
-		private static readonly Regex IndexRegex = new Regex(@"^\[?(?<index>\d+)\]?$", RegexOptions.None);
+        private static readonly Regex IndexRegex = new Regex(@"^\[?(?<index>\d+)\]?$", RegexOptions.None);
 
         private object AccessMember(object instance, string memberName)
         {
@@ -158,12 +158,12 @@ namespace HandlebarsDotNet.Compiler
                         throw new HandlebarsRuntimeException("Invalid array index in path");
                     }
 
-	                var result = enumerable.ElementAtOrDefault(index);
-	                if (result != null)
-	                {
-		                return result;
-	                }
-	                return new UndefinedBindingResult();
+                    var result = enumerable.ElementAtOrDefault(index);
+                    if (result != null)
+                    {
+                        return result;
+                    }
+                    return new UndefinedBindingResult();
                 }
             }
             var resolvedMemberName = this.ResolveMemberName(memberName);
@@ -176,8 +176,8 @@ namespace HandlebarsDotNet.Compiler
                     return GetProperty(instance, resolvedMemberName);
                 }
                 catch
-				{
-					return new UndefinedBindingResult();
+                {
+                    return new UndefinedBindingResult();
                 }
             }
             if (instance is IDictionary)
@@ -193,20 +193,20 @@ namespace HandlebarsDotNet.Compiler
             var members = instanceType.GetMember(resolvedMemberName);
             if (members.Length != 1)
             {
-	            return new UndefinedBindingResult();
+                return new UndefinedBindingResult();
             }
-	        
-			var info = members[0] as PropertyInfo;
-	        if (info != null)
-			{
-				var b = info.GetValue(instance, null);
-				return b;
-			}
-	        if (members[0] is FieldInfo)
-	        {
-		        return ((FieldInfo)members[0]).GetValue(instance);
-	        }
-	        return new UndefinedBindingResult();
+            
+            var info = members[0] as PropertyInfo;
+            if (info != null)
+            {
+                var b = info.GetValue(instance, null);
+                return b;
+            }
+            if (members[0] is FieldInfo)
+            {
+                return ((FieldInfo)members[0]).GetValue(instance);
+            }
+            return new UndefinedBindingResult();
         }
 
         private static object GetProperty(object target, string name)
