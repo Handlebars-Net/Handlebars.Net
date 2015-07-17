@@ -110,13 +110,9 @@ namespace HandlebarsDotNet.Compiler
                 {
                     foreach (var memberName in segment.Split('.'))
                     {
-                        try
+                        instance = this.ResolveValue(context, instance, memberName);
+                        if (instance is UndefinedBindingResult)
                         {
-                            instance = this.ResolveValue(context, instance, memberName);
-                        }
-                        catch (Exception)
-                        {
-                            instance = new UndefinedBindingResult();
                             break;
                         }
                     }
@@ -130,16 +126,10 @@ namespace HandlebarsDotNet.Compiler
             if (segment.StartsWith("@"))
             {
                 var contextValue = context.GetContextVariable(segment.Substring(1));
-                if (contextValue == null)
-                {
-                    throw new HandlebarsRuntimeException("Couldn't bind to context variable");
-                }
-                return contextValue;
+                return contextValue ?? new UndefinedBindingResult();
             }
-            else
-            {
-                return AccessMember(instance, segment);
-            }
+
+            return AccessMember(instance, segment);
         }
 
         private static readonly Regex IndexRegex = new Regex(@"^\[?(?<index>\d+)\]?$", RegexOptions.None);
@@ -155,15 +145,12 @@ namespace HandlebarsDotNet.Compiler
                 {
                     if (match.Groups["index"].Success == false || int.TryParse(match.Groups["index"].Value, out index) == false)
                     {
-                        throw new HandlebarsRuntimeException("Invalid array index in path");
+                        return new UndefinedBindingResult();
                     }
 
                     var result = enumerable.ElementAtOrDefault(index);
-                    if (result != null)
-                    {
-                        return result;
-                    }
-                    return new UndefinedBindingResult();
+                    
+                    return result ?? new UndefinedBindingResult();
                 }
             }
             var resolvedMemberName = this.ResolveMemberName(memberName);
