@@ -142,8 +142,7 @@ namespace HandlebarsDotNet.Compiler
             }
         }
 
-		//private static readonly Regex IndexRegex = new Regex(@"^\[?(?<index>\d+)\]?$", RegexOptions.Compiled);//todo dejand
-        private static readonly Regex IndexRegex = new Regex(@"^\[?(?<index>\d+)\]?$", RegexOptions.None);
+		private static readonly Regex IndexRegex = new Regex(@"^\[?(?<index>\d+)\]?$", RegexOptions.None);
 
         private object AccessMember(object instance, string memberName)
         {
