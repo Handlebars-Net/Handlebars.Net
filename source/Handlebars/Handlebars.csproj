@@ -5,7 +5,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{A09CFF95-B671-48FE-96A8-D3CBDC110B75}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Handlebars</RootNamespace>
+    <RootNamespace>HandlebarsDotNet</RootNamespace>
     <AssemblyName>Handlebars</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Profile255</TargetFrameworkProfile>
@@ -29,7 +29,6 @@
     <Optimize>false</Optimize>
     <OutputPath>bin\Release</OutputPath>
     <WarningLevel>4</WarningLevel>
-    <AssemblyOriginatorKeyFile>..\..\handlebars.net.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
