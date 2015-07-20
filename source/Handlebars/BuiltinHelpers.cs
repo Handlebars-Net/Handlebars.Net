@@ -1,12 +1,11 @@
 ﻿using System;
 using System.IO;
-using System.ComponentModel;
 using System.Reflection;
 using System.Collections.Generic;
 
 namespace HandlebarsDotNet
 {
-    internal static class BuiltinHelpers
+	internal static class BuiltinHelpers
     {
         [Description("with")]
         public static void With(TextWriter output, HelperOptions options, dynamic context, params object[] arguments)
@@ -71,10 +70,19 @@ namespace HandlebarsDotNet
         private static IEnumerable<KeyValuePair<string, T>> GetHelpers<T>()
         {
             var builtInHelpersType = typeof(BuiltinHelpers);
-            foreach (var method in builtInHelpersType.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Public))
+	        
+			foreach (var method in builtInHelpersType.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Public))
             {
-                var possibleDelegate = Delegate.CreateDelegate(typeof(T), method, false);
-                if (possibleDelegate != null)
+                Delegate possibleDelegate;
+	            try
+	            {
+					possibleDelegate = Delegate.CreateDelegate(typeof(T), method); 
+	            }
+	            catch
+	            {
+		            possibleDelegate = null;
+	            }
+	            if (possibleDelegate != null)
                 {
                     yield return new KeyValuePair<string, T>(
                         ((DescriptionAttribute)Attribute.GetCustomAttribute(method, typeof(DescriptionAttribute))).Description,

@@ -23,7 +23,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
         private bool IsWord(TextReader reader)
         {
             var peek = (char)reader.Peek();
-            return validWordStartCharacters.Contains(peek);
+            return validWordStartCharacters.Contains(peek.ToString());
         }
 
         private string AccumulateWord(TextReader reader)

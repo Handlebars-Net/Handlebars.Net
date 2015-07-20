@@ -68,13 +68,14 @@ namespace HandlebarsDotNet.Compiler
             object returnValue;
             variableName = variableName.TrimStart('@');
             var member = this.GetType().GetMember(variableName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+            
             if (member.Length > 0)
             {
-                if (member[0].MemberType == MemberTypes.Property)
+                if (member[0] is PropertyInfo)
                 {
-                    returnValue = ((PropertyInfo)member[0]).GetValue(this, BindingFlags.Default, null, null, null);
+                    returnValue = ((PropertyInfo)member[0]).GetValue(this, null);
                 }
-                else if (member[0].MemberType == MemberTypes.Field)
+                else if (member[0] is FieldInfo)
                 {
                     returnValue = ((FieldInfo)member[0]).GetValue(this);
                 }

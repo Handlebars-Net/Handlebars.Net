@@ -71,13 +71,13 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <ProjectReference Include="..\Handlebars\Handlebars.csproj">
-      <Project>{A09CFF95-B671-48FE-96A8-D3CBDC110B75}</Project>
-      <Name>Handlebars</Name>
-    </ProjectReference>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <ProjectReference Include="..\Handlebars\Handlebars.csproj">
+      <Project>{a09cff95-b671-48fe-96a8-d3cbdc110b75}</Project>
+      <Name>Handlebars</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
