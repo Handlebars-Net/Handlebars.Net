@@ -98,7 +98,18 @@ namespace HandlebarsDotNet.Compiler.Lexer
                 }
                 else
                 {
-                    if ((char)node == '{' && (char)source.Peek() == '{')
+                    if ((char)node == '\\' && (char)source.Peek() == '{')
+                    {
+                        source.Read();
+                        if ((char)source.Peek() == '{')
+                        {
+                            source.Read();
+                            buffer.Append('{', 2);
+                        }
+
+                        node = source.Read();
+                    }
+                    else if ((char)node == '{' && (char)source.Peek() == '{')
                     {
                         bool escaped = true;
                         node = source.Read();
