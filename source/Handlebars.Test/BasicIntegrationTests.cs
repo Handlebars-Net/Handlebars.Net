@@ -496,6 +496,22 @@ namespace HandlebarsDotNet.Test
 		}
 
         [Test]
+        public void BasicEscape()
+        {
+            string source = @"Hello, \{{raw_value}}!";
+
+            var template = Handlebars.Compile(source);
+
+            var data = new
+            {
+                raw_value = "<div>I shouldn't display</div>"
+            };
+
+            var result = template(data);
+            Assert.AreEqual(@"Hello, {{raw_value}}!", result);
+        }
+
+        [Test]
         public void BasicNumberLiteral()
         {
             string source = "{{eval 2  3}}";
