@@ -68,6 +68,7 @@
     <Compile Include="TripleStashTests.cs" />
     <Compile Include="PartialTests.cs" />
     <Compile Include="IteratorTests.cs" />
+    <Compile Include="WhitespaceTests.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -75,7 +76,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Handlebars\Handlebars.csproj">
-      <Project>{a09cff95-b671-48fe-96a8-d3cbdc110b75}</Project>
+      <Project>{A09CFF95-B671-48FE-96A8-D3CBDC110B75}</Project>
       <Name>Handlebars</Name>
     </ProjectReference>
   </ItemGroup>

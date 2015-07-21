@@ -32,7 +32,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
             while (true)
             {
                 var peek = (char)reader.Peek();
-                if (peek == '}' || char.IsWhiteSpace(peek))
+                if (peek == '}' || peek == '~' || char.IsWhiteSpace(peek))
                 {
                     break;
                 }
