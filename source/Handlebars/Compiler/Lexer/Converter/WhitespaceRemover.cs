@@ -48,6 +48,10 @@ namespace HandlebarsDotNet.Compiler
                         }
                     }
                     yield return staticToken;
+                    if (item == staticToken)
+                    {
+                        continue;
+                    }
                 }
                 if (item != null)
                 {
