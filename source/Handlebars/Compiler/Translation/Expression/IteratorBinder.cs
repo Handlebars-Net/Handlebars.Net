@@ -55,10 +55,10 @@ namespace HandlebarsDotNet.Compiler
                 Expression.IfThenElse(
                     Expression.TypeIs(iex.Sequence, typeof(IEnumerable)),
                     Expression.IfThenElse(
-                        Expression.Call(new Func<object, bool>(IsNonListDynamic).Method, new [] {iex.Sequence}),
+                        Expression.Call(new Func<object, bool>(IsNonListDynamic).Method, new[] { iex.Sequence }),
                         GetDynamicIterator(iteratorBindingContext, iex),
                         Expression.IfThenElse(
-                            Expression.Call(new Func<object, bool>(IsGenericDictionary).Method, new[] {iex.Sequence}),
+                            Expression.Call(new Func<object, bool>(IsGenericDictionary).Method, new[] { iex.Sequence }),
                             GetDictionaryIterator(iteratorBindingContext, iex),
                             GetEnumerableIterator(iteratorBindingContext, iex))),
                     GetObjectIterator(iteratorBindingContext, iex))
@@ -141,9 +141,10 @@ namespace HandlebarsDotNet.Compiler
                     }));
         }
 
-        private static bool IsNonListDynamic(object target){
+        private static bool IsNonListDynamic(object target)
+        {
             var interfaces = target.GetType().GetInterfaces();
-            return interfaces.Contains(typeof (IDynamicMetaObjectProvider)) 
+            return interfaces.Contains(typeof(IDynamicMetaObjectProvider))
                 && ((IDynamicMetaObjectProvider)target).GetMetaObject(Expression.Constant(target)).GetDynamicMemberNames().Any();
         }
 
@@ -153,7 +154,7 @@ namespace HandlebarsDotNet.Compiler
                 target.GetType()
                     .GetInterfaces()
                     .Where(i => i.IsGenericType)
-                    .Any(i => i.GetGenericTypeDefinition() == typeof (IDictionary<,>));
+                    .Any(i => i.GetGenericTypeDefinition() == typeof(IDictionary<,>));
         }
 
         private static void Iterate(
@@ -277,7 +278,8 @@ namespace HandlebarsDotNet.Compiler
 
         private static object GetProperty(object target, string name)
         {
-            var site = System.Runtime.CompilerServices.CallSite<Func<System.Runtime.CompilerServices.CallSite, object, object>>.Create(Microsoft.CSharp.RuntimeBinder.Binder.GetMember(0, name, target.GetType(), new[] { Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo.Create(0, null) }));
+            var site = System.Runtime.CompilerServices.CallSite<Func<System.Runtime.CompilerServices.CallSite, object, object>>.Create(
+                Microsoft.CSharp.RuntimeBinder.Binder.GetMember(0, name, target.GetType(), new[] { Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo.Create(0, null) }));
             return site.Target(site, target);
         }
 
@@ -311,11 +313,11 @@ namespace HandlebarsDotNet.Compiler
 
         private static object AccessMember(object instance, MemberInfo member)
         {
-            if (member.MemberType == System.Reflection.MemberTypes.Property)
+            if (member is PropertyInfo)
             {
                 return ((PropertyInfo)member).GetValue(instance, null);
             }
-            else if (member.MemberType == System.Reflection.MemberTypes.Field)
+            if (member is FieldInfo)
             {
                 return ((FieldInfo)member).GetValue(instance);
             }

@@ -7,6 +7,7 @@ using System.IO;
 using System.Dynamic;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Globalization;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -126,48 +127,31 @@ namespace HandlebarsDotNet.Compiler
             if (segment.StartsWith("@"))
             {
                 var contextValue = context.GetContextVariable(segment.Substring(1));
-                if (contextValue == null)
-                {
-                    return new UndefinedBindingResult();
-                }
-                else
-                {
-                    return contextValue;
-                }
+                return contextValue ?? new UndefinedBindingResult();
             }
-            else
-            {
-                return AccessMember(instance, segment);
-            }
+
+            return AccessMember(instance, segment);
         }
 
-        private static readonly Regex IndexRegex = new Regex(@"^\[?(?<index>\d+)\]?$", RegexOptions.Compiled);
+        private static readonly Regex IndexRegex = new Regex(@"^\[?(?<index>\d+)\]?$", RegexOptions.None);
 
         private object AccessMember(object instance, string memberName)
         {
             var enumerable = instance as IEnumerable<object>;
             if (enumerable != null)
             {
-                int index = 0;
+                int index;
                 var match = IndexRegex.Match(memberName);
-                if (match.Success == true)
+                if (match.Success)
                 {
                     if (match.Groups["index"].Success == false || int.TryParse(match.Groups["index"].Value, out index) == false)
                     {
                         return new UndefinedBindingResult();
                     }
-                    else
-                    {
-                        var result = enumerable.ElementAtOrDefault(index);
-                        if (result != null)
-                        {
-                            return result;
-                        }
-                        else
-                        {
-                            return new UndefinedBindingResult();
-                        }
-                    }
+
+                    var result = enumerable.ElementAtOrDefault(index);
+
+                    return result ?? new UndefinedBindingResult();
                 }
             }
             var resolvedMemberName = this.ResolveMemberName(memberName);
@@ -175,12 +159,11 @@ namespace HandlebarsDotNet.Compiler
             //crude handling for dynamic objects that don't have metadata
             if (typeof(IDynamicMetaObjectProvider).IsAssignableFrom(instanceType))
             {
-                //TODO: handle without try/catch
                 try
                 {
                     return GetProperty(instance, resolvedMemberName);
                 }
-                catch (Exception)
+                catch
                 {
                     return new UndefinedBindingResult();
                 }
@@ -198,7 +181,7 @@ namespace HandlebarsDotNet.Compiler
                     {
                         try
                         {
-                            key = Convert.ChangeType(key, genericArgs[0]);
+                            key = Convert.ChangeType(key, genericArgs[0], CultureInfo.CurrentCulture);
                         }
                         catch (Exception)
                         {
@@ -224,24 +207,24 @@ namespace HandlebarsDotNet.Compiler
             }
             // Object properties
             var members = instanceType.GetMember(resolvedMemberName);
-            if (members.Length == 0)
+            if (members.Length != 1)
             {
                 return new UndefinedBindingResult();
             }
-            if (members[0].MemberType == System.Reflection.MemberTypes.Property)
+
+            var info = members[0] as PropertyInfo;
+            if (info != null)
             {
-                return ((PropertyInfo)members[0]).GetValue(instance, null);
+                var b = info.GetValue(instance, null);
+                return b;
             }
-            else if (members[0].MemberType == System.Reflection.MemberTypes.Field)
+            if (members[0] is FieldInfo)
             {
                 return ((FieldInfo)members[0]).GetValue(instance);
             }
-            else
-            {
-                return new UndefinedBindingResult();
-            }
+            return new UndefinedBindingResult();
         }
-        
+
         static Type FirstGenericDictionaryTypeInstance(Type instanceType)
         {
             return instanceType.GetInterfaces()
@@ -256,7 +239,7 @@ namespace HandlebarsDotNet.Compiler
                     )
                 );
         }
-        
+
         private static object GetProperty(object target, string name)
         {
             var site = System.Runtime.CompilerServices.CallSite<Func<System.Runtime.CompilerServices.CallSite, object, object>>.Create(Microsoft.CSharp.RuntimeBinder.Binder.GetMember(0, name, target.GetType(), new[] { Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo.Create(0, null) }));

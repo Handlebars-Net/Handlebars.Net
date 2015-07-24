@@ -23,14 +23,14 @@ namespace HandlebarsDotNet.Compiler.Lexer
             return new WordExpressionToken(word);
         }
 
-        public static StartExpressionToken StartExpression(bool isEscaped)
+        public static StartExpressionToken StartExpression(bool isEscaped, bool trimWhitespace)
         {
-            return new StartExpressionToken(isEscaped);
+            return new StartExpressionToken(isEscaped, trimWhitespace);
         }
 
-        public static EndExpressionToken EndExpression(bool isEscaped)
+        public static EndExpressionToken EndExpression(bool isEscaped, bool trimWhitespace)
         {
-            return new EndExpressionToken(isEscaped);
+            return new EndExpressionToken(isEscaped, trimWhitespace);
         }
 
         public static CommentToken Comment(string comment)

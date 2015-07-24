@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>Handlebars.Net</id>
-        <version>1.3.5</version>
+        <version>1.4.0</version>
         <title>Handlebars.Net</title>
         <authors>Rex Morgan</authors>
         <projectUrl>https://github.com/rexm/Handlebars.Net</projectUrl>
@@ -11,7 +11,7 @@
         <description>Blistering-fast Handlebars.js templates in your .NET application.</description>
         <summary>Blistering-fast Handlebars.js templates in your .NET application.</summary>
         <tags>handlebars mustache templating engine compiler</tags>
-        <releaseNotes>Note the root namespace changed from Handlebars to HandlebarsDotNet</releaseNotes>
+        <releaseNotes>Changed the library type to Portable Class Library, and added escape ('\{{key}}') support.</releaseNotes>
     </metadata>
     <files>
         <file src="source/Handlebars/bin/Release/Net40/Handlebars.dll" target="lib/net40/Handlebars.dll" />

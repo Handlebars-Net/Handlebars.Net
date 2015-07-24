@@ -23,7 +23,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
         private bool IsBlockWord(TextReader reader)
         {
             var peek = (char)reader.Peek();
-            return validBlockWordStartCharacters.Contains(peek);
+            return validBlockWordStartCharacters.Contains(peek.ToString());
         }
 
         private string AccumulateBlockWord(TextReader reader)
@@ -37,7 +37,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
             while(true)
             {
                 var peek = (char)reader.Peek();
-                if (peek == '}' || char.IsWhiteSpace(peek))
+                if (peek == '}' || peek == '~' || char.IsWhiteSpace(peek))
                 {
                     break;
                 }

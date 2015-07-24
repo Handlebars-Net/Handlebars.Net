@@ -37,6 +37,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
         private IEnumerable<Token> Parse(TextReader source)
         {
             bool inExpression = false;
+            bool trimWhitespace = false;
             var buffer = new StringBuilder();
             var node = source.Read();
             while (true)
@@ -69,7 +70,6 @@ namespace HandlebarsDotNet.Compiler.Lexer
                     {
                         yield return token;
                     }
-
                     if ((char)node == '}' && (char)source.Read() == '}')
                     {
                         bool escaped = true;
@@ -79,13 +79,18 @@ namespace HandlebarsDotNet.Compiler.Lexer
                             escaped = false;
                         }
                         node = source.Read();
-                        yield return Token.EndExpression(escaped);
+                        yield return Token.EndExpression(escaped, trimWhitespace);
                         inExpression = false;
                     }
                     else if (char.IsWhiteSpace((char)node) || char.IsWhiteSpace((char)source.Peek()))
                     {
                         node = source.Read();
                         continue;
+                    }
+                    else if ((char)node == '~')
+                    {
+                        node = source.Read();
+                        trimWhitespace = true;
                     }
                     else
                     {
@@ -98,17 +103,34 @@ namespace HandlebarsDotNet.Compiler.Lexer
                 }
                 else
                 {
-                    if ((char)node == '{' && (char)source.Peek() == '{')
+                    if ((char)node == '\\' && (char)source.Peek() == '{')
+                    {
+                        source.Read();
+                        if ((char)source.Peek() == '{')
+                        {
+                            source.Read();
+                            buffer.Append('{', 2);
+                        }
+                        node = source.Read();
+                    }
+                    else if ((char)node == '{' && (char)source.Peek() == '{')
                     {
                         bool escaped = true;
+                        trimWhitespace = false;
                         node = source.Read();
                         if ((char)source.Peek() == '{')
                         {
                             node = source.Read();
                             escaped = false;
                         }
+                        if ((char)source.Peek() == '~')
+                        {
+                            node = source.Read();
+                            trimWhitespace = true;
+                        }
                         yield return Token.Static(buffer.ToString());
-                        yield return Token.StartExpression(escaped);
+                        yield return Token.StartExpression(escaped, trimWhitespace);
+                        trimWhitespace = false;
                         buffer = new StringBuilder();
                         inExpression = true;
                     }

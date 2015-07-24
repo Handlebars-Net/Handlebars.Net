@@ -17,9 +17,9 @@ namespace HandlebarsDotNet
 
         public HandlebarsConfiguration()
         {
-            this.Helpers = new Dictionary<string, HandlebarsHelper>(StringComparer.InvariantCultureIgnoreCase);
-            this.BlockHelpers = new Dictionary<string, HandlebarsBlockHelper>(StringComparer.InvariantCultureIgnoreCase);
-            this.RegisteredTemplates = new Dictionary<string, Action<TextWriter, object>>(StringComparer.InvariantCultureIgnoreCase);
+            this.Helpers = new Dictionary<string, HandlebarsHelper>(StringComparer.OrdinalIgnoreCase);
+            this.BlockHelpers = new Dictionary<string, HandlebarsBlockHelper>(StringComparer.OrdinalIgnoreCase);
+            this.RegisteredTemplates = new Dictionary<string, Action<TextWriter, object>>(StringComparer.OrdinalIgnoreCase);
         }
     }
 }
