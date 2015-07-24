@@ -5,7 +5,7 @@ install:
   - echo "deb http://download.mono-project.com/repo/debian wheezy main" | sudo tee /etc/apt/sources.list.d/mono-xamarin.list
   - echo "deb http://download.mono-project.com/repo/debian wheezy-apache24-compat main" | sudo tee -a /etc/apt/sources.list.d/mono-xamarin.list
   - sudo apt-get update
-  - sudo apt-get install mono-devel mono-gmcs nunit-console --fix-missing
+  - sudo apt-get install mono-devel mono-dmcs nunit-console --fix-missing
   - mozroots --import --sync
 
 script:
