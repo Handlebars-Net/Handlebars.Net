@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
-using System.IO;
 using System.Collections;
 
 namespace HandlebarsDotNet.Test
@@ -55,6 +54,48 @@ namespace HandlebarsDotNet.Test
             var data = new
             {
                 names = new[] {new {name = "Foo"}, new {name = "Handlebars.Net"}}
+            };
+            var result = template(data);
+            Assert.AreEqual("Hello, Handlebars.Net!", result);
+        }
+
+        /// <summary>
+        /// Test basic path resolution against System.Collections.Hashtable.
+        /// This should test against the IDictionary checks within 
+        /// <see cref="HandlebarsDotNet.Compiler.PartialBinder.AccessMember()"/>
+        /// </summary>
+        [Test]
+        public void BasicPathHashtableTextKeyNoSquareBrackets()
+        {
+            var source = "Hello, {{ names.Foo }}!";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                names = new Hashtable
+                {
+                    { "Foo" , "Handlebars.Net" }
+                }
+            };
+            var result = template(data);
+            Assert.AreEqual("Hello, Handlebars.Net!", result);
+        }
+
+        // <summary>
+        /// Test basic path resolution against System.Collections.Hashtable.
+        /// This should test against the IDictionary checks within 
+        /// <see cref="HandlebarsDotNet.Compiler.PartialBinder.AccessMember()"/>
+        /// </summary>
+        [Test]
+        public void BasicPathHashtableTextKeySquareBrackets()
+        {
+            var source = "Hello, {{ names.[Foo] }}!";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                names = new Hashtable
+                {
+                    { "Foo" , "Handlebars.Net" }
+                }
             };
             var result = template(data);
             Assert.AreEqual("Hello, Handlebars.Net!", result);
@@ -206,6 +247,22 @@ namespace HandlebarsDotNet.Test
             };
             var result = template(data);
             Assert.AreEqual("Hello, Handlebars.Net!", result);
+        }
+
+        [Test]
+        public void BasicPathDictionaryInvalidPrimitiveKey()
+        {
+            var source = "Hello, {{ names.Foo }}!";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                names = new Dictionary<long, string>
+                {
+                    { 42 , "Handlebars.Net" }
+                }
+            };
+            var result = template(data);
+            Assert.AreEqual("Hello, !", result);
         }
 
         [Test]
@@ -722,10 +779,9 @@ namespace HandlebarsDotNet.Test
             {
                 dictionary = new MockDictionary()
             });
-            var expectedResult = 
-                "Hello world!";
+            var expectedResult = "Hello world!";
 
-            Assert.AreEqual(result, expectedResult);
+            Assert.AreEqual(expectedResult, result);
         }
 
         /// <summary>
@@ -787,7 +843,7 @@ namespace HandlebarsDotNet.Test
             }
             public bool ContainsKey(string key)
             {
-                throw new NotImplementedException();
+                return true;
             }
             public bool Remove(string key)
             {

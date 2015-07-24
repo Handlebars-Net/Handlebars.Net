@@ -15,7 +15,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug</OutputPath>
+    <OutputPath>bin\Debug\Net40</OutputPath>
     <IntermediateOutputPath>obj\Debug\Net40\</IntermediateOutputPath>
     <DefineConstants>DEBUG;NET40</DefineConstants>
     <ErrorReport>prompt</ErrorReport>

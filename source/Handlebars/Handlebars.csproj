@@ -15,7 +15,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug</OutputPath>
+    <OutputPath>bin\Debug\Net45</OutputPath>
     <IntermediateOutputPath>obj\Debug\Net45\</IntermediateOutputPath>
     <DefineConstants>DEBUG;NET45</DefineConstants>
     <ErrorReport>prompt</ErrorReport>

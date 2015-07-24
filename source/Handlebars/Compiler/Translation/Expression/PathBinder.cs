@@ -5,7 +5,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.IO;
 using System.Dynamic;
-using Microsoft.CSharp.RuntimeBinder;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
@@ -58,7 +57,7 @@ namespace HandlebarsDotNet.Compiler
         {
             if (sex.Body is PathExpression)
             {
-                var writeMethod = typeof(TextWriter).GetMethod("Write", new [] { typeof(object) });
+                var writeMethod = typeof(TextWriter).GetMethod("Write", new[] { typeof(object) });
                 return Expression.Call(
                     Expression.Property(
                         CompilationContext.BindingContext,
@@ -92,7 +91,7 @@ namespace HandlebarsDotNet.Compiler
         private object ResolvePath(BindingContext context, string path)
         {
             var instance = context.Value;
-            foreach (var segment in path.Split ('/'))
+            foreach (var segment in path.Split('/'))
             {
                 if (segment == "..")
                 {
@@ -160,7 +159,7 @@ namespace HandlebarsDotNet.Compiler
                     else
                     {
                         var result = enumerable.ElementAtOrDefault(index);
-                        if(result != null)
+                        if (result != null)
                         {
                             return result;
                         }
@@ -186,35 +185,44 @@ namespace HandlebarsDotNet.Compiler
                     return new UndefinedBindingResult();
                 }
             }
-            
-            var iDictInstance = instanceType.GetInterfaces()
-                    .FirstOrDefault(i => i.IsGenericType
-                        &&
-                        (
-                        i.GetGenericTypeDefinition() == typeof(IDictionary<,>)
-#if NET45
-                        || i.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>)
-#endif
-                        )
-                    );
+
+            // Check if the instance is IDictionary<,> or IReadOnlyDictionary<,>
+            var iDictInstance = FirstGenericDictionaryTypeInstance(instanceType);
             if (iDictInstance != null)
             {
                 var genericArgs = iDictInstance.GetGenericArguments();
+                object key = resolvedMemberName.Trim('[', ']');    // Ensure square brackets removed.
                 if (genericArgs.Length > 0)
                 {
-                    var keyName = resolvedMemberName.Trim('[', ']');    // Ensure square brackets removed.
-                    var key = Convert.ChangeType(keyName, genericArgs[0]);
+                    if (genericArgs[0] != typeof(string))
+                    {
+                        try
+                        {
+                            key = Convert.ChangeType(key, genericArgs[0]);
+                        }
+                        catch (Exception)
+                        {
+                            // Can't convert to key type.
+                            return new UndefinedBindingResult();
+                        }
+                    }
+                }
+                var m = instanceType.GetMethods();
+                if ((bool)instanceType.GetMethod("ContainsKey").Invoke(instance, new object[] { key }))
+                {
                     return instanceType.GetMethod("get_Item").Invoke(instance, new object[] { key });
                 }
-                return instanceType.GetMethod("get_Item").Invoke(instance, new object[] { resolvedMemberName });
             }
-            if (instance is IDictionary)
+            // Check if the instance is IDictionary (ie, System.Collections.Hashtable)
+            if (typeof(IDictionary).IsAssignableFrom(instanceType))
             {
-                if (((IDictionary)instance).Contains(resolvedMemberName))
+                var keyName = resolvedMemberName.Trim('[', ']');    // Ensure square brackets removed.
+                if (((IDictionary)instance).Contains(keyName))
                 {
-                    return ((IDictionary)instance)[resolvedMemberName];
-                }   
+                    return ((IDictionary)instance)[keyName];
+                }
             }
+            // Object properties
             var members = instanceType.GetMember(resolvedMemberName);
             if (members.Length == 0)
             {
@@ -234,9 +242,24 @@ namespace HandlebarsDotNet.Compiler
             }
         }
         
+        static Type FirstGenericDictionaryTypeInstance(Type instanceType)
+        {
+            return instanceType.GetInterfaces()
+                .FirstOrDefault(i =>
+                    i.IsGenericType
+                    &&
+                    (
+                        i.GetGenericTypeDefinition() == typeof(IDictionary<,>)
+#if NET45
+                        || i.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>)
+#endif
+                    )
+                );
+        }
+        
         private static object GetProperty(object target, string name)
         {
-            var site = System.Runtime.CompilerServices.CallSite<Func<System.Runtime.CompilerServices.CallSite, object, object>>.Create(Microsoft.CSharp.RuntimeBinder.Binder.GetMember(0, name, target.GetType(), new[]{ Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo.Create(0, null) }));
+            var site = System.Runtime.CompilerServices.CallSite<Func<System.Runtime.CompilerServices.CallSite, object, object>>.Create(Microsoft.CSharp.RuntimeBinder.Binder.GetMember(0, name, target.GetType(), new[] { Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo.Create(0, null) }));
             return site.Target(site, target);
         }
 
