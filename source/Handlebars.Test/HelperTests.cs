@@ -142,6 +142,28 @@ namespace HandlebarsDotNet.Test
             Assert.AreEqual(expectedIsSame, outputIsSame);
             Assert.AreEqual(expectedIsDifferent, outputIsDifferent);
         }
+
+        [Test]
+        public void HelperWithNumericArguments()
+        {
+            Handlebars.RegisterHelper("myHelper", (writer, context, args) => {
+                var count = 0;
+                foreach(var arg in args)
+                {
+                    writer.Write("\nThing {0}: {1}", ++count, arg);
+                }
+            });
+
+            var source = "Here are some things: {{myHelper 123 4567 -98.76}}";
+
+            var template = Handlebars.Compile(source);
+
+            var output = template(new { });
+
+            var expected = "Here are some things: \nThing 1: 123\nThing 2: 4567\nThing 3: -98.76";
+
+            Assert.AreEqual(expected, output);
+        }
     }
 }
 
