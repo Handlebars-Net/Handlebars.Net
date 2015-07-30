@@ -1,7 +1,7 @@
 language: csharp
 solution: source/Handlebars.sln
 install:
-  - nuget restore solution-name.sln
+  - nuget restore source/Handlebars.sln
   - nuget install NUnit.Runners -Version 2.6.4 -OutputDirectory testrunner
 script:
   - xbuild /p:Configuration=Release source/Handlebars.sln
