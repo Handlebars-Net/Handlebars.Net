@@ -12,12 +12,12 @@ namespace HandlebarsDotNet.Compiler.Lexer
             if (IsDelimitedLiteral(reader) == true)
             {
                 char delimiter = (char)reader.Read();
-                var buffer = AccumulateLiteral(reader, delimiter);
+                var buffer = AccumulateLiteral(reader, delimiter, true);
                 token = Token.Literal(buffer, delimiter.ToString());
             }
             else if (IsNonDelimitedLiteral(reader) == true)
             {
-                var buffer = AccumulateLiteral(reader, ' ');
+                var buffer = AccumulateLiteral(reader, ' ', false);
                 token = Token.Literal(buffer);
             }
             return token;
@@ -35,7 +35,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
             return char.IsDigit(peek) || peek == '-';
         }
 
-        private static string AccumulateLiteral(TextReader reader, char delimiter)
+        private static string AccumulateLiteral(TextReader reader, char delimiter, bool captureDelimiter)
         {
             StringBuilder buffer = new StringBuilder();
             while (true)
@@ -49,7 +49,10 @@ namespace HandlebarsDotNet.Compiler.Lexer
                 {
                     if ((char)node == delimiter)
                     {
-                        reader.Read();
+                        if (captureDelimiter)
+                        {
+                            reader.Read();
+                        }
                         break;
                     }
                     else if ((char)node == '}')
