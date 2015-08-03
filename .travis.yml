@@ -1,18 +1,11 @@
-language: c
-
+language: csharp
+solution: source/Handlebars.sln
 install:
-  - sudo add-apt-repository ppa:directhex/monoxide -y && sudo apt-get update
-  - sudo apt-get install mono-devel mono-gmcs nunit-console
-  - mozroots --import --sync
-
+  - nuget restore source/Handlebars.sln
+  - nuget install NUnit.Runners -Version 2.6.4 -OutputDirectory testrunner
 script:
   - xbuild /p:Configuration=Release source/Handlebars.sln
-  - nunit-console source/Handlebars.Test/bin/Release/Handlebars.Test.dll
-
+  - mono ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./source/Handlebars.Test/bin/Release/Handlebars.Test.dll
 notifications:
   email:
     - rex@rexmorgan.net
-
-env:
-  global:
-    - EnableNuGetPackageRestore=true
