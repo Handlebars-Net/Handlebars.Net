@@ -109,7 +109,7 @@ Click here: <a href='https://github.com/rexm/handlebars.net'>Handlebars.Net</a>
 - [ ] **Add unit tests!**
 - [ ] [Support for sub-expressions](https://github.com/rexm/Handlebars.Net/issues/48)
 - [ ] `lookup`, `log`, and `helperMissing` helpers
-- [ ] [Support for whitespace control](https://github.com/rexm/Handlebars.Net/issues/52)
+- [x] [Support for whitespace control](https://github.com/rexm/Handlebars.Net/issues/52)
 - [ ] Set delimiters
 - [ ] Mustache(5) Lambdas
 - [ ] MVC view engine
