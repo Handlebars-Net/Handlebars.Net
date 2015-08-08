@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>Handlebars.Net</id>
-        <version>1.4.2</version>
+        <version>1.4.3</version>
         <title>Handlebars.Net</title>
         <authors>Rex Morgan</authors>
         <projectUrl>https://github.com/rexm/Handlebars.Net</projectUrl>
@@ -11,7 +11,7 @@
         <description>Blistering-fast Handlebars.js templates in your .NET application.</description>
         <summary>Blistering-fast Handlebars.js templates in your .NET application.</summary>
         <tags>handlebars mustache templating engine compiler</tags>
-        <releaseNotes>Now supports whitespace control (~) see http://git.io/vOwGV for details</releaseNotes>
+        <releaseNotes>Added support for implicit conditionals, see http://git.io/v3vhQ for details; added support for whitespace control (~) see http://git.io/vOwGV for details</releaseNotes>
     </metadata>
     <files>
         <file src="source/Handlebars/bin/Release/Handlebars.dll" target="lib/Handlebars.dll" />
