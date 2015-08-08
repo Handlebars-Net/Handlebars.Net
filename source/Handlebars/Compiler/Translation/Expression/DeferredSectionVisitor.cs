@@ -42,7 +42,11 @@ namespace HandlebarsDotNet.Compiler
 
         private static void RenderEmptySection(object value, BindingContext context, Action<TextWriter, object> template)
         {
-            if (HandlebarsUtils.IsFalsyOrEmpty(value) == true)
+            if (value is bool && (bool)value == false)
+            {
+                template(context.TextWriter, context);
+            }
+            else if (HandlebarsUtils.IsFalsyOrEmpty(value) == true)
             {
                 template(context.TextWriter, value);
             }
@@ -50,11 +54,15 @@ namespace HandlebarsDotNet.Compiler
 
         private static void RenderSection(object value, BindingContext context, Action<TextWriter, object> template)
         {
-            if (HandlebarsUtils.IsFalsyOrEmpty(value))
+            if (value is bool && (bool)value == true)
+            {
+                template(context.TextWriter, context);
+            }
+            else if (HandlebarsUtils.IsFalsyOrEmpty(value))
             {
                 return;
             }
-            if (value is IEnumerable)
+            else if (value is IEnumerable)
             {
                 foreach (var item in ((IEnumerable)value))
                 {

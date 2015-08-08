@@ -548,6 +548,23 @@ namespace HandlebarsDotNet.Test
         }
 
         [Test]
+        public void ImplicitConditionalBlock()
+        {
+            var template =
+                "{{#home}}Welcome Home{{/home}}{{^home}}Welcome to {{newCity}}{{/home}}";
+
+            var data = new {
+                newCity = "New York City",
+                oldCity = "Los Angeles",
+                home = false
+            };
+
+            var compiler = Handlebars.Compile(template);
+            var result = compiler.Invoke(data);
+            Assert.AreEqual("Welcome to New York City", result);
+        }
+
+        [Test]
         public void BasicDictionary()
         {
             var source =
