@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
@@ -222,6 +223,104 @@ namespace HandlebarsDotNet.Test
             var result = template(data);
             Assert.AreEqual("foo: hello bar: world ", result);
         }
+
+
+        [Test]
+        public void BasicPathDictionaryStringKeyNoSquareBrackets()
+        {
+            var source = "Hello, {{ names.Foo }}!";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                names = new Dictionary<string, string>
+                {
+                    { "Foo" , "Handlebars.Net" }
+                }
+            };
+            var result = template(data);
+            Assert.AreEqual("Hello, Handlebars.Net!", result);
+        }
+
+        [Test]
+        public void BasicPathDictionaryStringKey()
+        {
+            var source = "Hello, {{ names.[Foo] }}!";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                names = new Dictionary<string, string>
+                {
+                    { "Foo" , "Handlebars.Net" }
+                }
+            };
+            var result = template(data);
+            Assert.AreEqual("Hello, Handlebars.Net!", result);
+        }
+
+        [Test]
+        public void BasicPathDictionaryIntKeyNoSquareBrackets()
+        {
+            var source = "Hello, {{ names.42 }}!";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                names = new Dictionary<int, string>
+                {
+                    { 42 , "Handlebars.Net" }
+                }
+            };
+            var result = template(data);
+            Assert.AreEqual("Hello, Handlebars.Net!", result);
+        }
+
+        [Test]
+        public void BasicPathDictionaryLongKeyNoSquareBrackets()
+        {
+            var source = "Hello, {{ names.42 }}!";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                names = new Dictionary<long, string>
+                {
+                    { 42 , "Handlebars.Net" }
+                }
+            };
+            var result = template(data);
+            Assert.AreEqual("Hello, Handlebars.Net!", result);
+        }
+
+        [Test]
+        public void BasicPathDictionaryIntKey()
+        {
+            var source = "Hello, {{ names.[42] }}!";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                names = new Dictionary<int, string>
+                {
+                    { 42 , "Handlebars.Net" }
+                }
+            };
+            var result = template(data);
+            Assert.AreEqual("Hello, Handlebars.Net!", result);
+        }
+
+        [Test]
+        public void BasicPathDictionaryLongKey()
+        {
+            var source = "Hello, {{ names.[42] }}!";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                names = new Dictionary<long, string>
+                {
+                    { 42 , "Handlebars.Net" }
+                }
+            };
+            var result = template(data);
+            Assert.AreEqual("Hello, Handlebars.Net!", result);
+        }
+
 
         [Test]
         public void DynamicWithMetadataEnumerator()
@@ -592,13 +691,51 @@ namespace HandlebarsDotNet.Test
                 "<div id='userInfo'>UserName: Ondrej Language: Slovak</div>"
                 + "<div id='main' style='width:120px; height:80px'>body</div>";
 
-            Assert.AreEqual(result, expectedResult);
+            Assert.AreEqual(expectedResult, result);
         }
 
         [Test]
-        public void BasicIDictionary()
+        public void BasicHashtable()
+        {
+            var source = "{{dictionary.[key]}}";
+
+            var template = Handlebars.Compile(source);
+
+            var result = template(new
+            {
+                dictionary = new Hashtable
+                {
+                    { "key", "Hello world!" }
+                }
+            });
+            var expectedResult = "Hello world!";
+
+            Assert.AreEqual(expectedResult, result);
+        }
+
+        [Test]
+        public void BasicHashtableNoSquareBrackets()
         {
             var source = "{{dictionary.key}}";
+
+            var template = Handlebars.Compile(source);
+
+            var result = template(new
+            {
+                dictionary = new Hashtable
+                {
+                    { "key", "Hello world!" }
+                }
+            });
+            var expectedResult = "Hello world!";
+
+            Assert.AreEqual(expectedResult, result);
+        }
+        
+        [Test]
+        public void BasicMockIDictionary()
+        {
+            var source = "{{dictionary.[key]}}";
 
             var template = Handlebars.Compile(source);
 
@@ -609,8 +746,60 @@ namespace HandlebarsDotNet.Test
             var expectedResult = 
                 "Hello world!";
 
-            Assert.AreEqual(result, expectedResult);
+            Assert.AreEqual(expectedResult, result);
         }
+
+        [Test]
+        public void BasicMockIDictionaryNoSquareBrackets()
+        {
+            var source = "{{dictionary.key}}";
+
+            var template = Handlebars.Compile(source);
+
+            var result = template(new
+            {
+                dictionary = new MockDictionary()
+            });
+            var expectedResult =
+                "Hello world!";
+
+            Assert.AreEqual(expectedResult, result);
+        }
+
+        [Test]
+        public void BasicMockIDictionaryIntKey()
+        {
+            var source = "{{dictionary.[42]}}";
+
+            var template = Handlebars.Compile(source);
+
+            var result = template(new
+            {
+                dictionary = new MockDictionary()
+            });
+            var expectedResult =
+                "Hello world!";
+
+            Assert.AreEqual(expectedResult, result);
+        }
+
+        [Test]
+        public void BasicMockIDictionaryIntKeyNoSquareBrackets()
+        {
+            var source = "{{dictionary.42}}";
+
+            var template = Handlebars.Compile(source);
+
+            var result = template(new
+            {
+                dictionary = new MockDictionary()
+            });
+            var expectedResult =
+                "Hello world!";
+
+            Assert.AreEqual(expectedResult, result);
+        }
+
 
         private class MockDictionary : IDictionary<string, string>
         {
@@ -620,7 +809,7 @@ namespace HandlebarsDotNet.Test
             }
             public bool ContainsKey(string key)
             {
-                throw new NotImplementedException();
+                return true;
             }
             public bool Remove(string key)
             {
