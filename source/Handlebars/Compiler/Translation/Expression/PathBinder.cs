@@ -7,6 +7,7 @@ using System.IO;
 using System.Dynamic;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Globalization;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -167,16 +168,51 @@ namespace HandlebarsDotNet.Compiler
                     return new UndefinedBindingResult();
                 }
             }
-            if (instance is IDictionary)
+
+
+            // Check if the instance is IDictionary<,>
+            var iDictInstance = FirstGenericDictionaryTypeInstance(instanceType);
+            if (iDictInstance != null)
             {
-                return ((IDictionary)instance)[resolvedMemberName];
+                var genericArgs = iDictInstance.GetGenericArguments();
+                object key = resolvedMemberName.Trim('[', ']');    // Ensure square brackets removed.
+                if (genericArgs.Length > 0)
+                {
+                    // Dictionary key type isn't a string, so attempt to convert.
+                    if (genericArgs[0] != typeof(string))
+                    {
+                        try
+                        {
+                            key = Convert.ChangeType(key, genericArgs[0], CultureInfo.CurrentCulture);
+                        }
+                        catch (Exception)
+                        {
+                            // Can't convert to key type.
+                            return new UndefinedBindingResult();
+                        }
+                    }
+                }
+
+                var m = instanceType.GetMethods();
+                if ((bool)instanceType.GetMethod("ContainsKey").Invoke(instance, new object[] { key }))
+                {
+                    return instanceType.GetMethod("get_Item").Invoke(instance, new object[] { key });
+                }
+                else
+                {
+                    // Key doesn't exist.
+                    return new UndefinedBindingResult();
+                }
             }
-            if (instanceType.GetInterfaces()
-                .Where(i => i.IsGenericType)
-                .Any(i => i.GetGenericTypeDefinition() == typeof(IDictionary<,>)))
+            // Check if the instance is IDictionary (ie, System.Collections.Hashtable)
+            if (typeof(IDictionary).IsAssignableFrom(instanceType))
             {
-               return instanceType.GetMethod("get_Item").Invoke(instance, new object[] { resolvedMemberName });
+                var key = resolvedMemberName.Trim('[', ']');    // Ensure square brackets removed.
+                // Only string keys supported - indexer takes an object, but no nice
+                // way to check if the hashtable check if it should be a different type.
+                return ((IDictionary)instance)[key];
             }
+
             var members = instanceType.GetMember(resolvedMemberName);
             if (members.Length != 1)
             {
@@ -194,6 +230,18 @@ namespace HandlebarsDotNet.Compiler
                 return ((FieldInfo)members[0]).GetValue(instance);
             }
             return new UndefinedBindingResult();
+        }
+
+        static Type FirstGenericDictionaryTypeInstance(Type instanceType)
+        {
+            return instanceType.GetInterfaces()
+                .FirstOrDefault(i =>
+                    i.IsGenericType
+                    &&
+                    (
+                        i.GetGenericTypeDefinition() == typeof(IDictionary<,>)
+                    )
+                );
         }
 
         private static object GetProperty(object target, string name)
