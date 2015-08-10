@@ -42,7 +42,7 @@ namespace HandlebarsDotNet.Compiler
                     }
                     if (((EndExpressionToken)item).IsEscaped != startExpression.IsEscaped)
                     {
-                        throw new HandlebarsCompilerException("Starting and ending handleabars do not match");
+                        throw new HandlebarsCompilerException("Starting and ending handlebars do not match");
                     }
                 }
                 else
