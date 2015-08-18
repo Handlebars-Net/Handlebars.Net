@@ -11,7 +11,8 @@ namespace HandlebarsDotNet.Compiler.Lexer
         Literal = 4,
         Structure = 5,
         Comment = 6,
-        Partial = 7
+        Partial = 7,
+        Layout = 8
     }
 }
 
