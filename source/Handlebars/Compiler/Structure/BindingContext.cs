@@ -68,19 +68,28 @@ namespace HandlebarsDotNet.Compiler
 
         public virtual object GetContextVariable(string variableName)
         {
+            var target = this;
+
+            return GetContextVariable(variableName, target)
+                   ?? GetContextVariable(variableName, target.Value);
+        }
+
+        private object GetContextVariable(string variableName, object target)
+        {
             object returnValue;
             variableName = variableName.TrimStart('@');
-            var member = this.GetType().GetMember(variableName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-            
+            var member = target.GetType()
+                .GetMember(variableName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+
             if (member.Length > 0)
             {
                 if (member[0] is PropertyInfo)
                 {
-                    returnValue = ((PropertyInfo)member[0]).GetValue(this, null);
+                    returnValue = ((PropertyInfo) member[0]).GetValue(target, null);
                 }
                 else if (member[0] is FieldInfo)
                 {
-                    returnValue = ((FieldInfo)member[0]).GetValue(this);
+                    returnValue = ((FieldInfo) member[0]).GetValue(target);
                 }
                 else
                 {

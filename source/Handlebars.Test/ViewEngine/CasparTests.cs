@@ -27,6 +27,11 @@ namespace Handlebars.Test.ViewEngine
             var renderView = handlebars.CompileView("ViewEngine/Casper-master/post.hbs", fs);
             var output = renderView(new
             {
+                blog = new
+                {
+                    url = "http://someblog.com",
+                    title = "This is the blog title"
+                },
                 post = new
                 {
                     title = "My Post Title",

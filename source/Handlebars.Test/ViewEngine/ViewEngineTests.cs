@@ -49,6 +49,24 @@ namespace HandlebarsDotNet.Test.ViewEngine
             Assert.AreEqual("layout start\r\nThis is the body\r\nlayout end", output);
         }
 
+        [Test]
+        public void CanRenderAGlobalVariable()
+        {
+            //Given a layout in the root which contains an @ variable
+            var files = new FakeFileSystem()
+            {
+                { "views\\someview.hbs", "This is the {{@body.title}}"}
+            };
+
+            //When a viewengine renders that view
+            var handlebars = HandlebarsDotNet.Handlebars.Create();
+            var render = handlebars.CompileView("views\\someview.hbs", files);
+            var output = render(new {@body = new {title = "THING"}});
+
+            //Then the correct output should be rendered
+            Assert.AreEqual("This is the THING", output);
+        }
+
         //We have a fake file system. Difference frameworks and apps will use 
         //different file systems.
         class FakeFileSystem : ViewEngineFileSystem, IEnumerable
