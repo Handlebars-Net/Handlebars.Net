@@ -16,7 +16,7 @@ namespace HandlebarsDotNet.Mvc.ViewEngine
             var templatePath = physicalpath;
             var version = HostingEnvironment.VirtualPathProvider.GetCacheKey(templatePath);
             var key = templatePath + "_" + version;
-            render = compiledViews.GetOrAdd(key + Guid.NewGuid(), (k) =>
+            render = compiledViews.GetOrAdd(key, (k) =>
             {
                 var compiledView = handlebars.CompileView(templatePath, handlebars.Configuration.FileSystem);
                 return compiledView;
