@@ -8,11 +8,14 @@ namespace HandlebarsDotNet.Compiler.Lexer
     {
         public override Token Parse(TextReader reader)
         {
-            CommentToken token = null;
+            Token token = null;
             if (IsComment(reader))
             {
-                var buffer = AccumulateComment(reader);
-                token = Token.Comment(buffer);
+                var buffer = AccumulateComment(reader).Trim();
+                if (buffer.StartsWith("<")) //syntax for layout is {{<! layoutname }} - i.e. its inside a comment block
+                    token = Token.Layout(buffer.Substring(1).Trim());
+
+                token = token ?? Token.Comment(buffer);
             }
             return token;
         }

@@ -68,6 +68,7 @@
     <Compile Include="TripleStashTests.cs" />
     <Compile Include="PartialTests.cs" />
     <Compile Include="IteratorTests.cs" />
+    <Compile Include="ViewEngine\ViewEngineTests.cs" />
     <Compile Include="WhitespaceTests.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

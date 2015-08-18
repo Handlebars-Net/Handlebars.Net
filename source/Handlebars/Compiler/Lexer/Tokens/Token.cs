@@ -42,6 +42,11 @@ namespace HandlebarsDotNet.Compiler.Lexer
         {
             return new PartialToken(partialName);
         }
+
+        public static LayoutToken Layout(string layout)
+        {
+            return new LayoutToken(layout);
+        }
     }
 }
 
