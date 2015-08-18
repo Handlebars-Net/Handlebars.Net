@@ -5,8 +5,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{2BD48FB6-C852-4141-B734-12E501B1D761}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Handlebars.Test</RootNamespace>
-    <AssemblyName>Handlebars.Test</AssemblyName>
+    <RootNamespace>HandlebarsDotNet.Test</RootNamespace>
+    <AssemblyName>HandlebarsDotNet.Test</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>

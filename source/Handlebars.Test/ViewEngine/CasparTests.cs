@@ -1,15 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CsQuery;
-using HandlebarsDotNet;
+﻿using System.IO;
 using NUnit.Framework;
-using Handlebars = HandlebarsDotNet.Handlebars;
 
-namespace Handlebars.Test.ViewEngine
+namespace HandlebarsDotNet.Test.ViewEngine
 {
     [TestFixture]
     public class CasparTests
