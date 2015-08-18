@@ -96,7 +96,8 @@ namespace HandlebarsDotNet.Compiler.Lexer
                     {
                         if (token == null)
                         {
-                            throw new HandlebarsParserException("Reached unparseable token in expression");
+                            
+                            throw new HandlebarsParserException("Reached unparseable token in expression: " + source.ReadLine());
                         }
                         node = source.Read();
                     }
