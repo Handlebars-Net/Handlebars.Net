@@ -50,6 +50,7 @@ _ReSharper*/
 
 #NuGet
 packages/
+.vs/
 
 #ncrunch
 *ncrunch*
