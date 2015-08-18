@@ -9,7 +9,6 @@ namespace HandlebarsDotNet
     public abstract class ViewEngineFileSystem
     {
         public abstract string GetFileContent(string filename);
-        public abstract string[] GetFileNames(string directoryName);
 
         private static string GetDir(string currentFilePath)
         {
@@ -26,7 +25,7 @@ namespace HandlebarsDotNet
             {
                 if (dir == null) break;
                 var fullFileName = CombinePath(dir, otherFileName);
-                if (this.Exists(fullFileName)) return fullFileName;
+                if (this.FileExists(fullFileName)) return fullFileName;
                 dir = GetDir(dir);
             }
             return null;
@@ -34,6 +33,6 @@ namespace HandlebarsDotNet
 
         protected abstract string CombinePath(string dir, string otherFileName);
 
-        protected abstract bool Exists(string filePath);
+        public abstract bool FileExists(string filePath);
     }
 }

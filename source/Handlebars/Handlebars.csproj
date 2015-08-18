@@ -41,6 +41,7 @@
     <Compile Include="Compiler\Lexer\Tokens\LayoutToken.cs" />
     <Compile Include="Compiler\Resolvers\UpperCamelCaseExpressionNameResolver.cs" />
     <Compile Include="Compiler\Resolvers\IExpressionNameResolver.cs" />
+    <Compile Include="Compiler\Translation\Expression\HelperFunctionBinder.cs" />
     <Compile Include="DescriptionAttribute.cs" />
     <Compile Include="EnumerableExtensions.cs" />
     <Compile Include="HandlebarsEnvironment.cs" />
@@ -68,7 +69,6 @@
     <Compile Include="Compiler\Translation\Expression\BlockHelperFunctionBinder.cs" />
     <Compile Include="Compiler\Translation\Expression\ContextBinder.cs" />
     <Compile Include="Compiler\Translation\Expression\HandlebarsExpressionVisitor.cs" />
-    <Compile Include="Compiler\Translation\Expression\HelperFunctionBinder.cs" />
     <Compile Include="Compiler\Translation\Expression\PathBinder.cs" />
     <Compile Include="Compiler\Translation\Expression\StaticReplacer.cs" />
     <Compile Include="Handlebars.cs" />

@@ -37,6 +37,29 @@ namespace Handlebars.Test.ViewEngine
             var cq = CsQuery.CQ.CreateDocument(output);
             Assert.AreEqual("My Post Title", cq["h1.post-title"].Html());
         }
+        [Test]
+        public void CanRenderCasparPostNoLayoutTemplate()
+        {
+            var fs = (new DiskFileSystem());
+            var handlebars = HandlebarsDotNet.Handlebars.Create();
+            handlebars.RegisterHelper("asset", (writer, context, arguments) => writer.Write("asset:" + string.Join("|", arguments)));
+            handlebars.RegisterHelper("date", (writer, context, arguments) => writer.Write("date:" + string.Join("|", arguments)));
+            handlebars.RegisterHelper("tags", (writer, context, arguments) => writer.Write("tags:" + string.Join("|", arguments)));
+            handlebars.RegisterHelper("encode", (writer, context, arguments) => writer.Write("encode:" + string.Join("|", arguments)));
+            handlebars.RegisterHelper("url", (writer, context, arguments) => writer.Write("url:" + string.Join("|", arguments)));
+            var renderView = handlebars.CompileView("ViewEngine/Casper-master/post-no-layout.hbs", fs);
+            var output = renderView(new
+            {
+                post = new
+                {
+                    title = "My Post Title",
+                    image = "/someimage.png",
+                    post_class = "somepostclass"
+                }
+            });
+            var cq = CsQuery.CQ.CreateDocument(output);
+            Assert.AreEqual("My Post Title", cq["h1.post-title"].Html());
+        }
 
         class DiskFileSystem : ViewEngineFileSystem
         {
@@ -45,17 +68,12 @@ namespace Handlebars.Test.ViewEngine
                 return File.ReadAllText(filename);
             }
 
-            public override string[] GetFileNames(string directoryName)
-            {
-                return Directory.GetFiles(directoryName);
-            }
-
             protected override string CombinePath(string dir, string otherFileName)
             {
                 return Path.Combine(dir, otherFileName);
             }
 
-            protected override bool Exists(string filePath)
+            public override bool FileExists(string filePath)
             {
                 return File.Exists(filePath);
             }

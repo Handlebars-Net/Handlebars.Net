@@ -15,6 +15,8 @@ namespace HandlebarsDotNet
 
         public IExpressionNameResolver ExpressionNameResolver { get; set; }
 
+        public ViewEngineFileSystem FileSystem { get; set; }
+
         public HandlebarsConfiguration()
         {
             this.Helpers = new Dictionary<string, HandlebarsHelper>(StringComparer.OrdinalIgnoreCase);

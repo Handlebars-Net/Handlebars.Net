@@ -21,7 +21,7 @@ namespace HandlebarsDotNet.Compiler
             _configuration = configuration;
         }
 
-        public Expression Compile(IEnumerable<Expression> expressions, Expression parentContext)
+        public Expression Compile(IEnumerable<Expression> expressions, Expression parentContext, string templatePath = null)
         {
             try
             {
@@ -44,7 +44,7 @@ namespace HandlebarsDotNet.Compiler
                 expression = HelperFunctionBinder.Bind(expression, compilationContext);
                 expression = BoolishConverter.Convert(expression, compilationContext);
                 expression = PathBinder.Bind(expression, compilationContext);
-                expression = ContextBinder.Bind(expression, compilationContext, parentContext);
+                expression = ContextBinder.Bind(expression, compilationContext, parentContext, templatePath);
                 return expression;
             }
             catch (Exception ex)
@@ -53,11 +53,11 @@ namespace HandlebarsDotNet.Compiler
             }
         }
 
-        public Action<TextWriter, object> Compile(IEnumerable<Expression> expressions)
+        public Action<TextWriter, object> Compile(IEnumerable<Expression> expressions, string templatePath = null)
         {
             try
             {
-                var expression = Compile(expressions, null);
+                var expression = Compile(expressions, null, templatePath);
                 return ((Expression<Action<TextWriter, object>>)expression).Compile();
             }
             catch (Exception ex)

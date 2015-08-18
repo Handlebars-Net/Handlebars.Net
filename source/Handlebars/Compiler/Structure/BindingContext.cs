@@ -10,13 +10,16 @@ namespace HandlebarsDotNet.Compiler
         private readonly BindingContext _parent;
         private readonly TextWriter _encodedWriter;
         private readonly TextWriter _unencodedWriter;
+        public string TemplatePath { get; private set; }
 
-        public BindingContext(object value, TextWriter writer, BindingContext parent)
+        public BindingContext(object value, TextWriter writer, BindingContext parent, string templatePath)
         {
+            TemplatePath = templatePath;
             _value = value;
             _unencodedWriter = GetUnencodedWriter(writer);
             _encodedWriter = GetEncodedWriter(_unencodedWriter);
             _parent = parent;
+            TemplatePath = parent == null ? null : parent.TemplatePath;
         }
 
         public virtual object Value
@@ -97,7 +100,8 @@ namespace HandlebarsDotNet.Compiler
 
         public virtual BindingContext CreateChildContext(object value)
         {
-            return new BindingContext(value, this._encodedWriter, this);
+            return new BindingContext(value, this._encodedWriter, this, TemplatePath) ;
+
         }
 
         private static TextWriter GetEncodedWriter(TextWriter writer)

@@ -103,6 +103,9 @@
     <Content Include="ViewEngine\Casper-master\post.hbs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="ViewEngine\Casper-master\post-no-layout.hbs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="ViewEngine\Casper-master\README.md">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

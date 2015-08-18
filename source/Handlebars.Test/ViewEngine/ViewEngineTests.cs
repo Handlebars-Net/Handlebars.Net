@@ -5,7 +5,7 @@ using System.Linq;
 using HandlebarsDotNet;
 using NUnit.Framework;
 
-namespace Handlebars.Test.ViewEngine
+namespace HandlebarsDotNet.Test.ViewEngine
 {
     [TestFixture]
     public class ViewEngineTests
@@ -70,11 +70,6 @@ namespace Handlebars.Test.ViewEngine
                 return filename.Replace("\\", "/");
             }
 
-            public override string[] GetFileNames(string directoryName)
-            {
-                return files.Keys.Where(k => k.StartsWith(Sanitise(directoryName))).ToArray();
-            }
-
             protected override string CombinePath(string dir, string otherFileName)
             {
                 var fullFileName = dir + "/" + otherFileName;
@@ -82,7 +77,7 @@ namespace Handlebars.Test.ViewEngine
                 return fullFileName;
             }
 
-            protected override bool Exists(string filePath)
+            public override bool FileExists(string filePath)
             {
                 return files.ContainsKey(Sanitise(filePath));
             }

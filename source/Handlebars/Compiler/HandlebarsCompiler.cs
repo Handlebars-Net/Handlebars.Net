@@ -39,7 +39,7 @@ namespace HandlebarsDotNet.Compiler
             var layoutToken = tokens.OfType<LayoutToken>().SingleOrDefault();
 
             var expressions = _expressionBuilder.ConvertTokensToExpressions(tokens);
-            var compiledView = _functionBuilder.Compile(expressions);
+            var compiledView = _functionBuilder.Compile(expressions, templatePath);
             if (layoutToken == null) return compiledView;
 
             var layoutPath = fs.Closest(templatePath, layoutToken.Value + ".hbs");
