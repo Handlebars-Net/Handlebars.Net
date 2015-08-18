@@ -6,51 +6,34 @@ using System.Text;
 namespace HandlebarsDotNet
 {
 
-    public class HandlebarsViewEngine
+    public abstract class ViewEngineFileSystem
     {
-        private readonly FileSystem _fileSystem;
-        public HandlebarsViewEngine(FileSystem fileSystem)
+        public abstract string GetFileContent(string filename);
+        public abstract string[] GetFileNames(string directoryName);
+
+        private static string GetDir(string currentFilePath)
         {
-            _fileSystem = fileSystem;
+            if (currentFilePath == "") return null;
+            var parts = currentFilePath.Split(new[] {'\\', '/'});
+            if (parts.Length == 1) return "";
+            return string.Join("/", parts.Take(parts.Length - 1));
         }
 
-       
-
-        public string RenderView(string viewPath)
+        public string Closest(string filename, string otherFileName)
         {
-            var func = Handlebars.CompileView(viewPath, _fileSystem);
-            return func(null);
-        }
-
-        public abstract class FileSystem
-        {
-            public abstract string GetFileContent(string filename);
-            public abstract string[] GetFileNames(string directoryName);
-
-            static string GetDir(string currentFilePath)
+            var dir = GetDir(filename);
+            while (true)
             {
-                if (currentFilePath == "") return null;
-                var parts = currentFilePath.Split(new [] { '\\', '/'});
-                if (parts.Length == 1) return "";
-                return string.Join("/", parts.Take(parts.Length - 1));
+                if (dir == null) break;
+                var fullFileName = CombinePath(dir, otherFileName);
+                if (this.Exists(fullFileName)) return fullFileName;
+                dir = GetDir(dir);
             }
-
-            public string Closest(string filename, string otherFileName)
-            {
-                var dir = GetDir(filename);
-                while (true)
-                {
-                    if (dir == null) break;
-                    var fullFileName = CombinePath(dir, otherFileName);
-                    if (this.Exists(fullFileName)) return fullFileName;
-                    dir = GetDir(dir);
-                }
-                return null;
-            }
-
-            protected abstract string CombinePath(string dir, string otherFileName);
-
-            protected abstract bool Exists(string filePath);
+            return null;
         }
+
+        protected abstract string CombinePath(string dir, string otherFileName);
+
+        protected abstract bool Exists(string filePath);
     }
 }

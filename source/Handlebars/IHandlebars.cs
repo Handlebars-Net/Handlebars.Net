@@ -11,7 +11,7 @@ namespace HandlebarsDotNet
 
         Func<object, string> Compile(string template);
 
-        Func<object, string> RenderView(string templatePath, HandlebarsViewEngine.FileSystem fs);
+        Func<object, string> CompileView(string templatePath, ViewEngineFileSystem fs);
 
         HandlebarsConfiguration Configuration { get; }
 

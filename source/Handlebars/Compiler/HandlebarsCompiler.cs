@@ -27,7 +27,7 @@ namespace HandlebarsDotNet.Compiler
             return _functionBuilder.Compile(expressions);
         }
 
-        internal Action<TextWriter, object> CompileView(string templatePath, HandlebarsViewEngine.FileSystem fs)
+        internal Action<TextWriter, object> CompileView(string templatePath, ViewEngineFileSystem fs)
         {
             var template = fs.GetFileContent(templatePath);
             if (template == null) throw new InvalidOperationException("Cannot find template at '" + templatePath + "'");

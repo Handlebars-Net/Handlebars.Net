@@ -29,9 +29,9 @@ namespace HandlebarsDotNet
             return Instance.Compile(template);
         }
 
-        public static Func<object, string> CompileView(string templatePath, HandlebarsViewEngine.FileSystem fs)
+        public static Func<object, string> CompileView(string templatePath, ViewEngineFileSystem fs, object viewModel)
         {
-            return Instance.RenderView(templatePath, fs);
+            return Instance.CompileView(templatePath, fs);
         }
 
 

@@ -24,7 +24,7 @@ namespace HandlebarsDotNet
                 RegisterBuiltinHelpers();
             }
 
-            public Func<object, string> RenderView(string templatePath, HandlebarsViewEngine.FileSystem fs)
+            public Func<object, string> CompileView(string templatePath, ViewEngineFileSystem fs)
             {
                 var compiledView = _compiler.CompileView(templatePath, fs);
                 return (vm) =>

@@ -22,8 +22,9 @@ namespace Handlebars.Test.ViewEngine
             };
 
             //When a viewengine renders that view
-            var viewEngine = new HandlebarsViewEngine(files);
-            var output = viewEngine.RenderView("views\\someview.hbs");
+            var handleBars = HandlebarsDotNet.Handlebars.Create();
+            var renderView = handleBars.CompileView("views\\someview.hbs", files);
+            var output = renderView(null);
             
             //Then the correct output should be rendered
             Assert.AreEqual("layout start\r\nThis is the body\r\nlayout end", output);
@@ -40,8 +41,9 @@ namespace Handlebars.Test.ViewEngine
             };
 
             //When a viewengine renders that view
-            var viewEngine = new HandlebarsViewEngine(files);
-            var output = viewEngine.RenderView("views\\someview.hbs");
+            var handlebars = HandlebarsDotNet.Handlebars.Create();
+            var render = handlebars.CompileView("views\\someview.hbs", files);
+            var output = render(null);
 
             //Then the correct output should be rendered
             Assert.AreEqual("layout start\r\nThis is the body\r\nlayout end", output);
@@ -49,7 +51,7 @@ namespace Handlebars.Test.ViewEngine
 
         //We have a fake file system. Difference frameworks and apps will use 
         //different file systems.
-        class FakeFileSystem : HandlebarsViewEngine.FileSystem, IEnumerable
+        class FakeFileSystem : ViewEngineFileSystem, IEnumerable
         {
             SortedDictionary<string, string> files = new SortedDictionary<string, string>(); 
             public void Add(string fileName, string fileContent)
