@@ -3,9 +3,8 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Web.Hosting;
 using System.Web.Mvc;
-using HandlebarsDotNet;
 
-namespace Handlebars.Mvc.ViewEngine
+namespace HandlebarsDotNet.Mvc.ViewEngine
 {
     public class HandlebarsMvcView : IView
     {

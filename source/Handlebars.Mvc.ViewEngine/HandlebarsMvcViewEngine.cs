@@ -1,8 +1,7 @@
 using System;
 using System.Web.Mvc;
-using HandlebarsDotNet;
 
-namespace Handlebars.Mvc.ViewEngine
+namespace HandlebarsDotNet.Mvc.ViewEngine
 {
     public class HandlebarsMvcViewEngine : VirtualPathProviderViewEngine
     {

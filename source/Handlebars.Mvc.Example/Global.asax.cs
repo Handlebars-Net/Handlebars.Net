@@ -3,8 +3,8 @@ using System.Web;
 using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
-using Handlebars.Mvc.ViewEngine;
 using HandlebarsDotNet;
+using HandlebarsDotNet.Mvc.ViewEngine;
 using Handlebars = HandlebarsDotNet.Handlebars;
 
 namespace HandlebarsDotNet.Mvc.Example

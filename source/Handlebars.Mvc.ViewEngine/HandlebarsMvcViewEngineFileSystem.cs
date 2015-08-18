@@ -1,8 +1,7 @@
 using System.IO;
 using System.Web.Hosting;
-using HandlebarsDotNet;
 
-namespace Handlebars.Mvc.ViewEngine
+namespace HandlebarsDotNet.Mvc.ViewEngine
 {
     public class HandlebarsMvcViewEngineFileSystem : ViewEngineFileSystem
     {

@@ -7,8 +7,8 @@
     <ProjectGuid>{FD1CB0C5-FC13-4C20-AD5A-81F8410045DB}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Handlebars.Mvc.ViewEngine</RootNamespace>
-    <AssemblyName>Handlebars.Mvc.ViewEngine</AssemblyName>
+    <RootNamespace>HandlebarsDotNet.Mvc.ViewEngine</RootNamespace>
+    <AssemblyName>HandlebarsDotNet.Mvc.ViewEngine</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
