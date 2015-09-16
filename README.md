@@ -104,6 +104,31 @@ Click here: <a href='https://github.com/rexm/handlebars.net'>Handlebars.Net</a>
 */
 ```
 
+###ASP MVC ViewEngine
+
+    nuget install Handlebars.Net.Mvc.ViewEngine
+
+There is a functioning example of an MVC project using Handlebars views - see Handlebars.Mvc.Example.csproj
+
+To use it, you need the following code in global.asax.cs / Startup.cs or similar
+
+```c#
+      var handlebars = Handlebars.Create(new HandlebarsConfiguration
+      {
+          FileSystem = new HandlebarsMvcViewEngineFileSystem(),
+      });
+      ViewEngines.Engines.Add(new HandlebarsMvcViewEngine(handlebars));
+```
+
+This will expect your views to be in the /Views folder like so:
+
+```
+Views\layout.hbs                |<--shared as in \Views            
+Views\partials\somepartial.hbs   <--shared as in  \Views\partials
+Views\{Controller}\{Action}.hbs 
+Views\{Controller}\{Action}\partials\somepartial.hbs 
+```
+
 ##Future roadmap
 
 - [ ] **Add unit tests!**
@@ -112,7 +137,7 @@ Click here: <a href='https://github.com/rexm/handlebars.net'>Handlebars.Net</a>
 - [x] [Support for whitespace control](https://github.com/rexm/Handlebars.Net/issues/52)
 - [ ] Set delimiters
 - [ ] Mustache(5) Lambdas
-- [ ] MVC view engine
+- [x] MVC view engine
 - [ ] Nancy view engine
 
 ##Contributing

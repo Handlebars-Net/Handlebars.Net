@@ -5,8 +5,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{2BD48FB6-C852-4141-B734-12E501B1D761}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Handlebars.Test</RootNamespace>
-    <AssemblyName>Handlebars.Test</AssemblyName>
+    <RootNamespace>HandlebarsDotNet.Test</RootNamespace>
+    <AssemblyName>HandlebarsDotNet.Test</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
@@ -32,6 +32,10 @@
     <ConsolePause>false</ConsolePause>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CsQuery, Version=1.3.3.249, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\CsQuery.1.3.4\lib\net40\CsQuery.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
     <Reference Include="Microsoft.Web.Infrastructure">
@@ -68,11 +72,46 @@
     <Compile Include="TripleStashTests.cs" />
     <Compile Include="PartialTests.cs" />
     <Compile Include="IteratorTests.cs" />
+    <Compile Include="ViewEngine\CasparTests.cs" />
+    <Compile Include="ViewEngine\ViewEngineTests.cs" />
     <Compile Include="WhitespaceTests.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="ViewEngine\Casper-master\assets\fonts\casper-icons.eot" />
+    <None Include="ViewEngine\Casper-master\assets\fonts\casper-icons.ttf" />
+    <None Include="ViewEngine\Casper-master\assets\fonts\casper-icons.woff" />
+    <Content Include="ViewEngine\Casper-master\author.hbs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ViewEngine\Casper-master\default.hbs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ViewEngine\Casper-master\index.hbs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ViewEngine\Casper-master\page.hbs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ViewEngine\Casper-master\partials\loop.hbs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ViewEngine\Casper-master\partials\navigation.hbs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ViewEngine\Casper-master\post.hbs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ViewEngine\Casper-master\post-no-layout.hbs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="ViewEngine\Casper-master\README.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Content Include="ViewEngine\Casper-master\tag.hbs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Handlebars\Handlebars.csproj">
@@ -82,6 +121,12 @@
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="ViewEngine\Casper-master\assets\css\screen.css" />
+    <Content Include="ViewEngine\Casper-master\assets\fonts\casper-icons.svg" />
+    <Content Include="ViewEngine\Casper-master\assets\js\index.js" />
+    <Content Include="ViewEngine\Casper-master\assets\js\jquery.fitvids.js" />
   </ItemGroup>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
