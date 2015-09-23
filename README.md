@@ -103,6 +103,15 @@ var result = template(data);
 Click here: <a href='https://github.com/rexm/handlebars.net'>Handlebars.Net</a>
 */
 ```
+ 
+This will expect your views to be in the /Views folder like so:
+
+```
+Views\layout.hbs                |<--shared as in \Views            
+Views\partials\somepartial.hbs   <--shared as in  \Views\partials
+Views\{Controller}\{Action}.hbs 
+Views\{Controller}\{Action}\partials\somepartial.hbs 
+```
 
 ##Future roadmap
 
