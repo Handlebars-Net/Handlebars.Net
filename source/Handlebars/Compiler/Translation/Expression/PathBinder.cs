@@ -133,28 +133,15 @@ namespace HandlebarsDotNet.Compiler
             return AccessMember(instance, segment);
         }
 
-        private static readonly Regex IndexRegex = new Regex(@"^\[?(?<index>\d+)\]?$", RegexOptions.None);
+        
 
         private object AccessMember(object instance, string memberName)
         {
-            var enumerable = instance as IEnumerable<object>;
-            if (enumerable != null)
-            {
-                int index;
-                var match = IndexRegex.Match(memberName);
-                if (match.Success)
-                {
-                    if (match.Groups["index"].Success == false || int.TryParse(match.Groups["index"].Value, out index) == false)
-                    {
-                        return new UndefinedBindingResult();
-                    }
+            object result = null;
 
-                    var result = enumerable.ElementAtOrDefault(index);
-                    
-                    return result ?? new UndefinedBindingResult();
-                }
-            }
             var resolvedMemberName = this.ResolveMemberName(memberName);
+
+
             var instanceType = instance.GetType();
             //crude handling for dynamic objects that don't have metadata
             if (typeof(IDynamicMetaObjectProvider).IsAssignableFrom(instanceType))

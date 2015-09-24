@@ -65,6 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BasicIntegrationTests.cs" />
+    <Compile Include="Compiler\Translation\Expression\Accessors\EnumerableMemberAccessorTests.cs" />
     <Compile Include="ComplexIntegrationTests.cs" />
     <Compile Include="CustomConfigurationTests.cs" />
     <Compile Include="DynamicTests.cs" />
@@ -128,6 +129,7 @@
     <Content Include="ViewEngine\Casper-master\assets\js\index.js" />
     <Content Include="ViewEngine\Casper-master\assets\js\jquery.fitvids.js" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
