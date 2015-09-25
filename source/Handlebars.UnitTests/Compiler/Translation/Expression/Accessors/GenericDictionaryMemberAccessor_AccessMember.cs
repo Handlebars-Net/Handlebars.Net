@@ -12,6 +12,8 @@ namespace Handlebars.UnitTests.Compiler.Translation.Expression.Accessors
     [TestFixture]
     public class GenericDictionaryMemberAccessor_AccessMember
     {
+        delegate bool CK(object key);
+
         private GenericDictionaryMemberAccessor _sut;
 
         [SetUp]
@@ -38,12 +40,6 @@ namespace Handlebars.UnitTests.Compiler.Translation.Expression.Accessors
             //Assert
             value.Should().NotBeNull();
             value.Should().BeAssignableTo<int>();
-        }
-
-        [Test]
-        public void Test()
-        {
-            GenericDictionaryMemberAccessor.ExtractContainsKeyFunc(typeof(Dictionary<string, string>));
         }
     }
 }
