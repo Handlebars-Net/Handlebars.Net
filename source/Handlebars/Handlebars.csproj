@@ -41,7 +41,10 @@
     <Compile Include="Compiler\Lexer\Tokens\LayoutToken.cs" />
     <Compile Include="Compiler\Resolvers\UpperCamelCaseExpressionNameResolver.cs" />
     <Compile Include="Compiler\Resolvers\IExpressionNameResolver.cs" />
+    <Compile Include="Compiler\Translation\Expression\Accessors\DictionaryExpressionBuilder.cs" />
+    <Compile Include="Compiler\Translation\Expression\Accessors\DynamicMetaObjectProviderMemberAccessor.cs" />
     <Compile Include="Compiler\Translation\Expression\Accessors\EnumerableMemberAccessor.cs" />
+    <Compile Include="Compiler\Translation\Expression\Accessors\GenericDictionaryMemberAccessor.cs" />
     <Compile Include="Compiler\Translation\Expression\HelperFunctionBinder.cs" />
     <Compile Include="Compiler\Translation\Expression\Accessors\IMemberAccessor.cs" />
     <Compile Include="DescriptionAttribute.cs" />

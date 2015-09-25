@@ -65,7 +65,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BasicIntegrationTests.cs" />
-    <Compile Include="Compiler\Translation\Expression\Accessors\EnumerableMemberAccessorTests.cs" />
     <Compile Include="ComplexIntegrationTests.cs" />
     <Compile Include="CustomConfigurationTests.cs" />
     <Compile Include="DynamicTests.cs" />

@@ -141,21 +141,7 @@ namespace HandlebarsDotNet.Compiler
 
             var resolvedMemberName = this.ResolveMemberName(memberName);
 
-
             var instanceType = instance.GetType();
-            //crude handling for dynamic objects that don't have metadata
-            if (typeof(IDynamicMetaObjectProvider).IsAssignableFrom(instanceType))
-            {
-                try
-                {
-                    return GetProperty(instance, resolvedMemberName);
-                }
-                catch
-                {
-                    return new UndefinedBindingResult();
-                }
-            }
-
 
             // Check if the instance is IDictionary<,>
             var iDictInstance = FirstGenericDictionaryTypeInstance(instanceType);
@@ -229,12 +215,6 @@ namespace HandlebarsDotNet.Compiler
                         i.GetGenericTypeDefinition() == typeof(IDictionary<,>)
                     )
                 );
-        }
-
-        private static object GetProperty(object target, string name)
-        {
-            var site = System.Runtime.CompilerServices.CallSite<Func<System.Runtime.CompilerServices.CallSite, object, object>>.Create(Microsoft.CSharp.RuntimeBinder.Binder.GetMember(0, name, target.GetType(), new[]{ Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo.Create(0, null) }));
-            return site.Target(site, target);
         }
 
         private string ResolveMemberName(string memberName)

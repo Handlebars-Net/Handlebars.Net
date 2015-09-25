@@ -1,19 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace HandlebarsDotNet.Compiler.Translation.Expression.Accessors
 {
-    public class EnumerableMemberAccessor : IMemberAccessor
+    internal class EnumerableMemberAccessor : IMemberAccessor
     {
         private static readonly Regex IndexRegex = new Regex(@"^\[?(?<index>\d+)\]?$", RegexOptions.None);
 
         /// <summary>
         /// Determines if the memberName passed later should be the memberName or the resolvedMemberName.
         /// </summary>
-        public bool RequiresResolvedMemberName { get { return true; } }
+        public bool RequiresResolvedMemberName { get { return false; } }
 
         /// <summary>
         /// Determines if a member can be accessed using the current accessor.
@@ -35,24 +33,16 @@ namespace HandlebarsDotNet.Compiler.Translation.Expression.Accessors
         /// <returns></returns>
         public object AccessMember(object instance, string memberName)
         {
+            object result = null;
             int index;
-            //object result = null;
-            var enumerable = (IEnumerable<object>) instance;
-            var match = IndexRegex.Match(memberName);
-
-            if (match.Success)
+            
+            if (TryGetIndex(memberName, out index))
             {
-                if (match.Groups["index"].Success == false || int.TryParse(match.Groups["index"].Value, out index) == false)
-                {
-                    return new UndefinedBindingResult();
-                }
-
-                var result = enumerable.ElementAtOrDefault(index);
-
-                return result ?? new UndefinedBindingResult();
+                var enumerable = (IEnumerable<object>)instance;
+                result = enumerable.ElementAtOrDefault(index);
             }
 
-            return new UndefinedBindingResult();
+            return result ?? new UndefinedBindingResult();
         }
 
         private bool TryGetIndex(string memberName, out int index)

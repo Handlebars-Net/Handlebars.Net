@@ -1,6 +1,6 @@
 ﻿namespace HandlebarsDotNet.Compiler.Translation.Expression.Accessors
 {
-    public interface IMemberAccessor
+    internal interface IMemberAccessor
     {
         /// <summary>
         /// Determines if the memberName passed later should be the memberName or the resolvedMemberName.
