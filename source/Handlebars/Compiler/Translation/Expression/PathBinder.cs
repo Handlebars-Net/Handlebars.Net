@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.IO;
-using System.Dynamic;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using System.Globalization;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -134,57 +130,14 @@ namespace HandlebarsDotNet.Compiler
         }
 
         
-
+        //TODO: Put back together
         private object AccessMember(object instance, string memberName)
         {
             object result = null;
 
-            var resolvedMemberName = this.ResolveMemberName(memberName);
+            var resolvedMemberName = ResolveMemberName(memberName);
 
             var instanceType = instance.GetType();
-
-            // Check if the instance is IDictionary<,>
-            var iDictInstance = FirstGenericDictionaryTypeInstance(instanceType);
-            if (iDictInstance != null)
-            {
-                var genericArgs = iDictInstance.GetGenericArguments();
-                object key = resolvedMemberName.Trim('[', ']');    // Ensure square brackets removed.
-                if (genericArgs.Length > 0)
-                {
-                    // Dictionary key type isn't a string, so attempt to convert.
-                    if (genericArgs[0] != typeof(string))
-                    {
-                        try
-                        {
-                            key = Convert.ChangeType(key, genericArgs[0], CultureInfo.CurrentCulture);
-                        }
-                        catch (Exception)
-                        {
-                            // Can't convert to key type.
-                            return new UndefinedBindingResult();
-                        }
-                    }
-                }
-
-                var m = instanceType.GetMethods();
-                if ((bool)instanceType.GetMethod("ContainsKey").Invoke(instance, new object[] { key }))
-                {
-                    return instanceType.GetMethod("get_Item").Invoke(instance, new object[] { key });
-                }
-                else
-                {
-                    // Key doesn't exist.
-                    return new UndefinedBindingResult();
-                }
-            }
-            // Check if the instance is IDictionary (ie, System.Collections.Hashtable)
-            if (typeof(IDictionary).IsAssignableFrom(instanceType))
-            {
-                var key = resolvedMemberName.Trim('[', ']');    // Ensure square brackets removed.
-                // Only string keys supported - indexer takes an object, but no nice
-                // way to check if the hashtable check if it should be a different type.
-                return ((IDictionary)instance)[key];
-            }
 
             var members = instanceType.GetMember(resolvedMemberName);
             if (members.Length != 1)

@@ -56,8 +56,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Compiler\Translation\Expression\Accessors\DictionaryExpressionBuilder_BuildContainsKeyExpression.cs" />
-    <Compile Include="Compiler\Translation\Expression\Accessors\DictionaryExpressionBuilder_BuildGetItemExpression.cs" />
+    <Compile Include="Compiler\Translation\Expression\Accessors\DictionaryMemberAccessors_CanHandle.cs" />
+    <Compile Include="Compiler\Translation\Expression\Accessors\DictionaryMemberAccessor_AccessMember.cs" />
+    <Compile Include="Compiler\Translation\Expression\Accessors\DictionaryMemberAccessor_RequiresResolvedMemberName.cs" />
+    <Compile Include="Compiler\Translation\Expression\Accessors\GenericDictionary\DictionaryExpressionBuilder_BuildContainsKeyExpression.cs" />
+    <Compile Include="Compiler\Translation\Expression\Accessors\GenericDictionary\DictionaryExpressionBuilder_BuildGetItemExpression.cs" />
     <Compile Include="Compiler\Translation\Expression\Accessors\DynamicMetaObjectProviderMemberAccessor_CanHandle.cs" />
     <Compile Include="Compiler\Translation\Expression\Accessors\DynamicMetaObjectProviderMemberAccessor_RequiresResolvedMemberName.cs" />
     <Compile Include="Compiler\Translation\Expression\Accessors\DynamicMetaObjectProviderMemberAccessor_AccessMember.cs" />
@@ -67,6 +70,11 @@
     <Compile Include="Compiler\Translation\Expression\Accessors\GenericDictionaryMemberAccessor_AccessMember.cs" />
     <Compile Include="Compiler\Translation\Expression\Accessors\GenericDictionaryMemberAccessor_CanHandle.cs" />
     <Compile Include="Compiler\Translation\Expression\Accessors\GenericDictionaryMemberAccessor_RequiresResolvedMemberName.cs" />
+    <Compile Include="Compiler\Translation\Expression\Accessors\Members\MemberExpressionBuilder_BuildMemberGetterFunc.cs" />
+    <Compile Include="Compiler\Translation\Expression\Accessors\ObjectMemberMemberAccessor_AccessMember.cs" />
+    <Compile Include="Compiler\Translation\Expression\Accessors\ObjectMemberMemberAccessor_CanHandle.cs" />
+    <Compile Include="Compiler\Translation\Expression\Accessors\ObjectMemberMemberAccessor_RequiresResolvedMemberName.cs" />
+    <Compile Include="Compiler\Translation\Expression\Accessors\TestType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

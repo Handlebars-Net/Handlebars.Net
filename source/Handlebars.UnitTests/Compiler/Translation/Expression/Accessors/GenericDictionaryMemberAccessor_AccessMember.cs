@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using FluentAssertions;
 using HandlebarsDotNet.Compiler.Translation.Expression.Accessors;
 using NUnit.Framework;
@@ -12,8 +8,6 @@ namespace Handlebars.UnitTests.Compiler.Translation.Expression.Accessors
     [TestFixture]
     public class GenericDictionaryMemberAccessor_AccessMember
     {
-        delegate bool CK(object key);
-
         private GenericDictionaryMemberAccessor _sut;
 
         [SetUp]
@@ -23,13 +17,13 @@ namespace Handlebars.UnitTests.Compiler.Translation.Expression.Accessors
         }
 
         [Test]
-        public void WHEN_instance_is_key_an_int_SHOULD_return_value()
+        public void WHEN_key_is_int_SHOULD_return_value()
         {
             //Arrange
-            var dict = new Dictionary<int, object>()
+            var dict = new Dictionary<int, int>()
             {
-                { 0, new object()},
-                { 1, new object()}
+                { 0, 0},
+                { 1, 1}
             };
 
             var key = "0";
@@ -40,6 +34,25 @@ namespace Handlebars.UnitTests.Compiler.Translation.Expression.Accessors
             //Assert
             value.Should().NotBeNull();
             value.Should().BeAssignableTo<int>();
+        }
+
+        [Test]
+        public void WHEN_calling_twice_on_same_type_SHOULD_not_build_more_than_once()
+        {
+            //Arrange
+            var dict = new Dictionary<int, int>()
+            {
+                { 1, 1 },
+                { 2, 2 }
+            };
+
+            //Act
+            var value = _sut.AccessMember(dict, "1");
+            value = _sut.AccessMember(dict, "2");
+
+            //Assert
+            value.Should().NotBeNull();
+            value.Should().NotBe(0);
         }
     }
 }

@@ -17,8 +17,8 @@ namespace Handlebars.UnitTests.Compiler.Translation.Expression.Accessors
             _sut = new GenericDictionaryMemberAccessor();
         }
 
-        [TestCase(typeof(Dictionary<string, string>))]
-        [TestCase(typeof(Dictionary<string, object>))]
+        [TestCase(typeof(Dictionary<int, string>))]
+        [TestCase(typeof(Dictionary<object, object>))]
         public void WHEN_instance_is_GenericDictionary_SHOULD_return_true(Type instanceType)
         {
             //Arrange
@@ -29,6 +29,20 @@ namespace Handlebars.UnitTests.Compiler.Translation.Expression.Accessors
 
             //Assert
             canHandle.Should().BeTrue();
+        }
+
+        [TestCase(typeof(Dictionary<string, string>))]
+        [TestCase(typeof(Dictionary<string, object>))]
+        public void WHEN_instance_is_GenericDictionary_with_string_key_SHOULD_return_false(Type instanceType)
+        {
+            //Arrange
+            var instance = Activator.CreateInstance(instanceType);
+
+            //Act
+            var canHandle = _sut.CanHandle(instance);
+
+            //Assert
+            canHandle.Should().BeFalse();
         }
 
         [TestCase(typeof(object))]
