@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System.Linq;
+using FluentAssertions;
 using HandlebarsDotNet.Compiler.Translation.Expression.Accessors;
 using NUnit.Framework;
 
@@ -22,7 +23,7 @@ namespace Handlebars.UnitTests.Compiler.Translation.Expression.Accessors
             var instance = new TestType();
 
             //Act
-            var canHandle = _sut.CanHandle(instance);
+            var canHandle = _sut.CanHandle(instance, Faker.Lorem.Words(1).First());
 
             //Assert
             canHandle.Should().BeTrue();

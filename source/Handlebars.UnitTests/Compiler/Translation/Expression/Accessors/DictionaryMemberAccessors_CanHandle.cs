@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using FluentAssertions;
 using HandlebarsDotNet.Compiler.Translation.Expression.Accessors;
 using NUnit.Framework;
@@ -24,7 +25,7 @@ namespace Handlebars.UnitTests.Compiler.Translation.Expression.Accessors
             var instance = new ListDictionary();
 
             //Act
-            var value = _sut.CanHandle(instance);
+            var value = _sut.CanHandle(instance, Faker.Lorem.Words(1).First());
 
             //Assert
             value.Should().BeTrue();
@@ -37,7 +38,7 @@ namespace Handlebars.UnitTests.Compiler.Translation.Expression.Accessors
             var instance = new Dictionary<string, string>();
 
             //Act
-            var value = _sut.CanHandle(instance);
+            var value = _sut.CanHandle(instance, Faker.Lorem.Words(1).First());
 
             //Assert
             value.Should().BeTrue();
@@ -50,7 +51,7 @@ namespace Handlebars.UnitTests.Compiler.Translation.Expression.Accessors
             var instance = new object();
 
             //Act
-            var value = _sut.CanHandle(instance);
+            var value = _sut.CanHandle(instance, Faker.Lorem.Words(1).First());
 
             //Assert
             value.Should().BeFalse();

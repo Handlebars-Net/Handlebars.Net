@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Reflection;
+using HandlebarsDotNet.Compiler.Translation.Expression.Accessors;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -313,15 +314,10 @@ namespace HandlebarsDotNet.Compiler
 
         private static object AccessMember(object instance, MemberInfo member)
         {
-            if (member is PropertyInfo)
-            {
-                return ((PropertyInfo)member).GetValue(instance, null);
-            }
-            if (member is FieldInfo)
-            {
-                return ((FieldInfo)member).GetValue(instance);
-            }
-            throw new InvalidOperationException("Requested member was not a field or property");
+            var accessor = new ObjectMemberMemberAccessor();
+            var value = accessor.AccessMember(instance, member.Name);
+
+            return value;
         }
     }
 }

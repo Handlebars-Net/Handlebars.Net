@@ -4,11 +4,26 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.IO;
 using System.Collections.Generic;
+using HandlebarsDotNet.Compiler.Translation.Expression.Accessors;
 
 namespace HandlebarsDotNet.Compiler
 {
     internal class PathBinder : HandlebarsExpressionVisitor
     {
+        private static List<IMemberAccessor> _accessors;
+
+        static PathBinder()
+        {
+            _accessors = new List<IMemberAccessor>()
+            {
+                new EnumerableMemberAccessor(),
+                new DynamicMetaObjectProviderMemberAccessor(),
+                new GenericDictionaryMemberAccessor(),
+                new DictionaryMemberAccessor(),
+                new ObjectMemberMemberAccessor(),
+            };
+        }
+
         public static Expression Bind(Expression expr, CompilationContext context)
         {
             return new PathBinder(context).Visit(expr);
@@ -130,44 +145,22 @@ namespace HandlebarsDotNet.Compiler
         }
 
         
-        //TODO: Put back together
         private object AccessMember(object instance, string memberName)
         {
-            object result = null;
-
             var resolvedMemberName = ResolveMemberName(memberName);
 
-            var instanceType = instance.GetType();
+            foreach (var accessor in _accessors)
+            {
+                var mn = accessor.RequiresResolvedMemberName ? resolvedMemberName : memberName;
 
-            var members = instanceType.GetMember(resolvedMemberName);
-            if (members.Length != 1)
-            {
-                return new UndefinedBindingResult();
+                if (accessor.CanHandle(instance, mn))
+                {
+                    var value = accessor.AccessMember(instance, mn);
+                    return value;
+                }
             }
-            
-            var info = members[0] as PropertyInfo;
-            if (info != null)
-            {
-                var b = info.GetValue(instance, null);
-                return b;
-            }
-            if (members[0] is FieldInfo)
-            {
-                return ((FieldInfo)members[0]).GetValue(instance);
-            }
+
             return new UndefinedBindingResult();
-        }
-
-        static Type FirstGenericDictionaryTypeInstance(Type instanceType)
-        {
-            return instanceType.GetInterfaces()
-                .FirstOrDefault(i =>
-                    i.IsGenericType
-                    &&
-                    (
-                        i.GetGenericTypeDefinition() == typeof(IDictionary<,>)
-                    )
-                );
         }
 
         private string ResolveMemberName(string memberName)

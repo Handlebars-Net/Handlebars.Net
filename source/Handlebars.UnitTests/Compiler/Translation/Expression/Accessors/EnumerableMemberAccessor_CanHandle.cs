@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using FluentAssertions;
 using HandlebarsDotNet.Compiler.Translation.Expression.Accessors;
 using NUnit.Framework;
@@ -23,7 +24,7 @@ namespace Handlebars.UnitTests.Compiler.Translation.Expression.Accessors
             var instance = new object();
 
             //Act
-            var canHandle = _sut.CanHandle(instance);
+            var canHandle = _sut.CanHandle(instance, GetRandomIndex());
 
             //Assert
             canHandle.Should().BeFalse("instance is of type object and not IEnumerable<object>");
@@ -36,10 +37,23 @@ namespace Handlebars.UnitTests.Compiler.Translation.Expression.Accessors
             var instance = Enumerable.Empty<string>();
 
             //Act
-            var canHandle = _sut.CanHandle(instance);
+            var canHandle = _sut.CanHandle(instance, GetRandomIndex());
 
             //Assert
             canHandle.Should().BeTrue();
+        }
+        
+        [Test]
+        public void WHEN_instance_is_IEnumerable_but_member_is_not_index_SHOULD_return_false()
+        {
+            //Arrange
+            var instance = Enumerable.Empty<string>();
+
+            //Act
+            var canHandle = _sut.CanHandle(instance, Faker.Lorem.Words(1).First());
+
+            //Assert
+            canHandle.Should().BeFalse();
         }
 
         [Test]
@@ -49,7 +63,7 @@ namespace Handlebars.UnitTests.Compiler.Translation.Expression.Accessors
             var instance = new object[0];
 
             //Act
-            var canHandle = _sut.CanHandle(instance);
+            var canHandle = _sut.CanHandle(instance, GetRandomIndex());
 
             //Assert
             canHandle.Should().BeTrue();
@@ -62,7 +76,7 @@ namespace Handlebars.UnitTests.Compiler.Translation.Expression.Accessors
             var instance = Enumerable.Empty<int>();
 
             //Act
-            var canHandle = _sut.CanHandle(instance);
+            var canHandle = _sut.CanHandle(instance, GetRandomIndex());
 
             //Assert
             canHandle.Should().BeFalse();
@@ -75,7 +89,7 @@ namespace Handlebars.UnitTests.Compiler.Translation.Expression.Accessors
             var instance = new int[0];
 
             //Act
-            var canHandle = _sut.CanHandle(instance);
+            var canHandle = _sut.CanHandle(instance, GetRandomIndex());
 
             //Assert
             canHandle.Should().BeFalse();
@@ -88,10 +102,16 @@ namespace Handlebars.UnitTests.Compiler.Translation.Expression.Accessors
             var instance = 12;
 
             //Act
-            var canHandle = _sut.CanHandle(instance);
+            var canHandle = _sut.CanHandle(instance, GetRandomIndex());
 
             //Assert
             canHandle.Should().BeFalse("int is not an IEnumerable<object>");
+        }
+
+        private string GetRandomIndex()
+        {
+            var index = String.Format("[{0}]", Faker.RandomNumber.Next());
+            return index;
         }
     }
 }

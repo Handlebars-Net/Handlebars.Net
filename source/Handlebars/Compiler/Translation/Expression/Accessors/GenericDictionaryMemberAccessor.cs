@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -27,7 +28,7 @@ namespace HandlebarsDotNet.Compiler.Translation.Expression.Accessors
             return proxy;
         }
 
-        public bool CanHandle(object instance)
+        public bool CanHandle(object instance, string memberName)
         {
             var instanceType = instance.GetType();
             var dictType = DictionaryExpressionBuilder.GetFirstGenericDictionaryTypeInstance(instanceType);
@@ -38,7 +39,9 @@ namespace HandlebarsDotNet.Compiler.Translation.Expression.Accessors
                 var keyType = genericTypes[0];
 
                 //Optimization. When using string key, we will use the IDictionary (non-generic) implementation.
-                return keyType != typeof (string);
+                var shouldOptimize = keyType == typeof (string) && typeof (IDictionary).IsAssignableFrom(instanceType);
+
+                return !shouldOptimize;
             }
             
             return false;

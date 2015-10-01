@@ -17,8 +17,9 @@ namespace HandlebarsDotNet.Compiler.Translation.Expression.Accessors
         /// Determines if a member can be accessed using the current accessor.
         /// </summary>
         /// <param name="instance">Instance of the object to access.</param>
+        /// <param name="memberName">Member of the instance to access.</param>
         /// <returns></returns>
-        public bool CanHandle(object instance)
+        public bool CanHandle(object instance, string memberName)
         {
             var instanceType = instance.GetType();
             var canHandle = typeof (IDynamicMetaObjectProvider).IsAssignableFrom(instanceType);

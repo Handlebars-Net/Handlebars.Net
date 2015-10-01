@@ -14,14 +14,16 @@ namespace HandlebarsDotNet.Compiler.Translation.Expression.Accessors
         public bool RequiresResolvedMemberName { get { return false; } }
 
         /// <summary>
-        /// Determines if a member can be accessed using the current accessor.
+        /// Handles if we try to access an index of 
         /// </summary>
         /// <param name="instance">Instance of the object to access.</param>
+        /// <param name="memberName">Member of the instance to access.</param>
         /// <returns></returns>
-        public bool CanHandle(object instance)
+        public bool CanHandle(object instance, string memberName)
         {
-            //To check if this works with all enumerators.
             var canHandle = instance is IEnumerable<object>;
+            canHandle = canHandle && IndexRegex.Match(memberName).Success;
+
             return canHandle;
         }
 

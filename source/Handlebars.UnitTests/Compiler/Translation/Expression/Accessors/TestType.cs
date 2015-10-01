@@ -1,5 +1,7 @@
 namespace Handlebars.UnitTests.Compiler.Translation.Expression.Accessors
 {
+#pragma warning disable 169
+// ReSharper disable InconsistentNaming
     public class TestType
     {
         public string fieldStr;
@@ -8,7 +10,9 @@ namespace Handlebars.UnitTests.Compiler.Translation.Expression.Accessors
         public object fieldObj { get; set; }
 
         protected object protectedField;
+
         private object privateField;
+
         internal object internalField;
 
         public string TestStr { get; set; }
@@ -19,4 +23,6 @@ namespace Handlebars.UnitTests.Compiler.Translation.Expression.Accessors
 
         public object TestObject { get; set; }
     }
+// ReSharper restore InconsistentNaming
+#pragma warning restore 169
 }

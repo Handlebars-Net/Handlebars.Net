@@ -11,8 +11,9 @@
         /// Determines if a member can be accessed using the current accessor.
         /// </summary>
         /// <param name="instance">Instance of the object to access.</param>
+        /// <param name="memberName">Member of the instance to access.</param>
         /// <returns></returns>
-        bool CanHandle(object instance);
+        bool CanHandle(object instance, string memberName);
 
         /// <summary>
         /// Accesses the member and retrieves the result.
