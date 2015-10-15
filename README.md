@@ -113,6 +113,9 @@ Views\{Controller}\{Action}.hbs
 Views\{Controller}\{Action}\partials\somepartial.hbs 
 ```
 
+##Performance
+Compared to rendering, compiling is a fairly intensive process. While both are still measured in millseconds, compilation accounts for the most of that time by far. So, it is generally ideal to compile once and cache the resulting function to be re-used for the life of your process.
+
 ##Future roadmap
 
 - [ ] **Add unit tests!**
