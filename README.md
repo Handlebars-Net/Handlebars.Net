@@ -132,4 +132,5 @@ Compared to rendering, compiling is a fairly intensive process. While both are s
 Pull requests are welcome! The guidelines are pretty straightforward:
 - Only add capabilities that are already in the Mustache / Handlebars specs
 - Avoid dependencies outside of the .NET BCL
+- Maintain cross-platform compatibility (.NET/Mono; Windows/OSX/Linux/etc)
 - Follow the established code format
