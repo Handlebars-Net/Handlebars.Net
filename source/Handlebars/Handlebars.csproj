@@ -37,12 +37,16 @@
   <ItemGroup>
     <Compile Include="Compiler\CompilationContext.cs" />
     <Compile Include="Compiler\ExpressionBuilder.cs" />
+    <Compile Include="Compiler\Lexer\Converter\LayoutRemover.cs" />
+    <Compile Include="Compiler\Lexer\Tokens\LayoutToken.cs" />
     <Compile Include="Compiler\Resolvers\UpperCamelCaseExpressionNameResolver.cs" />
     <Compile Include="Compiler\Resolvers\IExpressionNameResolver.cs" />
+    <Compile Include="Compiler\Translation\Expression\HelperFunctionBinder.cs" />
     <Compile Include="DescriptionAttribute.cs" />
     <Compile Include="EnumerableExtensions.cs" />
     <Compile Include="HandlebarsEnvironment.cs" />
     <Compile Include="HandlebarsRuntimeException.cs" />
+    <Compile Include="HandlebarsViewEngine.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Compiler\FunctionBuilder.cs" />
     <Compile Include="Compiler\Structure\HandlebarsExpression.cs" />
@@ -65,7 +69,6 @@
     <Compile Include="Compiler\Translation\Expression\BlockHelperFunctionBinder.cs" />
     <Compile Include="Compiler\Translation\Expression\ContextBinder.cs" />
     <Compile Include="Compiler\Translation\Expression\HandlebarsExpressionVisitor.cs" />
-    <Compile Include="Compiler\Translation\Expression\HelperFunctionBinder.cs" />
     <Compile Include="Compiler\Translation\Expression\PathBinder.cs" />
     <Compile Include="Compiler\Translation\Expression\StaticReplacer.cs" />
     <Compile Include="Handlebars.cs" />

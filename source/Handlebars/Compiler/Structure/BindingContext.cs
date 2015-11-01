@@ -10,9 +10,11 @@ namespace HandlebarsDotNet.Compiler
         private readonly BindingContext _parent;
         private readonly TextWriter _encodedWriter;
         private readonly TextWriter _unencodedWriter;
+        public string TemplatePath { get; private set; }
 
-        public BindingContext(object value, TextWriter writer, BindingContext parent)
+        public BindingContext(object value, TextWriter writer, BindingContext parent, string templatePath)
         {
+            TemplatePath = (parent == null ? null : parent.TemplatePath) ?? templatePath;
             _value = value;
             _unencodedWriter = GetUnencodedWriter(writer);
             _encodedWriter = GetEncodedWriter(_unencodedWriter);
@@ -65,19 +67,28 @@ namespace HandlebarsDotNet.Compiler
 
         public virtual object GetContextVariable(string variableName)
         {
+            var target = this;
+
+            return GetContextVariable(variableName, target)
+                   ?? GetContextVariable(variableName, target.Value);
+        }
+
+        private object GetContextVariable(string variableName, object target)
+        {
             object returnValue;
             variableName = variableName.TrimStart('@');
-            var member = this.GetType().GetMember(variableName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-            
+            var member = target.GetType()
+                .GetMember(variableName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+
             if (member.Length > 0)
             {
                 if (member[0] is PropertyInfo)
                 {
-                    returnValue = ((PropertyInfo)member[0]).GetValue(this, null);
+                    returnValue = ((PropertyInfo) member[0]).GetValue(target, null);
                 }
                 else if (member[0] is FieldInfo)
                 {
-                    returnValue = ((FieldInfo)member[0]).GetValue(this);
+                    returnValue = ((FieldInfo) member[0]).GetValue(target);
                 }
                 else
                 {
@@ -97,7 +108,8 @@ namespace HandlebarsDotNet.Compiler
 
         public virtual BindingContext CreateChildContext(object value)
         {
-            return new BindingContext(value, this._encodedWriter, this);
+            return new BindingContext(value, this._encodedWriter, this, TemplatePath) ;
+
         }
 
         private static TextWriter GetEncodedWriter(TextWriter writer)

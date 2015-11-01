@@ -25,7 +25,7 @@ namespace HandlebarsDotNet.Compiler
                 var partialToken = item as PartialToken;
                 if (partialToken != null)
                 {
-                    var partialName = partialToken.Value.Substring(1);
+                    var partialName = partialToken.Value.Substring(1).Trim('"');
                     var arguments = AccumulateArguments(enumerator);
                     if (arguments.Count == 0)
                     {

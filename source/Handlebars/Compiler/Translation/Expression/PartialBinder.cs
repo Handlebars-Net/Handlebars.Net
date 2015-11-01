@@ -51,7 +51,25 @@ namespace HandlebarsDotNet.Compiler
         {
             if (configuration.RegisteredTemplates.ContainsKey(partialName) == false)
             {
-                throw new HandlebarsRuntimeException(string.Format("Referenced partial name {0} could not be resolved", partialName));
+                if (configuration.FileSystem != null && context.TemplatePath != null)
+                {
+                    var partialPath = configuration.FileSystem.Closest(context.TemplatePath,
+                        "partials/" + partialName + ".hbs");
+                    if (partialPath != null)
+                    {
+                        var compiled = Handlebars.Create(configuration)
+                            .CompileView(partialPath);
+                        configuration.RegisteredTemplates.Add(partialName, (writer, o) =>
+                        {
+                            writer.Write(compiled(o));
+                        });
+                    }
+                }
+                else
+                {
+                    throw new HandlebarsRuntimeException(
+                        string.Format("Referenced partial name {0} could not be resolved", partialName));
+                }
             }
             configuration.RegisteredTemplates[partialName](context.TextWriter, context);
         }
