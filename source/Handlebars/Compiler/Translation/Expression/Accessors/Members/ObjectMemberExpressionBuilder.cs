@@ -2,7 +2,7 @@
 
 namespace HandlebarsDotNet.Compiler.Translation.Expression.Accessors.Members
 {
-    public static class ObjectMemberExpressionBuilder
+    internal static class ObjectMemberExpressionBuilder
     {
         /// <summary>
         /// Builds a function to access a field or a property.

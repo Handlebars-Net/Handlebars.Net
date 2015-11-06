@@ -4,7 +4,7 @@ using HandlebarsDotNet.Compiler.Translation.Expression.Accessors.Members;
 
 namespace HandlebarsDotNet.Compiler.Translation.Expression.Accessors
 {
-    public class ObjectMemberMemberAccessor : IMemberAccessor
+    internal class ObjectMemberMemberAccessor : IMemberAccessor
     {
         internal readonly static IDictionary<ObjectMemberKey, Func<object, object>> Cache =
             new Dictionary<ObjectMemberKey, Func<object, object>>(new ObjectMemberKeyEqualityComparer());

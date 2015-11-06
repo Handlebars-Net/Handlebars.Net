@@ -5,7 +5,7 @@ using System.Text;
 
 namespace HandlebarsDotNet.Compiler.Translation.Expression.Accessors.Members
 {
-    public class ObjectMemberKeyEqualityComparer : IEqualityComparer<ObjectMemberKey>
+    internal class ObjectMemberKeyEqualityComparer : IEqualityComparer<ObjectMemberKey>
     {
         public bool Equals(ObjectMemberKey x, ObjectMemberKey y)
         {
