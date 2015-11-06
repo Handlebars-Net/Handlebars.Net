@@ -112,6 +112,10 @@ namespace HandlebarsDotNet.Compiler.Lexer
                             source.Read();
                             buffer.Append('{', 2);
                         }
+                        else
+                        {
+                            buffer.Append("\\{");
+                        }
                         node = source.Read();
                     }
                     else if ((char)node == '{' && (char)source.Peek() == '{')

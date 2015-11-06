@@ -35,6 +35,30 @@ namespace HandlebarsDotNet.Test
         }
 
         [Test]
+        public void BasicCurlies()
+        {
+            var source = "Hello, {name}!";
+            var template = Handlebars.Compile(source);
+            var data = new {
+                name = "Handlebars.Net"
+            };
+            var result = template(data);
+            Assert.AreEqual("Hello, {name}!", result);
+        }
+
+        [Test]
+        public void BasicCurliesWithLeadingSlash()
+        {
+            var source = "Hello, \\{name\\}!";
+            var template = Handlebars.Compile(source);
+            var data = new {
+                name = "Handlebars.Net"
+            };
+            var result = template(data);
+            Assert.AreEqual("Hello, \\{name\\}!", result);
+        }
+
+        [Test]
         public void BasicPathArray()
         {
             var source = "Hello, {{ names.[1] }}!";
