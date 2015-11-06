@@ -41,7 +41,18 @@
     <Compile Include="Compiler\Lexer\Tokens\LayoutToken.cs" />
     <Compile Include="Compiler\Resolvers\UpperCamelCaseExpressionNameResolver.cs" />
     <Compile Include="Compiler\Resolvers\IExpressionNameResolver.cs" />
+    <Compile Include="Compiler\Translation\Expression\Accessors\GenericDictionary\DictionaryExpressionBuilder.cs" />
+    <Compile Include="Compiler\Translation\Expression\Accessors\DictionaryMemberAccessor.cs" />
+    <Compile Include="Compiler\Translation\Expression\Accessors\DynamicMetaObjectProviderMemberAccessor.cs" />
+    <Compile Include="Compiler\Translation\Expression\Accessors\EnumerableMemberAccessor.cs" />
+    <Compile Include="Compiler\Translation\Expression\Accessors\GenericDictionaryMemberAccessor.cs" />
+    <Compile Include="Compiler\Translation\Expression\Accessors\GenericDictionary\GenericDictionaryProxy.cs" />
+    <Compile Include="Compiler\Translation\Expression\Accessors\Members\ObjectMemberExpressionBuilder.cs" />
+    <Compile Include="Compiler\Translation\Expression\Accessors\Members\ObjectMemberKey.cs" />
+    <Compile Include="Compiler\Translation\Expression\Accessors\Members\ObjectMemberKeyEqualityComparer.cs" />
+    <Compile Include="Compiler\Translation\Expression\Accessors\ObjectMemberMemberAccessor.cs" />
     <Compile Include="Compiler\Translation\Expression\HelperFunctionBinder.cs" />
+    <Compile Include="Compiler\Translation\Expression\Accessors\IMemberAccessor.cs" />
     <Compile Include="DescriptionAttribute.cs" />
     <Compile Include="EnumerableExtensions.cs" />
     <Compile Include="HandlebarsEnvironment.cs" />
@@ -121,5 +132,6 @@
     <Compile Include="Compiler\Lexer\Parsers\BlockWordParser.cs" />
     <Compile Include="Compiler\Lexer\Converter\WhitespaceRemover.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
 </Project>
