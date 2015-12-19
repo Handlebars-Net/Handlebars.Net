@@ -75,6 +75,7 @@
     <Compile Include="ViewEngine\ViewEngineTests.cs" />
     <Compile Include="WhitespaceTests.cs" />
     <Compile Include="SubExpressionTests.cs" />
+    <Compile Include="NumericLiteralTests.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
