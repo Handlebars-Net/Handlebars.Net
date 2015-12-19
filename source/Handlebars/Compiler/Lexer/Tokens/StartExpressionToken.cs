@@ -30,7 +30,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
 
         public override TokenType Type
         {
-            get { return TokenType.EndExpression; }
+            get { return TokenType.StartExpression; }
         }
 
         public override string ToString()

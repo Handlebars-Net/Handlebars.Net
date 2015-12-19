@@ -32,10 +32,6 @@
     <ConsolePause>false</ConsolePause>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CsQuery, Version=1.3.3.249, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\CsQuery.1.3.4\lib\net40\CsQuery.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
     <Reference Include="Microsoft.Web.Infrastructure">
@@ -62,6 +58,9 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="CsQuery, Version=1.3.3.249, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\packages\CsQuery.1.3.4\lib\net40\CsQuery.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BasicIntegrationTests.cs" />
@@ -75,13 +74,11 @@
     <Compile Include="ViewEngine\CasparTests.cs" />
     <Compile Include="ViewEngine\ViewEngineTests.cs" />
     <Compile Include="WhitespaceTests.cs" />
+    <Compile Include="SubExpressionTests.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="ViewEngine\Casper-master\assets\fonts\casper-icons.eot" />
-    <None Include="ViewEngine\Casper-master\assets\fonts\casper-icons.ttf" />
-    <None Include="ViewEngine\Casper-master\assets\fonts\casper-icons.woff" />
     <Content Include="ViewEngine\Casper-master\author.hbs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -121,12 +118,6 @@
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="ViewEngine\Casper-master\assets\css\screen.css" />
-    <Content Include="ViewEngine\Casper-master\assets\fonts\casper-icons.svg" />
-    <Content Include="ViewEngine\Casper-master\assets\js\index.js" />
-    <Content Include="ViewEngine\Casper-master\assets\js\jquery.fitvids.js" />
   </ItemGroup>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

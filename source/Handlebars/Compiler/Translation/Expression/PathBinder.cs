@@ -54,6 +54,12 @@ namespace HandlebarsDotNet.Compiler
                 Visit(node.IfFalse));
         }
 
+        protected override Expression VisitSubExpression(SubExpressionExpression subex)
+        {
+            return HandlebarsExpression.SubExpression(
+                Visit(subex.Expression));
+        }
+
         protected override Expression VisitStatementExpression(StatementExpression sex)
         {
             if (sex.Body is PathExpression)

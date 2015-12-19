@@ -47,6 +47,16 @@ namespace HandlebarsDotNet.Compiler.Lexer
         {
             return new LayoutToken(layout);
         }
+
+        public static StartSubExpressionToken StartSubExpression()
+        {
+            return new StartSubExpressionToken();
+        }
+
+        public static EndSubExpressionToken EndSubExpression()
+        {
+            return new EndSubExpressionToken();
+        }
     }
 }
 
