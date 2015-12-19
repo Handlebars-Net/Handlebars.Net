@@ -119,7 +119,7 @@ Compared to rendering, compiling is a fairly intensive process. While both are s
 ##Future roadmap
 
 - [ ] **Add unit tests!**
-- [ ] [Support for sub-expressions](https://github.com/rexm/Handlebars.Net/issues/48)
+- [x] [Support for sub-expressions](https://github.com/rexm/Handlebars.Net/issues/48)
 - [ ] `lookup`, `log`, and `helperMissing` helpers
 - [x] [Support for whitespace control](https://github.com/rexm/Handlebars.Net/issues/52)
 - [ ] Set delimiters
