@@ -115,6 +115,7 @@ namespace HandlebarsDotNet.Test
             var result = template(data);
             Assert.AreEqual("7", result);
         }
+
         [Test]
         public void NumericLiteralTest11()
         {
