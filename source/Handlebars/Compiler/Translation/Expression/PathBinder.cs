@@ -54,6 +54,12 @@ namespace HandlebarsDotNet.Compiler
                 Visit(node.IfFalse));
         }
 
+        protected override Expression VisitSubExpression(SubExpressionExpression subex)
+        {
+            return HandlebarsExpression.SubExpression(
+                Visit(subex.Expression));
+        }
+
         protected override Expression VisitStatementExpression(StatementExpression sex)
         {
             if (sex.Body is PathExpression)
@@ -219,15 +225,16 @@ namespace HandlebarsDotNet.Compiler
                 return new UndefinedBindingResult();
             }
             
-            var info = members[0] as PropertyInfo;
-            if (info != null)
+            var propertyInfo = members[0] as PropertyInfo;
+            if (propertyInfo != null)
             {
-                var b = info.GetValue(instance, null);
-                return b;
+                var propertyValue = propertyInfo.GetValue(instance, null);
+                return propertyValue ?? new UndefinedBindingResult();
             }
             if (members[0] is FieldInfo)
             {
-                return ((FieldInfo)members[0]).GetValue(instance);
+                var fieldValue = ((FieldInfo)members[0]).GetValue(instance);
+                return fieldValue ?? new UndefinedBindingResult();
             }
             return new UndefinedBindingResult();
         }

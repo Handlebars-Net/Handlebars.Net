@@ -527,6 +527,21 @@ namespace HandlebarsDotNet.Test
 			Assert.AreEqual("Hello, Marc !", result);
 		}
 
+        [Test]
+        public void BasicNullOrMissingSubProperty()
+        {
+            string source = "Hello, {{name.first}}!";
+
+            var template = Handlebars.Compile(source);
+
+            var data = new {
+                name = (object)null
+            };
+
+            var result = template(data);
+            Assert.AreEqual("Hello, !", result);
+        }
+
 		[Test]
 		public void BasicNumericFalsy()
 		{

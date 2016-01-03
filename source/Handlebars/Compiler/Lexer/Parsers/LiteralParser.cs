@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using System.Linq;
 
 namespace HandlebarsDotNet.Compiler.Lexer
 {
@@ -12,12 +13,12 @@ namespace HandlebarsDotNet.Compiler.Lexer
             if (IsDelimitedLiteral(reader) == true)
             {
                 char delimiter = (char)reader.Read();
-                var buffer = AccumulateLiteral(reader, delimiter, true);
+                var buffer = AccumulateLiteral(reader, true, delimiter);
                 token = Token.Literal(buffer, delimiter.ToString());
             }
             else if (IsNonDelimitedLiteral(reader) == true)
             {
-                var buffer = AccumulateLiteral(reader, ' ', false);
+                var buffer = AccumulateLiteral(reader, false, ' ', ')');
                 token = Token.Literal(buffer);
             }
             return token;
@@ -35,7 +36,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
             return char.IsDigit(peek) || peek == '-';
         }
 
-        private static string AccumulateLiteral(TextReader reader, char delimiter, bool captureDelimiter)
+        private static string AccumulateLiteral(TextReader reader, bool captureDelimiter, params char[] delimiters)
         {
             StringBuilder buffer = new StringBuilder();
             while (true)
@@ -47,7 +48,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
                 }
                 else
                 {
-                    if ((char)node == delimiter)
+                    if (delimiters.Contains((char)node))
                     {
                         if (captureDelimiter)
                         {

@@ -44,6 +44,7 @@ namespace HandlebarsDotNet.Compiler
                 expression = HelperFunctionBinder.Bind(expression, compilationContext);
                 expression = BoolishConverter.Convert(expression, compilationContext);
                 expression = PathBinder.Bind(expression, compilationContext);
+                expression = SubExpressionVisitor.Visit(expression, compilationContext);
                 expression = ContextBinder.Bind(expression, compilationContext, parentContext, templatePath);
                 return expression;
             }
