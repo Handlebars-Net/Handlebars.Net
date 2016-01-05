@@ -24,11 +24,35 @@ namespace HandlebarsDotNet.Compiler
             {
                 throw new HandlebarsCompilerException("Sub-expression does not contain a converted MethodCall expression");
             }
+            HandlebarsHelper helper = GetHelperDelegateFromMethodCallExpression(helperCall);
             return Expression.Call(
                 new Func<HandlebarsHelper, object, object[], string>(CaptureTextWriterOutputFromHelper).Method,
-                Expression.Constant((HandlebarsHelper)Delegate.CreateDelegate(typeof(HandlebarsHelper), helperCall.Method)),
+                Expression.Constant(helper),
                 helperCall.Arguments[1],
                 helperCall.Arguments[2]);
+        }
+
+        private static HandlebarsHelper GetHelperDelegateFromMethodCallExpression(MethodCallExpression helperCall)
+        {
+            object target = helperCall.Object;
+            HandlebarsHelper helper;
+            if (target != null)
+            {
+                if (target is ConstantExpression)
+                {
+                    target = ((ConstantExpression)target).Value;
+                }
+                else
+                {
+                    throw new NotSupportedException("Helper method instance target must be reduced to a ConstantExpression");
+                }
+                helper = (HandlebarsHelper)Delegate.CreateDelegate(typeof(HandlebarsHelper), target, helperCall.Method);
+            }
+            else
+            {
+                helper = (HandlebarsHelper)Delegate.CreateDelegate(typeof(HandlebarsHelper), helperCall.Method);
+            }
+            return helper;
         }
 
         private static string CaptureTextWriterOutputFromHelper(
