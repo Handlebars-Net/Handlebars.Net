@@ -2,6 +2,7 @@
 using System;
 using System.Dynamic;
 using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
 
 namespace HandlebarsDotNet.Test
 {
@@ -76,6 +77,21 @@ namespace HandlebarsDotNet.Test
 
             Assert.AreEqual("Key1Val1Key2Val2", output);
         }
+
+        [Test]
+        public void JObjectTest() {
+            object nullValue = null;
+            var model = JObject.FromObject(new { Nested = new { Prop = "Prop" }, Nested2 = nullValue });
+
+            var source = "{{NotExists.Prop}}";
+
+            var template = Handlebars.Compile(source);
+
+            var output = template(model);
+
+            Assert.AreEqual("", output);
+        }
+
         [Test]
         public void SystemJsonTestArrays()
         {
