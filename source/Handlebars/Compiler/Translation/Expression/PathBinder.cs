@@ -167,7 +167,11 @@ namespace HandlebarsDotNet.Compiler
             {
                 try
                 {
-                    return GetProperty(instance, resolvedMemberName);
+                    var result =  GetProperty(instance, resolvedMemberName);
+                    if (result == null)
+                        return new UndefinedBindingResult();
+
+                    return result;
                 }
                 catch
                 {
