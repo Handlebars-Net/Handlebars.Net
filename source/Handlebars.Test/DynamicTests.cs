@@ -93,6 +93,49 @@ namespace HandlebarsDotNet.Test
         }
 
         [Test]
+        public void JObjectIfTest() {
+            object nullValue = null;
+            var model = JObject.FromObject(new {
+                StringProp = "test",
+                EmptyStringProp = "",
+                TrueProp = true,
+                FalseProp = false,
+                ObjectProp = new { Test = "test" },
+                NullObjectProp = nullValue
+            });
+
+            var source = "{{#if StringProp}}true{{/if}}";
+            var template = Handlebars.Compile(source);
+            var output = template(model);
+            Assert.AreEqual("true", output);
+
+            source = "{{#if TrueProp}}true{{/if}}";
+            template = Handlebars.Compile(source);
+            output = template(model);
+            Assert.AreEqual("true", output);
+
+            source = "{{#if FalseProp}}true{{/if}}";
+            template = Handlebars.Compile(source);
+            output = template(model);
+            Assert.AreEqual("", output);
+
+            source = "{{#if ObjectProp}}true{{/if}}";
+            template = Handlebars.Compile(source);
+            output = template(model);
+            Assert.AreEqual("true", output);
+
+            source = "{{#if NullObjectProp}}true{{/if}}";
+            template = Handlebars.Compile(source);
+            output = template(model);
+            Assert.AreEqual("", output);
+
+            source = "{{#if EmptyStringProp}}true{{/if}}";
+            template = Handlebars.Compile(source);
+            output = template(model);
+            Assert.AreEqual("", output);
+        }
+
+        [Test]
         public void SystemJsonTestArrays()
         {
             var model = System.Web.Helpers.Json.Decode("[{\"Key\": \"Key1\", \"Value\": \"Val1\"},{\"Key\": \"Key2\", \"Value\": \"Val2\"}]");

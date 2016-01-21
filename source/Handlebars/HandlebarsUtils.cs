@@ -2,6 +2,7 @@
 using HandlebarsDotNet.Compiler;
 using System.Collections;
 using System.Linq;
+using System.Reflection;
 
 namespace HandlebarsDotNet
 {
@@ -18,29 +19,52 @@ namespace HandlebarsDotNet
             {
                 return true;
             }
+
             if (value == null)
             {
                 return true;
             }
-            else if (value is bool)
+
+            if (value is bool)
             {
                 return !(bool)value;
             }
-            else if (value is string)
-            {
+
+            if (value is string) {
                 if ((string)value == "")
                 {
                     return true;
                 }
-                else
-                {
-                    return false;
-                }
+
+                return false;
             }
-            else if (IsNumber(value))
+
+            if (IsNumber(value))
             {
-                return !System.Convert.ToBoolean(value);
+                return !Convert.ToBoolean(value);
             }
+
+            if (value.GetType().FullName == "Newtonsoft.Json.Linq.JValue") {
+                if (IsStringType(value))
+                    return IsFalsy(value.ToString());
+
+                try {
+                    return IsFalsy(Convert.ToBoolean(value));
+                } catch (Exception) {}
+            }
+
+            return false;
+        }
+
+        private static PropertyInfo _typeProperty;
+        private static bool IsStringType(object value) {
+            if (_typeProperty == null)
+                _typeProperty = value.GetType().GetProperty("Type");
+
+            var propertyValue = _typeProperty.GetValue(value, new object[] {}).ToString();
+            if (propertyValue == "String" || propertyValue == "Null")
+                return true;
+
             return false;
         }
 
@@ -55,7 +79,7 @@ namespace HandlebarsDotNet
             {
                 return true;
             }
-            else if (value is IEnumerable && ((IEnumerable)value).OfType<object>().Any() == false)
+            else if (value is IEnumerable && value.GetType().FullName != "Newtonsoft.Json.Linq.JValue" && ((IEnumerable)value).OfType<object>().Any() == false)
             {
                 return true;
             }
