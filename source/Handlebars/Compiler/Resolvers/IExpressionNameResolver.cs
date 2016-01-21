@@ -2,6 +2,6 @@
 {
     public interface IExpressionNameResolver
     {
-        string ResolveExpressionName(object instance, string expressionName);
+        string ResolveExpressionName(string expressionName);
     }
 }

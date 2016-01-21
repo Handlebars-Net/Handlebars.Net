@@ -93,20 +93,6 @@ namespace HandlebarsDotNet.Test
         }
 
         [Test]
-        public void JObjectIfTest() {
-            object nullValue = null;
-            var model = JObject.FromObject(new { Nested = new { Prop = "Prop" }, Nested2 = nullValue });
-
-            var source = "{{#if Nested.Prop}}true{{/if}}";
-
-            var template = Handlebars.Compile(source);
-
-            var output = template(model);
-
-            Assert.AreEqual("true", output);
-        }
-
-        [Test]
         public void SystemJsonTestArrays()
         {
             var model = System.Web.Helpers.Json.Decode("[{\"Key\": \"Key1\", \"Value\": \"Val1\"},{\"Key\": \"Key2\", \"Value\": \"Val2\"}]");

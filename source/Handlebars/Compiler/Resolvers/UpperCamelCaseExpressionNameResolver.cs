@@ -4,7 +4,7 @@ namespace HandlebarsDotNet.Compiler.Resolvers
 {
     public class UpperCamelCaseExpressionNameResolver : IExpressionNameResolver
     {
-        public string ResolveExpressionName(object instance, string expressionName)
+        public string ResolveExpressionName(string expressionName)
         {
             if (string.IsNullOrEmpty(expressionName))
             {
