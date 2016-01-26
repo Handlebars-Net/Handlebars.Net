@@ -160,14 +160,18 @@ namespace HandlebarsDotNet.Compiler
                     return result ?? new UndefinedBindingResult();
                 }
             }
-            var resolvedMemberName = this.ResolveMemberName(memberName);
+            var resolvedMemberName = this.ResolveMemberName(instance, memberName);
             var instanceType = instance.GetType();
             //crude handling for dynamic objects that don't have metadata
             if (typeof(IDynamicMetaObjectProvider).IsAssignableFrom(instanceType))
             {
                 try
                 {
-                    return GetProperty(instance, resolvedMemberName);
+                    var result =  GetProperty(instance, resolvedMemberName);
+                    if (result == null)
+                        return new UndefinedBindingResult();
+
+                    return result;
                 }
                 catch
                 {
@@ -257,10 +261,10 @@ namespace HandlebarsDotNet.Compiler
             return site.Target(site, target);
         }
 
-        private string ResolveMemberName(string memberName)
+        private string ResolveMemberName(object instance, string memberName)
         {
             var resolver = this.CompilationContext.Configuration.ExpressionNameResolver;
-            return resolver != null ? resolver.ResolveExpressionName(memberName) : memberName;
+            return resolver != null ? resolver.ResolveExpressionName(instance, memberName) : memberName;
         }
     }
 }
