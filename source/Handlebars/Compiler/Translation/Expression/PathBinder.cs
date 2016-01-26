@@ -153,7 +153,7 @@ namespace HandlebarsDotNet.Compiler
         
         private object AccessMember(object instance, string memberName)
         {
-            var resolvedMemberName = ResolveMemberName(memberName);
+            var resolvedMemberName = ResolveMemberName(instance, memberName);
 
             foreach (var accessor in _accessors)
             {
@@ -169,10 +169,10 @@ namespace HandlebarsDotNet.Compiler
             return new UndefinedBindingResult();
         }
 
-        private string ResolveMemberName(string memberName)
+        private string ResolveMemberName(object instance, string memberName)
         {
             var resolver = this.CompilationContext.Configuration.ExpressionNameResolver;
-            return resolver != null ? resolver.ResolveExpressionName(memberName) : memberName;
+            return resolver != null ? resolver.ResolveExpressionName(instance, memberName) : memberName;
         }
     }
 }
