@@ -30,6 +30,8 @@ namespace HandlebarsDotNet.Compiler.Translation.Expression.Accessors
 
         public bool CanHandle(object instance, string memberName)
         {
+            if (instance == null) { return false; }
+
             var instanceType = instance.GetType();
             var dictType = DictionaryExpressionBuilder.GetFirstGenericDictionaryTypeInstance(instanceType);
 

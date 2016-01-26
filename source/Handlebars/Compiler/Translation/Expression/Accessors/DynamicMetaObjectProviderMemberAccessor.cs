@@ -21,6 +21,8 @@ namespace HandlebarsDotNet.Compiler.Translation.Expression.Accessors
         /// <returns></returns>
         public bool CanHandle(object instance, string memberName)
         {
+            if(instance == null) { return false; }
+
             var instanceType = instance.GetType();
             var canHandle = typeof (IDynamicMetaObjectProvider).IsAssignableFrom(instanceType);
 

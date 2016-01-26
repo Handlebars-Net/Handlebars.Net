@@ -45,6 +45,8 @@ namespace HandlebarsDotNet.Compiler
                     return VisitPartialExpression((PartialExpression)exp);
                 case HandlebarsExpressionType.BoolishExpression:
                     return VisitBoolishExpression((BoolishExpression)exp);
+                case HandlebarsExpressionType.SubExpression:
+                    return VisitSubExpression((SubExpressionExpression)exp);
                 default:
                     return base.Visit(exp);
             }
@@ -98,6 +100,11 @@ namespace HandlebarsDotNet.Compiler
         protected virtual Expression VisitBoolishExpression(BoolishExpression bex)
         {
             return bex;
+        }
+
+        protected virtual Expression VisitSubExpression(SubExpressionExpression subex)
+        {
+            return subex;
         }
     }
 }

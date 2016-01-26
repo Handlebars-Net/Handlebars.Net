@@ -12,7 +12,9 @@ namespace HandlebarsDotNet.Compiler.Lexer
         Structure = 5,
         Comment = 6,
         Partial = 7,
-        Layout = 8
+        Layout = 8,
+        StartSubExpression = 9,
+        EndSubExpression = 10
     }
 }
 

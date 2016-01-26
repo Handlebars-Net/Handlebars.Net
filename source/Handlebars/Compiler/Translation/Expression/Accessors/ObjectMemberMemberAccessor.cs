@@ -6,7 +6,7 @@ namespace HandlebarsDotNet.Compiler.Translation.Expression.Accessors
 {
     internal class ObjectMemberMemberAccessor : IMemberAccessor
     {
-        internal readonly static IDictionary<ObjectMemberKey, Func<object, object>> Cache =
+        internal static readonly IDictionary<ObjectMemberKey, Func<object, object>> Cache =
             new Dictionary<ObjectMemberKey, Func<object, object>>(new ObjectMemberKeyEqualityComparer());
 
         /// <summary>
@@ -39,7 +39,8 @@ namespace HandlebarsDotNet.Compiler.Translation.Expression.Accessors
         /// </remarks>
         public bool CanHandle(object instance, string memberName)
         {
-            return true;
+            var canHandle = instance != null;
+            return canHandle;
         }
 
         /// <summary>

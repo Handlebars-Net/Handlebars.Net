@@ -46,6 +46,12 @@ namespace HandlebarsDotNet.Compiler
                 Visit(bhex.Inversion));
         }
 
+        protected override Expression VisitSubExpression(SubExpressionExpression subex)
+        {
+            return HandlebarsExpression.SubExpression(
+                Visit(subex.Expression));
+        }
+
         protected override Expression VisitHelperExpression(HelperExpression hex)
         {
             if (CompilationContext.Configuration.Helpers.ContainsKey(hex.HelperName))
@@ -59,7 +65,7 @@ namespace HandlebarsDotNet.Compiler
                     Expression.Property(
                         CompilationContext.BindingContext,
                         typeof(BindingContext).GetProperty("Value")),
-                    Expression.NewArrayInit(typeof(object), hex.Arguments)
+                    Expression.NewArrayInit(typeof(object), hex.Arguments.Select(a => Visit(a)))
                 };
                 if (helper.Target != null)
                 {

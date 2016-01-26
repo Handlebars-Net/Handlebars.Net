@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 using System.IO;
 using System.Collections.Generic;
 using HandlebarsDotNet.Compiler.Translation.Expression.Accessors;
@@ -10,12 +9,13 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class PathBinder : HandlebarsExpressionVisitor
     {
-        private static List<IMemberAccessor> _accessors;
+        private static readonly List<IMemberAccessor> _accessors;
 
         static PathBinder()
         {
             _accessors = new List<IMemberAccessor>()
             {
+                new NullInstanceMemberAccessor(),
                 new EnumerableMemberAccessor(),
                 new DynamicMetaObjectProviderMemberAccessor(),
                 new GenericDictionaryMemberAccessor(),
@@ -63,6 +63,12 @@ namespace HandlebarsDotNet.Compiler
                 Visit(node.Test),
                 Visit(node.IfTrue),
                 Visit(node.IfFalse));
+        }
+
+        protected override Expression VisitSubExpression(SubExpressionExpression subex)
+        {
+            return HandlebarsExpression.SubExpression(
+                Visit(subex.Expression));
         }
 
         protected override Expression VisitStatementExpression(StatementExpression sex)

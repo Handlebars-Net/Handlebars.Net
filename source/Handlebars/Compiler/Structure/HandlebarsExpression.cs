@@ -15,7 +15,8 @@ namespace HandlebarsDotNet.Compiler
         IteratorExpression = 6006,
         DeferredSection = 6007,
         PartialExpression = 6008,
-        BoolishExpression = 6009
+        BoolishExpression = 6009,
+        SubExpression = 6010
     }
 
     internal abstract class HandlebarsExpression : Expression
@@ -95,6 +96,11 @@ namespace HandlebarsDotNet.Compiler
         public static BoolishExpression Boolish(Expression condition)
         {
             return new BoolishExpression(condition);
+        }
+
+        public static SubExpressionExpression SubExpression(Expression expression)
+        {
+            return new SubExpressionExpression(expression);
         }
     }
 }

@@ -59,6 +59,11 @@ namespace HandlebarsDotNet.Compiler.Lexer
                 }
                 if (inExpression)
                 {
+                    if ((char)node == '(')
+                    {
+                        yield return Token.StartSubExpression();
+                    }
+
                     Token token = null;
                     token = token ?? _wordParser.Parse(source);
                     token = token ?? _literalParser.Parse(source);
@@ -91,6 +96,11 @@ namespace HandlebarsDotNet.Compiler.Lexer
                     {
                         node = source.Read();
                         trimWhitespace = true;
+                    }
+                    else if ((char)node == ')')
+                    {
+                        node = source.Read();
+                        yield return Token.EndSubExpression();
                     }
                     else
                     {
