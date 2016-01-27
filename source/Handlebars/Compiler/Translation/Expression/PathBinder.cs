@@ -1,18 +1,29 @@
 ﻿using System;
-using System.Collections;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 using System.IO;
-using System.Dynamic;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using System.Globalization;
+using HandlebarsDotNet.Compiler.Translation.Expression.Accessors;
 
 namespace HandlebarsDotNet.Compiler
 {
     internal class PathBinder : HandlebarsExpressionVisitor
     {
+        private static readonly List<IMemberAccessor> _accessors;
+
+        static PathBinder()
+        {
+            _accessors = new List<IMemberAccessor>()
+            {
+                new NullInstanceMemberAccessor(),
+                new EnumerableMemberAccessor(),
+                new DynamicMetaObjectProviderMemberAccessor(),
+                new GenericDictionaryMemberAccessor(),
+                new DictionaryMemberAccessor(),
+                new ObjectMemberMemberAccessor(),
+            };
+        }
+
         public static Expression Bind(Expression expr, CompilationContext context)
         {
             return new PathBinder(context).Visit(expr);
@@ -139,126 +150,23 @@ namespace HandlebarsDotNet.Compiler
             return AccessMember(instance, segment);
         }
 
-        private static readonly Regex IndexRegex = new Regex(@"^\[?(?<index>\d+)\]?$", RegexOptions.None);
-
+        
         private object AccessMember(object instance, string memberName)
         {
-            var enumerable = instance as IEnumerable<object>;
-            if (enumerable != null)
-            {
-                int index;
-                var match = IndexRegex.Match(memberName);
-                if (match.Success)
-                {
-                    if (match.Groups["index"].Success == false || int.TryParse(match.Groups["index"].Value, out index) == false)
-                    {
-                        return new UndefinedBindingResult();
-                    }
+            var resolvedMemberName = ResolveMemberName(instance, memberName);
 
-                    var result = enumerable.ElementAtOrDefault(index);
-                    
-                    return result ?? new UndefinedBindingResult();
-                }
-            }
-            var resolvedMemberName = this.ResolveMemberName(instance, memberName);
-            var instanceType = instance.GetType();
-            //crude handling for dynamic objects that don't have metadata
-            if (typeof(IDynamicMetaObjectProvider).IsAssignableFrom(instanceType))
+            foreach (var accessor in _accessors)
             {
-                try
-                {
-                    var result =  GetProperty(instance, resolvedMemberName);
-                    if (result == null)
-                        return new UndefinedBindingResult();
+                var mn = accessor.RequiresResolvedMemberName ? resolvedMemberName : memberName;
 
-                    return result;
-                }
-                catch
+                if (accessor.CanHandle(instance, mn))
                 {
-                    return new UndefinedBindingResult();
+                    var value = accessor.AccessMember(instance, mn);
+                    return value;
                 }
             }
 
-
-            // Check if the instance is IDictionary<,>
-            var iDictInstance = FirstGenericDictionaryTypeInstance(instanceType);
-            if (iDictInstance != null)
-            {
-                var genericArgs = iDictInstance.GetGenericArguments();
-                object key = resolvedMemberName.Trim('[', ']');    // Ensure square brackets removed.
-                if (genericArgs.Length > 0)
-                {
-                    // Dictionary key type isn't a string, so attempt to convert.
-                    if (genericArgs[0] != typeof(string))
-                    {
-                        try
-                        {
-                            key = Convert.ChangeType(key, genericArgs[0], CultureInfo.CurrentCulture);
-                        }
-                        catch (Exception)
-                        {
-                            // Can't convert to key type.
-                            return new UndefinedBindingResult();
-                        }
-                    }
-                }
-
-                var m = instanceType.GetMethods();
-                if ((bool)instanceType.GetMethod("ContainsKey").Invoke(instance, new object[] { key }))
-                {
-                    return instanceType.GetMethod("get_Item").Invoke(instance, new object[] { key });
-                }
-                else
-                {
-                    // Key doesn't exist.
-                    return new UndefinedBindingResult();
-                }
-            }
-            // Check if the instance is IDictionary (ie, System.Collections.Hashtable)
-            if (typeof(IDictionary).IsAssignableFrom(instanceType))
-            {
-                var key = resolvedMemberName.Trim('[', ']');    // Ensure square brackets removed.
-                // Only string keys supported - indexer takes an object, but no nice
-                // way to check if the hashtable check if it should be a different type.
-                return ((IDictionary)instance)[key];
-            }
-
-            var members = instanceType.GetMember(resolvedMemberName);
-            if (members.Length != 1)
-            {
-                return new UndefinedBindingResult();
-            }
-            
-            var propertyInfo = members[0] as PropertyInfo;
-            if (propertyInfo != null)
-            {
-                var propertyValue = propertyInfo.GetValue(instance, null);
-                return propertyValue ?? new UndefinedBindingResult();
-            }
-            if (members[0] is FieldInfo)
-            {
-                var fieldValue = ((FieldInfo)members[0]).GetValue(instance);
-                return fieldValue ?? new UndefinedBindingResult();
-            }
             return new UndefinedBindingResult();
-        }
-
-        static Type FirstGenericDictionaryTypeInstance(Type instanceType)
-        {
-            return instanceType.GetInterfaces()
-                .FirstOrDefault(i =>
-                    i.IsGenericType
-                    &&
-                    (
-                        i.GetGenericTypeDefinition() == typeof(IDictionary<,>)
-                    )
-                );
-        }
-
-        private static object GetProperty(object target, string name)
-        {
-            var site = System.Runtime.CompilerServices.CallSite<Func<System.Runtime.CompilerServices.CallSite, object, object>>.Create(Microsoft.CSharp.RuntimeBinder.Binder.GetMember(0, name, target.GetType(), new[]{ Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo.Create(0, null) }));
-            return site.Target(site, target);
         }
 
         private string ResolveMemberName(object instance, string memberName)
