@@ -10,7 +10,7 @@ namespace HandlebarsDotNet.Compiler.Translation.Expression.Accessors
     internal sealed class GenericDictionaryMemberAccessor : IMemberAccessor
     {
         //TODO: Maybe use a sliding cache or something. I'm afraid for long running processes with lots of different types.
-        private static readonly IDictionary<Type, GenericDictionaryProxy> Proxies = new Dictionary<Type, GenericDictionaryProxy>();
+        //private static readonly IDictionary<Type, GenericDictionaryProxy> Proxies = new Dictionary<Type, GenericDictionaryProxy>();
 
         public bool RequiresResolvedMemberName { get { return true; } }
 
@@ -18,12 +18,14 @@ namespace HandlebarsDotNet.Compiler.Translation.Expression.Accessors
         {
             var dictType = DictionaryExpressionBuilder.GetFirstGenericDictionaryTypeInstance(instanceType);
 
-            GenericDictionaryProxy proxy;
-            if (!Proxies.TryGetValue(dictType, out proxy))
-            {
-                proxy = new GenericDictionaryProxy(dictType);
-                Proxies.AddOrUpdate(dictType, proxy);
-            }
+            //GenericDictionaryProxy proxy;
+            //if (!Proxies.TryGetValue(dictType, out proxy))
+            //{
+            //    proxy = new GenericDictionaryProxy(dictType);
+            //    Proxies.AddOrUpdate(dictType, proxy);
+            //}
+
+            var proxy = new GenericDictionaryProxy(dictType);
 
             return proxy;
         }

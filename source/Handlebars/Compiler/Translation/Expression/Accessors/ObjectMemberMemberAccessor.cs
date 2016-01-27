@@ -6,8 +6,8 @@ namespace HandlebarsDotNet.Compiler.Translation.Expression.Accessors
 {
     internal class ObjectMemberMemberAccessor : IMemberAccessor
     {
-        internal static readonly IDictionary<ObjectMemberKey, Func<object, object>> Cache =
-            new Dictionary<ObjectMemberKey, Func<object, object>>(new ObjectMemberKeyEqualityComparer());
+        //internal static readonly IDictionary<ObjectMemberKey, Func<object, object>> Cache =
+        //    new Dictionary<ObjectMemberKey, Func<object, object>>(new ObjectMemberKeyEqualityComparer());
 
         /// <summary>
         /// Determines if the memberName passed later should be the memberName or the resolvedMemberName.
@@ -16,14 +16,16 @@ namespace HandlebarsDotNet.Compiler.Translation.Expression.Accessors
 
         public static Func<object, object> GetMemberAccessor(Type instanceType, string memberName)
         {
-            Func<object, object> accessor;
-            var key = new ObjectMemberKey(instanceType, memberName);
+            //Func<object, object> accessor;
+            //var key = new ObjectMemberKey(instanceType, memberName);
 
-            if (!Cache.TryGetValue(key, out accessor))
-            {
-                accessor = ObjectMemberExpressionBuilder.BuildMemberGetterFunc(instanceType, memberName);
-                Cache.AddOrUpdate(key, accessor);
-            }
+            //if (!Cache.TryGetValue(key, out accessor))
+            //{
+            //    accessor = ObjectMemberExpressionBuilder.BuildMemberGetterFunc(instanceType, memberName);
+            //    Cache.AddOrUpdate(key, accessor);
+            //}
+
+            var accessor = ObjectMemberExpressionBuilder.BuildMemberGetterFunc(instanceType, memberName);
 
             return accessor;
         }
