@@ -94,6 +94,36 @@ namespace HandlebarsDotNet.Compiler
                 hex.Arguments.Select(arg => Visit(arg)));
         }
 
+        protected override Expression VisitHashParametersExpression(HashParametersExpression hpex)
+        {
+            return Expression.Call(
+                Expression.Constant(this),
+                new Func<BindingContext, HashParametersExpression, object>(ResolveParameters).Method,
+                CompilationContext.BindingContext,
+                Expression.Constant(hpex));
+        }
+
+        private object ResolveParameters(BindingContext context, HashParametersExpression hpex)
+        {
+            var parameters = new Dictionary<string, object>();
+
+            foreach (var parameter in hpex.Parameters)
+            {
+                var path = parameter.Value as PathExpression;
+
+                if (path != null)
+                {
+                    parameters.Add(parameter.Key, ResolvePath(context, path.Path));
+                }
+                else
+                {
+                    parameters.Add(parameter.Key, parameter.Value);
+                }
+            }
+
+            return parameters;
+        }
+
         //TODO: make path resolution logic smarter
         private object ResolvePath(BindingContext context, string path)
         {

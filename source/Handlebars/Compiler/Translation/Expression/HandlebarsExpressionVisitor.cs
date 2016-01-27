@@ -33,6 +33,8 @@ namespace HandlebarsDotNet.Compiler
                     return VisitHelperExpression((HelperExpression)exp);
                 case HandlebarsExpressionType.BlockExpression:
                     return VisitBlockHelperExpression((BlockHelperExpression)exp);
+                case HandlebarsExpressionType.HashParametersExpression:
+                    return VisitHashParametersExpression((HashParametersExpression)exp);
                 case HandlebarsExpressionType.PathExpression:
                     return VisitPathExpression((PathExpression)exp);
                 case HandlebarsExpressionType.ContextAccessorExpression:
@@ -105,6 +107,11 @@ namespace HandlebarsDotNet.Compiler
         protected virtual Expression VisitSubExpression(SubExpressionExpression subex)
         {
             return subex;
+        }
+
+        protected virtual Expression VisitHashParametersExpression(HashParametersExpression hpex)
+        {
+            return hpex;
         }
     }
 }

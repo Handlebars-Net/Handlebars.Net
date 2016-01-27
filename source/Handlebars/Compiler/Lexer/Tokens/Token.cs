@@ -57,6 +57,11 @@ namespace HandlebarsDotNet.Compiler.Lexer
         {
             return new EndSubExpressionToken();
         }
+
+        public static HashParameterToken HashParameter(string parameter)
+        {
+            return new HashParameterToken(parameter);
+        }
     }
 }
 

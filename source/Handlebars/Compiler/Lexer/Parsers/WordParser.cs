@@ -11,13 +11,20 @@ namespace HandlebarsDotNet.Compiler.Lexer
 
         public override Token Parse(TextReader reader)
         {
-            WordExpressionToken token = null;
             if (IsWord(reader))
             {
                 var buffer = AccumulateWord(reader);
-                token = Token.Word(buffer);
+
+                if (buffer.Contains("="))
+                {
+                    return Token.HashParameter(buffer);
+                }
+                else
+                {
+                    return Token.Word(buffer);
+                }
             }
-            return token;
+            return null;
         }
 
         private bool IsWord(TextReader reader)

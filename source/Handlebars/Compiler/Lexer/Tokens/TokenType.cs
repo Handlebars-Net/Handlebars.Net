@@ -14,7 +14,8 @@ namespace HandlebarsDotNet.Compiler.Lexer
         Partial = 7,
         Layout = 8,
         StartSubExpression = 9,
-        EndSubExpression = 10
+        EndSubExpression = 10,
+        HashParameter = 11
     }
 }
 

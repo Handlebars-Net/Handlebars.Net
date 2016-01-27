@@ -16,7 +16,8 @@ namespace HandlebarsDotNet.Compiler
         DeferredSection = 6007,
         PartialExpression = 6008,
         BoolishExpression = 6009,
-        SubExpression = 6010
+        SubExpression = 6010,
+        HashParametersExpression = 6011
     }
 
     internal abstract class HandlebarsExpression : Expression
@@ -101,6 +102,11 @@ namespace HandlebarsDotNet.Compiler
         public static SubExpressionExpression SubExpression(Expression expression)
         {
             return new SubExpressionExpression(expression);
+        }
+
+        public static HashParametersExpression HashParametersExpression(Dictionary<string, object> parameters)
+        {
+            return new HashParametersExpression(parameters);
         }
     }
 }
