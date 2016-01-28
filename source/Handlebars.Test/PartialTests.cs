@@ -74,7 +74,7 @@ namespace HandlebarsDotNet.Test
         [Test]
         public void BasicPartialWithMultipleStringParameters()
         {
-            string source = "Hello, {{>person first='Pete' last='Sampras'}}!";
+            string source = "Hello, {{>person first='Pete' last=\"Sampras\"}}!";
 
             var template = Handlebars.Compile(source);
 

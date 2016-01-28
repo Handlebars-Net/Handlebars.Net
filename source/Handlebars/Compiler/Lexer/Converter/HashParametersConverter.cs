@@ -63,9 +63,9 @@ namespace HandlebarsDotNet.Compiler
 
         private static object ParseValue(string value)
         {
-            if (value.StartsWith("'"))
+            if (value.StartsWith("'") || value.StartsWith("\""))
             {
-                return value.Trim('\'');
+                return value.Trim('\'', '"');
             }
 
             bool boolValue;
