@@ -24,6 +24,7 @@ namespace HandlebarsDotNet.Compiler
             tokens = CommentRemover.Remove(tokens);
             tokens = LiteralConverter.Convert(tokens);
             tokens = HelperConverter.Convert(tokens, _configuration);
+            tokens = HashParametersConverter.Convert(tokens);
             tokens = PathConverter.Convert(tokens);
             tokens = PartialConverter.Convert(tokens);
             tokens = SubExpressionConverter.Convert(tokens);

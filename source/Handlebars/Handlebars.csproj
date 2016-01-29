@@ -37,10 +37,13 @@
   <ItemGroup>
     <Compile Include="Compiler\CompilationContext.cs" />
     <Compile Include="Compiler\ExpressionBuilder.cs" />
+    <Compile Include="Compiler\Lexer\Converter\HashParametersConverter.cs" />
     <Compile Include="Compiler\Lexer\Converter\LayoutRemover.cs" />
+    <Compile Include="Compiler\Lexer\Tokens\HashParameterToken.cs" />
     <Compile Include="Compiler\Lexer\Tokens\LayoutToken.cs" />
     <Compile Include="Compiler\Resolvers\UpperCamelCaseExpressionNameResolver.cs" />
     <Compile Include="Compiler\Resolvers\IExpressionNameResolver.cs" />
+    <Compile Include="Compiler\Structure\HashParametersExpression.cs" />
     <Compile Include="Compiler\Translation\Expression\HelperFunctionBinder.cs" />
     <Compile Include="DescriptionAttribute.cs" />
     <Compile Include="EnumerableExtensions.cs" />
