@@ -1,6 +1,7 @@
 ﻿using NUnit.Framework;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace HandlebarsDotNet.Test
 {
@@ -161,6 +162,28 @@ namespace HandlebarsDotNet.Test
             var output = template(new { });
 
             var expected = "Here are some things: \nThing 1: 123\nThing 2: 4567\nThing 3: -98.76";
+
+            Assert.AreEqual(expected, output);
+        }
+
+        [Test]
+        public void HelperWithHashArgument()
+        {
+            Handlebars.RegisterHelper("myHelper", (writer, context, args) => {
+                var hash = args[2] as Dictionary<string, object>;
+                foreach(var item in hash)
+                {
+                    writer.Write(" {0}: {1}", item.Key, item.Value);
+                }
+            });
+
+            var source = "Here are some things:{{myHelper 'foo' 'bar' item1='val1' item2='val2'}}";
+
+            var template = Handlebars.Compile(source);
+
+            var output = template(new { });
+
+            var expected = "Here are some things: item1: val1 item2: val2";
 
             Assert.AreEqual(expected, output);
         }
