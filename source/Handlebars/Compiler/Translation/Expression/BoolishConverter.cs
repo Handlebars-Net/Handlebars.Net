@@ -19,15 +19,15 @@ namespace HandlebarsDotNet.Compiler
 
         protected override Expression VisitBoolishExpression(BoolishExpression bex)
         {
-            return Expression.Not(
-                Expression.Call(
-                    new Func<object, bool>(HandlebarsUtils.IsFalsy).Method,
-                    Visit(bex.Condition)));
+            return Expression.Call(
+                new Func<object, bool>(HandlebarsUtils.IsTruthyOrNonEmpty).Method,
+                Visit(bex.Condition));
         }
 
         protected override Expression VisitBlock(BlockExpression node)
         {
             return Expression.Block(
+                node.Type,
                 node.Variables,
                 node.Expressions.Select(expr => Visit(expr)));
         }

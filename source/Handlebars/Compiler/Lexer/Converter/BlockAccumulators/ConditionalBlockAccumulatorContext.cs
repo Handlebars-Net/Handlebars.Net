@@ -7,27 +7,45 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class ConditionalBlockAccumulatorContext : BlockAccumulatorContext
     {
-        private readonly HelperExpression _startingNode;
-        private Expression _accumulatedExpression;
-        private List<Expression> _body = new List<Expression>();
+        private List<ConditionalExpression> _conditionalBlock = new List<ConditionalExpression>();
+        private Expression _currentCondition;
+        private List<Expression> _bodyBuffer = new List<Expression>();
+        private readonly bool _testType;
+        private readonly string _blockName;
 
         public ConditionalBlockAccumulatorContext(Expression startingNode)
             : base(startingNode)
         {
             startingNode = UnwrapStatement(startingNode);
-            _startingNode = (HelperExpression)startingNode;
+            _blockName = ((HelperExpression)startingNode).HelperName.Replace("#", "");
+            if (new [] { "if", "unless" }.Contains(_blockName) == false)
+            {
+                throw new HandlebarsCompilerException(string.Format(
+                        "Tried to convert {0} expression to conditional block", _blockName));
+            }
+            _testType = _blockName == "if";
+            var argument = HandlebarsExpression.Boolish(((HelperExpression)startingNode).Arguments.Single());
+            _currentCondition = _testType ? (Expression)argument : Expression.Not(argument);
         }
 
         public override void HandleElement(Expression item)
         {
             if (IsElseBlock(item))
             {
-                _accumulatedExpression = CreateIfBlock(_startingNode, _body);
-                _body = new List<Expression>();
+                _conditionalBlock.Add(Expression.IfThen(_currentCondition, SinglifyExpressions(_bodyBuffer)));
+                if (IsElseIfBlock(item))
+                {
+                    _currentCondition = GetElseIfTestExpression(item);
+                }
+                else
+                {
+                    _currentCondition = null;
+                }
+                _bodyBuffer = new List<Expression>();
             }
             else
             {
-                _body.Add((Expression)item);
+                _bodyBuffer.Add((Expression)item);
             }
         }
 
@@ -35,16 +53,17 @@ namespace HandlebarsDotNet.Compiler
         {
             if (IsClosingNode(item))
             {
-                if (_accumulatedExpression == null)
+                if (_currentCondition != null)
                 {
-                    _accumulatedExpression = CreateIfBlock(_startingNode, _body);
+                    _conditionalBlock.Add(Expression.IfThen(_currentCondition, SinglifyExpressions(_bodyBuffer)));
                 }
                 else
                 {
-                    _accumulatedExpression = Expression.IfThenElse(
-                        ((ConditionalExpression)_accumulatedExpression).Test,
-                        ((ConditionalExpression)_accumulatedExpression).IfTrue,
-                        Expression.Block(_body));
+                    var lastCondition = _conditionalBlock.Last();
+                    _conditionalBlock[_conditionalBlock.Count - 1] = Expression.IfThenElse(
+                        lastCondition.Test,
+                        lastCondition.IfTrue,
+                        SinglifyExpressions(_bodyBuffer));
                 }
                 return true;
             }
@@ -56,7 +75,15 @@ namespace HandlebarsDotNet.Compiler
 
         public override Expression GetAccumulatedBlock()
         {
-            return _accumulatedExpression;
+            ConditionalExpression singleConditional = null;
+            foreach (var condition in _conditionalBlock.AsEnumerable().Reverse())
+            {
+                singleConditional = Expression.IfThenElse(
+                    condition.Test,
+                    condition.IfTrue,
+                    (Expression)singleConditional ?? condition.IfFalse);
+            }
+            return singleConditional;
         }
 
         private bool IsElseBlock(Expression item)
@@ -65,31 +92,22 @@ namespace HandlebarsDotNet.Compiler
             return item is HelperExpression && ((HelperExpression)item).HelperName == "else";
         }
 
+        private bool IsElseIfBlock(Expression item)
+        {
+            item = UnwrapStatement(item);
+            return IsElseBlock(item) && ((HelperExpression)item).Arguments.Count() == 2;
+        }
+
+        private Expression GetElseIfTestExpression(Expression item)
+        {
+            item = UnwrapStatement(item);
+            return HandlebarsExpression.Boolish(((HelperExpression)item).Arguments.Skip(1).Single());
+        }
+
         private bool IsClosingNode(Expression item)
         {
             item = UnwrapStatement(item);
-            var blockName = _startingNode.HelperName.Replace("#", "");
-            return item is PathExpression && ((PathExpression)item).Path == "/" + blockName;
-        }
-
-        private static Expression CreateIfBlock(HelperExpression startingNode, IEnumerable<Expression> body)
-        {
-            var condition = HandlebarsExpression.Boolish(startingNode.Arguments.Single());
-            body = UnwrapBlockExpression(body);
-            body = body.Concat(new Expression[] { Expression.Empty() });
-            if (startingNode.HelperName == "#if")
-            {
-                return Expression.IfThen(condition, Expression.Block(body));
-            }
-            else if (startingNode.HelperName == "#unless")
-            {
-                return Expression.IfThen(Expression.Not(condition), Expression.Block(body));
-            }
-            else
-            {
-                throw new HandlebarsCompilerException(string.Format(
-                        "Tried to create a conditional expression for '{0}'", startingNode.HelperName));
-            }
+            return item is PathExpression && ((PathExpression)item).Path == "/" + _blockName;
         }
 
         private static IEnumerable<Expression> UnwrapBlockExpression(IEnumerable<Expression> body)
@@ -99,6 +117,18 @@ namespace HandlebarsDotNet.Compiler
                 body = body.OfType<BlockExpression>().First().Expressions;
             }
             return body;
+        }
+
+        private static Expression SinglifyExpressions(IEnumerable<Expression> expressions)
+        {
+            if (expressions.Count() > 1)
+            {
+                return Expression.Block(expressions);
+            }
+            else
+            {
+                return expressions.Single();
+            }
         }
     }
 }

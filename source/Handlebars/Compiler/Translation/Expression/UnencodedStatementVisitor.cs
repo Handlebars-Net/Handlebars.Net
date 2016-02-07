@@ -20,13 +20,15 @@ namespace HandlebarsDotNet.Compiler
             if (sex.IsEscaped == false)
             {
                 return Expression.Block(
+                    typeof(void),
                     Expression.Assign(
                         Expression.Property(CompilationContext.BindingContext, "OutputMode"),
                         Expression.Constant(OutputMode.Unencoded)),
                     sex,
                     Expression.Assign(
                         Expression.Property(CompilationContext.BindingContext, "OutputMode"),
-                        Expression.Constant(OutputMode.Encoded)));
+                        Expression.Constant(OutputMode.Encoded)),
+                    Expression.Empty());
             }
             else
             {

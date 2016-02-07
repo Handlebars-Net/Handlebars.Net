@@ -128,6 +128,44 @@ namespace HandlebarsDotNet.Test
         }
 
         [Test]
+        public void BasicIfElseIf()
+        {
+            var source = "{{#if isActive}}active{{else if isInactive}}inactive{{/if}}";
+            var template = Handlebars.Compile(source);
+            var activeData = new {
+                isActive = true
+            };
+            var inactiveData = new {
+                isInactive = true
+            };
+            var resultTrue = template(activeData);
+            var resultFalse = template(inactiveData);
+            Assert.AreEqual("active", resultTrue);
+            Assert.AreEqual("inactive", resultFalse);
+        }
+
+        [Test]
+        public void BasicIfElseIfElse()
+        {
+            var source = "{{#if isActive}}active{{else if isInactive}}inactive{{else}}nada{{/if}}";
+            var template = Handlebars.Compile(source);
+            var activeData = new {
+                isActive = true
+            };
+            var inactiveData = new {
+                isInactive = true
+            };
+            var elseData = new {
+            };
+            var resultActive = template(activeData);
+            var resultInactive = template(inactiveData);
+            var resultElse = template(elseData);
+            Assert.AreEqual("active", resultActive);
+            Assert.AreEqual("inactive", resultInactive);
+            Assert.AreEqual("nada", resultElse);
+        }
+
+        [Test]
         public void BasicWith()
         {
             var source = "Hello,{{#with person}} my good friend {{name}}{{/with}}!";

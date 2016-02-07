@@ -34,6 +34,14 @@ namespace HandlebarsDotNet.Compiler
                     "TextWriter"),
                 Expression.Constant(stex.Value));
         }
+
+        protected override Expression VisitConditional(ConditionalExpression node)
+        {
+            return Expression.Condition(
+                node.Test,
+                Visit(node.IfTrue),
+                Visit(node.IfFalse));
+        }
     }
 }
 

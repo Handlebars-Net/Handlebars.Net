@@ -9,11 +9,11 @@ namespace HandlebarsDotNet.Compiler
         public static BlockAccumulatorContext Create(Expression item, HandlebarsConfiguration configuration)
         {
             BlockAccumulatorContext context = null;
-            /*if (IsConditionalBlock(item))
+            if (IsConditionalBlock(item))
             {
                 context = new ConditionalBlockAccumulatorContext(item);
             }
-            else */if (IsBlockHelper(item, configuration))
+            else if (IsBlockHelper(item, configuration))
             {
                 context = new BlockHelperAccumulatorContext(item);
             }

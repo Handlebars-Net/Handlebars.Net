@@ -24,6 +24,7 @@ namespace HandlebarsDotNet.Compiler
         protected override Expression VisitBlock(BlockExpression node)
         {
             return Expression.Block(
+                node.Type,
                 node.Variables,
                 node.Expressions.Select(n => Visit(n)));
         }
