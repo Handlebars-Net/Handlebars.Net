@@ -6,10 +6,10 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class PartialExpression : HandlebarsExpression
     {
-        private readonly string _partialName;
+        private readonly Expression _partialName;
         private readonly Expression _argument;
 
-        public PartialExpression(string partialName, Expression argument)
+        public PartialExpression(Expression partialName, Expression argument)
         {
             _partialName = partialName;
             _argument = argument;
@@ -25,7 +25,7 @@ namespace HandlebarsDotNet.Compiler
             get { return typeof(void); }
         }
 
-        public string PartialName
+        public Expression PartialName
         {
             get { return _partialName; }
         }

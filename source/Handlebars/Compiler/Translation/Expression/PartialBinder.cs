@@ -39,7 +39,7 @@ namespace HandlebarsDotNet.Compiler
             }
             return Expression.Call(
                 new Action<string, BindingContext, HandlebarsConfiguration>(InvokePartial).Method,
-                Expression.Constant(pex.PartialName),
+                pex.PartialName,
                 bindingContext,
                 Expression.Constant(CompilationContext.Configuration));
         }
