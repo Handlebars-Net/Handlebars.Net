@@ -87,20 +87,19 @@ namespace HandlebarsDotNet.Compiler.Lexer
                         yield return Token.EndExpression(escaped, trimWhitespace);
                         inExpression = false;
                     }
+                    else if ((char)node == ')')
+                    {
+                        node = source.Read();
+                        yield return Token.EndSubExpression();
+                    }
                     else if (char.IsWhiteSpace((char)node) || char.IsWhiteSpace((char)source.Peek()))
                     {
                         node = source.Read();
-                        continue;
                     }
                     else if ((char)node == '~')
                     {
                         node = source.Read();
                         trimWhitespace = true;
-                    }
-                    else if ((char)node == ')')
-                    {
-                        node = source.Read();
-                        yield return Token.EndSubExpression();
                     }
                     else
                     {

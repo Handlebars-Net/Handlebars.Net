@@ -166,6 +166,87 @@ namespace HandlebarsDotNet.Test
         }
 
         [Test]
+        public void DynamicPartial()
+        {
+            string source = "Hello, {{> (partialNameHelper)}}!";
+
+            Handlebars.RegisterHelper("partialNameHelper", (writer, context, args) =>
+            {
+                writer.WriteSafeString("partialName");
+            });
+
+            using (var reader = new StringReader("world"))
+            {
+                var partial = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("partialName", partial);
+            }
+
+            var template = Handlebars.Compile(source);
+            var data = new { };
+            var result = template(data);
+            Assert.AreEqual("Hello, world!", result);
+        }
+
+        [Test]
+        public void DynamicPartialWithContext()
+        {
+            var source = "Hello, {{> (lookup name) context }}!";
+
+            Handlebars.RegisterHelper("lookup", (output, context, arguments) =>
+            {
+                output.WriteSafeString(arguments[0]);
+            });
+
+            var template = Handlebars.Compile(source);
+
+            using (var reader = new StringReader("{{first}} {{last}}"))
+            {
+                var partialTemplate = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("test", partialTemplate);
+            }
+
+            var data = new
+            {
+                name = "test",
+                context = new
+                {
+                    first = "Marc",
+                    last = "Smith"
+                }
+            };
+
+            var result = template(data);
+            Assert.AreEqual("Hello, Marc Smith!", result);
+        }
+
+        [Test]
+        public void DynamicPartialWithParameters()
+        {
+            var source = "Hello, {{> (lookup name) first='Marc' last='Smith' }}!";
+
+            Handlebars.RegisterHelper("lookup", (output, context, arguments) =>
+            {
+                output.WriteSafeString(arguments[0]);
+            });
+
+            var template = Handlebars.Compile(source);
+
+            using (var reader = new StringReader("{{first}} {{last}}"))
+            {
+                var partialTemplate = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("test", partialTemplate);
+            }
+
+            var data = new
+            {
+                name = "test"
+            };
+
+            var result = template(data);
+            Assert.AreEqual("Hello, Marc Smith!", result);
+        }
+
+        [Test]
         public void SuperfluousWhitespace()
         {
             string source = "Hello, {{  >  person  }}!";
