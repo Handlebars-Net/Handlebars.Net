@@ -26,8 +26,8 @@ namespace HandlebarsDotNet.Compiler
             tokens = HelperConverter.Convert(tokens, _configuration);
             tokens = HashParametersConverter.Convert(tokens);
             tokens = PathConverter.Convert(tokens);
-            tokens = PartialConverter.Convert(tokens);
             tokens = SubExpressionConverter.Convert(tokens);
+            tokens = PartialConverter.Convert(tokens);
             tokens = HelperArgumentAccumulator.Accumulate(tokens);
             tokens = ExpressionScopeConverter.Convert(tokens);
             tokens = BlockAccumulator.Accumulate(tokens, _configuration);

@@ -84,12 +84,12 @@ namespace HandlebarsDotNet.Compiler
             return new DeferredSectionExpression(path, body, evalMode);
         }
 
-        public static PartialExpression Partial(string partialName)
+        public static PartialExpression Partial(Expression partialName)
         {
             return Partial(partialName, null);
         }
 
-        public static PartialExpression Partial(string partialName, Expression argument)
+        public static PartialExpression Partial(Expression partialName, Expression argument)
         {
             return new PartialExpression(partialName, argument);
         }
