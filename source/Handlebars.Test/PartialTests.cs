@@ -188,6 +188,28 @@ namespace HandlebarsDotNet.Test
         }
 
         [Test]
+        public void DynamicPartialWithHelperArguments()
+        {
+            string source = "Hello, {{> (concat 'partial' 'Name')}}!";
+
+            Handlebars.RegisterHelper("concat", (writer, context, args) =>
+            {
+                writer.WriteSafeString(string.Concat(args));
+            });
+
+            using (var reader = new StringReader("world"))
+            {
+                var partial = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("partialName", partial);
+            }
+
+            var template = Handlebars.Compile(source);
+            var data = new { };
+            var result = template(data);
+            Assert.AreEqual("Hello, world!", result);
+        }
+
+        [Test]
         public void DynamicPartialWithContext()
         {
             var source = "Hello, {{> (lookup name) context }}!";
