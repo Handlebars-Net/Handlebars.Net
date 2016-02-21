@@ -55,6 +55,11 @@ namespace HandlebarsDotNet.Compiler
                     parameters.Add(segments[0], value);
                 }
 
+                if (item is EndSubExpressionToken)
+                {
+                    break;
+                }
+
                 item = GetNext(enumerator);
             }
 

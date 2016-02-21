@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using NUnit.Framework;
 using System.IO;
 
@@ -190,11 +191,12 @@ namespace HandlebarsDotNet.Test
         [Test]
         public void DynamicPartialWithHelperArguments()
         {
-            string source = "Hello, {{> (concat 'partial' 'Name')}}!";
+            string source = "Hello, {{> (concat 'par' 'tial' item1='Na' item2='me')}}!";
 
             Handlebars.RegisterHelper("concat", (writer, context, args) =>
             {
-                writer.WriteSafeString(string.Concat(args));
+                var hash = args[2] as Dictionary<string, object>;
+                writer.WriteSafeString(string.Concat(args[0], args[1], hash["item1"], hash["item2"]));
             });
 
             using (var reader = new StringReader("world"))
