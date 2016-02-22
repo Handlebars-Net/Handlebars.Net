@@ -37,6 +37,11 @@ namespace HandlebarsDotNet.Compiler
             }
         }
 
+        protected override Expression VisitBoolishExpression(BoolishExpression bex)
+        {
+            return HandlebarsExpression.Boolish(Visit(bex.Condition));
+        }
+
         protected override Expression VisitBlockHelperExpression(BlockHelperExpression bhex)
         {
             return HandlebarsExpression.BlockHelper(

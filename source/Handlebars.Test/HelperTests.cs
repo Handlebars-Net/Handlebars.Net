@@ -187,6 +187,27 @@ namespace HandlebarsDotNet.Test
 
             Assert.AreEqual(expected, output);
         }
+            
+        [Test]
+        public void BlockHelperWithSubExpression()
+        {
+            Handlebars.RegisterHelper("isEqual", (writer, context, args) =>
+            {
+                writer.WriteSafeString(args[0].ToString() == args[1].ToString() ? "true" : null);
+            });
+        
+            var source = "{{#if (isEqual arg1 arg2)}}True{{/if}}";
+        
+            var template = Handlebars.Compile(source);
+        
+            var expectedIsTrue = "True";
+            var outputIsTrue = template(new { arg1 = 1, arg2 = 1 });
+            Assert.AreEqual(expectedIsTrue, outputIsTrue);
+        
+            var expectedIsFalse = "";
+            var outputIsFalse = template(new { arg1 = 1, arg2 = 2 });
+            Assert.AreEqual(expectedIsFalse, outputIsFalse);
+        }
     }
 }
 
