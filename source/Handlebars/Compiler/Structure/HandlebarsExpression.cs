@@ -11,13 +11,12 @@ namespace HandlebarsDotNet.Compiler
         BlockExpression = 6002,
         HelperExpression = 6003,
         PathExpression = 6004,
-        ContextAccessorExpression = 6005,
-        IteratorExpression = 6006,
-        DeferredSection = 6007,
-        PartialExpression = 6008,
-        BoolishExpression = 6009,
-        SubExpression = 6010,
-        HashParametersExpression = 6011
+        IteratorExpression = 6005,
+        DeferredSection = 6006,
+        PartialExpression = 6007,
+        BoolishExpression = 6008,
+        SubExpression = 6009,
+        HashParametersExpression = 6010
     }
 
     internal abstract class HandlebarsExpression : Expression
@@ -49,11 +48,6 @@ namespace HandlebarsDotNet.Compiler
         public static StaticExpression Static(string value)
         {
             return new StaticExpression(value);
-        }
-
-        public static ContextAccessorExpression ContextAccessor()
-        {
-            return new ContextAccessorExpression();
         }
 
         public static StatementExpression Statement(Expression body, bool isEscaped)

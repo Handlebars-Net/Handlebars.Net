@@ -60,7 +60,6 @@
     <Compile Include="HandlebarsException.cs" />
     <Compile Include="Compiler\Structure\BindingContext.cs" />
     <Compile Include="Compiler\HandlebarsCompilerException.cs" />
-    <Compile Include="Compiler\Structure\ContextAccessorExpression.cs" />
     <Compile Include="Compiler\Structure\StatementExpression.cs" />
     <Compile Include="Compiler\Structure\BlockHelperExpression.cs" />
     <Compile Include="Compiler\Lexer\Converter\ExpressionScopeConverter.cs" />

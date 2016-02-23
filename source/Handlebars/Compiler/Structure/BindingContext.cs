@@ -108,8 +108,7 @@ namespace HandlebarsDotNet.Compiler
 
         public virtual BindingContext CreateChildContext(object value)
         {
-            return new BindingContext(value, this._encodedWriter, this, TemplatePath) ;
-
+            return new BindingContext(value, this._encodedWriter, this, TemplatePath);
         }
 
         private static TextWriter GetEncodedWriter(TextWriter writer)

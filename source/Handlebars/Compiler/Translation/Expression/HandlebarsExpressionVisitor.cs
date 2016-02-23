@@ -37,8 +37,6 @@ namespace HandlebarsDotNet.Compiler
                     return VisitHashParametersExpression((HashParametersExpression)exp);
                 case HandlebarsExpressionType.PathExpression:
                     return VisitPathExpression((PathExpression)exp);
-                case HandlebarsExpressionType.ContextAccessorExpression:
-                    return VisitContextAccessorExpression((ContextAccessorExpression)exp);
                 case HandlebarsExpressionType.IteratorExpression:
                     return VisitIteratorExpression((IteratorExpression)exp);
                 case HandlebarsExpressionType.DeferredSection:
@@ -52,11 +50,6 @@ namespace HandlebarsDotNet.Compiler
                 default:
                     return base.Visit(exp);
             }
-        }
-
-        protected virtual Expression VisitContextAccessorExpression(ContextAccessorExpression caex)
-        {
-            return caex;
         }
 
         protected virtual Expression VisitStatementExpression(StatementExpression sex)
