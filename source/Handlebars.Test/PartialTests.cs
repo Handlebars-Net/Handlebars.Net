@@ -167,6 +167,24 @@ namespace HandlebarsDotNet.Test
         }
 
         [Test]
+        public void BasicPartialWithStringParameterIncludingExpressionChars()
+        {
+            string source = "Hello, {{>person first='Pe ({~te~}) '}}!";
+
+            var template = Handlebars.Compile(source);
+
+            var partialSource = "{{first}}";
+            using (var reader = new StringReader(partialSource))
+            {
+                var partialTemplate = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("person", partialTemplate);
+            }
+
+            var result = template(null);
+            Assert.AreEqual("Hello, Pe ({~te~}) !", result);
+        }
+
+        [Test]
         public void DynamicPartial()
         {
             string source = "Hello, {{> (partialNameHelper)}}!";
