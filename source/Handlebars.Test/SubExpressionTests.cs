@@ -70,7 +70,7 @@ namespace HandlebarsDotNet.Test
                 writer.Write("Inner " + hash["item1"] + "-" + hash["item2"]);
             });
 
-            var source = "{{" + helperName + " (" + subHelperName + " item1='inner' item2='arg)}}";
+            var source = "{{" + helperName + " (" + subHelperName + " item1='inner' item2='arg')}}";
 
             var template = Handlebars.Compile(source);
 

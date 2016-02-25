@@ -36,22 +36,34 @@ namespace HandlebarsDotNet.Compiler.Lexer
         private string AccumulateWord(TextReader reader)
         {
             StringBuilder buffer = new StringBuilder();
+
+            var inString = false;
+
             while (true)
             {
-                var peek = (char)reader.Peek();
-                if (peek == '}' || peek == '~' || peek == ')' || char.IsWhiteSpace(peek))
+                if (!inString)
                 {
-                    break;
+                    var peek = (char)reader.Peek();
+
+                    if (peek == '}' || peek == '~' || peek == ')' || char.IsWhiteSpace(peek))
+                    {
+                        break;
+                    }
                 }
+
                 var node = reader.Read();
+
                 if (node == -1)
                 {
                     throw new InvalidOperationException("Reached end of template before the expression was closed.");
                 }
-                else
+
+                if (node == '\'' || node == '"')
                 {
-                    buffer.Append((char)node);
+                    inString = !inString;
                 }
+
+                buffer.Append((char)node);
             }
             return buffer.ToString();
         }
