@@ -128,7 +128,7 @@ namespace HandlebarsDotNet.Compiler
         private object ResolvePath(BindingContext context, string path)
         {
             var instance = context.Value;
-            foreach (var segment in path.Split ('/'))
+            foreach (var segment in path.Split('/'))
             {
                 if (segment == "..")
                 {
@@ -138,10 +138,6 @@ namespace HandlebarsDotNet.Compiler
                         throw new HandlebarsCompilerException("Path expression tried to reference parent of root");
                     }
                     instance = context.Value;
-                }
-                else if (segment == "this")
-                {
-                    continue;
                 }
                 else
                 {
@@ -160,13 +156,24 @@ namespace HandlebarsDotNet.Compiler
 
         private object ResolveValue(BindingContext context, object instance, string segment)
         {
+            object resolvedValue = new UndefinedBindingResult();
             if (segment.StartsWith("@"))
             {
                 var contextValue = context.GetContextVariable(segment.Substring(1));
-                return contextValue ?? new UndefinedBindingResult();
+                if(contextValue != null)
+                {
+                    resolvedValue = contextValue;
+                }
             }
-
-            return AccessMember(instance, segment);
+            else if (segment == "this")
+            {
+                resolvedValue = instance;
+            }
+            else
+            {
+                resolvedValue = AccessMember(instance, segment);
+            }
+            return resolvedValue;
         }
 
         private static readonly Regex IndexRegex = new Regex(@"^\[?(?<index>\d+)\]?$", RegexOptions.None);
@@ -253,8 +260,8 @@ namespace HandlebarsDotNet.Compiler
                 return ((IDictionary)instance)[key];
             }
 
-            var members = instanceType.GetMember(resolvedMemberName);
-            if (members.Length != 1)
+            var members = instanceType.GetMember(resolvedMemberName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+            if (members.Length == 0)
             {
                 return new UndefinedBindingResult();
             }

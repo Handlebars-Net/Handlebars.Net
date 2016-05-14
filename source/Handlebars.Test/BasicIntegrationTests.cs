@@ -877,6 +877,70 @@ namespace HandlebarsDotNet.Test
             Assert.AreEqual(expectedResult, result);
         }
 
+        [Test]
+        public void TestNoWhitespaceBetweenExpressions()
+        {
+            
+            var source = @"{{#is ProgramID """"}}no program{{/is}}{{#is ProgramID ""1081""}}some program text{{/is}}";
+
+            Handlebars.RegisterHelper("is", (output, options, context, args) =>
+                {
+                    if(args[0] == args[1])
+                    {
+                        options.Template(output, context);
+                    }
+                });
+
+
+            var template = Handlebars.Compile(source);
+
+            var result = template(new
+                {
+                    ProgramID = "1081"
+                });
+            
+            var expectedResult =
+                "some program text";
+
+            Assert.AreEqual(expectedResult, result);
+        }
+
+        [Test]
+        public void DictionaryIteration()
+        {
+            string source = @"{{#ADictionary}}{{@key}},{{value}}{{/ADictionary}}";
+            var template = Handlebars.Compile(source);
+            var result = template(new 
+                {
+                    ADictionary = new Dictionary<string, int>
+                        {
+                            { "key5", 14 },
+                            { "key6", 15 },
+                            { "key7", 16 },
+                            { "key8", 17 }
+                        }
+                });
+
+            Assert.AreEqual("key5,14key6,15key7,16key8,17", result);
+        }
+
+        [Test]
+        public void ObjectEnumeration()
+        {
+            string source = @"{{#each myObject}}{{#if this.length}}<b>{{@key}}</b>{{#each this}}<li>{{this}}</li>{{/each}}<br>{{/if}}{{/each}}";
+            var template = Handlebars.Compile(source);
+            var result = template(new 
+                {
+                    myObject = new {
+                        arr = new []{ "hello", "world" },
+                        notArr = 1
+                    }
+                });
+
+            Assert.AreEqual("<b>arr</b><li>hello</li><li>world</li><br>", result);
+        }
+
+
 
         private class MockDictionary : IDictionary<string, string>
         {
