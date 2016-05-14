@@ -261,20 +261,30 @@ namespace HandlebarsDotNet.Compiler
             }
 
             var members = instanceType.GetMember(resolvedMemberName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+
+            MemberInfo preferredMember;
             if (members.Length == 0)
             {
                 return new UndefinedBindingResult();
             }
+            else if (members.Length > 1)
+            {
+                preferredMember = members.FirstOrDefault(m => m.Name == resolvedMemberName) ?? members[0];
+            }
+            else
+            {
+                preferredMember = members[0];
+            }
             
-            var propertyInfo = members[0] as PropertyInfo;
+            var propertyInfo = preferredMember as PropertyInfo;
             if (propertyInfo != null)
             {
                 var propertyValue = propertyInfo.GetValue(instance, null);
                 return propertyValue ?? new UndefinedBindingResult();
             }
-            if (members[0] is FieldInfo)
+            if (preferredMember is FieldInfo)
             {
-                var fieldValue = ((FieldInfo)members[0]).GetValue(instance);
+                var fieldValue = ((FieldInfo)preferredMember).GetValue(instance);
                 return fieldValue ?? new UndefinedBindingResult();
             }
             return new UndefinedBindingResult();
