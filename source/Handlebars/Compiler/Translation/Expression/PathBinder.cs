@@ -240,7 +240,6 @@ namespace HandlebarsDotNet.Compiler
                     }
                 }
 
-                var m = instanceType.GetMethods();
                 if ((bool)instanceType.GetMethod("ContainsKey").Invoke(instance, new object[] { key }))
                 {
                     return instanceType.GetMethod("get_Item").Invoke(instance, new object[] { key });

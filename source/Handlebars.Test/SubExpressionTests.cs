@@ -131,6 +131,81 @@ namespace HandlebarsDotNet.Test
 
             Assert.AreEqual(expected, output);
         }
+
+        [Test]
+        public void TwoBasicSubExpressionsWithNumericLiteralArguments()
+        {
+            var mathHelper = "math-" + Guid.NewGuid().ToString(); //randomize helper name
+            var addHelper = "add-" + Guid.NewGuid().ToString(); //randomize helper name
+            Handlebars.RegisterHelper(mathHelper, (writer, context, args) => {
+                writer.Write("Math " + args[0] + " " + args[1]);
+            });
+
+            Handlebars.RegisterHelper(addHelper, (writer, context, args) => {
+                args = args.Select(a => (object)int.Parse((string)a)).ToArray();
+                writer.Write((int)args[0] + (int)args[1]);
+            });
+
+            var source = "{{" + mathHelper + " (" + addHelper + " 1 2) (" + addHelper + " 3 4)}}";
+
+            var template = Handlebars.Compile(source);
+
+            var output = template(new { });
+
+            var expected = "Math 3 7";
+
+            Assert.AreEqual(expected, output);
+        }
+
+        [Test]
+        public void BasicSubExpressionWithNumericAndStringLiteralArguments()
+        {
+            var writeHelper = "write-" + Guid.NewGuid().ToString(); //randomize helper name
+            var addHelper = "add-" + Guid.NewGuid().ToString(); //randomize helper name
+            Handlebars.RegisterHelper(writeHelper, (writer, context, args) => {
+                writer.Write(args[0] + " " + args[1]);
+            });
+
+            Handlebars.RegisterHelper(addHelper, (writer, context, args) => {
+                args = args.Select(a => (object)int.Parse((string)a)).ToArray();
+                writer.Write((int)args[0] + (int)args[1]);
+            });
+
+            var source = "{{" + writeHelper + " (" + addHelper + " 1 2) \"hello\"}}";
+
+            var template = Handlebars.Compile(source);
+
+            var output = template(new { });
+
+            var expected = "3 hello";
+
+            Assert.AreEqual(expected, output);
+        }
+
+        [Test]
+        public void NestedSubExpressionsWithNumericLiteralArguments()
+        {
+            var writeHelper = "write-" + Guid.NewGuid().ToString(); //randomize helper name
+            var addHelper = "add-" + Guid.NewGuid().ToString(); //randomize helper name
+            Handlebars.RegisterHelper(writeHelper, (writer, context, args) => {
+                writer.Write(args[0]);
+            });
+
+            Handlebars.RegisterHelper(addHelper, (writer, context, args) => {
+                args = args.Select(a => (object)int.Parse((string)a)).ToArray();
+                writer.Write((int)args[0] + (int)args[1]);
+            });
+
+            var source = "{{" + writeHelper + " (" + addHelper + " (" + addHelper + " 1 2) 3 )}}";
+
+            var template = Handlebars.Compile(source);
+
+            var output = template(new { });
+
+            var expected = "6";
+
+            Assert.AreEqual(expected, output);
+        }
     }
 }
 

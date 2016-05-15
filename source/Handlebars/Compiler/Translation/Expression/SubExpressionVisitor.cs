@@ -28,8 +28,8 @@ namespace HandlebarsDotNet.Compiler
             return Expression.Call(
                 new Func<HandlebarsHelper, object, object[], string>(CaptureTextWriterOutputFromHelper).Method,
                 Expression.Constant(helper),
-                helperCall.Arguments[1],
-                helperCall.Arguments[2]);
+                Visit(helperCall.Arguments[1]),
+                Visit(helperCall.Arguments[2]));
         }
 
         private static HandlebarsHelper GetHelperDelegateFromMethodCallExpression(MethodCallExpression helperCall)
