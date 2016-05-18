@@ -9,13 +9,13 @@ namespace HandlebarsDotNet.Test
         [Test]
         public void PreceedingWhitespace()
         {
-            var source = "Hello, {{~name}}!";
+            var source = "Hello, {{~name}} !";
             var template = Handlebars.Compile(source);
             var data = new {
                 name = "Handlebars.Net"
             };
             var result = template(data);
-            Assert.AreEqual("Hello,Handlebars.Net!", result);
+            Assert.AreEqual("Hello,Handlebars.Net !", result);
         }
 
         [Test]
@@ -28,6 +28,18 @@ namespace HandlebarsDotNet.Test
             };
             var result = template(data);
             Assert.AreEqual("Hello, Handlebars.Net!", result);
+        }
+
+        [Test]
+        public void PrecedingAndTrailingWhitespace()
+        {
+            var source = "Hello, {{~name~}} !";
+            var template = Handlebars.Compile(source);
+            var data = new {
+                name = "Handlebars.Net"
+            };
+            var result = template(data);
+            Assert.AreEqual("Hello,Handlebars.Net!", result);
         }
 
         [Test]

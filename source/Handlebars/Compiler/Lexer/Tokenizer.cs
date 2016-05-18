@@ -139,7 +139,8 @@ namespace HandlebarsDotNet.Compiler.Lexer
                         }
                         if ((char)source.Peek() == '~')
                         {
-                            node = source.Read();
+                            source.Read();
+                            node = source.Peek();
                             trimWhitespace = true;
                         }
                         yield return Token.Static(buffer.ToString());
