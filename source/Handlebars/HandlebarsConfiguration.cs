@@ -15,6 +15,8 @@ namespace HandlebarsDotNet
 
         public IExpressionNameResolver ExpressionNameResolver { get; set; }
 
+        public ITextEncoder TextEncoder { get; set; }
+
         public ViewEngineFileSystem FileSystem { get; set; }
 
         public HandlebarsConfiguration()
@@ -22,6 +24,7 @@ namespace HandlebarsDotNet
             this.Helpers = new Dictionary<string, HandlebarsHelper>(StringComparer.OrdinalIgnoreCase);
             this.BlockHelpers = new Dictionary<string, HandlebarsBlockHelper>(StringComparer.OrdinalIgnoreCase);
             this.RegisteredTemplates = new Dictionary<string, Action<TextWriter, object>>(StringComparer.OrdinalIgnoreCase);
+            this.TextEncoder = new HtmlEncoder();
         }
     }
 }

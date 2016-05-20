@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 
 namespace HandlebarsDotNet.Compiler
@@ -12,12 +11,15 @@ namespace HandlebarsDotNet.Compiler
         private readonly TextWriter _unencodedWriter;
         public string TemplatePath { get; private set; }
 
-        public BindingContext(object value, TextWriter writer, BindingContext parent, string templatePath)
+        public ITextEncoder TextEncoder { get; private set; }
+
+        public BindingContext(object value, TextWriter writer, BindingContext parent, string templatePath, ITextEncoder textEncoder)
         {
             TemplatePath = (parent == null ? null : parent.TemplatePath) ?? templatePath;
+            TextEncoder = textEncoder;
             _value = value;
             _unencodedWriter = GetUnencodedWriter(writer);
-            _encodedWriter = GetEncodedWriter(_unencodedWriter);
+            _encodedWriter = GetEncodedWriter(_unencodedWriter, textEncoder);
             _parent = parent;
         }
 
@@ -108,31 +110,24 @@ namespace HandlebarsDotNet.Compiler
 
         public virtual BindingContext CreateChildContext(object value)
         {
-            return new BindingContext(value, this._encodedWriter, this, TemplatePath);
+            return new BindingContext(value, _encodedWriter, this, TemplatePath, TextEncoder);
         }
 
-        private static TextWriter GetEncodedWriter(TextWriter writer)
+        private static TextWriter GetEncodedWriter(TextWriter writer, ITextEncoder encoder)
         {
-            if (typeof(EncodedTextWriter).IsAssignableFrom(writer.GetType()))
+            if (writer is EncodedTextWriter)
             {
                 return writer;
             }
-            else
-            {
-                return new EncodedTextWriter(writer);
-            }
+
+            return new EncodedTextWriter(writer, encoder);
         }
 
         private static TextWriter GetUnencodedWriter(TextWriter writer)
         {
-            if (typeof(EncodedTextWriter).IsAssignableFrom(writer.GetType()))
-            {
-                return ((EncodedTextWriter)writer).UnderlyingWriter;
-            }
-            else
-            {
-                return writer;
-            }
+            var encodedTextWriter = writer as EncodedTextWriter;
+
+            return encodedTextWriter != null ? encodedTextWriter.UnderlyingWriter : writer;
         }
     }
 }

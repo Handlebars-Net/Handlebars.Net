@@ -287,7 +287,7 @@ namespace HandlebarsDotNet.Compiler
         private class IteratorBindingContext : BindingContext
         {
             public IteratorBindingContext(BindingContext context)
-                : base(context.Value, context.TextWriter, context.ParentContext, context.TemplatePath)
+                : base(context.Value, context.TextWriter, context.ParentContext, context.TemplatePath, context.TextEncoder)
             {
             }
 
@@ -301,7 +301,7 @@ namespace HandlebarsDotNet.Compiler
         private class ObjectEnumeratorBindingContext : BindingContext
         {
             public ObjectEnumeratorBindingContext(BindingContext context)
-                : base(context.Value, context.TextWriter, context.ParentContext, context.TemplatePath)
+                : base(context.Value, context.TextWriter, context.ParentContext, context.TemplatePath, context.TextEncoder)
             {
             }
 

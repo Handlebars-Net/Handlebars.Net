@@ -20,11 +20,12 @@ namespace HandlebarsDotNet.Compiler
             {
                 parentContext = Expression.Constant(null, typeof(BindingContext));
             }
-            var constantExpression = Expression.Constant(templatePath, typeof(string));
+            var templatePathExpression = Expression.Constant(templatePath, typeof(string));
+            var outputEncoderExpression = Expression.Constant(context.Configuration.TextEncoder, typeof(ITextEncoder));
             var newBindingContext = Expression.New(
                                         typeof(BindingContext).GetConstructor(
-                                            new[] { typeof(object), typeof(TextWriter), typeof(BindingContext), typeof(string) }),
-                                        new Expression[] { objectParameter, writerParameter, parentContext, constantExpression });
+                                            new[] { typeof(object), typeof(TextWriter), typeof(BindingContext), typeof(string), typeof(ITextEncoder) }),
+                                        new Expression[] { objectParameter, writerParameter, parentContext, templatePathExpression, outputEncoderExpression });
             return Expression.Lambda<Action<TextWriter, object>>(
                 Expression.Block(
                     new [] { context.BindingContext },
