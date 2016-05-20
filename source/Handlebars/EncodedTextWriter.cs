@@ -8,15 +8,24 @@ namespace HandlebarsDotNet
 		private readonly TextWriter _underlyingWriter;
 		private readonly ITextEncoder _encoder;
 
+		public bool SuppressEncoding { get; set; }
+
 		public EncodedTextWriter(TextWriter writer, ITextEncoder encoder)
 		{
 			_underlyingWriter = writer;
 			_encoder = encoder;
 		}
 
+		public static EncodedTextWriter From(TextWriter writer, ITextEncoder encoder)
+		{
+			var encodedTextWriter = writer as EncodedTextWriter;
+
+			return encodedTextWriter ?? new EncodedTextWriter(writer, encoder);
+		}
+
 		public void Write(string value, bool encode)
 		{
-			if (encode && (_encoder != null))
+			if(encode && !SuppressEncoding && (_encoder != null))
 			{
 				value = _encoder.Encode(value);
 			}

@@ -117,7 +117,6 @@
     <Compile Include="Compiler\Structure\BoolishExpression.cs" />
     <Compile Include="Compiler\Translation\Expression\BoolishConverter.cs" />
     <Compile Include="Compiler\Structure\UndefinedBindingResult.cs" />
-    <Compile Include="Compiler\Structure\OutputMode.cs" />
     <Compile Include="IHandlebars.cs" />
     <Compile Include="Compiler\Translation\Expression\UnencodedStatementVisitor.cs" />
     <Compile Include="HandlebarsUtils.cs" />

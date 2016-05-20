@@ -7,19 +7,22 @@ namespace HandlebarsDotNet.Compiler
     {
         private readonly object _value;
         private readonly BindingContext _parent;
-        private readonly TextWriter _encodedWriter;
-        private readonly TextWriter _unencodedWriter;
+		
         public string TemplatePath { get; private set; }
 
-        public ITextEncoder TextEncoder { get; private set; }
+		public EncodedTextWriter TextWriter { get; private set; }
 
-        public BindingContext(object value, TextWriter writer, BindingContext parent, string templatePath, ITextEncoder textEncoder)
+        public bool SuppressEncoding
         {
-            TemplatePath = (parent == null ? null : parent.TemplatePath) ?? templatePath;
-            TextEncoder = textEncoder;
+            get { return TextWriter.SuppressEncoding;}
+            set { TextWriter.SuppressEncoding = value; }
+        }
+
+        public BindingContext(object value, EncodedTextWriter writer, BindingContext parent, string templatePath )
+        {
+	        TemplatePath = parent != null ? (parent.TemplatePath ?? templatePath) : templatePath;
+	        TextWriter = writer;
             _value = value;
-            _unencodedWriter = GetUnencodedWriter(writer);
-            _encodedWriter = GetEncodedWriter(_unencodedWriter, textEncoder);
             _parent = parent;
         }
 
@@ -31,27 +34,6 @@ namespace HandlebarsDotNet.Compiler
         public virtual BindingContext ParentContext
         {
             get { return _parent; }
-        }
-
-        public virtual TextWriter TextWriter
-        {
-            get
-            {
-                if (OutputMode == OutputMode.Encoded)
-                {
-                    return _encodedWriter;
-                }
-                else
-                {
-                    return _unencodedWriter;
-                }
-            }
-        }
-
-        public OutputMode OutputMode
-        {
-            get;
-            set; 
         }
 
         public virtual object Root
@@ -110,24 +92,7 @@ namespace HandlebarsDotNet.Compiler
 
         public virtual BindingContext CreateChildContext(object value)
         {
-            return new BindingContext(value, _encodedWriter, this, TemplatePath, TextEncoder);
-        }
-
-        private static TextWriter GetEncodedWriter(TextWriter writer, ITextEncoder encoder)
-        {
-            if (writer is EncodedTextWriter)
-            {
-                return writer;
-            }
-
-            return new EncodedTextWriter(writer, encoder);
-        }
-
-        private static TextWriter GetUnencodedWriter(TextWriter writer)
-        {
-            var encodedTextWriter = writer as EncodedTextWriter;
-
-            return encodedTextWriter != null ? encodedTextWriter.UnderlyingWriter : writer;
+	        return new BindingContext(value, TextWriter, this, TemplatePath);
         }
     }
 }

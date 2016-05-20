@@ -84,6 +84,23 @@ namespace HandlebarsDotNet.Test
             var result = template(data);
             Assert.AreEqual("Hello, <div>There's HTML here</div>!", result);
         }
+
+		[Test]
+        public void UnencodedEncodedUnencoded()
+        {
+            string source = "{{{dangerous_value}}}...{{dangerous_value}}...{{{dangerous_value}}}!";
+
+            var template = Handlebars.Compile(source);
+
+            var data = new
+                {
+                    a_bool = false,
+                    dangerous_value = "<div>There's HTML here</div>"
+                };
+
+            var result = template(data);
+            Assert.AreEqual("<div>There's HTML here</div>...&lt;div&gt;There's HTML here&lt;/div&gt;...<div>There's HTML here</div>!", result);
+        }
 	}
 }
 
