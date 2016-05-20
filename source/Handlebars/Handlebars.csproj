@@ -36,6 +36,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Compiler\CompilationContext.cs" />
+    <Compile Include="HtmlEncoder.cs" />
     <Compile Include="Compiler\ExpressionBuilder.cs" />
     <Compile Include="Compiler\Lexer\Converter\HashParametersConverter.cs" />
     <Compile Include="Compiler\Lexer\Converter\LayoutRemover.cs" />
@@ -46,6 +47,7 @@
     <Compile Include="Compiler\Structure\HashParametersExpression.cs" />
     <Compile Include="Compiler\Translation\Expression\HelperFunctionBinder.cs" />
     <Compile Include="DescriptionAttribute.cs" />
+    <Compile Include="ITextEncoder.cs" />
     <Compile Include="EnumerableExtensions.cs" />
     <Compile Include="HandlebarsEnvironment.cs" />
     <Compile Include="HandlebarsRuntimeException.cs" />
@@ -115,7 +117,6 @@
     <Compile Include="Compiler\Structure\BoolishExpression.cs" />
     <Compile Include="Compiler\Translation\Expression\BoolishConverter.cs" />
     <Compile Include="Compiler\Structure\UndefinedBindingResult.cs" />
-    <Compile Include="Compiler\Structure\OutputMode.cs" />
     <Compile Include="IHandlebars.cs" />
     <Compile Include="Compiler\Translation\Expression\UnencodedStatementVisitor.cs" />
     <Compile Include="HandlebarsUtils.cs" />

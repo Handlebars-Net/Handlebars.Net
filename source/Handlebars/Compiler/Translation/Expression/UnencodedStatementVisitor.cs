@@ -22,12 +22,12 @@ namespace HandlebarsDotNet.Compiler
                 return Expression.Block(
                     typeof(void),
                     Expression.Assign(
-                        Expression.Property(CompilationContext.BindingContext, "OutputMode"),
-                        Expression.Constant(OutputMode.Unencoded)),
+                        Expression.Property(CompilationContext.BindingContext, "SuppressEncoding"),
+                        Expression.Constant(true)),
                     sex,
                     Expression.Assign(
-                        Expression.Property(CompilationContext.BindingContext, "OutputMode"),
-                        Expression.Constant(OutputMode.Encoded)),
+                        Expression.Property(CompilationContext.BindingContext, "SuppressEncoding"),
+                        Expression.Constant(false)),
                     Expression.Empty());
             }
             else

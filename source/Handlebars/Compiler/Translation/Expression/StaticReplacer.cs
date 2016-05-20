@@ -1,7 +1,5 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Linq.Expressions;
-using System.IO;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -26,13 +24,10 @@ namespace HandlebarsDotNet.Compiler
 
         protected override Expression VisitStaticExpression(StaticExpression stex)
         {
-            var writeMethod = typeof(HandlebarsExtensions).GetMethod("WriteSafeString", new [] { typeof(TextWriter), typeof(string) });
-            return Expression.Call(
-                writeMethod,
-                Expression.Property(
-                    CompilationContext.BindingContext,
-                    "TextWriter"),
-                Expression.Constant(stex.Value));
+	        var encodedTextWriter = Expression.Property(CompilationContext.BindingContext, "TextWriter");
+			var writeMethod = typeof(EncodedTextWriter).GetMethod("Write", new [] { typeof(string), typeof(bool) });
+
+	        return Expression.Call(encodedTextWriter, writeMethod, Expression.Constant(stex.Value), Expression.Constant(false));
         }
 
         protected override Expression VisitConditional(ConditionalExpression node)

@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -20,11 +21,13 @@ namespace HandlebarsDotNet.Compiler
             {
                 parentContext = Expression.Constant(null, typeof(BindingContext));
             }
-            var constantExpression = Expression.Constant(templatePath, typeof(string));
-            var newBindingContext = Expression.New(
+
+	        var encodedWriterExpression = ResolveEncodedWriter(writerParameter, context.Configuration.TextEncoder);
+	        var templatePathExpression = Expression.Constant(templatePath, typeof(string));
+	        var newBindingContext = Expression.New(
                                         typeof(BindingContext).GetConstructor(
-                                            new[] { typeof(object), typeof(TextWriter), typeof(BindingContext), typeof(string) }),
-                                        new Expression[] { objectParameter, writerParameter, parentContext, constantExpression });
+                                            new[] { typeof(object), typeof(EncodedTextWriter), typeof(BindingContext), typeof(string) }),
+                                        new [] { objectParameter, encodedWriterExpression, parentContext, templatePathExpression });
             return Expression.Lambda<Action<TextWriter, object>>(
                 Expression.Block(
                     new [] { context.BindingContext },
@@ -39,6 +42,15 @@ namespace HandlebarsDotNet.Compiler
                     )),
                 new[] { writerParameter, objectParameter });
         }
+
+	    private static Expression ResolveEncodedWriter(ParameterExpression writerParameter, ITextEncoder textEncoder)
+	    {
+		    var outputEncoderExpression = Expression.Constant(textEncoder, typeof (ITextEncoder));
+
+		    var encodedWriterFromMethod = typeof(EncodedTextWriter).GetMethod("From", new[] {typeof (TextWriter), typeof (ITextEncoder)});
+
+		    return Expression.Call(encodedWriterFromMethod, writerParameter, outputEncoderExpression);
+	    }
     }
 }
 
