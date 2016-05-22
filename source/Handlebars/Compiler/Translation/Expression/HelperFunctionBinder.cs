@@ -66,23 +66,39 @@ namespace HandlebarsDotNet.Compiler
                 {
                     Expression.Property(
                         CompilationContext.BindingContext,
+#if netstandard
+                        typeof(BindingContext).GetRuntimeProperty("TextWriter")),
+#else
                         typeof(BindingContext).GetProperty("TextWriter")),
+#endif
                     Expression.Property(
                         CompilationContext.BindingContext,
+#if netstandard
+                        typeof(BindingContext).GetRuntimeProperty("Value")),
+#else
                         typeof(BindingContext).GetProperty("Value")),
+#endif
                     Expression.NewArrayInit(typeof(object), hex.Arguments.Select(a => Visit(a)))
                 };
                 if (helper.Target != null)
                 {
                     return Expression.Call(
                         Expression.Constant(helper.Target),
+#if netstandard
+                        helper.GetMethodInfo(),
+#else
                         helper.Method,
+#endif
                         arguments);
                 }
                 else
                 {
                     return Expression.Call(
+#if netstandard
+                        helper.GetMethodInfo(),
+#else
                         helper.Method,
+#endif
                         arguments);
                 }
             }
@@ -90,7 +106,11 @@ namespace HandlebarsDotNet.Compiler
             {
                 return Expression.Call(
                     Expression.Constant(this),
+#if netstandard
+                    new Action<BindingContext, string, IEnumerable<object>>(LateBindHelperExpression).GetMethodInfo(),
+#else
                     new Action<BindingContext, string, IEnumerable<object>>(LateBindHelperExpression).Method,
+#endif
                     CompilationContext.BindingContext,
                     Expression.Constant(hex.HelperName),
                     Expression.NewArrayInit(typeof(object), hex.Arguments));

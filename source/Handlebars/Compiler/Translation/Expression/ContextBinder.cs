@@ -24,10 +24,17 @@ namespace HandlebarsDotNet.Compiler
 
 	        var encodedWriterExpression = ResolveEncodedWriter(writerParameter, context.Configuration.TextEncoder);
 	        var templatePathExpression = Expression.Constant(templatePath, typeof(string));
-	        var newBindingContext = Expression.New(
-                                        typeof(BindingContext).GetConstructor(
+#if netstandard
+            var newBindingContext = Expression.New(
+                                        typeof(BindingContext).GetTypeInfo().GetConstructor(
                                             new[] { typeof(object), typeof(EncodedTextWriter), typeof(BindingContext), typeof(string) }),
                                         new [] { objectParameter, encodedWriterExpression, parentContext, templatePathExpression });
+#else
+            var newBindingContext = Expression.New(
+                            typeof(BindingContext).GetConstructor(
+                                new[] { typeof(object), typeof(EncodedTextWriter), typeof(BindingContext), typeof(string) }),
+                            new[] { objectParameter, encodedWriterExpression, parentContext, templatePathExpression });
+#endif
             return Expression.Lambda<Action<TextWriter, object>>(
                 Expression.Block(
                     new [] { context.BindingContext },
@@ -47,7 +54,11 @@ namespace HandlebarsDotNet.Compiler
 	    {
 		    var outputEncoderExpression = Expression.Constant(textEncoder, typeof (ITextEncoder));
 
-		    var encodedWriterFromMethod = typeof(EncodedTextWriter).GetMethod("From", new[] {typeof (TextWriter), typeof (ITextEncoder)});
+#if netstandard
+            var encodedWriterFromMethod = typeof(EncodedTextWriter).GetRuntimeMethod("From", new[] { typeof(TextWriter), typeof(ITextEncoder) });
+#else
+            var encodedWriterFromMethod = typeof(EncodedTextWriter).GetMethod("From", new[] {typeof (TextWriter), typeof (ITextEncoder)});
+#endif
 
 		    return Expression.Call(encodedWriterFromMethod, writerParameter, outputEncoderExpression);
 	    }

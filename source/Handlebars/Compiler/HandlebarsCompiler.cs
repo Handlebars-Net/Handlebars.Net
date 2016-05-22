@@ -77,12 +77,17 @@ namespace HandlebarsDotNet.Compiler
                 _objects = objects;
             }
 
-
             public override IEnumerable<string> GetDynamicMemberNames()
             {
+#if netstandard
+                return _objects.Select(o => o.GetType())
+                   .SelectMany(t => t.GetTypeInfo().GetMembers(BindingFlags))
+                   .Select(m => m.Name);
+#else
                 return _objects.Select(o => o.GetType())
                     .SelectMany(t => t.GetMembers(BindingFlags))
                     .Select(m => m.Name);
+#endif
             }
 
             public override bool TryGetMember(GetMemberBinder binder, out object result)
@@ -90,9 +95,13 @@ namespace HandlebarsDotNet.Compiler
                 result = null;
                 foreach (var target in _objects)
                 {
+#if netstandard
+                    var member = target.GetType().GetTypeInfo()
+                        .GetMember(binder.Name, BindingFlags);
+#else
                     var member = target.GetType()
                         .GetMember(binder.Name, BindingFlags);
-
+#endif
                     if (member.Length > 0)
                     {
                         if (member[0] is PropertyInfo)

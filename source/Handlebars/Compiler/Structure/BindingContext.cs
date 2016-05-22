@@ -61,9 +61,13 @@ namespace HandlebarsDotNet.Compiler
         {
             object returnValue;
             variableName = variableName.TrimStart('@');
+#if netstandard
+            var member = target.GetType().GetTypeInfo()
+                .GetMember(variableName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+#else
             var member = target.GetType()
                 .GetMember(variableName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-
+#endif
             if (member.Length > 0)
             {
                 if (member[0] is PropertyInfo)

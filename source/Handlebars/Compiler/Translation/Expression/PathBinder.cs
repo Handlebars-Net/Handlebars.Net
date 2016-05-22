@@ -64,7 +64,11 @@ namespace HandlebarsDotNet.Compiler
         {
             if (sex.Body is PathExpression)
             {
+#if netstandard
+                var writeMethod = typeof(TextWriter).GetRuntimeMethod("Write", new [] { typeof(object) });
+#else
                 var writeMethod = typeof(TextWriter).GetMethod("Write", new [] { typeof(object) });
+#endif
                 return Expression.Call(
                     Expression.Property(
                         CompilationContext.BindingContext,
@@ -82,7 +86,11 @@ namespace HandlebarsDotNet.Compiler
         {
             return Expression.Call(
                 Expression.Constant(this),
+#if netstandard
+                new Func<BindingContext, string, object>(ResolvePath).GetMethodInfo(),
+#else
                 new Func<BindingContext, string, object>(ResolvePath).Method,
+#endif
                 CompilationContext.BindingContext,
                 Expression.Constant(pex.Path));
         }
@@ -98,7 +106,11 @@ namespace HandlebarsDotNet.Compiler
         {
             return Expression.Call(
                 Expression.Constant(this),
+#if netstandard
+                new Func<BindingContext, HashParametersExpression, object>(ResolveParameters).GetMethodInfo(),
+#else
                 new Func<BindingContext, HashParametersExpression, object>(ResolveParameters).Method,
+#endif
                 CompilationContext.BindingContext,
                 Expression.Constant(hpex));
         }
@@ -200,7 +212,11 @@ namespace HandlebarsDotNet.Compiler
             var resolvedMemberName = this.ResolveMemberName(instance, memberName);
             var instanceType = instance.GetType();
             //crude handling for dynamic objects that don't have metadata
+#if netstandard
+            if (typeof(IDynamicMetaObjectProvider).GetTypeInfo().IsAssignableFrom(instanceType))
+#else
             if (typeof(IDynamicMetaObjectProvider).IsAssignableFrom(instanceType))
+#endif
             {
                 try
                 {
@@ -221,7 +237,11 @@ namespace HandlebarsDotNet.Compiler
             var iDictInstance = FirstGenericDictionaryTypeInstance(instanceType);
             if (iDictInstance != null)
             {
+#if netstandard
+                var genericArgs = iDictInstance.GetTypeInfo().GetGenericArguments();
+#else
                 var genericArgs = iDictInstance.GetGenericArguments();
+#endif
                 object key = resolvedMemberName.Trim('[', ']');    // Ensure square brackets removed.
                 if (genericArgs.Length > 0)
                 {
@@ -240,10 +260,18 @@ namespace HandlebarsDotNet.Compiler
                     }
                 }
 
+#if netstandard
+                if ((bool)instanceType.GetTypeInfo().GetMethod("ContainsKey").Invoke(instance, new object[] { key }))
+                {
+                    return instanceType.GetTypeInfo().GetMethod("get_Item").Invoke(instance, new object[] { key });
+                }
+#else
                 if ((bool)instanceType.GetMethod("ContainsKey").Invoke(instance, new object[] { key }))
                 {
                     return instanceType.GetMethod("get_Item").Invoke(instance, new object[] { key });
                 }
+#endif
+
                 else
                 {
                     // Key doesn't exist.
@@ -251,7 +279,11 @@ namespace HandlebarsDotNet.Compiler
                 }
             }
             // Check if the instance is IDictionary (ie, System.Collections.Hashtable)
+#if netstandard
+            if (typeof(IDictionary).GetTypeInfo().IsAssignableFrom(instanceType))
+#else
             if (typeof(IDictionary).IsAssignableFrom(instanceType))
+#endif
             {
                 var key = resolvedMemberName.Trim('[', ']');    // Ensure square brackets removed.
                 // Only string keys supported - indexer takes an object, but no nice
@@ -259,7 +291,11 @@ namespace HandlebarsDotNet.Compiler
                 return ((IDictionary)instance)[key];
             }
 
+#if netstandard
+            var members = instanceType.GetTypeInfo().GetMember(resolvedMemberName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+#else
             var members = instanceType.GetMember(resolvedMemberName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+#endif
 
             MemberInfo preferredMember;
             if (members.Length == 0)
@@ -291,9 +327,17 @@ namespace HandlebarsDotNet.Compiler
 
         static Type FirstGenericDictionaryTypeInstance(Type instanceType)
         {
+#if netstandard
+            return instanceType.GetTypeInfo().GetInterfaces()
+#else
             return instanceType.GetInterfaces()
+#endif
                 .FirstOrDefault(i =>
+#if netstandard
+                    i.GetTypeInfo().IsGenericType
+#else
                     i.IsGenericType
+#endif
                     &&
                     (
                         i.GetGenericTypeDefinition() == typeof(IDictionary<,>)

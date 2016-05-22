@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -34,11 +35,19 @@ namespace HandlebarsDotNet.Compiler
             {
                 bindingContext = Expression.Call(
                     bindingContext,
+#if netstandard
+                    typeof(BindingContext).GetTypeInfo().GetMethod("CreateChildContext"),
+#else
                     typeof(BindingContext).GetMethod("CreateChildContext"),
+#endif
                     pex.Argument);
             }
             return Expression.Call(
+#if netstandard
+                new Action<string, BindingContext, HandlebarsConfiguration>(InvokePartial).GetMethodInfo(),
+#else
                 new Action<string, BindingContext, HandlebarsConfiguration>(InvokePartial).Method,
+#endif
                 Expression.Convert(pex.PartialName, typeof(string)),
                 bindingContext,
                 Expression.Constant(CompilationContext.Configuration));

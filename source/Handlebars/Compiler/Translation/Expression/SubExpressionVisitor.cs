@@ -2,6 +2,7 @@
 using System.Linq.Expressions;
 using System.IO;
 using System.Text;
+using System.Reflection;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -26,7 +27,11 @@ namespace HandlebarsDotNet.Compiler
             }
             HandlebarsHelper helper = GetHelperDelegateFromMethodCallExpression(helperCall);
             return Expression.Call(
+#if netstandard
+                new Func<HandlebarsHelper, object, object[], string>(CaptureTextWriterOutputFromHelper).GetMethodInfo(),
+#else
                 new Func<HandlebarsHelper, object, object[], string>(CaptureTextWriterOutputFromHelper).Method,
+#endif
                 Expression.Constant(helper),
                 Visit(helperCall.Arguments[1]),
                 Visit(helperCall.Arguments[2]));
@@ -46,11 +51,19 @@ namespace HandlebarsDotNet.Compiler
                 {
                     throw new NotSupportedException("Helper method instance target must be reduced to a ConstantExpression");
                 }
+#if netstandard
+                helper = (HandlebarsHelper)helperCall.Method.CreateDelegate(typeof(HandlebarsHelper), target);
+#else
                 helper = (HandlebarsHelper)Delegate.CreateDelegate(typeof(HandlebarsHelper), target, helperCall.Method);
+#endif
             }
             else
             {
+#if netstandard
+                helper = (HandlebarsHelper)helperCall.Method.CreateDelegate(typeof(HandlebarsHelper));
+#else
                 helper = (HandlebarsHelper)Delegate.CreateDelegate(typeof(HandlebarsHelper), helperCall.Method);
+#endif
             }
             return helper;
         }
