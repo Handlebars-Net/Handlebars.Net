@@ -52,6 +52,7 @@ namespace HandlebarsDotNet.Compiler
         private static void RenderSection(object value, BindingContext context, Action<TextWriter, object> body, Action<TextWriter, object > inversion )
         {
             var boolValue = value as bool?;
+            var stringValue = value as string;
             var enumerable = value as IEnumerable;
 
             if (boolValue == true )
@@ -65,6 +66,10 @@ namespace HandlebarsDotNet.Compiler
             else if (HandlebarsUtils.IsFalsyOrEmpty(value))
             {
                 inversion(context.TextWriter, context);
+            }
+            else if (stringValue != null)
+            {
+                body(context.TextWriter, value);
             }
             else if (enumerable != null )
             {

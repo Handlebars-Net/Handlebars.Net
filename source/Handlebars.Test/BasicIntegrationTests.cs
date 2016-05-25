@@ -468,6 +468,17 @@ namespace HandlebarsDotNet.Test
             Assert.AreEqual("Hello, Bill!", result);
         }
 
+		[Test]
+        public void BasicDeferredBlockString()
+        {
+            string source = "{{#person}} -{{this}}- {{/person}}";
+            
+            var template = Handlebars.Compile(source);
+            
+            var result = template(new {person = "Bill"});
+            Assert.AreEqual(" -Bill- ", result);
+        }
+
         [Test]
         public void BasicDeferredBlockWithWhitespace()
         {
