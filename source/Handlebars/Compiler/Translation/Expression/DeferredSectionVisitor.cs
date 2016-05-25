@@ -49,13 +49,12 @@ namespace HandlebarsDotNet.Compiler
             }
         }
 
-        private static void RenderSection(object value, BindingContext context, Action<TextWriter, object> body, Action<TextWriter, object > inversion )
+        private static void RenderSection(object value, BindingContext context, Action<TextWriter, object> body, Action<TextWriter, object> inversion)
         {
             var boolValue = value as bool?;
-            var stringValue = value as string;
             var enumerable = value as IEnumerable;
 
-            if (boolValue == true )
+            if (boolValue == true)
             {
                 body(context.TextWriter, context);
             }
@@ -67,11 +66,11 @@ namespace HandlebarsDotNet.Compiler
             {
                 inversion(context.TextWriter, context);
             }
-            else if (stringValue != null)
+            else if (value is string)
             {
                 body(context.TextWriter, value);
             }
-            else if (enumerable != null )
+            else if (enumerable != null)
             {
                 foreach (var item in enumerable)
                 {
