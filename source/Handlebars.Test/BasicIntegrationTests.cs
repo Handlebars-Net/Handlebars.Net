@@ -3,7 +3,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
-using System.IO;
 
 namespace HandlebarsDotNet.Test
 {
@@ -548,6 +547,42 @@ namespace HandlebarsDotNet.Test
 
             var result = template(data);
             Assert.AreEqual("Hello, nobody!", result);
+        }
+
+        [Test]
+        public void BasicDeferredBlockNegatedContext()
+        {
+            var template = Handlebars.Compile("Hello, {{^obj}}{{name}}{{/obj}}!");
+            
+            Assert.AreEqual("Hello, nobody!", template(new {name = "nobody"}));
+            Assert.AreEqual("Hello, nobody!", template(new {name = "nobody", obj = new string[0]}));
+        }
+        
+        [Test]
+        public void BasicDeferredBlockInversion()
+        {
+            var template = Handlebars.Compile("Hello, {{#obj}}somebody{{else}}{{name}}{{/obj}}!");
+        
+            Assert.AreEqual("Hello, nobody!", template(new {name = "nobody"}));
+            Assert.AreEqual("Hello, nobody!", template(new {name = "nobody", obj = false}));
+            Assert.AreEqual("Hello, nobody!", template(new {name = "nobody", obj = new string[0]}));
+        }
+        
+        [Test]
+        public void BasicDeferredBlockNegatedInversion()
+        {
+            var template = Handlebars.Compile("Hello, {{^obj}}nobody{{else}}{{name}}{{/obj}}!");
+        
+            var array = new[]
+            {
+                new {name = "John"},
+                new {name = " and "},
+                new {name = "Sarah"}
+            };
+        
+            Assert.AreEqual("Hello, John and Sarah!", template(new {obj = array}));
+            Assert.AreEqual("Hello, somebody!", template(new {obj = true, name = "somebody"}));
+            Assert.AreEqual("Hello, person!", template(new {obj = new {name = "person"}}));
         }
 
 		[Test]
