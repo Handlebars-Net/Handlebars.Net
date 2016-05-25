@@ -180,6 +180,17 @@ namespace HandlebarsDotNet.Test
         }
 
         [Test]
+        public void BasicWithInversion()
+        {
+            var source = "Hello, {{#with person}} my good friend{{else}}nevermind{{/with}}";
+            var template = Handlebars.Compile(source);
+
+			Assert.AreEqual("Hello, nevermind", template(new {}));
+			Assert.AreEqual("Hello, nevermind", template(new {person = false}));
+			Assert.AreEqual("Hello, nevermind", template(new {person = new string[] {}}));
+        }
+
+        [Test]
         public void BasicEncoding()
         {
             var source = "Hello, {{name}}!";

@@ -14,7 +14,15 @@ namespace HandlebarsDotNet
             {
                 throw new HandlebarsException("{{with}} helper must have exactly one argument"); 
             }
-            options.Template(output, arguments[0]);
+
+            if (HandlebarsUtils.IsTruthyOrNonEmpty(arguments[0]))
+            {
+                options.Template(output, arguments[0]);
+            }
+            else
+            {
+                options.Inverse(output, context);
+            }
         }
 
         public static IEnumerable<KeyValuePair<string, HandlebarsHelper>> Helpers
