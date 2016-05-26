@@ -21,66 +21,69 @@ namespace HandlebarsDotNet.Compiler
 
         protected override Expression VisitDeferredSectionExpression(DeferredSectionExpression dsex)
         {
-            Action<object, BindingContext, Action<TextWriter, object>> method;
-            if (dsex.Path.Path.StartsWith("#"))
-            {
-                method = RenderSection;
-            }
-            else if (dsex.Path.Path.StartsWith("^"))
-            {
-                method = RenderEmptySection;
-            }
-            else
-            {
-                throw new HandlebarsCompilerException("Tried to compile a section expression that did not begin with # or ^");
-            }
-            return Expression.Call(
 #if netstandard
-                method.GetMethodInfo(),
+            var method = new Action<object, BindingContext, Action<TextWriter, object>, Action<TextWriter, object>>(RenderSection).GetMethodInfo();
 #else
-                method.Method,
+            var method = new Action<object, BindingContext, Action<TextWriter, object>, Action<TextWriter, object>>(RenderSection).Method;
 #endif
-                HandlebarsExpression.Path(dsex.Path.Path.Substring(1)),
-                CompilationContext.BindingContext,
-                new FunctionBuilder(CompilationContext.Configuration).Compile(dsex.Body, CompilationContext.BindingContext));
+            Expression path = HandlebarsExpression.Path(dsex.Path.Path.Substring(1));
+            Expression context = CompilationContext.BindingContext;
+            Expression[] templates = GetDeferredSectionTemplates(dsex);
+
+            return Expression.Call(method, new[] {path, context}.Concat(templates));
+
         }
 
-        private static void RenderEmptySection(object value, BindingContext context, Action<TextWriter, object> template)
+        private Expression[] GetDeferredSectionTemplates(DeferredSectionExpression dsex)
         {
-            if (value is bool && (bool)value == false)
+            var fb = new FunctionBuilder(CompilationContext.Configuration);
+            var body = fb.Compile(dsex.Body.Expressions, CompilationContext.BindingContext);
+            var inversion = fb.Compile(dsex.Inversion.Expressions, CompilationContext.BindingContext);
+
+            var sectionPrefix = dsex.Path.Path.Substring(0, 1);
+
+            switch (sectionPrefix)
             {
-                template(context.TextWriter, context);
-            }
-            else if (HandlebarsUtils.IsFalsyOrEmpty(value) == true)
-            {
-                template(context.TextWriter, value);
+                case "#":
+                    return new[] {body, inversion};
+                case "^":
+                    return new[] {inversion, body};
+                default:
+                    throw new HandlebarsCompilerException("Tried to compile a section expression that did not begin with # or ^");
             }
         }
 
-        private static void RenderSection(object value, BindingContext context, Action<TextWriter, object> template)
+        private static void RenderSection(object value, BindingContext context, Action<TextWriter, object> body, Action<TextWriter, object> inversion)
         {
-            if (value is bool && (bool)value == true)
+            var boolValue = value as bool?;
+            var enumerable = value as IEnumerable;
+
+            if (boolValue == true)
             {
-                template(context.TextWriter, context);
+                body(context.TextWriter, context);
+            }
+            else if (boolValue == false)
+            {
+                inversion(context.TextWriter, context);
             }
             else if (HandlebarsUtils.IsFalsyOrEmpty(value))
             {
-                return;
+                inversion(context.TextWriter, context);
             }
-            else if (value is IEnumerable)
+            else if (value is string)
             {
-                foreach (var item in ((IEnumerable)value))
+                body(context.TextWriter, value);
+            }
+            else if (enumerable != null)
+            {
+                foreach (var item in enumerable)
                 {
-                    template(context.TextWriter, item);
+                    body(context.TextWriter, item);
                 }
-            }
-            else if (value != null)
-            {
-                template(context.TextWriter, value);
             }
             else
             {
-                throw new HandlebarsRuntimeException("Could not render value for the section");
+                body(context.TextWriter, value);
             }
         }
     }

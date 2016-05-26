@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using System.Collections.Generic;
 
 namespace HandlebarsDotNet.Compiler
@@ -72,10 +71,10 @@ namespace HandlebarsDotNet.Compiler
 
         public static DeferredSectionExpression DeferredSection(
             PathExpression path,
-            IEnumerable<Expression> body,
-            SectionEvaluationMode evalMode)
+            BlockExpression body,
+            BlockExpression inversion)
         {
-            return new DeferredSectionExpression(path, body, evalMode);
+            return new DeferredSectionExpression(path, body, inversion);
         }
 
         public static PartialExpression Partial(Expression partialName)
