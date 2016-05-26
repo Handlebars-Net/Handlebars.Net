@@ -1,45 +1,25 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace HandlebarsDotNet.Compiler
 {
-    internal enum SectionEvaluationMode
-    {
-        NonEmpty,
-        Empty
-    }
-
     internal class DeferredSectionExpression : HandlebarsExpression
     {
-        private readonly PathExpression _path;
-        private readonly IEnumerable<Expression> _body;
-        private readonly SectionEvaluationMode _evalMode;
-
         public DeferredSectionExpression(
             PathExpression path,
-            IEnumerable<Expression> body,
-            SectionEvaluationMode evalMode)
+            BlockExpression body,
+            BlockExpression inversion)
         {
-            _path = path;
-            _body = body;
-            _evalMode = evalMode;
+            Path = path;
+            Body = body;
+            Inversion = inversion;
         }
 
-        public IEnumerable<Expression> Body
-        {
-            get { return _body; }
-        }
+        public BlockExpression Body { get; private set; }
 
-        public PathExpression Path
-        {
-            get { return _path; }
-        }
+        public BlockExpression Inversion { get; private set; }
 
-        public SectionEvaluationMode EvaluationMode
-        {
-            get { return _evalMode; }
-        }
+        public PathExpression Path { get; private set; }
 
         public override Type Type
         {
