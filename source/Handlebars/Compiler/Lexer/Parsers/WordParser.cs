@@ -7,7 +7,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
 {
     internal class WordParser : Parser
     {
-        private const string validWordStartCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_$.@";
+        private const string validWordStartCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_$.@[]";
 
         public override Token Parse(TextReader reader)
         {
@@ -45,7 +45,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
                 {
                     var peek = (char)reader.Peek();
 
-                    if (peek == '}' || peek == '~' || peek == ')' || char.IsWhiteSpace(peek))
+                    if (peek == '}' || peek == '~' || peek == ')' || (char.IsWhiteSpace(peek) && !buffer.ToString().Contains("[")))
                     {
                         break;
                     }
@@ -65,7 +65,8 @@ namespace HandlebarsDotNet.Compiler.Lexer
 
                 buffer.Append((char)node);
             }
-            return buffer.ToString();
+
+            return buffer.ToString().Trim();
         }
     }
 }
