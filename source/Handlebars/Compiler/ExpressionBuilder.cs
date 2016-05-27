@@ -20,8 +20,7 @@ namespace HandlebarsDotNet.Compiler
         {
             tokens = WhitespaceRemover.Remove(tokens);
             tokens = StaticConverter.Convert(tokens);
-            tokens = LayoutRemover.Remove(tokens);
-            tokens = CommentRemover.Remove(tokens);
+            tokens = CommentAndLayoutConverter.Convert(tokens);
             tokens = LiteralConverter.Convert(tokens);
             tokens = HelperConverter.Convert(tokens, _configuration);
             tokens = HashParametersConverter.Convert(tokens);
