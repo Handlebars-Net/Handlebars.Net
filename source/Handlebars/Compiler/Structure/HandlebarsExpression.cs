@@ -50,9 +50,9 @@ namespace HandlebarsDotNet.Compiler
             return new StaticExpression(value);
         }
 
-        public static StatementExpression Statement(Expression body, bool isEscaped)
+        public static StatementExpression Statement(Expression body, bool isEscaped, bool trimBefore, bool trimAfter)
         {
-            return new StatementExpression(body, isEscaped);
+            return new StatementExpression(body, isEscaped, trimBefore, trimAfter);
         }
 
         public static IteratorExpression Iterator(

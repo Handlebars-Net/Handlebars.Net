@@ -5,10 +5,17 @@ namespace HandlebarsDotNet.Compiler.Lexer
     internal class StaticToken : Token
     {
         private readonly string _value;
+        private readonly string _original;
 
-        internal StaticToken(string value)
+        private StaticToken(string value, string original)
         {
             _value = value;
+            _original = original;
+        }
+
+        internal StaticToken(string value)
+            : this(value, value)
+        {
         }
 
         public override TokenType Type
@@ -20,6 +27,15 @@ namespace HandlebarsDotNet.Compiler.Lexer
         {
             get { return _value; }
         }
+
+        public string Original
+        {
+            get { return _original; }
+        }
+
+        public StaticToken GetModifiedToken(string value)
+        {
+            return new StaticToken(value, _original);
+        }
     }
 }
-
