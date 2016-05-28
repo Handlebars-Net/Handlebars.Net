@@ -36,10 +36,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Compiler\CompilationContext.cs" />
+    <Compile Include="Compiler\Structure\CommentExpression.cs" />
+    <Compile Include="Compiler\Translation\Expression\CommentVisitor.cs" />
     <Compile Include="HtmlEncoder.cs" />
     <Compile Include="Compiler\ExpressionBuilder.cs" />
     <Compile Include="Compiler\Lexer\Converter\HashParametersConverter.cs" />
-    <Compile Include="Compiler\Lexer\Converter\LayoutRemover.cs" />
     <Compile Include="Compiler\Lexer\Tokens\HashParameterToken.cs" />
     <Compile Include="Compiler\Lexer\Tokens\LayoutToken.cs" />
     <Compile Include="Compiler\Resolvers\UpperCamelCaseExpressionNameResolver.cs" />
@@ -105,7 +106,7 @@
     <Compile Include="EncodedTextWriter.cs" />
     <Compile Include="Compiler\Lexer\Parsers\CommentParser.cs" />
     <Compile Include="Compiler\Lexer\Tokens\CommentToken.cs" />
-    <Compile Include="Compiler\Lexer\Converter\CommentRemover.cs" />
+    <Compile Include="Compiler\Lexer\Converter\CommentAndLayoutConverter.cs" />
     <Compile Include="Compiler\Lexer\Converter\BlockAccumulators\DeferredBlockAccumulatorContext.cs" />
     <Compile Include="Compiler\Structure\DeferredSectionExpression.cs" />
     <Compile Include="Compiler\Translation\Expression\DeferredSectionVisitor.cs" />

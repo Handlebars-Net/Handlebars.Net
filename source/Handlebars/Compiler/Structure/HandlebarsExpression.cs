@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using System.Collections.Generic;
 
 namespace HandlebarsDotNet.Compiler
@@ -16,7 +15,8 @@ namespace HandlebarsDotNet.Compiler
         PartialExpression = 6007,
         BoolishExpression = 6008,
         SubExpression = 6009,
-        HashParametersExpression = 6010
+        HashParametersExpression = 6010,
+		CommentExpression = 6011
     }
 
     internal abstract class HandlebarsExpression : Expression
@@ -50,9 +50,9 @@ namespace HandlebarsDotNet.Compiler
             return new StaticExpression(value);
         }
 
-        public static StatementExpression Statement(Expression body, bool isEscaped)
+        public static StatementExpression Statement(Expression body, bool isEscaped, bool trimBefore, bool trimAfter)
         {
-            return new StatementExpression(body, isEscaped);
+            return new StatementExpression(body, isEscaped, trimBefore, trimAfter);
         }
 
         public static IteratorExpression Iterator(
@@ -72,10 +72,10 @@ namespace HandlebarsDotNet.Compiler
 
         public static DeferredSectionExpression DeferredSection(
             PathExpression path,
-            IEnumerable<Expression> body,
-            SectionEvaluationMode evalMode)
+            BlockExpression body,
+            BlockExpression inversion)
         {
-            return new DeferredSectionExpression(path, body, evalMode);
+            return new DeferredSectionExpression(path, body, inversion);
         }
 
         public static PartialExpression Partial(Expression partialName)
@@ -102,6 +102,11 @@ namespace HandlebarsDotNet.Compiler
         {
             return new HashParametersExpression(parameters);
         }
+
+	    public static CommentExpression Comment( string value )
+	    {
+		    return new CommentExpression(value);
+	    }
     }
 }
 

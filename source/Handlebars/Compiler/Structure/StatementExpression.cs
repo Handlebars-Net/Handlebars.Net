@@ -5,24 +5,21 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class StatementExpression : HandlebarsExpression
     {
-        private readonly Expression _body;
-        private readonly bool _isEscaped;
-
-        public StatementExpression(Expression body, bool isEscaped)
+        public StatementExpression(Expression body, bool isEscaped, bool trimBefore, bool trimAfter)
         {
-            _body = body;
-            _isEscaped = isEscaped;
+            Body = body;
+            IsEscaped = isEscaped;
+            TrimBefore = trimBefore;
+            TrimAfter = trimAfter;
         }
 
-        public Expression Body
-        {
-            get { return _body; }
-        }
+        public Expression Body { get; private set; }
 
-        public bool IsEscaped
-        {
-            get { return _isEscaped; }
-        }
+        public bool IsEscaped { get; private set; }
+
+        public bool TrimBefore { get; private set; }
+
+        public bool TrimAfter { get; private set; }
 
         public override ExpressionType NodeType
         {
@@ -35,4 +32,3 @@ namespace HandlebarsDotNet.Compiler
         }
     }
 }
-
