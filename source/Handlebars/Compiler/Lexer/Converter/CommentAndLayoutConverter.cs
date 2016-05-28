@@ -23,11 +23,18 @@ namespace HandlebarsDotNet.Compiler
         private static object Convert(object item)
         {
             var commentToken = item as CommentToken;
-            if (commentToken != null) return HandlebarsExpression.Comment(commentToken.Value);
-
-            if (item is LayoutToken) return HandlebarsExpression.Comment(null);
-
-            return item;
+            if (commentToken != null)
+            {
+                return HandlebarsExpression.Comment(commentToken.Value);
+            }
+            else if (item is LayoutToken)
+            {
+                return HandlebarsExpression.Comment(null);
+            }
+            else
+            {
+                return item;
+            }
         }
     }
 }

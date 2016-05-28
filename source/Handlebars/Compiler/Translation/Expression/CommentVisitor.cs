@@ -1,10 +1,4 @@
-﻿// 
-// Handlebars
-//  
-// Copyright 2016 (c) Webmercs
-//  
-
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -22,7 +16,10 @@ namespace HandlebarsDotNet.Compiler
 
         protected override Expression VisitStatementExpression(StatementExpression sex)
         {
-            if (sex.Body is CommentExpression) return Expression.Empty();
+            if (sex.Body is CommentExpression)
+            {
+                return Expression.Empty();
+            }
 
             return sex;
         }

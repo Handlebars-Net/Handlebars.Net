@@ -46,24 +46,42 @@ namespace HandlebarsDotNet.Compiler
                 var statement = list[i] as StatementExpression;
                 if (statement == null) continue;
 
-                if (statement.TrimBefore) TrimBefore(list, i, true);
-                if (statement.TrimAfter) TrimAfter(list, i, true);
+                if (statement.TrimBefore)
+                {
+                    TrimBefore(list, i, true);
+                }
+                if (statement.TrimAfter)
+                {
+                    TrimAfter(list, i, true);
+                }
 
                 if (IsStandalone(statement) && IsNextWhitespace(list, i) && IsPrevWhitespace(list, i))
                 {
-                    if (!statement.TrimBefore) TrimBefore(list, i, false);
-                    if (!statement.TrimAfter) TrimAfter(list, i, false);
+                    if (!statement.TrimBefore)
+                    {
+                        TrimBefore(list, i, false);
+                    }
+                    if (!statement.TrimAfter)
+                    {
+                        TrimAfter(list, i, false);
+                    }
                 }
             }
         }
 
         private static bool IsNextWhitespace(IList<object> list, int index)
         {
-            if (index >= list.Count - 1) return true;
+            if (index >= list.Count - 1)
+            {
+                return true;
+            }
 
             var next = list[index + 1] as StaticToken;
 
-            if (next == null) return false;
+            if (next == null)
+            {
+                return false;
+            }
 
             var nextIsLast = index == list.Count - 2;
 
@@ -74,11 +92,17 @@ namespace HandlebarsDotNet.Compiler
 
         private static void TrimAfter(IList<object> list, int index, bool multipleLines)
         {
-            if (index >= list.Count - 1) return;
+            if (index >= list.Count - 1)
+            {
+                return;
+            }
 
             var next = list[index + 1] as StaticToken;
 
-            if (next == null) return;
+            if (next == null)
+            {
+                return;
+            }
 
             list[index + 1] = TrimStart(next, multipleLines);
         }
@@ -94,11 +118,17 @@ namespace HandlebarsDotNet.Compiler
 
         private static bool IsPrevWhitespace(IList<object> list, int index)
         {
-            if (index < 1) return true;
+            if (index < 1)
+            {
+                return true;
+            }
 
             var prev = list[index - 1] as StaticToken;
 
-            if (prev == null) return false;
+            if (prev == null)
+            {
+                return false;
+            }
 
             var prevIsFirst = index == 1;
 
@@ -109,11 +139,17 @@ namespace HandlebarsDotNet.Compiler
 
         private static void TrimBefore(IList<object> list, int index, bool multipleLines)
         {
-            if (index < 1) return;
+            if (index < 1)
+            {
+                return;
+            }
 
             var prev = list[index - 1] as StaticToken;
 
-            if (prev == null) return;
+            if (prev == null)
+            {
+                return;
+            }
 
             list[index - 1] = TrimEnd(prev, multipleLines);
         }
