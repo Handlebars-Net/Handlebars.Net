@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Text;
 
 namespace HandlebarsDotNet.Compiler.Lexer
@@ -64,6 +63,11 @@ namespace HandlebarsDotNet.Compiler.Lexer
                 }
 
                 buffer.Append((char)node);
+            }
+
+            if (buffer.ToString().Contains("[") && !buffer.ToString().Contains("]"))
+            {
+                throw new HandlebarsCompilerException("Expression is missing a closing ].");
             }
 
             return buffer.ToString().Trim();
