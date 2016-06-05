@@ -23,32 +23,36 @@ namespace HandlebarsDotNet.Compiler
             while (enumerator.MoveNext())
             {
                 var item = enumerator.Current;
-                if (item is StartExpressionToken)
-                {
-                    var startExpression = item as StartExpressionToken;
-                    item = GetNext(enumerator);
-                    if ((item is Expression) == false)
-                    {
-                        throw new HandlebarsCompilerException(
-                            string.Format("Token '{0}' could not be converted to an expression", item));
-                    }
-                    yield return HandlebarsExpression.Statement(
-                        (Expression)item,
-                        startExpression.IsEscaped);
-                    item = GetNext(enumerator);
-                    if ((item is EndExpressionToken) == false)
-                    {
-                        throw new HandlebarsCompilerException("Handlebars statement was not reduced to a single expression");
-                    }
-                    if (((EndExpressionToken)item).IsEscaped != startExpression.IsEscaped)
-                    {
-                        throw new HandlebarsCompilerException("Starting and ending handlebars do not match");
-                    }
-                }
-                else
+                var startExpression = item as StartExpressionToken;
+
+                if (startExpression == null)
                 {
                     yield return item;
+                    continue;
                 }
+
+                var possibleBody = GetNext(enumerator);
+                if (!(possibleBody is Expression))
+                {
+                    throw new HandlebarsCompilerException(String.Format("Token '{0}' could not be converted to an expression", possibleBody));
+                }
+
+                var endExpression = GetNext(enumerator) as EndExpressionToken;
+                if (endExpression == null)
+                {
+                    throw new HandlebarsCompilerException("Handlebars statement was not reduced to a single expression");
+                }
+
+                if (endExpression.IsEscaped != startExpression.IsEscaped)
+                {
+                    throw new HandlebarsCompilerException("Starting and ending handlebars do not match");
+                }
+
+                yield return HandlebarsExpression.Statement(
+                    (Expression) possibleBody,
+                    startExpression.IsEscaped,
+                    startExpression.TrimPreceedingWhitespace,
+                    endExpression.TrimTrailingWhitespace);
             }
         }
 
@@ -59,4 +63,3 @@ namespace HandlebarsDotNet.Compiler
         }
     }
 }
-

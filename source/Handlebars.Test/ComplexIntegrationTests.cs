@@ -58,10 +58,10 @@ namespace HandlebarsDotNet.Test
             var resultTrueFalse = template(trueFalse);
             var resultFalseTrue = template(falseTrue);
             var resultFalseFalse = template(falseFalse);
-            Assert.AreEqual(Environment.NewLine + "a is true" + Environment.NewLine, resultTrueTrue);
-            Assert.AreEqual(Environment.NewLine + "a is false" + Environment.NewLine, resultTrueFalse);
-            Assert.AreEqual(Environment.NewLine + "b is true" + Environment.NewLine, resultFalseTrue);
-            Assert.AreEqual(Environment.NewLine + "b is false" + Environment.NewLine, resultFalseFalse);
+            Assert.AreEqual("a is true" + Environment.NewLine, resultTrueTrue);
+            Assert.AreEqual("a is false" + Environment.NewLine, resultTrueFalse);
+            Assert.AreEqual("b is true" + Environment.NewLine, resultFalseTrue);
+            Assert.AreEqual("b is false" + Environment.NewLine, resultFalseFalse);
         }
 
         [Test]

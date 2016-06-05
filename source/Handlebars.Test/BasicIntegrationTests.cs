@@ -884,6 +884,48 @@ namespace HandlebarsDotNet.Test
         }
 
         [Test]
+        public void DictionaryWithSpaceInKeyName()
+        {
+            var source = "{{dictionary.[my key]}}";
+
+            var template = Handlebars.Compile(source);
+
+            var result = template(new
+                {
+                    dictionary = new MockDictionary()
+                });
+            var expectedResult = 
+                "Hello world!";
+
+            Assert.AreEqual(expectedResult, result);
+        }
+
+        [Test]
+        public void DictionaryWithSpaceInKeyNameAndChildProperty()
+        {
+            var source = "{{dictionary.[my key].prop1}}";
+
+            var template = Handlebars.Compile(source);
+
+            var result = template(new
+                {
+                    dictionary = new Dictionary<string, object>
+                    {
+                        {
+                            "my key", new
+                            {
+                                prop1 = "Hello world!"
+                            }
+                        }
+                    }
+                });
+            var expectedResult = 
+                "Hello world!";
+
+            Assert.AreEqual(expectedResult, result);
+        }
+
+        [Test]
         public void BasicMockIDictionaryNoSquareBrackets()
         {
             var source = "{{dictionary.key}}";
