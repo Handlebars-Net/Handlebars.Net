@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
     <metadata>
        <id>Handlebars.Net</id>
-        <version>1.7.1-rc2-24027-0001</version>
+        <version>1.7.1-rc2-24027-0002</version>
         <title>Handlebars.Net</title>
         <authors>Rex Morgan</authors>
         <projectUrl>https://github.com/rexm/Handlebars.Net</projectUrl>
@@ -23,7 +23,7 @@
                 <dependency id="NETStandard.Library" version="1.5.0-rc2-24027" />
             </group>
         </dependencies>
-        <releaseNotes>Now with much closer alignment to handlebarsjs for whitespace handling (see https://git.io/vofGj for details); Fixed a bug that prevented dictionary key names from having spaces (see https://git.io/vofZv for details); Now supports the ability to disable or customize the encoding method (see https://git.io/vrgfH for details); fixed bug with whitespace control; now supports smart, case-insensitive binding and nested sub-expressions!</releaseNotes>
+        <releaseNotes>Now supports .net core!</releaseNotes>
     </metadata>
     <files>
         <file src="source/Handlebars/bin/Release/Handlebars.dll" target="lib/portable-net45+sl5+wp8+win8/Handlebars.dll" />
