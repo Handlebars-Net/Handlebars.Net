@@ -55,7 +55,7 @@ namespace HandlebarsDotNet
 	            try
 	            {
 #if netstandard
-                        possibleDelegate = method.CreateDelegate(typeof(T), method);
+                        possibleDelegate = method.CreateDelegate(typeof(T));
 #else
                         possibleDelegate = Delegate.CreateDelegate(typeof(T), method); 
 #endif
