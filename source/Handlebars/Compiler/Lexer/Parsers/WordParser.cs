@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace HandlebarsDotNet.Compiler.Lexer
@@ -75,7 +76,8 @@ namespace HandlebarsDotNet.Compiler.Lexer
 
         private bool CanBreakAtSpace(string buffer)
         {
-            return (!buffer.Contains("[") || (buffer.Contains("[") && buffer.Contains("]")));
+            var bufferQueryable = buffer.OfType<char>();
+            return (!buffer.Contains("[") || (bufferQueryable.Count(x => x == '[') == bufferQueryable.Count(x => x == ']')));
         }
 
     }

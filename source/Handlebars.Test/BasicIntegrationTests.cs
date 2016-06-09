@@ -1039,7 +1039,29 @@ namespace HandlebarsDotNet.Test
             Assert.AreEqual("<b>arr</b><li>hello</li><li>world</li><br>", result);
         }
 
+        [Test]
+        public void NestedDictionaryWithSegmentLiteral()
+        {
+            var source = "{{dictionary.[my key].[another key]}}";
 
+            var template = Handlebars.Compile(source);
+
+            var data = new
+            {
+                dictionary =
+                    new Dictionary<string, Dictionary<string, string>>()
+                    {
+                        {"my key", new Dictionary<string, string>() {{"another key", "Hello Dictionary!"}}}
+                    }
+            };
+
+            var result = template(data);
+
+            var expectedResult =
+                "Hello Dictionary!";
+
+            Assert.AreEqual(expectedResult, result);
+        }
 
         private class MockDictionary : IDictionary<string, string>
         {
