@@ -208,6 +208,34 @@ namespace HandlebarsDotNet.Test
             var outputIsFalse = template(new { arg1 = 1, arg2 = 2 });
             Assert.AreEqual(expectedIsFalse, outputIsFalse);
         }
+
+        [Test]
+        public void HelperWithSegmentLiteralArguments()
+        {
+            Handlebars.RegisterHelper("myHelper", (writer, context, args) => {
+                var count = 0;
+                foreach (var arg in args)
+                {
+                    writer.Write("\nThing {0}: {1}", ++count, arg);
+                }
+            });
+
+            var source = "Here are some things: {{myHelper args.[0].arg args.[1].arg 'another argument'}}";
+
+            var template = Handlebars.Compile(source);
+
+            var data = new
+            {
+                args = new[] { new { arg = "foo" }, new { arg = "bar" } }
+            };
+
+            var output = template(data);
+
+            var expected = "Here are some things: \nThing 1: foo\nThing 2: bar\nThing 3: another argument";
+
+            Assert.AreEqual(expected, output);
+        }
+
     }
 }
 

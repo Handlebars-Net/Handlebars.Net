@@ -44,7 +44,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
                 {
                     var peek = (char)reader.Peek();
 
-                    if (peek == '}' || peek == '~' || peek == ')' || (char.IsWhiteSpace(peek) && !buffer.ToString().Contains("[")))
+                    if (peek == '}' || peek == '~' || peek == ')' || (char.IsWhiteSpace(peek) && CanBreakAtSpace(buffer.ToString())))
                     {
                         break;
                     }
@@ -72,6 +72,12 @@ namespace HandlebarsDotNet.Compiler.Lexer
 
             return buffer.ToString().Trim();
         }
+
+        private bool CanBreakAtSpace(string buffer)
+        {
+            return (!buffer.Contains("[") || (buffer.Contains("[") && buffer.Contains("]")));
+        }
+
     }
 }
 
