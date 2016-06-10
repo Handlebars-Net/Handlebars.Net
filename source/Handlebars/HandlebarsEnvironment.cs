@@ -70,7 +70,7 @@ namespace HandlebarsDotNet
 
             public void RegisterTemplate(string templateName, Action<TextWriter, object> template)
             {
-                lock (typeof(Handlebars))
+                lock (_configuration)
                 {
                     _configuration.RegisteredTemplates.AddOrUpdate(templateName, template);
                 }
@@ -78,7 +78,7 @@ namespace HandlebarsDotNet
 
             public void RegisterHelper(string helperName, HandlebarsHelper helperFunction)
             {
-                lock (typeof(Handlebars))
+                lock (_configuration)
                 {
                     _configuration.Helpers.AddOrUpdate(helperName, helperFunction);
                 }
@@ -86,7 +86,7 @@ namespace HandlebarsDotNet
 
             public void RegisterHelper(string helperName, HandlebarsBlockHelper helperFunction)
             {
-                lock (typeof(Handlebars))
+                lock (_configuration)
                 {
                     _configuration.BlockHelpers.AddOrUpdate(helperName, helperFunction);
                 }
