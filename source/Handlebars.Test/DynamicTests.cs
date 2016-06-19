@@ -92,6 +92,8 @@ namespace HandlebarsDotNet.Test
             Assert.AreEqual("", output);
         }
 
+#if !netstandard
+
         [Test]
         public void SystemJsonTestArrays()
         {
@@ -106,6 +108,7 @@ namespace HandlebarsDotNet.Test
             Assert.AreEqual("Key1Val1Key2Val2", output);
         }
 
+#endif
 
         private class MyDynamicModel : DynamicObject
         {
