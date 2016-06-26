@@ -56,10 +56,18 @@ namespace HandlebarsDotNet.Compiler
                 Expression.IfThenElse(
                     Expression.TypeIs(iex.Sequence, typeof(IEnumerable)),
                     Expression.IfThenElse(
+#if netstandard
+                        Expression.Call(new Func<object, bool>(IsNonListDynamic).GetMethodInfo(), new[] { iex.Sequence }),
+#else
                         Expression.Call(new Func<object, bool>(IsNonListDynamic).Method, new[] { iex.Sequence }),
+#endif
                         GetDynamicIterator(iteratorBindingContext, iex),
                         Expression.IfThenElse(
+#if netstandard
+                            Expression.Call(new Func<object, bool>(IsGenericDictionary).GetMethodInfo(), new[] { iex.Sequence }),
+#else
                             Expression.Call(new Func<object, bool>(IsGenericDictionary).Method, new[] { iex.Sequence }),
+#endif
                             GetDictionaryIterator(iteratorBindingContext, iex),
                             GetEnumerableIterator(iteratorBindingContext, iex))),
                     GetObjectIterator(iteratorBindingContext, iex))
@@ -72,10 +80,18 @@ namespace HandlebarsDotNet.Compiler
             return Expression.Block(
                 Expression.Assign(contextParameter,
                     Expression.New(
+#if netstandard
+                        typeof(IteratorBindingContext).GetTypeInfo().GetConstructor(new[] { typeof(BindingContext) }),
+#else
                         typeof(IteratorBindingContext).GetConstructor(new[] { typeof(BindingContext) }),
+#endif
                         new Expression[] { CompilationContext.BindingContext })),
                 Expression.Call(
+#if netstandard
+                    new Action<IteratorBindingContext, IEnumerable, Action<TextWriter, object>, Action<TextWriter, object>>(Iterate).GetMethodInfo(),
+#else
                     new Action<IteratorBindingContext, IEnumerable, Action<TextWriter, object>, Action<TextWriter, object>>(Iterate).Method,
+#endif
                     new Expression[]
                     {
                         Expression.Convert(contextParameter, typeof(IteratorBindingContext)),
@@ -91,10 +107,18 @@ namespace HandlebarsDotNet.Compiler
             return Expression.Block(
                 Expression.Assign(contextParameter,
                     Expression.New(
+#if netstandard
+                        typeof(ObjectEnumeratorBindingContext).GetTypeInfo().GetConstructor(new[] { typeof(BindingContext) }),
+#else
                         typeof(ObjectEnumeratorBindingContext).GetConstructor(new[] { typeof(BindingContext) }),
+#endif
                         new Expression[] { CompilationContext.BindingContext })),
                 Expression.Call(
+#if netstandard
+                    new Action<ObjectEnumeratorBindingContext, object, Action<TextWriter, object>, Action<TextWriter, object>>(Iterate).GetMethodInfo(),
+#else
                     new Action<ObjectEnumeratorBindingContext, object, Action<TextWriter, object>, Action<TextWriter, object>>(Iterate).Method,
+#endif
                     new Expression[]
                     {
                         Expression.Convert(contextParameter, typeof(ObjectEnumeratorBindingContext)),
@@ -110,10 +134,18 @@ namespace HandlebarsDotNet.Compiler
             return Expression.Block(
                 Expression.Assign(contextParameter,
                     Expression.New(
+#if netstandard
+                        typeof(ObjectEnumeratorBindingContext).GetTypeInfo().GetConstructor(new[] { typeof(BindingContext) }),
+#else
                         typeof(ObjectEnumeratorBindingContext).GetConstructor(new[] { typeof(BindingContext) }),
+#endif
                         new Expression[] { CompilationContext.BindingContext })),
                 Expression.Call(
+#if netstandard
+                    new Action<ObjectEnumeratorBindingContext, IEnumerable, Action<TextWriter, object>, Action<TextWriter, object>>(Iterate).GetMethodInfo(),
+#else
                     new Action<ObjectEnumeratorBindingContext, IEnumerable, Action<TextWriter, object>, Action<TextWriter, object>>(Iterate).Method,
+#endif
                     new Expression[]
                     {
                         Expression.Convert(contextParameter, typeof(ObjectEnumeratorBindingContext)),
@@ -129,10 +161,18 @@ namespace HandlebarsDotNet.Compiler
             return Expression.Block(
                 Expression.Assign(contextParameter,
                     Expression.New(
+#if netstandard
+                        typeof(ObjectEnumeratorBindingContext).GetTypeInfo().GetConstructor(new[] { typeof(BindingContext) }),
+#else
                         typeof(ObjectEnumeratorBindingContext).GetConstructor(new[] { typeof(BindingContext) }),
+#endif
                         new Expression[] { CompilationContext.BindingContext })),
                 Expression.Call(
+#if netstandard
+                    new Action<ObjectEnumeratorBindingContext, IDynamicMetaObjectProvider, Action<TextWriter, object>, Action<TextWriter, object>>(Iterate).GetMethodInfo(),
+#else
                     new Action<ObjectEnumeratorBindingContext, IDynamicMetaObjectProvider, Action<TextWriter, object>, Action<TextWriter, object>>(Iterate).Method,
+#endif
                     new Expression[]
                     {
                         Expression.Convert(contextParameter, typeof(ObjectEnumeratorBindingContext)),
@@ -144,7 +184,11 @@ namespace HandlebarsDotNet.Compiler
 
         private static bool IsNonListDynamic(object target)
         {
+#if netstandard
+            var interfaces = target.GetType().GetTypeInfo().GetInterfaces();
+#else
             var interfaces = target.GetType().GetInterfaces();
+#endif
             return interfaces.Contains(typeof(IDynamicMetaObjectProvider))
                 && ((IDynamicMetaObjectProvider)target).GetMetaObject(Expression.Constant(target)).GetDynamicMemberNames().Any();
         }
@@ -153,8 +197,14 @@ namespace HandlebarsDotNet.Compiler
         {
             return
                 target.GetType()
+#if netstandard
+                    .GetTypeInfo().GetInterfaces()
+                    .Where(i => i.GetTypeInfo().IsGenericType)
+
+#else
                     .GetInterfaces()
                     .Where(i => i.IsGenericType)
+#endif
                     .Any(i => i.GetGenericTypeDefinition() == typeof(IDictionary<,>));
         }
 
@@ -167,10 +217,18 @@ namespace HandlebarsDotNet.Compiler
             if (HandlebarsUtils.IsTruthy(target))
             {
                 context.Index = 0;
+#if netstandard
+                foreach (MemberInfo member in target.GetType().GetTypeInfo()
+#else
                 foreach (MemberInfo member in target.GetType()
+#endif
                     .GetProperties(BindingFlags.Instance | BindingFlags.Public).OfType<MemberInfo>()
                     .Concat(
+#if netstandard
+                        target.GetType().GetTypeInfo().GetFields(BindingFlags.Public | BindingFlags.Instance)
+#else
                         target.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance)
+#endif
                     ))
                 {
                     context.Key = member.Name;
@@ -199,7 +257,11 @@ namespace HandlebarsDotNet.Compiler
             if (HandlebarsUtils.IsTruthy(target))
             {
                 context.Index = 0;
+#if netstandard
+                var keysProperty = target.GetType().GetRuntimeProperty("Keys");
+#else
                 var keysProperty = target.GetType().GetProperty("Keys");
+#endif
                 if (keysProperty != null)
                 {
                     var keys = keysProperty.GetGetMethod().Invoke(target, null) as IEnumerable<object>;
@@ -208,7 +270,11 @@ namespace HandlebarsDotNet.Compiler
                         foreach (var key in keys)
                         {
                             context.Key = key.ToString();
+#if netstandard
+                            var value = target.GetType().GetTypeInfo().GetMethod("get_Item").Invoke(target, new[] { key });
+#else
                             var value = target.GetType().GetMethod("get_Item").Invoke(target, new[] { key });
+#endif
                             context.First = (context.Index == 0);
                             template(context.TextWriter, value);
                             context.Index++;

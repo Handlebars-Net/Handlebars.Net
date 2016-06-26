@@ -64,3 +64,4 @@ packages/
 [Tt]est-[Cc]ache/
 [Tt]est-[Rr]esults/
 *.snk
+/**/project.lock.json

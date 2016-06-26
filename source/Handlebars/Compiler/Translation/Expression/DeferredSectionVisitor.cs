@@ -3,6 +3,7 @@ using System.Linq.Expressions;
 using System.Collections;
 using System.Linq;
 using System.IO;
+using System.Reflection;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -20,8 +21,11 @@ namespace HandlebarsDotNet.Compiler
 
         protected override Expression VisitDeferredSectionExpression(DeferredSectionExpression dsex)
         {
+#if netstandard
+            var method = new Action<object, BindingContext, Action<TextWriter, object>, Action<TextWriter, object>>(RenderSection).GetMethodInfo();
+#else
             var method = new Action<object, BindingContext, Action<TextWriter, object>, Action<TextWriter, object>>(RenderSection).Method;
-
+#endif
             Expression path = HandlebarsExpression.Path(dsex.Path.Path.Substring(1));
             Expression context = CompilationContext.BindingContext;
             Expression[] templates = GetDeferredSectionTemplates(dsex);

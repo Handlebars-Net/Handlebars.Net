@@ -1,0 +1,26 @@
+﻿{
+  "version": "1.0.0-*",
+  "title": "Handlebars",
+  "dependencies": {
+    "NETStandard.Library": "1.5.0-rc2-24027"
+  },
+  "buildOptions": {
+    "outputName": "Handlebars",
+    "compile": {
+      "include": "../Handlebars/**/*.cs"
+    }
+  },
+  "frameworks": {
+    "net451": {    },
+    "netstandard1.5": {
+      "buildOptions": {
+        "define": [ "netstandard" ]
+      },
+      "dependencies": {
+        "System.Dynamic.Runtime": "4.0.11-rc2-24027",
+        "System.Reflection.Extensions": "4.0.1-rc2-24027",
+        "Microsoft.CSharp": "4.0.1-rc2-24027"
+      }
+    }
+  }
+}
