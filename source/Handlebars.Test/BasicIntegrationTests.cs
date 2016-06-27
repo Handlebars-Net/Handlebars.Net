@@ -280,6 +280,23 @@ namespace HandlebarsDotNet.Test
         }
 
         [Test]
+        public void BasicDictionaryEnumeratorWithIntKeys()
+        {
+            var source = "{{#each enumerateMe}}{{this}} {{/each}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                enumerateMe = new Dictionary<int, object>
+                {
+                    { 42, "hello" },
+                    { 1000000017, "world" }
+                }
+            };
+            var result = template(data);
+            Assert.AreEqual("hello world ", result);
+        }
+
+        [Test]
         public void BasicDictionaryEnumeratorWithKey()
         {
             var source = "{{#each enumerateMe}}{{@key}}: {{this}} {{/each}}";
@@ -294,6 +311,23 @@ namespace HandlebarsDotNet.Test
             };
             var result = template(data);
             Assert.AreEqual("foo: hello bar: world ", result);
+        }
+
+        [Test]
+        public void BasicDictionaryEnumeratorWithLongKey()
+        {
+            var source = "{{#each enumerateMe}}{{@key}}: {{this}} {{/each}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                enumerateMe = new Dictionary<long, object>
+                {
+                    { 42L, "hello" },
+                    { 100000000000017L, "world" }
+                }
+            };
+            var result = template(data);
+            Assert.AreEqual("42: hello 100000000000017: world ", result);
         }
 
 

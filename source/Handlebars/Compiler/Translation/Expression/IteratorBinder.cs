@@ -264,7 +264,7 @@ namespace HandlebarsDotNet.Compiler
 #endif
                 if (keysProperty != null)
                 {
-                    var keys = keysProperty.GetGetMethod().Invoke(target, null) as IEnumerable<object>;
+                    var keys = keysProperty.GetGetMethod().Invoke(target, null) as IEnumerable;
                     if (keys != null)
                     {
                         foreach (var key in keys)
