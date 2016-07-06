@@ -1,0 +1,4 @@
+{
+  "sdk" : { "version": "1.0.0-preview2-003121"},
+  "projects": [ "Handlebars.NetStandard", "Handlebars.NetStandard.Test" ]
+}
