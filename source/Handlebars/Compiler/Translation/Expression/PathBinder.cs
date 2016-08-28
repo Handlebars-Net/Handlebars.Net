@@ -163,7 +163,7 @@ namespace HandlebarsDotNet.Compiler
                         {
                             if (fallbackToParent && context.ParentContext != null)
                             {
-                                instance = ResolveValue(context.ParentContext, context.ParentContext.Value, memberName);
+                                instance = this.ResolveValue(context.ParentContext, context.ParentContext.Value, memberName);
 
                                 if (instance is UndefinedBindingResult)
                                 {
