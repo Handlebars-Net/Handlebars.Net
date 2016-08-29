@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -35,10 +37,6 @@ namespace HandlebarsDotNet.Compiler
 	            if (partialArg is HashParametersExpression) // Indicates partial called with inline parameters
 	            {
 		            partialArg = MergeContextValues(bindingContext, (HashParametersExpression)partialArg);
-		            //Expression.Call(
-		            //         new Func<BindingContext, HashParametersExpression, object>(MergeContextValues).Method,
-		            //         bindingContext,
-		            //         Expression.Constant(pex.Argument as HashParametersExpression));
 
 	            }
 		        bindingContext = Expression.Call(
@@ -55,27 +53,28 @@ namespace HandlebarsDotNet.Compiler
 
 	    private static Expression MergeContextValues(Expression contextExpression, HashParametersExpression argument)
 	    {
-			// This is the only way to gain access to the template data object, at least at this particular point
-			// in the compilation process.
 		    var bindingContextType = typeof(BindingContext);
 		    var contextValue = Expression.Property(contextExpression, bindingContextType.GetProperty("Value"));
 			
 		    return Expression.Call(
-				new Func<object, HashParametersExpression, object>(MergeContextValues).Method,
+				new Func<object, object, object>(MergeContextValues).Method,
 				contextValue,
-				Expression.Constant(argument)
+				argument
 				);
 	    }
 
-		/// <summary>
-		/// Takes in an existing context value 
-		/// </summary>
-		/// <param name="contextValue"></param>
-		/// <param name="exp"></param>
-		/// <returns></returns>
-	    private static object MergeContextValues(object contextValue, HashParametersExpression exp)
+	    private static object MergeContextValues(object contextValue, object hashParams)
+		{
+			dynamic merged = new ExpandoObject();
+			var valueDict = merged as IDictionary<string, object>;
+			valueDict = Upsert(contextValue, valueDict);
+			valueDict = Upsert(hashParams, valueDict);
+
+			return valueDict;
+	    }
+
+	    private static IDictionary<string, object> Upsert(object contextValue, IDictionary<string, object> valueDict)
 	    {
-		    var valueDict = exp.Parameters;
 		    if (contextValue == null)
 		    {
 			    return valueDict;
@@ -101,10 +100,10 @@ namespace HandlebarsDotNet.Compiler
 				    }
 			    }
 		    }
-
 		    return valueDict;
 	    }
-        private static void InvokePartial(
+
+	    private static void InvokePartial(
             string partialName,
             BindingContext context,
             HandlebarsConfiguration configuration)
