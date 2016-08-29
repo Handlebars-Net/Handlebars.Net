@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -18,41 +19,91 @@ namespace HandlebarsDotNet.Compiler
 
         protected override Expression VisitStatementExpression(StatementExpression sex)
         {
-            if (sex.Body is PartialExpression)
+	        if (sex.Body is PartialExpression)
             {
                 return Visit(sex.Body);
             }
-            else
-            {
-                return sex;
-            }
+	        return sex;
         }
 
-        protected override Expression VisitPartialExpression(PartialExpression pex)
+	    protected override Expression VisitPartialExpression(PartialExpression pex)
         {
             Expression bindingContext = CompilationContext.BindingContext;
             if (pex.Argument != null)
             {
-                bindingContext = Expression.Call(
-                    bindingContext,
-#if netstandard
-                    typeof(BindingContext).GetTypeInfo().GetMethod("CreateChildContext"),
-#else
-                    typeof(BindingContext).GetMethod("CreateChildContext"),
-#endif
-                    pex.Argument);
+				Expression partialArg = pex.Argument;
+	            if (partialArg is HashParametersExpression) // Indicates partial called with inline parameters
+	            {
+		            partialArg = MergeContextValues(bindingContext, (HashParametersExpression)partialArg);
+		            //Expression.Call(
+		            //         new Func<BindingContext, HashParametersExpression, object>(MergeContextValues).Method,
+		            //         bindingContext,
+		            //         Expression.Constant(pex.Argument as HashParametersExpression));
+
+	            }
+		        bindingContext = Expression.Call(
+			        bindingContext,
+			        typeof(BindingContext).GetMethod("CreateChildContext"),
+					partialArg);
             }
             return Expression.Call(
-#if netstandard
-                new Action<string, BindingContext, HandlebarsConfiguration>(InvokePartial).GetMethodInfo(),
-#else
                 new Action<string, BindingContext, HandlebarsConfiguration>(InvokePartial).Method,
-#endif
                 Expression.Convert(pex.PartialName, typeof(string)),
                 bindingContext,
                 Expression.Constant(CompilationContext.Configuration));
         }
 
+	    private static Expression MergeContextValues(Expression contextExpression, HashParametersExpression argument)
+	    {
+			// This is the only way to gain access to the template data object, at least at this particular point
+			// in the compilation process.
+		    var bindingContextType = typeof(BindingContext);
+		    var contextValue = Expression.Property(contextExpression, bindingContextType.GetProperty("Value"));
+			
+		    return Expression.Call(
+				new Func<object, HashParametersExpression, object>(MergeContextValues).Method,
+				contextValue,
+				Expression.Constant(argument)
+				);
+	    }
+
+		/// <summary>
+		/// Takes in an existing context value 
+		/// </summary>
+		/// <param name="contextValue"></param>
+		/// <param name="exp"></param>
+		/// <returns></returns>
+	    private static object MergeContextValues(object contextValue, HashParametersExpression exp)
+	    {
+		    var valueDict = exp.Parameters;
+		    if (contextValue == null)
+		    {
+			    return valueDict;
+		    }
+		    if (contextValue is IDictionary)
+		    {
+			    var contextDict = (IDictionary)contextValue;
+			    foreach (var key in contextDict.Keys)
+			    {
+				    if (!valueDict.ContainsKey(key.ToString()))
+				    {
+					    valueDict.Add(key.ToString(), contextDict[key]);
+				    }
+			    }
+		    }
+		    else
+		    {
+			    foreach (var propertyInfo in contextValue.GetType().GetProperties())
+			    {
+				    if (!valueDict.ContainsKey(propertyInfo.Name))
+				    {
+					    valueDict.Add(propertyInfo.Name, propertyInfo.GetValue(contextValue, null));
+				    }
+			    }
+		    }
+
+		    return valueDict;
+	    }
         private static void InvokePartial(
             string partialName,
             BindingContext context,
