@@ -65,15 +65,14 @@ namespace HandlebarsDotNet.Compiler
 
 	    private static object MergeContextValues(object contextValue, object hashParams)
 		{
-			dynamic merged = new ExpandoObject();
-			var valueDict = merged as IDictionary<string, object>;
-			valueDict = Upsert(contextValue, valueDict);
-			valueDict = Upsert(hashParams, valueDict);
+			IDictionary<string, object> valueDict = new Dictionary<string, object>();
+			valueDict = MergeInObject(hashParams, valueDict);
+			valueDict = MergeInObject(contextValue, valueDict);
 
 			return valueDict;
 	    }
 
-	    private static IDictionary<string, object> Upsert(object contextValue, IDictionary<string, object> valueDict)
+	    private static IDictionary<string, object> MergeInObject(object contextValue, IDictionary<string, object> valueDict)
 	    {
 		    if (contextValue == null)
 		    {
