@@ -117,7 +117,7 @@ namespace HandlebarsDotNet.Compiler
 
         private object ResolveParameters(BindingContext context, HashParametersExpression hpex)
         {
-            var parameters = new Dictionary<string, object>();
+            var parameters = new HashParameterDictionary();
 
             foreach (var parameter in hpex.Parameters)
             {
@@ -140,6 +140,8 @@ namespace HandlebarsDotNet.Compiler
         private object ResolvePath(BindingContext context, string path)
         {
             var instance = context.Value;
+            var fallbackToParent = instance is HashParameterDictionary;
+
             foreach (var segment in path.Split('/'))
             {
                 if (segment == "..")
@@ -156,9 +158,22 @@ namespace HandlebarsDotNet.Compiler
                     foreach (var memberName in segment.Split('.'))
                     {
                         instance = this.ResolveValue(context, instance, memberName);
+
                         if (instance is UndefinedBindingResult)
                         {
-                            break;
+                            if (fallbackToParent && context.ParentContext != null)
+                            {
+                                instance = this.ResolveValue(context.ParentContext, context.ParentContext.Value, memberName);
+
+                                if (instance is UndefinedBindingResult)
+                                {
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                break;
+                            }
                         }
                     }
                 }

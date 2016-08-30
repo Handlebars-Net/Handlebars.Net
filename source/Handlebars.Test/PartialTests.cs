@@ -309,6 +309,58 @@ namespace HandlebarsDotNet.Test
             var result = template(data);
             Assert.AreEqual("Hello, Marc!", result);
         }
+
+        [Test]
+        public void BasicPartialWithStringParametersAndImplicitContext()
+        {
+            string source = "Hello, {{>person lastName='Smith'}}!";
+
+            var template = Handlebars.Compile(source);
+
+            var data = new
+            {
+                firstName = "Marc",
+                lastName = "Jones"
+            };
+
+            var partialSource = "{{firstName}} {{lastName}}";
+            using (var reader = new StringReader(partialSource))
+            {
+                var partialTemplate = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("person", partialTemplate);
+            }
+
+            var result = template(data);
+            Assert.AreEqual("Hello, Marc Smith!", result);
+        }
+
+        [Test]
+        public void BasicPartialWithIncompleteChildContextDoesNotFallback()
+        {
+            string source = "Hello, {{>person leadDev}}!";
+
+            var template = Handlebars.Compile(source);
+
+            var data = new
+            {
+                firstName = "Pete",
+                lastName = "Jones",
+                leadDev = new
+                {
+                    firstName = "Marc"
+                }
+            };
+
+            var partialSource = "{{firstName}} {{lastName}}";
+            using (var reader = new StringReader(partialSource))
+            {
+                var partialTemplate = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("person", partialTemplate);
+            }
+
+            var result = template(data);
+            Assert.AreEqual("Hello, Marc !", result);
+        }
     }
 }
 

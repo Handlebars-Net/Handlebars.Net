@@ -38,6 +38,7 @@
     <Compile Include="Compiler\CompilationContext.cs" />
     <Compile Include="Compiler\Structure\CommentExpression.cs" />
     <Compile Include="Compiler\Translation\Expression\CommentVisitor.cs" />
+    <Compile Include="Compiler\Translation\Expression\HashParameterDictionary.cs" />
     <Compile Include="HtmlEncoder.cs" />
     <Compile Include="Compiler\ExpressionBuilder.cs" />
     <Compile Include="Compiler\Lexer\Converter\HashParametersConverter.cs" />
