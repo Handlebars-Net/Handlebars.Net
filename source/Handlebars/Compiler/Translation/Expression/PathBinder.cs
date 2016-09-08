@@ -140,7 +140,7 @@ namespace HandlebarsDotNet.Compiler
         private object ResolvePath(BindingContext context, string path)
         {
             var instance = context.Value;
-            var fallbackToParent = instance is HashParameterDictionary;
+            var hashParameters = instance as HashParameterDictionary;
 
             foreach (var segment in path.Split('/'))
             {
@@ -161,7 +161,7 @@ namespace HandlebarsDotNet.Compiler
 
                         if (instance is UndefinedBindingResult)
                         {
-                            if (fallbackToParent && context.ParentContext != null)
+                            if (hashParameters != null && !hashParameters.ContainsKey(memberName) && context.ParentContext != null)
                             {
                                 instance = this.ResolveValue(context.ParentContext, context.ParentContext.Value, memberName);
 
