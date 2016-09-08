@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -18,42 +21,88 @@ namespace HandlebarsDotNet.Compiler
 
         protected override Expression VisitStatementExpression(StatementExpression sex)
         {
-            if (sex.Body is PartialExpression)
+	        if (sex.Body is PartialExpression)
             {
                 return Visit(sex.Body);
             }
-            else
-            {
-                return sex;
-            }
+	        return sex;
         }
 
-        protected override Expression VisitPartialExpression(PartialExpression pex)
+	    protected override Expression VisitPartialExpression(PartialExpression pex)
         {
             Expression bindingContext = CompilationContext.BindingContext;
             if (pex.Argument != null)
             {
-                bindingContext = Expression.Call(
-                    bindingContext,
-#if netstandard
-                    typeof(BindingContext).GetTypeInfo().GetMethod("CreateChildContext"),
-#else
-                    typeof(BindingContext).GetMethod("CreateChildContext"),
-#endif
-                    pex.Argument);
+				Expression partialArg = pex.Argument;
+	            if (partialArg is HashParametersExpression) // Indicates partial called with inline parameters
+	            {
+		            partialArg = MergeContextValues(bindingContext, (HashParametersExpression)partialArg);
+
+	            }
+		        bindingContext = Expression.Call(
+			        bindingContext,
+			        typeof(BindingContext).GetMethod("CreateChildContext"),
+					partialArg);
             }
             return Expression.Call(
-#if netstandard
-                new Action<string, BindingContext, HandlebarsConfiguration>(InvokePartial).GetMethodInfo(),
-#else
                 new Action<string, BindingContext, HandlebarsConfiguration>(InvokePartial).Method,
-#endif
                 Expression.Convert(pex.PartialName, typeof(string)),
                 bindingContext,
                 Expression.Constant(CompilationContext.Configuration));
         }
 
-        private static void InvokePartial(
+	    private static Expression MergeContextValues(Expression contextExpression, HashParametersExpression argument)
+	    {
+		    var bindingContextType = typeof(BindingContext);
+		    var contextValue = Expression.Property(contextExpression, bindingContextType.GetProperty("Value"));
+			
+		    return Expression.Call(
+				new Func<object, object, object>(MergeContextValues).Method,
+				contextValue,
+				argument
+				);
+	    }
+
+	    private static object MergeContextValues(object contextValue, object hashParams)
+		{
+			IDictionary<string, object> valueDict = new Dictionary<string, object>();
+			valueDict = MergeInObject(hashParams, valueDict);
+			valueDict = MergeInObject(contextValue, valueDict);
+
+			return valueDict;
+	    }
+
+	    private static IDictionary<string, object> MergeInObject(object contextValue, IDictionary<string, object> valueDict)
+	    {
+		    if (contextValue == null)
+		    {
+			    return valueDict;
+		    }
+		    if (contextValue is IDictionary)
+		    {
+			    var contextDict = (IDictionary)contextValue;
+			    foreach (var key in contextDict.Keys)
+			    {
+				    if (!valueDict.ContainsKey(key.ToString()))
+				    {
+					    valueDict.Add(key.ToString(), contextDict[key]);
+				    }
+			    }
+		    }
+		    else
+		    {
+			    foreach (var propertyInfo in contextValue.GetType().GetProperties())
+			    {
+				    if (!valueDict.ContainsKey(propertyInfo.Name))
+				    {
+					    valueDict.Add(propertyInfo.Name, propertyInfo.GetValue(contextValue, null));
+				    }
+			    }
+		    }
+		    return valueDict;
+	    }
+
+	    private static void InvokePartial(
             string partialName,
             BindingContext context,
             HandlebarsConfiguration configuration)

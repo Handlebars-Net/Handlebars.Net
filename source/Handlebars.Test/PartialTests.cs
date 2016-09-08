@@ -54,7 +54,35 @@ namespace HandlebarsDotNet.Test
             Assert.AreEqual("Hello, Marc!", result);
         }
 
-        [Test]
+		[Test]
+		public void BasicPartialWithIncompleteContextIgnoringParentContext()
+		{
+			string source = "Hello, {{>person leadDev}}!";
+
+			var template = Handlebars.Compile(source);
+
+			var data = new
+			{
+				name = "Michael",
+				last = "Williams",
+				leadDev = new
+				{
+					name = "Marc"
+				}
+			};
+
+			var partialSource = "{{name}} {{last}}";
+			using (var reader = new StringReader(partialSource))
+			{
+				var partialTemplate = Handlebars.Compile(reader);
+				Handlebars.RegisterTemplate("person", partialTemplate);
+			}
+
+			var result = template(data);
+			Assert.AreEqual("Hello, Marc !", result);
+		}
+
+		[Test]
         public void BasicPartialWithStringParameter()
         {
             string source = "Hello, {{>person first='Pete'}}!";
@@ -166,7 +194,30 @@ namespace HandlebarsDotNet.Test
             Assert.AreEqual("Hello, 1 True!", result);
         }
 
-        [Test]
+		[Test]
+		public void BasicPartialWithStringParametersAndImplicitContext()
+		{
+			string source = "Hello, {{>person last='Smith'}}!";
+
+			var template = Handlebars.Compile(source);
+
+			var data = new
+			{
+				name = "Marc"
+			};
+
+			var partialSource = "{{name}} {{last}}";
+			using (var reader = new StringReader(partialSource))
+			{
+				var partialTemplate = Handlebars.Compile(reader);
+				Handlebars.RegisterTemplate("person", partialTemplate);
+			}
+
+			var result = template(data);
+			Assert.AreEqual("Hello, Marc Smith!", result);
+		}
+
+		[Test]
         public void BasicPartialWithStringParameterIncludingExpressionChars()
         {
             string source = "Hello, {{>person first='Pe ({~te~}) '}}!";
