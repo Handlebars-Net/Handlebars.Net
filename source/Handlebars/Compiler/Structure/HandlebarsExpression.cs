@@ -85,7 +85,12 @@ namespace HandlebarsDotNet.Compiler
 
         public static PartialExpression Partial(Expression partialName, Expression argument)
         {
-            return new PartialExpression(partialName, argument);
+            return new PartialExpression(partialName, argument, null);
+        }
+
+        public static PartialExpression Partial(Expression partialName, Expression argument, Expression fallback)
+        {
+            return new PartialExpression(partialName, argument, fallback);
         }
 
         public static BoolishExpression Boolish(Expression condition)

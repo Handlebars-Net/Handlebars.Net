@@ -385,6 +385,56 @@ namespace HandlebarsDotNet.Test
             var result = template(data);
             Assert.AreEqual("Hello, Marc !", result);
         }
+
+        [Test]
+        public void BasicBlockPartial()
+        {
+            string source = "Hello, {{#>person1}}friend{{/person1}}!";
+
+            var template = Handlebars.Compile(source);
+
+            var data = new {
+                firstName = "Pete",
+                lastName = "Jones"
+            };
+
+            var result1 = template(data);
+            Assert.AreEqual ("Hello, friend!", result1);
+
+            var partialSource = "{{firstName}} {{lastName}}";
+            using (var reader = new StringReader(partialSource)) {
+                var partialTemplate = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("person1", partialTemplate);
+            }
+
+            var result2 = template(data);
+            Assert.AreEqual("Hello, Pete Jones!", result2);
+        }
+
+        [Test]
+        public void BasicBlockPartialWithArgument()
+        {
+            string source = "Hello, {{#>person2 arg='Todd'}}friend{{/person2}}!";
+
+            var template = Handlebars.Compile (source);
+
+            var data = new {
+                firstName = "Pete",
+                lastName = "Jones"
+            };
+
+            var result1 = template (data);
+            Assert.AreEqual ("Hello, friend!", result1);
+
+            var partialSource = "{{arg}}";
+            using (var reader = new StringReader (partialSource)) {
+                var partialTemplate = Handlebars.Compile (reader);
+                Handlebars.RegisterTemplate ("person2", partialTemplate);
+            }
+
+            var result2 = template (data);
+            Assert.AreEqual ("Hello, Todd!", result2);
+        }
     }
 }
 

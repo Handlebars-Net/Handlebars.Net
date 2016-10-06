@@ -13,6 +13,10 @@ namespace HandlebarsDotNet.Compiler
             {
                 context = new ConditionalBlockAccumulatorContext(item);
             }
+            else if (IsPartialBlock(item))
+            {
+                context = new PartialBlockAccumulatorContext(item);
+            }
             else if (IsBlockHelper(item, configuration))
             {
                 context = new BlockHelperAccumulatorContext(item);
@@ -50,6 +54,23 @@ namespace HandlebarsDotNet.Compiler
         {
             item = UnwrapStatement(item);
             return (item is PathExpression) && (((PathExpression)item).Path.StartsWith("#") || ((PathExpression)item).Path.StartsWith("^"));
+        }
+
+        private static bool IsPartialBlock (Expression item)
+        {
+            item = UnwrapStatement (item);
+            if (item is PathExpression)
+            {
+                return ((PathExpression)item).Path.StartsWith("#>");
+            }
+            else if (item is HelperExpression)
+            {
+                return ((HelperExpression)item).HelperName.StartsWith("#>");
+            }
+            else
+            {
+                return false;
+            }
         }
 
         protected static Expression UnwrapStatement(Expression item)

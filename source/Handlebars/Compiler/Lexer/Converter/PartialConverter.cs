@@ -22,8 +22,7 @@ namespace HandlebarsDotNet.Compiler
             while (enumerator.MoveNext())
             {
                 var item = enumerator.Current;
-                var partialToken = item as PartialToken;
-                if (partialToken != null)
+                if (item is PartialToken)
                 {
                     var arguments = AccumulateArguments(enumerator);
                     if (arguments.Count == 0)
@@ -44,13 +43,12 @@ namespace HandlebarsDotNet.Compiler
                     }
                     else if (arguments.Count == 2)
                     {
-                        yield return HandlebarsExpression.Partial(partialName, arguments[1]);
+                        yield return HandlebarsExpression.Partial(partialName, arguments [1]);
                     }
                     else
                     {
                         throw new HandlebarsCompilerException("A partial can only accept 0 or 1 arguments");
                     }
-
                     yield return enumerator.Current;
                 }
                 else

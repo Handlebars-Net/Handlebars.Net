@@ -38,22 +38,46 @@ namespace HandlebarsDotNet.Compiler
 #if netstandard
                     typeof(BindingContext).GetTypeInfo().GetMethod("CreateChildContext"),
 #else
-                    typeof(BindingContext).GetMethod("CreateChildContext"),
+                    typeof (BindingContext).GetMethod("CreateChildContext"),
 #endif
                     pex.Argument);
             }
-            return Expression.Call(
+
+            var partialInvocation = Expression.Call(
 #if netstandard
-                new Action<string, BindingContext, HandlebarsConfiguration>(InvokePartial).GetMethodInfo(),
+                new Func<string, BindingContext, HandlebarsConfiguration, bool>(InvokePartial).GetMethodInfo(),
 #else
-                new Action<string, BindingContext, HandlebarsConfiguration>(InvokePartial).Method,
+                new Func<string, BindingContext, HandlebarsConfiguration, bool>(InvokePartial).Method,
 #endif
                 Expression.Convert(pex.PartialName, typeof(string)),
                 bindingContext,
                 Expression.Constant(CompilationContext.Configuration));
+
+            var fallback = pex.Fallback;
+            if (fallback == null)
+            {
+                fallback = Expression.Call(
+#if netstandard
+                new Action<string>(HandleFailedInvocation).GetMethodInfo(),
+#else
+                new Action<string>(HandleFailedInvocation).Method,
+#endif
+                Expression.Convert(pex.PartialName, typeof(string)));
+            }
+
+            return Expression.IfThen(
+                    Expression.Not(partialInvocation),
+                    fallback);
         }
 
-        private static void InvokePartial(
+        private static void HandleFailedInvocation(
+            string partialName)
+        {
+            throw new HandlebarsRuntimeException(
+                string.Format("Referenced partial name {0} could not be resolved", partialName));
+        }
+
+        private static bool InvokePartial(
             string partialName,
             BindingContext context,
             HandlebarsConfiguration configuration)
@@ -76,11 +100,11 @@ namespace HandlebarsDotNet.Compiler
                 }
                 else
                 {
-                    throw new HandlebarsRuntimeException(
-                        string.Format("Referenced partial name {0} could not be resolved", partialName));
+                    return false;
                 }
             }
             configuration.RegisteredTemplates[partialName](context.TextWriter, context);
+            return true;
         }
     }
 }

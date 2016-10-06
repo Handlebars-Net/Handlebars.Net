@@ -36,9 +36,9 @@ namespace HandlebarsDotNet.Compiler
                 var compilationContext = new CompilationContext(_configuration);
                 var expression = CreateExpressionBlock(expressions);
                 expression = CommentVisitor.Visit(expression, compilationContext);
-                expression = StaticReplacer.Replace(expression, compilationContext);
                 expression = UnencodedStatementVisitor.Visit(expression, compilationContext);
                 expression = PartialBinder.Bind(expression, compilationContext);
+                expression = StaticReplacer.Replace(expression, compilationContext);
                 expression = IteratorBinder.Bind(expression, compilationContext);
                 expression = BlockHelperFunctionBinder.Bind(expression, compilationContext);
                 expression = DeferredSectionVisitor.Bind(expression, compilationContext);

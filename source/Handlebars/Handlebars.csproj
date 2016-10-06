@@ -130,6 +130,7 @@
     <Compile Include="Compiler\Structure\SubExpressionExpression.cs" />
     <Compile Include="Compiler\Lexer\Converter\SubExpressionConverter.cs" />
     <Compile Include="Compiler\Translation\Expression\SubExpressionVisitor.cs" />
+    <Compile Include="Compiler\Lexer\Converter\BlockAccumulators\PartialBlockAccumulatorContext.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
 </Project>
