@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
     <id>Handlebars.Net</id>
-    <version>1.7.1-rc2-24027-0003</version>
+    <version>1.8.0</version>
     <title>Handlebars.Net</title>
     <authors>Rex Morgan</authors>
     <projectUrl>https://github.com/rexm/Handlebars.Net</projectUrl>
@@ -11,13 +11,13 @@
     <description>Blistering-fast Handlebars.js templates in your .NET application.</description>
     <summary>Blistering-fast Handlebars.js templates in your .NET application.</summary>
     <tags>handlebars mustache templating engine compiler</tags>
-    <releaseNotes>Now supports net standard 1.5</releaseNotes>
+    <releaseNotes>Now supports "dotnet core" / net standard 1.5! Also added support for inline partials. Also includes fixes for more complicated scenarios with hash parameters, and improved support for literals.</releaseNotes>
     <dependencies>
       <group targetFramework=".NETStandard1.5">
-        <dependency id="System.Dynamic.Runtime" version="4.0.11-rc2-24027" />
-        <dependency id="System.Reflection.Extensions" version="4.0.1-rc2-24027" />
-        <dependency id="Microsoft.CSharp" version="4.0.1-rc2-24027" />
-        <dependency id="NETStandard.Library" version="1.5.0-rc2-24027" />
+        <dependency id="System.Dynamic.Runtime" version="4.0.11" />
+        <dependency id="System.Reflection.Extensions" version="4.0.1" />
+        <dependency id="Microsoft.CSharp" version="4.0.1" />
+        <dependency id="NETStandard.Library" version="1.6.0" />
       </group>
     </dependencies>
   </metadata>
