@@ -97,6 +97,11 @@ namespace HandlebarsDotNet.Compiler
                             writer.Write(compiled(o));
                         });
                     }
+                    else
+                    {
+                        // Failed to find partial in filesystem
+                        return false;
+                    }
                 }
                 else
                 {
