@@ -5,6 +5,8 @@ using HandlebarsDotNet.Compiler;
 
 namespace HandlebarsDotNet
 {
+    public partial class Handlebars
+    {
         public class HandlebarsEnvironment : IHandlebars
         {
             private readonly HandlebarsConfiguration _configuration;
@@ -108,5 +110,5 @@ namespace HandlebarsDotNet
                 }
             }
         }
- 
+    }
 }
