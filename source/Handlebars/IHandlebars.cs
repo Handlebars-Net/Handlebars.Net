@@ -15,7 +15,9 @@ namespace HandlebarsDotNet
 
         HandlebarsConfiguration Configuration { get; }
 
-        void RegisterTemplate(string templateName, Action<TextWriter, object> template);
+		IHandlebarsCompiler Compiler { get; }
+
+		void RegisterTemplate(string templateName, Action<TextWriter, object> template);
 
         void RegisterHelper(string helperName, HandlebarsHelper helperFunction);
 

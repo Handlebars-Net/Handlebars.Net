@@ -7,10 +7,10 @@ namespace HandlebarsDotNet
 {
     public partial class Handlebars
     {
-        private class HandlebarsEnvironment : IHandlebars
+        public class HandlebarsEnvironment : IHandlebars
         {
             private readonly HandlebarsConfiguration _configuration;
-            private readonly HandlebarsCompiler _compiler;
+            private readonly IHandlebarsCompiler _compiler;
 
             public HandlebarsEnvironment(HandlebarsConfiguration configuration)
             {
@@ -46,7 +46,13 @@ namespace HandlebarsDotNet
                 }
             }
 
-            public Action<TextWriter, object> Compile(TextReader template)
+			public IHandlebarsCompiler Compiler {
+				get {
+					return this._compiler;
+				}
+			}
+
+			public Action<TextWriter, object> Compile(TextReader template)
             {
                 return _compiler.Compile(template);
             }

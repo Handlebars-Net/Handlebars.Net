@@ -10,7 +10,7 @@ using HandlebarsDotNet.Compiler.Lexer;
 
 namespace HandlebarsDotNet.Compiler
 {
-    internal class HandlebarsCompiler
+    internal class HandlebarsCompiler : IHandlebarsCompiler
     {
         private Tokenizer _tokenizer;
         private FunctionBuilder _functionBuilder;
@@ -25,14 +25,24 @@ namespace HandlebarsDotNet.Compiler
             _functionBuilder = new FunctionBuilder(configuration);
         }
 
-        public Action<TextWriter, object> Compile(TextReader source)
+		public IEnumerable<IToken> Tokenize( TextReader source ) {
+		    return _tokenizer.Tokenize( source ).ToList();
+		}
+
+		public IEnumerable<Expression> ExpressionBuilder( IEnumerable<IToken> tokens ) {
+			return _expressionBuilder.ConvertTokensToExpressions( tokens );
+		}
+
+		public Action<TextWriter, object> FunctionBuilder( IEnumerable<Expression> expressions, string templatePath = null ) {
+			return _functionBuilder.Compile( expressions, templatePath );
+		}
+
+		public Action<TextWriter, object> Compile(TextReader source)
         {
-            var tokens = _tokenizer.Tokenize(source).ToList();
-            var expressions = _expressionBuilder.ConvertTokensToExpressions(tokens);
-            return _functionBuilder.Compile(expressions);
+			return FunctionBuilder( ExpressionBuilder( Tokenize( source ) ) );
         }
 
-        internal Action<TextWriter, object> CompileView(string templatePath)
+		public Action<TextWriter, object> CompileView(string templatePath)
         {
             var fs = _configuration.FileSystem;
             if (fs == null) throw new InvalidOperationException("Cannot compile view when configuration.FileSystem is not set");

@@ -36,6 +36,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Compiler\CompilationContext.cs" />
+    <Compile Include="Compiler\IHandlebarsCompiler.cs" />
+    <Compile Include="Compiler\Lexer\Tokens\IToken.cs" />
     <Compile Include="Compiler\Structure\CommentExpression.cs" />
     <Compile Include="Compiler\Translation\Expression\CommentVisitor.cs" />
     <Compile Include="Compiler\Translation\Expression\HashParameterDictionary.cs" />
