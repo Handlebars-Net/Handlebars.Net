@@ -2,7 +2,7 @@ using System;
 
 namespace HandlebarsDotNet.Compiler.Lexer
 {
-    internal enum TokenType
+    public enum TokenType
     {
         Static = 0,
         StartExpression = 1,

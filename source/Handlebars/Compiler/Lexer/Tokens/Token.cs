@@ -2,7 +2,7 @@
 
 namespace HandlebarsDotNet.Compiler.Lexer
 {
-    internal abstract class Token
+    internal abstract class Token : IToken
     {
         public abstract TokenType Type { get; }
 
