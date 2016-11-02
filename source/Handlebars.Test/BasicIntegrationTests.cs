@@ -21,6 +21,43 @@ namespace HandlebarsDotNet.Test
             Assert.AreEqual("Hello, Handlebars.Net!", result);
         }
 
+		[Test]
+        public void BasicPathUnresolvedBindingFormatter()
+        {
+            var source = "Hello, {{foo}}!";
+
+	        var config = new HandlebarsConfiguration
+	        {
+		        UnresolvedBindingFormatter = "('{0}' is undefined)"
+	        };
+	        var handlebars = Handlebars.Create( config );
+
+            var template = handlebars.Compile(source);
+            var data = new {
+                name = "Handlebars.Net"
+            };
+            var result = template(data);
+            Assert.AreEqual("Hello, ('foo' is undefined)!", result);
+        }
+
+		[Test]
+        public void BasicPathThrowOnUnresolvedBindingExpression()
+        {
+            var source = "Hello, {{foo}}!";
+
+            var config = new HandlebarsConfiguration
+	        {
+		        ThrowOnUnresolvedBindingExpression = true
+	        };
+	        var handlebars = Handlebars.Create( config );
+	        var template = handlebars.Compile( source );
+
+            var data = new {
+                name = "Handlebars.Net"
+            };
+	        Assert.Throws<Exception>( () => template( data ) );
+        }
+
         [Test]
         public void BasicPathWhiteSpace()
         {

@@ -159,22 +159,23 @@ namespace HandlebarsDotNet.Compiler
                     {
                         instance = this.ResolveValue(context, instance, memberName);
 
-                        if (instance is UndefinedBindingResult)
-                        {
-                            if (hashParameters != null && !hashParameters.ContainsKey(memberName) && context.ParentContext != null)
-                            {
-                                instance = this.ResolveValue(context.ParentContext, context.ParentContext.Value, memberName);
+	                    if (!( instance is UndefinedBindingResult ))
+							continue;
 
-                                if (instance is UndefinedBindingResult)
-                                {
-                                    break;
-                                }
-                            }
-                            else
-                            {
-                                break;
-                            }
-                        }
+	                    if (hashParameters == null || hashParameters.ContainsKey( memberName ) || context.ParentContext == null)
+	                    {
+							if (CompilationContext.Configuration.ThrowOnUnresolvedBindingExpression)
+			                    throw new Exception( ( instance as UndefinedBindingResult ).Value + " is undefined" );
+		                    return instance;
+	                    }
+
+	                    instance = ResolveValue( context.ParentContext, context.ParentContext.Value, memberName );
+	                    if (instance is UndefinedBindingResult)
+	                    {
+		                    if (CompilationContext.Configuration.ThrowOnUnresolvedBindingExpression)
+			                    throw new Exception( ( instance as UndefinedBindingResult ).Value + " is undefined" );
+		                    return instance;
+	                    }
                     }
                 }
             }
@@ -183,7 +184,7 @@ namespace HandlebarsDotNet.Compiler
 
         private object ResolveValue(BindingContext context, object instance, string segment)
         {
-            object resolvedValue = new UndefinedBindingResult();
+	        object resolvedValue = new UndefinedBindingResult( segment, CompilationContext.Configuration );
             if (segment.StartsWith("@"))
             {
                 var contextValue = context.GetContextVariable(segment.Substring(1));
@@ -216,12 +217,12 @@ namespace HandlebarsDotNet.Compiler
                 {
                     if (match.Groups["index"].Success == false || int.TryParse(match.Groups["index"].Value, out index) == false)
                     {
-                        return new UndefinedBindingResult();
+                        return new UndefinedBindingResult(memberName, CompilationContext.Configuration);
                     }
 
                     var result = enumerable.ElementAtOrDefault(index);
                     
-                    return result ?? new UndefinedBindingResult();
+                    return result ?? new UndefinedBindingResult(memberName, CompilationContext.Configuration);
                 }
             }
             var resolvedMemberName = this.ResolveMemberName(instance, memberName);
@@ -237,13 +238,13 @@ namespace HandlebarsDotNet.Compiler
                 {
                     var result =  GetProperty(instance, resolvedMemberName);
                     if (result == null)
-                        return new UndefinedBindingResult();
+                        return new UndefinedBindingResult(resolvedMemberName, CompilationContext.Configuration);
 
                     return result;
                 }
                 catch
                 {
-                    return new UndefinedBindingResult();
+                    return new UndefinedBindingResult(resolvedMemberName, CompilationContext.Configuration);
                 }
             }
 
@@ -270,7 +271,7 @@ namespace HandlebarsDotNet.Compiler
                         catch (Exception)
                         {
                             // Can't convert to key type.
-                            return new UndefinedBindingResult();
+                            return new UndefinedBindingResult(resolvedMemberName, CompilationContext.Configuration);
                         }
                     }
                 }
@@ -290,7 +291,7 @@ namespace HandlebarsDotNet.Compiler
                 else
                 {
                     // Key doesn't exist.
-                    return new UndefinedBindingResult();
+                    return new UndefinedBindingResult(resolvedMemberName, CompilationContext.Configuration);
                 }
             }
             // Check if the instance is IDictionary (ie, System.Collections.Hashtable)
@@ -315,7 +316,7 @@ namespace HandlebarsDotNet.Compiler
             MemberInfo preferredMember;
             if (members.Length == 0)
             {
-                return new UndefinedBindingResult();
+                return new UndefinedBindingResult(resolvedMemberName, CompilationContext.Configuration);
             }
             else if (members.Length > 1)
             {
@@ -330,14 +331,14 @@ namespace HandlebarsDotNet.Compiler
             if (propertyInfo != null)
             {
                 var propertyValue = propertyInfo.GetValue(instance, null);
-                return propertyValue ?? new UndefinedBindingResult();
+                return propertyValue ?? new UndefinedBindingResult(resolvedMemberName, CompilationContext.Configuration);
             }
             if (preferredMember is FieldInfo)
             {
                 var fieldValue = ((FieldInfo)preferredMember).GetValue(instance);
-                return fieldValue ?? new UndefinedBindingResult();
+                return fieldValue ?? new UndefinedBindingResult(resolvedMemberName, CompilationContext.Configuration);
             }
-            return new UndefinedBindingResult();
+            return new UndefinedBindingResult(resolvedMemberName, CompilationContext.Configuration);
         }
 
         static Type FirstGenericDictionaryTypeInstance(Type instanceType)
