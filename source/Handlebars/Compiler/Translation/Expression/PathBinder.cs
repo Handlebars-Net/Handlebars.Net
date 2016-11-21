@@ -27,7 +27,7 @@ namespace HandlebarsDotNet.Compiler
         {
             return Expression.Block(
                 node.Variables,
-                node.Expressions.Select(expr => Visit(expr)));
+                node.Expressions.Select( Visit ) );
         }
 
         protected override Expression VisitUnary(UnaryExpression node)
@@ -41,9 +41,9 @@ namespace HandlebarsDotNet.Compiler
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
             return Expression.Call(
-                Visit(node.Object),
+                Visit( node.Object ),
                 node.Method,
-                node.Arguments.Select(n => Visit(n)));
+                node.Arguments.Select( Visit ) );
         }
 
         protected override Expression VisitConditional(ConditionalExpression node)
@@ -73,8 +73,7 @@ namespace HandlebarsDotNet.Compiler
                     Expression.Property(
                         CompilationContext.BindingContext,
                         "TextWriter"),
-                    writeMethod,
-                    new[] { Visit(sex.Body) });
+                    writeMethod, Visit(sex.Body) );
             }
             else
             {
@@ -99,7 +98,7 @@ namespace HandlebarsDotNet.Compiler
         {
             return HandlebarsExpression.Helper(
                 hex.HelperName,
-                hex.Arguments.Select(arg => Visit(arg)));
+                hex.Arguments.Select(Visit));
         }
 
         protected override Expression VisitHashParametersExpression(HashParametersExpression hpex)
@@ -157,7 +156,7 @@ namespace HandlebarsDotNet.Compiler
                 {
                     foreach (var memberName in segment.Split('.'))
                     {
-                        instance = this.ResolveValue(context, instance, memberName);
+                        instance = ResolveValue(context, instance, memberName);
 
 	                    if (!( instance is UndefinedBindingResult ))
 							continue;
@@ -208,13 +207,16 @@ namespace HandlebarsDotNet.Compiler
 
         private object AccessMember(object instance, string memberName)
         {
+            if ( instance == null )
+                return new UndefinedBindingResult(memberName, CompilationContext.Configuration);
+
             var enumerable = instance as IEnumerable<object>;
             if (enumerable != null)
             {
-                int index;
                 var match = IndexRegex.Match(memberName);
                 if (match.Success)
                 {
+                    int index;
                     if (match.Groups["index"].Success == false || int.TryParse(match.Groups["index"].Value, out index) == false)
                     {
                         return new UndefinedBindingResult(memberName, CompilationContext.Configuration);
@@ -225,7 +227,7 @@ namespace HandlebarsDotNet.Compiler
                     return result ?? new UndefinedBindingResult(memberName, CompilationContext.Configuration);
                 }
             }
-            var resolvedMemberName = this.ResolveMemberName(instance, memberName);
+            var resolvedMemberName = ResolveMemberName(instance, memberName);
             var instanceType = instance.GetType();
             //crude handling for dynamic objects that don't have metadata
 #if netstandard
@@ -282,9 +284,9 @@ namespace HandlebarsDotNet.Compiler
                     return instanceType.GetTypeInfo().GetMethod("get_Item").Invoke(instance, new object[] { key });
                 }
 #else
-                if ((bool)instanceType.GetMethod("ContainsKey").Invoke(instance, new object[] { key }))
+                if ((bool)instanceType.GetMethod("ContainsKey").Invoke(instance, new[] { key }))
                 {
-                    return instanceType.GetMethod("get_Item").Invoke(instance, new object[] { key });
+                    return instanceType.GetMethod("get_Item").Invoke(instance, new[] { key });
                 }
 #endif
 
@@ -369,7 +371,7 @@ namespace HandlebarsDotNet.Compiler
 
         private string ResolveMemberName(object instance, string memberName)
         {
-            var resolver = this.CompilationContext.Configuration.ExpressionNameResolver;
+            var resolver = CompilationContext.Configuration.ExpressionNameResolver;
             return resolver != null ? resolver.ResolveExpressionName(instance, memberName) : memberName;
         }
     }
