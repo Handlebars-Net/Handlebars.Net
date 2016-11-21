@@ -108,8 +108,19 @@ namespace HandlebarsDotNet.Compiler
                     return false;
                 }
             }
-            configuration.RegisteredTemplates[partialName](context.TextWriter, context);
-            return true;
+
+            try
+            {
+                configuration.RegisteredTemplates[partialName]( context.TextWriter, context );
+                return true;
+            }
+            catch ( Exception exception )
+            {
+                throw new HandlebarsRuntimeException(
+                    $"Runtime error while rendering partial '{partialName}', see inner exception for more information",
+                    exception );
+            }
+
         }
     }
 }

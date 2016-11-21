@@ -67,6 +67,7 @@
     <Compile Include="ComplexIntegrationTests.cs" />
     <Compile Include="CustomConfigurationTests.cs" />
     <Compile Include="DynamicTests.cs" />
+    <Compile Include="ExceptionTests.cs" />
     <Compile Include="HelperTests.cs" />
     <Compile Include="TripleStashTests.cs" />
     <Compile Include="PartialTests.cs" />

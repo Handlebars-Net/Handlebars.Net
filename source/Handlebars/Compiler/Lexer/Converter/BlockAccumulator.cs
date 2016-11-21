@@ -61,7 +61,8 @@ namespace HandlebarsDotNet.Compiler
                     context.HandleElement(item);
                 }
             }
-            throw new HandlebarsCompilerException("Reached end of template before block expression was closed");
+            throw new HandlebarsCompilerException(
+                $"Reached end of template before block expression '{context.Name}' was closed");
         }
 
         private Expression UnwrapStatement(Expression item)

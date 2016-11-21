@@ -18,6 +18,8 @@ namespace HandlebarsDotNet.Compiler
             _startingNode = (HelperExpression)startingNode;
         }
 
+        public string BlockName => _startingNode.HelperName;
+
         public override void HandleElement(Expression item)
         {
             if (IsElseBlock(item))
