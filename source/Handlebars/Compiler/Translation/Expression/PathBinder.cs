@@ -159,23 +159,23 @@ namespace HandlebarsDotNet.Compiler
                     {
                         instance = this.ResolveValue(context, instance, memberName);
 
-	                    if (!( instance is UndefinedBindingResult ))
-							continue;
+                        if (!( instance is UndefinedBindingResult ))
+                            continue;
 
-	                    if (hashParameters == null || hashParameters.ContainsKey( memberName ) || context.ParentContext == null)
-	                    {
-							if (CompilationContext.Configuration.ThrowOnUnresolvedBindingExpression)
-			                    throw new Exception( ( instance as UndefinedBindingResult ).Value + " is undefined" );
-		                    return instance;
-	                    }
+                        if (hashParameters == null || hashParameters.ContainsKey( memberName ) || context.ParentContext == null)
+                        {
+                            if (CompilationContext.Configuration.ThrowOnUnresolvedBindingExpression)
+                                throw new HandlebarsUndefinedBindingException(path, (instance as UndefinedBindingResult).Value);
+                            return instance;
+                        }
 
-	                    instance = ResolveValue( context.ParentContext, context.ParentContext.Value, memberName );
-	                    if (instance is UndefinedBindingResult)
-	                    {
-		                    if (CompilationContext.Configuration.ThrowOnUnresolvedBindingExpression)
-			                    throw new Exception( ( instance as UndefinedBindingResult ).Value + " is undefined" );
-		                    return instance;
-	                    }
+                        instance = ResolveValue( context.ParentContext, context.ParentContext.Value, memberName );
+                        if (instance is UndefinedBindingResult)
+                        {
+                            if (CompilationContext.Configuration.ThrowOnUnresolvedBindingExpression)
+                                throw new HandlebarsUndefinedBindingException(path, (instance as UndefinedBindingResult).Value);
+                            return instance;
+                        }
                     }
                 }
             }

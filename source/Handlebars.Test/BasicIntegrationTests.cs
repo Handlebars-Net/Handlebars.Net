@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
+using HandlebarsDotNet.Compiler;
 
 namespace HandlebarsDotNet.Test
 {
@@ -55,7 +56,41 @@ namespace HandlebarsDotNet.Test
             var data = new {
                 name = "Handlebars.Net"
             };
-	        Assert.Throws<Exception>( () => template( data ) );
+	        Assert.Throws<HandlebarsUndefinedBindingException>( () => template( data ) );
+        }
+
+        [Test]
+        public void AssertHandlebarsUndefinedBindingException()
+        {
+            var source = "Hello, {{person.firstname}} {{person.lastname}}!";
+
+            var config = new HandlebarsConfiguration
+            {
+                ThrowOnUnresolvedBindingExpression = true
+            };
+            var handlebars = Handlebars.Create(config);
+            var template = handlebars.Compile(source);
+
+            var data = new
+            {
+                person = new
+                {
+                    firstname = "Erik"
+                }
+            };
+
+            try
+            {
+                template(data);
+            }
+            catch (HandlebarsUndefinedBindingException ex)
+            {
+                Assert.AreEqual("person.lastname", ex.Path);
+                Assert.AreEqual("lastname", ex.MissingKey);
+                return;
+            }
+
+            Assert.Fail("Exception is expected.");
         }
 
         [Test]
