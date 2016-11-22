@@ -19,6 +19,8 @@ namespace HandlebarsDotNet.Compiler
             _startingNode = (HelperExpression)startingNode;
         }
 
+        public string HelperName => _startingNode.HelperName;
+
         public override void HandleElement(Expression item)
         {
             if (IsInversionBlock(item))

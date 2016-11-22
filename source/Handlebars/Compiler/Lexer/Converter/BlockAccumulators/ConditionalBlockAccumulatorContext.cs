@@ -7,25 +7,24 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class ConditionalBlockAccumulatorContext : BlockAccumulatorContext
     {
-        private List<ConditionalExpression> _conditionalBlock = new List<ConditionalExpression>();
+        private readonly List<ConditionalExpression> _conditionalBlock = new List<ConditionalExpression>();
         private Expression _currentCondition;
         private List<Expression> _bodyBuffer = new List<Expression>();
-        private readonly bool _testType;
-        private readonly string _blockName;
+        public string BlockName { get; }
 
         public ConditionalBlockAccumulatorContext(Expression startingNode)
             : base(startingNode)
         {
             startingNode = UnwrapStatement(startingNode);
-            _blockName = ((HelperExpression)startingNode).HelperName.Replace("#", "");
-            if (new [] { "if", "unless" }.Contains(_blockName) == false)
+            BlockName = ((HelperExpression)startingNode).HelperName.Replace("#", "");
+            if (new [] { "if", "unless" }.Contains(BlockName) == false)
             {
                 throw new HandlebarsCompilerException(string.Format(
-                        "Tried to convert {0} expression to conditional block", _blockName));
+                        "Tried to convert {0} expression to conditional block", BlockName));
             }
-            _testType = _blockName == "if";
+            var testType = BlockName == "if";
             var argument = HandlebarsExpression.Boolish(((HelperExpression)startingNode).Arguments.Single());
-            _currentCondition = _testType ? (Expression)argument : Expression.Not(argument);
+            _currentCondition = testType ? (Expression)argument : Expression.Not(argument);
         }
 
         public override void HandleElement(Expression item)
@@ -107,7 +106,7 @@ namespace HandlebarsDotNet.Compiler
         private bool IsClosingNode(Expression item)
         {
             item = UnwrapStatement(item);
-            return item is PathExpression && ((PathExpression)item).Path == "/" + _blockName;
+            return item is PathExpression && ((PathExpression)item).Path == "/" + BlockName;
         }
 
         private static IEnumerable<Expression> UnwrapBlockExpression(IEnumerable<Expression> body)
