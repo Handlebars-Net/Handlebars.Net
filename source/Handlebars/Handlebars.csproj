@@ -36,6 +36,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Compiler\CompilationContext.cs" />
+    <Compile Include="Compiler\Translation\Expression\HandlebarsUndefinedBindingException.cs" />
     <Compile Include="Compiler\Structure\CommentExpression.cs" />
     <Compile Include="Compiler\Translation\Expression\CommentVisitor.cs" />
     <Compile Include="Compiler\Translation\Expression\HashParameterDictionary.cs" />
