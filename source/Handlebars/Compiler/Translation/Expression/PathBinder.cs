@@ -138,6 +138,16 @@ namespace HandlebarsDotNet.Compiler
         //TODO: make path resolution logic smarter
         private object ResolvePath(BindingContext context, string path)
         {
+	        var containsVariable = path.StartsWith( "@" );
+	        if(containsVariable)
+	        {
+		        path = path.Substring( 1 );
+		        if(path.Contains( ".." ))
+		        {
+			        context = context.ParentContext;
+		        }
+	        }
+
             var instance = context.Value;
             var hashParameters = instance as HashParameterDictionary;
 
@@ -148,13 +158,17 @@ namespace HandlebarsDotNet.Compiler
                     context = context.ParentContext;
                     if (context == null)
                     {
-                        throw new HandlebarsCompilerException("Path expression tried to reference parent of root");
+						if (containsVariable) return string.Empty;
+						
+						throw new HandlebarsCompilerException("Path expression tried to reference parent of root");
                     }
                     instance = context.Value;
                 }
                 else
                 {
-                    foreach (var memberName in segment.Split('.'))
+	                var objectPropertiesChain = containsVariable ? "@" + segment:  segment;
+
+                    foreach (var memberName in objectPropertiesChain.Split('.'))
                     {
                         instance = ResolveValue(context, instance, memberName);
 
