@@ -138,15 +138,15 @@ namespace HandlebarsDotNet.Compiler
         //TODO: make path resolution logic smarter
         private object ResolvePath(BindingContext context, string path)
         {
-	        var containsVariable = path.StartsWith( "@" );
-	        if(containsVariable)
-	        {
-		        path = path.Substring( 1 );
-		        if(path.Contains( ".." ))
-		        {
-			        context = context.ParentContext;
-		        }
-	        }
+            var containsVariable = path.StartsWith( "@" );
+            if(containsVariable)
+            {
+                path = path.Substring( 1 );
+                if(path.Contains( ".." ))
+                {
+                    context = context.ParentContext;
+                }
+            }
 
             var instance = context.Value;
             var hashParameters = instance as HashParameterDictionary;
@@ -158,15 +158,15 @@ namespace HandlebarsDotNet.Compiler
                     context = context.ParentContext;
                     if (context == null)
                     {
-						if (containsVariable) return string.Empty;
-						
-						throw new HandlebarsCompilerException("Path expression tried to reference parent of root");
+                        if (containsVariable) return string.Empty;
+                        
+                        throw new HandlebarsCompilerException("Path expression tried to reference parent of root");
                     }
                     instance = context.Value;
                 }
                 else
                 {
-	                var objectPropertiesChain = containsVariable ? "@" + segment:  segment;
+                    var objectPropertiesChain = containsVariable ? "@" + segment:  segment;
 
                     foreach (var memberName in objectPropertiesChain.Split('.'))
                     {
@@ -197,7 +197,7 @@ namespace HandlebarsDotNet.Compiler
 
         private object ResolveValue(BindingContext context, object instance, string segment)
         {
-	        object resolvedValue = new UndefinedBindingResult( segment, CompilationContext.Configuration );
+            object resolvedValue = new UndefinedBindingResult( segment, CompilationContext.Configuration );
             if (segment.StartsWith("@"))
             {
                 var contextValue = context.GetContextVariable(segment.Substring(1));

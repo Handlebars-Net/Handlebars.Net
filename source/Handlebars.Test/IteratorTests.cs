@@ -45,139 +45,139 @@ namespace HandlebarsDotNet.Test
             Assert.AreEqual("Hello,\n0. Erik\n1. Helen", result);
         }
 
-		[Test]
-		public void WithParentIndex()
-		{
-			var source = @"
-				{{#each level1}}
-					id={{id}}
-					index=[{{@../../index}}:{{@../index}}:{{@index}}]
-					first=[{{@../../first}}:{{@../first}}:{{@first}}]
-					last=[{{@../../last}}:{{@../last}}:{{@last}}]
-					{{#each level2}}
-						id={{id}}
-						index=[{{@../../index}}:{{@../index}}:{{@index}}]
-						first=[{{@../../first}}:{{@../first}}:{{@first}}]
-						last=[{{@../../last}}:{{@../last}}:{{@last}}]
-						{{#each level3}}
-							id={{id}}
-							index=[{{@../../index}}:{{@../index}}:{{@index}}]
-							first=[{{@../../first}}:{{@../first}}:{{@first}}]
-							last=[{{@../../last}}:{{@../last}}:{{@last}}]
-						{{/each}}
-					{{/each}}	
-				{{/each}}";
-			var template = Handlebars.Compile( source );
-			var data = new
+        [Test]
+        public void WithParentIndex()
+        {
+            var source = @"
+                {{#each level1}}
+                    id={{id}}
+                    index=[{{@../../index}}:{{@../index}}:{{@index}}]
+                    first=[{{@../../first}}:{{@../first}}:{{@first}}]
+                    last=[{{@../../last}}:{{@../last}}:{{@last}}]
+                    {{#each level2}}
+                        id={{id}}
+                        index=[{{@../../index}}:{{@../index}}:{{@index}}]
+                        first=[{{@../../first}}:{{@../first}}:{{@first}}]
+                        last=[{{@../../last}}:{{@../last}}:{{@last}}]
+                        {{#each level3}}
+                            id={{id}}
+                            index=[{{@../../index}}:{{@../index}}:{{@index}}]
+                            first=[{{@../../first}}:{{@../first}}:{{@first}}]
+                            last=[{{@../../last}}:{{@../last}}:{{@last}}]
+                        {{/each}}
+                    {{/each}}    
+                {{/each}}";
+            var template = Handlebars.Compile( source );
+            var data = new
                 {
                     level1 = new[]{
-						new {
-							id = "0",
-							level2 = new[]{
+                        new {
+                            id = "0",
+                            level2 = new[]{
                                 new {
-									id = "0-0",
-									level3 = new[]{
-										new { id = "0-0-0" },
-										new { id = "0-0-1" }
-									}
-								},
-								new {
-									id = "0-1",
-									level3 = new[]{
-										new { id = "0-1-0" },
-										new { id = "0-1-1" }
-									}
-								}
-							}
-						},
-						new {
-							id = "1",
-							level2 = new[]{
-								new {
-									id = "1-0",
-									level3 = new[]{
-										new { id = "1-0-0" },
-										new { id = "1-0-1" }
-									}
-								},
-								new {
-									id = "1-1",
-									level3 = new[]{
-										new { id = "1-1-0" },
-										new { id = "1-1-1" }
-									}
-								}
-							}
-						}
-					}
-			};
+                                    id = "0-0",
+                                    level3 = new[]{
+                                        new { id = "0-0-0" },
+                                        new { id = "0-0-1" }
+                                    }
+                                },
+                                new {
+                                    id = "0-1",
+                                    level3 = new[]{
+                                        new { id = "0-1-0" },
+                                        new { id = "0-1-1" }
+                                    }
+                                }
+                            }
+                        },
+                        new {
+                            id = "1",
+                            level2 = new[]{
+                                new {
+                                    id = "1-0",
+                                    level3 = new[]{
+                                        new { id = "1-0-0" },
+                                        new { id = "1-0-1" }
+                                    }
+                                },
+                                new {
+                                    id = "1-1",
+                                    level3 = new[]{
+                                        new { id = "1-1-0" },
+                                        new { id = "1-1-1" }
+                                    }
+                                }
+                            }
+                        }
+                    }
+            };
 
-			var result = template( data );
+            var result = template( data );
 
-			const string expected = @"
-							id=0
-							index=[::0]
-							first=[::True]
-							last=[::False]
-								id=0-0
-								index=[:0:0]
-								first=[:True:True]
-								last=[:False:False]
-									id=0-0-0
-									index=[0:0:0]
-									first=[True:True:True]
-									last=[False:False:False]
-									id=0-0-1
-									index=[0:0:1]
-									first=[True:True:False]
-									last=[False:False:True]
-								id=0-1
-								index=[:0:1]
-								first=[:True:False]
-								last=[:False:True]
-									id=0-1-0
-									index=[0:1:0]
-									first=[True:False:True]
-									last=[False:True:False]
-									id=0-1-1
-									index=[0:1:1]
-									first=[True:False:False]
-									last=[False:True:True]
-							id=1
-							index=[::1]
-							first=[::False]
-							last=[::True]
-								id=1-0
-								index=[:1:0]
-								first=[:False:True]
-								last=[:True:False]
-									id=1-0-0
-									index=[1:0:0]
-									first=[False:True:True]
-									last=[True:False:False]
-									id=1-0-1
-									index=[1:0:1]
-									first=[False:True:False]
-									last=[True:False:True]
-								id=1-1
-								index=[:1:1]
-								first=[:False:False]
-								last=[:True:True]
-									id=1-1-0
-									index=[1:1:0]
-									first=[False:False:True]
-									last=[True:True:False]
-									id=1-1-1
-									index=[1:1:1]
-									first=[False:False:False]
-									last=[True:True:True]";
+            const string expected = @"
+                            id=0
+                            index=[::0]
+                            first=[::True]
+                            last=[::False]
+                                id=0-0
+                                index=[:0:0]
+                                first=[:True:True]
+                                last=[:False:False]
+                                    id=0-0-0
+                                    index=[0:0:0]
+                                    first=[True:True:True]
+                                    last=[False:False:False]
+                                    id=0-0-1
+                                    index=[0:0:1]
+                                    first=[True:True:False]
+                                    last=[False:False:True]
+                                id=0-1
+                                index=[:0:1]
+                                first=[:True:False]
+                                last=[:False:True]
+                                    id=0-1-0
+                                    index=[0:1:0]
+                                    first=[True:False:True]
+                                    last=[False:True:False]
+                                    id=0-1-1
+                                    index=[0:1:1]
+                                    first=[True:False:False]
+                                    last=[False:True:True]
+                            id=1
+                            index=[::1]
+                            first=[::False]
+                            last=[::True]
+                                id=1-0
+                                index=[:1:0]
+                                first=[:False:True]
+                                last=[:True:False]
+                                    id=1-0-0
+                                    index=[1:0:0]
+                                    first=[False:True:True]
+                                    last=[True:False:False]
+                                    id=1-0-1
+                                    index=[1:0:1]
+                                    first=[False:True:False]
+                                    last=[True:False:True]
+                                id=1-1
+                                index=[:1:1]
+                                first=[:False:False]
+                                last=[:True:True]
+                                    id=1-1-0
+                                    index=[1:1:0]
+                                    first=[False:False:True]
+                                    last=[True:True:False]
+                                    id=1-1-1
+                                    index=[1:1:1]
+                                    first=[False:False:False]
+                                    last=[True:True:True]";
 
-			// Console.WriteLine(result); 
+            // Console.WriteLine(result); 
 
-			Func<string, string> makeFlat = text => text.Replace( "\t", "" ).Replace( "\n", "" ).Replace( "\r", "" );
+            Func<string, string> makeFlat = text => text.Replace( " ", "" ).Replace( "\n", "" ).Replace( "\r", "" );
 
-			Assert.AreEqual( makeFlat( expected ), makeFlat( result ) );
-		}
+            Assert.AreEqual( makeFlat( expected ), makeFlat( result ) );
+        }
 
         [Test]
         public void WithFirst()
