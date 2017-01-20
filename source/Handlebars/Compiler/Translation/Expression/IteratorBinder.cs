@@ -80,11 +80,7 @@ namespace HandlebarsDotNet.Compiler
             return Expression.Block(
                 Expression.Assign(contextParameter,
                     Expression.New(
-#if netstandard
-                        typeof(IteratorBindingContext).GetTypeInfo().GetConstructor(new[] { typeof(BindingContext) }),
-#else
                         typeof(IteratorBindingContext).GetConstructor(new[] { typeof(BindingContext) }),
-#endif
                         new Expression[] { CompilationContext.BindingContext })),
                 Expression.Call(
 #if netstandard
@@ -97,7 +93,7 @@ namespace HandlebarsDotNet.Compiler
                         Expression.Convert(contextParameter, typeof(IteratorBindingContext)),
                         Expression.Convert(iex.Sequence, typeof(IEnumerable)),
                         fb.Compile(new [] { iex.Template }, contextParameter),
-                        fb.Compile(new [] { iex.IfEmpty }, CompilationContext.BindingContext) 
+                        fb.Compile(new [] { iex.IfEmpty }, CompilationContext.BindingContext)
                     }));
         }
 
@@ -107,11 +103,7 @@ namespace HandlebarsDotNet.Compiler
             return Expression.Block(
                 Expression.Assign(contextParameter,
                     Expression.New(
-#if netstandard
-                        typeof(ObjectEnumeratorBindingContext).GetTypeInfo().GetConstructor(new[] { typeof(BindingContext) }),
-#else
                         typeof(ObjectEnumeratorBindingContext).GetConstructor(new[] { typeof(BindingContext) }),
-#endif
                         new Expression[] { CompilationContext.BindingContext })),
                 Expression.Call(
 #if netstandard
@@ -124,7 +116,7 @@ namespace HandlebarsDotNet.Compiler
                         Expression.Convert(contextParameter, typeof(ObjectEnumeratorBindingContext)),
                         iex.Sequence,
                         fb.Compile(new [] { iex.Template }, contextParameter),
-                        fb.Compile(new [] { iex.IfEmpty }, CompilationContext.BindingContext) 
+                        fb.Compile(new [] { iex.IfEmpty }, CompilationContext.BindingContext)
                     }));
         }
 
@@ -134,11 +126,7 @@ namespace HandlebarsDotNet.Compiler
             return Expression.Block(
                 Expression.Assign(contextParameter,
                     Expression.New(
-#if netstandard
-                        typeof(ObjectEnumeratorBindingContext).GetTypeInfo().GetConstructor(new[] { typeof(BindingContext) }),
-#else
                         typeof(ObjectEnumeratorBindingContext).GetConstructor(new[] { typeof(BindingContext) }),
-#endif
                         new Expression[] { CompilationContext.BindingContext })),
                 Expression.Call(
 #if netstandard
@@ -151,7 +139,7 @@ namespace HandlebarsDotNet.Compiler
                         Expression.Convert(contextParameter, typeof(ObjectEnumeratorBindingContext)),
                         Expression.Convert(iex.Sequence, typeof(IEnumerable)),
                         fb.Compile(new [] { iex.Template }, contextParameter),
-                        fb.Compile(new [] { iex.IfEmpty }, CompilationContext.BindingContext) 
+                        fb.Compile(new [] { iex.IfEmpty }, CompilationContext.BindingContext)
                     }));
         }
 
@@ -161,11 +149,7 @@ namespace HandlebarsDotNet.Compiler
             return Expression.Block(
                 Expression.Assign(contextParameter,
                     Expression.New(
-#if netstandard
-                        typeof(ObjectEnumeratorBindingContext).GetTypeInfo().GetConstructor(new[] { typeof(BindingContext) }),
-#else
                         typeof(ObjectEnumeratorBindingContext).GetConstructor(new[] { typeof(BindingContext) }),
-#endif
                         new Expression[] { CompilationContext.BindingContext })),
                 Expression.Call(
 #if netstandard
@@ -178,17 +162,13 @@ namespace HandlebarsDotNet.Compiler
                         Expression.Convert(contextParameter, typeof(ObjectEnumeratorBindingContext)),
                         Expression.Convert(iex.Sequence, typeof(IDynamicMetaObjectProvider)),
                         fb.Compile(new [] { iex.Template }, contextParameter),
-                        fb.Compile(new [] { iex.IfEmpty }, CompilationContext.BindingContext) 
+                        fb.Compile(new [] { iex.IfEmpty }, CompilationContext.BindingContext)
                     }));
         }
 
         private static bool IsNonListDynamic(object target)
         {
-#if netstandard
-            var interfaces = target.GetType().GetTypeInfo().GetInterfaces();
-#else
             var interfaces = target.GetType().GetInterfaces();
-#endif
             return interfaces.Contains(typeof(IDynamicMetaObjectProvider))
                 && ((IDynamicMetaObjectProvider)target).GetMetaObject(Expression.Constant(target)).GetDynamicMemberNames().Any();
         }
@@ -198,7 +178,7 @@ namespace HandlebarsDotNet.Compiler
             return
                 target.GetType()
 #if netstandard
-                    .GetTypeInfo().GetInterfaces()
+                    .GetInterfaces()
                     .Where(i => i.GetTypeInfo().IsGenericType)
 
 #else
@@ -217,18 +197,10 @@ namespace HandlebarsDotNet.Compiler
             if (HandlebarsUtils.IsTruthy(target))
             {
                 context.Index = 0;
-#if netstandard
-                foreach (MemberInfo member in target.GetType().GetTypeInfo()
-#else
                 foreach (MemberInfo member in target.GetType()
-#endif
                     .GetProperties(BindingFlags.Instance | BindingFlags.Public).OfType<MemberInfo>()
                     .Concat(
-#if netstandard
-                        target.GetType().GetTypeInfo().GetFields(BindingFlags.Public | BindingFlags.Instance)
-#else
                         target.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance)
-#endif
                     ))
                 {
                     context.Key = member.Name;
@@ -270,11 +242,7 @@ namespace HandlebarsDotNet.Compiler
                         foreach (var key in keys)
                         {
                             context.Key = key.ToString();
-#if netstandard
-                            var value = target.GetType().GetTypeInfo().GetMethod("get_Item").Invoke(target, new[] { key });
-#else
                             var value = target.GetType().GetMethod("get_Item").Invoke(target, new[] { key });
-#endif
                             context.First = (context.Index == 0);
                             template(context.TextWriter, value);
                             context.Index++;
@@ -353,7 +321,7 @@ namespace HandlebarsDotNet.Compiler
         private class IteratorBindingContext : BindingContext
         {
             public IteratorBindingContext(BindingContext context)
-                : base(context.Value, context.TextWriter, context.ParentContext, context.TemplatePath )
+                : base(context.Value, context.TextWriter, context.ParentContext, context.TemplatePath)
             {
             }
 
@@ -367,7 +335,7 @@ namespace HandlebarsDotNet.Compiler
         private class ObjectEnumeratorBindingContext : BindingContext
         {
             public ObjectEnumeratorBindingContext(BindingContext context)
-                : base(context.Value, context.TextWriter, context.ParentContext, context.TemplatePath )
+                : base(context.Value, context.TextWriter, context.ParentContext, context.TemplatePath)
             {
             }
 

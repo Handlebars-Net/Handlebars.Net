@@ -17,15 +17,10 @@ namespace HandlebarsDotNet
             Objects = objects;
         }
 
-
         public override IEnumerable<string> GetDynamicMemberNames()
         {
             return Objects.Select(o => o.GetType())
-#if netstandard
-                .SelectMany(t => t.GetTypeInfo().GetMembers(BindingFlags))
-#else
                 .SelectMany(t => t.GetMembers(BindingFlags))
-#endif
                 .Select(m => m.Name);
         }
 
@@ -35,11 +30,7 @@ namespace HandlebarsDotNet
             foreach (var target in Objects)
             {
                 var member = target.GetType()
-#if netstandard
-                    .GetTypeInfo().GetMember(binder.Name, BindingFlags);
-#else
                     .GetMember(binder.Name, BindingFlags);
-#endif
 
                 if (member.Length > 0)
                 {

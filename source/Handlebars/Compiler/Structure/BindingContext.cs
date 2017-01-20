@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -7,21 +6,21 @@ namespace HandlebarsDotNet.Compiler
     {
         private readonly object _value;
         private readonly BindingContext _parent;
-		
+
         public string TemplatePath { get; private set; }
 
-		public EncodedTextWriter TextWriter { get; private set; }
+        public EncodedTextWriter TextWriter { get; private set; }
 
         public bool SuppressEncoding
         {
-            get { return TextWriter.SuppressEncoding;}
+            get { return TextWriter.SuppressEncoding; }
             set { TextWriter.SuppressEncoding = value; }
         }
 
-        public BindingContext(object value, EncodedTextWriter writer, BindingContext parent, string templatePath )
+        public BindingContext(object value, EncodedTextWriter writer, BindingContext parent, string templatePath)
         {
-	        TemplatePath = parent != null ? (parent.TemplatePath ?? templatePath) : templatePath;
-	        TextWriter = writer;
+            TemplatePath = parent != null ? (parent.TemplatePath ?? templatePath) : templatePath;
+            TextWriter = writer;
             _value = value;
             _parent = parent;
         }
@@ -61,22 +60,16 @@ namespace HandlebarsDotNet.Compiler
         {
             object returnValue;
             variableName = variableName.TrimStart('@');
-#if netstandard
-            var member = target.GetType().GetTypeInfo()
-                .GetMember(variableName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-#else
-            var member = target.GetType()
-                .GetMember(variableName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-#endif
+            var member = target.GetType().GetMember(variableName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
             if (member.Length > 0)
             {
                 if (member[0] is PropertyInfo)
                 {
-                    returnValue = ((PropertyInfo) member[0]).GetValue(target, null);
+                    returnValue = ((PropertyInfo)member[0]).GetValue(target, null);
                 }
                 else if (member[0] is FieldInfo)
                 {
-                    returnValue = ((FieldInfo) member[0]).GetValue(target);
+                    returnValue = ((FieldInfo)member[0]).GetValue(target);
                 }
                 else
                 {
@@ -96,7 +89,7 @@ namespace HandlebarsDotNet.Compiler
 
         public virtual BindingContext CreateChildContext(object value)
         {
-	        return new BindingContext(value, TextWriter, this, TemplatePath);
+            return new BindingContext(value, TextWriter, this, TemplatePath);
         }
     }
 }

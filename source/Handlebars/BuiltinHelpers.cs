@@ -5,14 +5,14 @@ using System.Collections.Generic;
 
 namespace HandlebarsDotNet
 {
-	internal static class BuiltinHelpers
+    internal static class BuiltinHelpers
     {
         [Description("with")]
         public static void With(TextWriter output, HelperOptions options, dynamic context, params object[] arguments)
         {
             if (arguments.Length != 1)
             {
-                throw new HandlebarsException("{{with}} helper must have exactly one argument"); 
+                throw new HandlebarsException("{{with}} helper must have exactly one argument");
             }
 
             if (HandlebarsUtils.IsTruthyOrNonEmpty(arguments[0]))
@@ -44,27 +44,22 @@ namespace HandlebarsDotNet
         private static IEnumerable<KeyValuePair<string, T>> GetHelpers<T>()
         {
             var builtInHelpersType = typeof(BuiltinHelpers);
-#if netstandard
-            foreach (var method in builtInHelpersType.GetTypeInfo().GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Public))
-
-#else
             foreach (var method in builtInHelpersType.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Public))
-#endif
             {
                 Delegate possibleDelegate;
-	            try
-	            {
+                try
+                {
 #if netstandard
                         possibleDelegate = method.CreateDelegate(typeof(T));
 #else
-                        possibleDelegate = Delegate.CreateDelegate(typeof(T), method); 
+                    possibleDelegate = Delegate.CreateDelegate(typeof(T), method);
 #endif
-	            }
-	            catch
-	            {
-		            possibleDelegate = null;
-	            }
-	            if (possibleDelegate != null)
+                }
+                catch
+                {
+                    possibleDelegate = null;
+                }
+                if (possibleDelegate != null)
                 {
 #if netstandard
                     yield return new KeyValuePair<string, T>(
