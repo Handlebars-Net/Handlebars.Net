@@ -97,7 +97,7 @@ namespace HandlebarsDotNet.Compiler
                         Expression.Convert(contextParameter, typeof(IteratorBindingContext)),
                         Expression.Convert(iex.Sequence, typeof(IEnumerable)),
                         fb.Compile(new [] { iex.Template }, contextParameter),
-                        fb.Compile(new [] { iex.IfEmpty }, CompilationContext.BindingContext)
+                        fb.Compile(new [] { iex.IfEmpty }, CompilationContext.BindingContext) 
                     }));
         }
 
@@ -124,7 +124,7 @@ namespace HandlebarsDotNet.Compiler
                         Expression.Convert(contextParameter, typeof(ObjectEnumeratorBindingContext)),
                         iex.Sequence,
                         fb.Compile(new [] { iex.Template }, contextParameter),
-                        fb.Compile(new [] { iex.IfEmpty }, CompilationContext.BindingContext)
+                        fb.Compile(new [] { iex.IfEmpty }, CompilationContext.BindingContext) 
                     }));
         }
 
@@ -151,7 +151,7 @@ namespace HandlebarsDotNet.Compiler
                         Expression.Convert(contextParameter, typeof(ObjectEnumeratorBindingContext)),
                         Expression.Convert(iex.Sequence, typeof(IEnumerable)),
                         fb.Compile(new [] { iex.Template }, contextParameter),
-                        fb.Compile(new [] { iex.IfEmpty }, CompilationContext.BindingContext)
+                        fb.Compile(new [] { iex.IfEmpty }, CompilationContext.BindingContext) 
                     }));
         }
 
@@ -178,7 +178,7 @@ namespace HandlebarsDotNet.Compiler
                         Expression.Convert(contextParameter, typeof(ObjectEnumeratorBindingContext)),
                         Expression.Convert(iex.Sequence, typeof(IDynamicMetaObjectProvider)),
                         fb.Compile(new [] { iex.Template }, contextParameter),
-                        fb.Compile(new [] { iex.IfEmpty }, CompilationContext.BindingContext)
+                        fb.Compile(new [] { iex.IfEmpty }, CompilationContext.BindingContext) 
                     }));
         }
 
@@ -190,7 +190,7 @@ namespace HandlebarsDotNet.Compiler
             var interfaces = target.GetType().GetInterfaces();
 #endif
             return interfaces.Contains(typeof(IDynamicMetaObjectProvider))
-                && ((IDynamicMetaObjectProvider) target).GetMetaObject(Expression.Constant(target)).GetDynamicMemberNames().Any();
+                && ((IDynamicMetaObjectProvider)target).GetMetaObject(Expression.Constant(target)).GetDynamicMemberNames().Any();
         }
 
         private static bool IsGenericDictionary(object target)
@@ -364,7 +364,7 @@ namespace HandlebarsDotNet.Compiler
         private class IteratorBindingContext : BindingContext
         {
             public IteratorBindingContext(BindingContext context)
-                : base(context.Value, context.TextWriter, context.ParentContext, context.TemplatePath)
+                : base(context.Value, context.TextWriter, context.ParentContext, context.TemplatePath )
             {
             }
 
@@ -378,7 +378,7 @@ namespace HandlebarsDotNet.Compiler
         private class ObjectEnumeratorBindingContext : BindingContext
         {
             public ObjectEnumeratorBindingContext(BindingContext context)
-                : base(context.Value, context.TextWriter, context.ParentContext, context.TemplatePath)
+                : base(context.Value, context.TextWriter, context.ParentContext, context.TemplatePath )
             {
             }
 
@@ -393,11 +393,11 @@ namespace HandlebarsDotNet.Compiler
         {
             if (member is PropertyInfo)
             {
-                return ((PropertyInfo) member).GetValue(instance, null);
+                return ((PropertyInfo)member).GetValue(instance, null);
             }
             if (member is FieldInfo)
             {
-                return ((FieldInfo) member).GetValue(instance);
+                return ((FieldInfo)member).GetValue(instance);
             }
             throw new InvalidOperationException("Requested member was not a field or property");
         }
