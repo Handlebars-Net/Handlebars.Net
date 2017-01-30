@@ -80,7 +80,7 @@ namespace HandlebarsDotNet
             {
                 using (var reader = new StringReader(template))
                 {
-                    RegisterTemplate(templateName, Handlebars.Compile(reader));
+                    RegisterTemplate(templateName, Compile(reader));
                 }
             }
 
