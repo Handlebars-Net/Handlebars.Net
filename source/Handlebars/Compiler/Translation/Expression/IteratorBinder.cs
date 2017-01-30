@@ -321,7 +321,6 @@ namespace HandlebarsDotNet.Compiler
             }
         }
 
-        //TODO: make this a little less dumb
         private static void Iterate(
             IteratorBindingContext context,
             IEnumerable sequence,
@@ -329,14 +328,28 @@ namespace HandlebarsDotNet.Compiler
             Action<TextWriter, object> ifEmpty)
         {
             context.Index = 0;
-            int length = (sequence is IList ? ((IList)sequence).Count : sequence.Cast<object>().Count());
-            foreach (object item in sequence)
+
+            var iter = sequence.GetEnumerator();
+            using (iter as IDisposable)
             {
-                context.First = (context.Index == 0);
-                context.Last = (context.Index == length - 1);
-                template(context.TextWriter, item);
-                context.Index++;
+                if (iter.MoveNext())
+                {
+                    var item = iter.Current;
+                    while (!context.Last)
+                    {
+                        context.Last = !iter.MoveNext();
+                        context.First = (context.Index == 0);
+                        template(context.TextWriter, item);
+                        context.Index++;
+
+                        if (!context.Last)
+                        {
+                            item = iter.Current;
+                        }
+                    }
+                }
             }
+
             if (context.Index == 0)
             {
                 ifEmpty(context.TextWriter, context.Value);
