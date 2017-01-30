@@ -343,7 +343,9 @@ namespace HandlebarsDotNet.Compiler
                         context.Index++;
 
                         if (!context.Last)
+                        {
                             item = iter.Current;
+                        }
                     }
                 }
             }
