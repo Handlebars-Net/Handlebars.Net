@@ -54,11 +54,7 @@ string source =
 string partialSource =
 @"<strong>{{name}}</strong>";
 
-using (var reader = new StringReader(partialSource))
-{
-  var partialTemplate = Handlebars.Compile(reader);
-  Handlebars.RegisterTemplate("user", partialTemplate);
-}
+Handlebars.RegisterTemplate("user", partialSource);
 
 var template = Handlebars.Compile(source);
 
