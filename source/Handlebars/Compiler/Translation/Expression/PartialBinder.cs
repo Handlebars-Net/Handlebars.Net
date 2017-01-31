@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq.Expressions;
+#if netstandard
 using System.Reflection;
+#endif
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -35,11 +37,7 @@ namespace HandlebarsDotNet.Compiler
             {
                 bindingContext = Expression.Call(
                     bindingContext,
-#if netstandard
-                    typeof(BindingContext).GetTypeInfo().GetMethod("CreateChildContext"),
-#else
-                    typeof (BindingContext).GetMethod("CreateChildContext"),
-#endif
+                    typeof(BindingContext).GetMethod("CreateChildContext"),
                     pex.Argument);
             }
 
@@ -111,14 +109,14 @@ namespace HandlebarsDotNet.Compiler
 
             try
             {
-                configuration.RegisteredTemplates[partialName]( context.TextWriter, context );
+                configuration.RegisteredTemplates[partialName](context.TextWriter, context);
                 return true;
             }
-            catch ( Exception exception )
+            catch (Exception exception)
             {
                 throw new HandlebarsRuntimeException(
                     $"Runtime error while rendering partial '{partialName}', see inner exception for more information",
-                    exception );
+                    exception);
             }
 
         }

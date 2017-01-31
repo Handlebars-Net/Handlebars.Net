@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using HandlebarsDotNet.Compiler.Lexer;
@@ -19,7 +18,7 @@ namespace HandlebarsDotNet.Compiler
 
         public HandlebarsCompiler(HandlebarsConfiguration configuration)
         {
-            _configuration=configuration;
+            _configuration = configuration;
             _tokenizer = new Tokenizer(configuration);
             _expressionBuilder = new ExpressionBuilder(configuration);
             _functionBuilder = new FunctionBuilder(configuration);
@@ -62,7 +61,7 @@ namespace HandlebarsDotNet.Compiler
                     compiledView(innerWriter, vm);
                 }
                 var inner = sb.ToString();
-                compiledLayout(tw, new DynamicViewModel(new {body = inner}));
+                compiledLayout(tw, new DynamicViewModel(new { body = inner }));
             };
         }
 
@@ -79,15 +78,9 @@ namespace HandlebarsDotNet.Compiler
 
             public override IEnumerable<string> GetDynamicMemberNames()
             {
-#if netstandard
-                return _objects.Select(o => o.GetType())
-                   .SelectMany(t => t.GetTypeInfo().GetMembers(BindingFlags))
-                   .Select(m => m.Name);
-#else
                 return _objects.Select(o => o.GetType())
                     .SelectMany(t => t.GetMembers(BindingFlags))
                     .Select(m => m.Name);
-#endif
             }
 
             public override bool TryGetMember(GetMemberBinder binder, out object result)
@@ -95,13 +88,7 @@ namespace HandlebarsDotNet.Compiler
                 result = null;
                 foreach (var target in _objects)
                 {
-#if netstandard
-                    var member = target.GetType().GetTypeInfo()
-                        .GetMember(binder.Name, BindingFlags);
-#else
-                    var member = target.GetType()
-                        .GetMember(binder.Name, BindingFlags);
-#endif
+                    var member = target.GetType().GetMember(binder.Name, BindingFlags);
                     if (member.Length > 0)
                     {
                         if (member[0] is PropertyInfo)
@@ -122,6 +109,6 @@ namespace HandlebarsDotNet.Compiler
 
     }
 
- 
+
 }
 

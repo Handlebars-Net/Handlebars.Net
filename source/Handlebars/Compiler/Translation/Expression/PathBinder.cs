@@ -27,7 +27,7 @@ namespace HandlebarsDotNet.Compiler
         {
             return Expression.Block(
                 node.Variables,
-                node.Expressions.Select( Visit ) );
+                node.Expressions.Select(Visit));
         }
 
         protected override Expression VisitUnary(UnaryExpression node)
@@ -41,9 +41,9 @@ namespace HandlebarsDotNet.Compiler
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
             return Expression.Call(
-                Visit( node.Object ),
+                Visit(node.Object),
                 node.Method,
-                node.Arguments.Select( Visit ) );
+                node.Arguments.Select(Visit));
         }
 
         protected override Expression VisitConditional(ConditionalExpression node)
@@ -67,13 +67,13 @@ namespace HandlebarsDotNet.Compiler
 #if netstandard
                 var writeMethod = typeof(TextWriter).GetRuntimeMethod("Write", new [] { typeof(object) });
 #else
-                var writeMethod = typeof(TextWriter).GetMethod("Write", new [] { typeof(object) });
+                var writeMethod = typeof(TextWriter).GetMethod("Write", new[] { typeof(object) });
 #endif
                 return Expression.Call(
                     Expression.Property(
                         CompilationContext.BindingContext,
                         "TextWriter"),
-                    writeMethod, Visit(sex.Body) );
+                    writeMethod, Visit(sex.Body));
             }
             else
             {
@@ -138,11 +138,11 @@ namespace HandlebarsDotNet.Compiler
         //TODO: make path resolution logic smarter
         private object ResolvePath(BindingContext context, string path)
         {
-            var containsVariable = path.StartsWith( "@" );
-            if(containsVariable)
+            var containsVariable = path.StartsWith("@");
+            if (containsVariable)
             {
-                path = path.Substring( 1 );
-                if(path.Contains( ".." ))
+                path = path.Substring(1);
+                if (path.Contains(".."))
                 {
                     context = context.ParentContext;
                 }
@@ -159,30 +159,30 @@ namespace HandlebarsDotNet.Compiler
                     if (context == null)
                     {
                         if (containsVariable) return string.Empty;
-                        
+
                         throw new HandlebarsCompilerException("Path expression tried to reference parent of root");
                     }
                     instance = context.Value;
                 }
                 else
                 {
-                    var objectPropertiesChain = containsVariable ? "@" + segment:  segment;
+                    var objectPropertiesChain = containsVariable ? "@" + segment : segment;
 
                     foreach (var memberName in objectPropertiesChain.Split('.'))
                     {
                         instance = ResolveValue(context, instance, memberName);
 
-                        if (!( instance is UndefinedBindingResult ))
+                        if (!(instance is UndefinedBindingResult))
                             continue;
 
-                        if (hashParameters == null || hashParameters.ContainsKey( memberName ) || context.ParentContext == null)
+                        if (hashParameters == null || hashParameters.ContainsKey(memberName) || context.ParentContext == null)
                         {
                             if (CompilationContext.Configuration.ThrowOnUnresolvedBindingExpression)
                                 throw new HandlebarsUndefinedBindingException(path, (instance as UndefinedBindingResult).Value);
                             return instance;
                         }
 
-                        instance = ResolveValue( context.ParentContext, context.ParentContext.Value, memberName );
+                        instance = ResolveValue(context.ParentContext, context.ParentContext.Value, memberName);
                         if (instance is UndefinedBindingResult)
                         {
                             if (CompilationContext.Configuration.ThrowOnUnresolvedBindingExpression)
@@ -197,11 +197,11 @@ namespace HandlebarsDotNet.Compiler
 
         private object ResolveValue(BindingContext context, object instance, string segment)
         {
-            object resolvedValue = new UndefinedBindingResult( segment, CompilationContext.Configuration );
+            object resolvedValue = new UndefinedBindingResult(segment, CompilationContext.Configuration);
             if (segment.StartsWith("@"))
             {
                 var contextValue = context.GetContextVariable(segment.Substring(1));
-                if(contextValue != null)
+                if (contextValue != null)
                 {
                     resolvedValue = contextValue;
                 }
@@ -221,7 +221,7 @@ namespace HandlebarsDotNet.Compiler
 
         private object AccessMember(object instance, string memberName)
         {
-            if ( instance == null )
+            if (instance == null)
                 return new UndefinedBindingResult(memberName, CompilationContext.Configuration);
 
             var enumerable = instance as IEnumerable<object>;
@@ -237,22 +237,18 @@ namespace HandlebarsDotNet.Compiler
                     }
 
                     var result = enumerable.ElementAtOrDefault(index);
-                    
+
                     return result ?? new UndefinedBindingResult(memberName, CompilationContext.Configuration);
                 }
             }
             var resolvedMemberName = ResolveMemberName(instance, memberName);
             var instanceType = instance.GetType();
             //crude handling for dynamic objects that don't have metadata
-#if netstandard
-            if (typeof(IDynamicMetaObjectProvider).GetTypeInfo().IsAssignableFrom(instanceType))
-#else
             if (typeof(IDynamicMetaObjectProvider).IsAssignableFrom(instanceType))
-#endif
             {
                 try
                 {
-                    var result =  GetProperty(instance, resolvedMemberName);
+                    var result = GetProperty(instance, resolvedMemberName);
                     if (result == null)
                         return new UndefinedBindingResult(resolvedMemberName, CompilationContext.Configuration);
 
@@ -269,11 +265,7 @@ namespace HandlebarsDotNet.Compiler
             var iDictInstance = FirstGenericDictionaryTypeInstance(instanceType);
             if (iDictInstance != null)
             {
-#if netstandard
-                var genericArgs = iDictInstance.GetTypeInfo().GetGenericArguments();
-#else
                 var genericArgs = iDictInstance.GetGenericArguments();
-#endif
                 object key = resolvedMemberName.Trim('[', ']');    // Ensure square brackets removed.
                 if (genericArgs.Length > 0)
                 {
@@ -292,18 +284,10 @@ namespace HandlebarsDotNet.Compiler
                     }
                 }
 
-#if netstandard
-                if ((bool)instanceType.GetTypeInfo().GetMethod("ContainsKey").Invoke(instance, new object[] { key }))
-                {
-                    return instanceType.GetTypeInfo().GetMethod("get_Item").Invoke(instance, new object[] { key });
-                }
-#else
                 if ((bool)instanceType.GetMethod("ContainsKey").Invoke(instance, new[] { key }))
                 {
                     return instanceType.GetMethod("get_Item").Invoke(instance, new[] { key });
                 }
-#endif
-
                 else
                 {
                     // Key doesn't exist.
@@ -311,11 +295,7 @@ namespace HandlebarsDotNet.Compiler
                 }
             }
             // Check if the instance is IDictionary (ie, System.Collections.Hashtable)
-#if netstandard
-            if (typeof(IDictionary).GetTypeInfo().IsAssignableFrom(instanceType))
-#else
             if (typeof(IDictionary).IsAssignableFrom(instanceType))
-#endif
             {
                 var key = resolvedMemberName.Trim('[', ']');    // Ensure square brackets removed.
                 // Only string keys supported - indexer takes an object, but no nice
@@ -323,12 +303,7 @@ namespace HandlebarsDotNet.Compiler
                 return ((IDictionary)instance)[key];
             }
 
-#if netstandard
-            var members = instanceType.GetTypeInfo().GetMember(resolvedMemberName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-#else
             var members = instanceType.GetMember(resolvedMemberName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-#endif
-
             MemberInfo preferredMember;
             if (members.Length == 0)
             {
@@ -342,7 +317,7 @@ namespace HandlebarsDotNet.Compiler
             {
                 preferredMember = members[0];
             }
-            
+
             var propertyInfo = preferredMember as PropertyInfo;
             if (propertyInfo != null)
             {
@@ -359,11 +334,7 @@ namespace HandlebarsDotNet.Compiler
 
         static Type FirstGenericDictionaryTypeInstance(Type instanceType)
         {
-#if netstandard
-            return instanceType.GetTypeInfo().GetInterfaces()
-#else
             return instanceType.GetInterfaces()
-#endif
                 .FirstOrDefault(i =>
 #if netstandard
                     i.GetTypeInfo().IsGenericType
@@ -379,7 +350,7 @@ namespace HandlebarsDotNet.Compiler
 
         private static object GetProperty(object target, string name)
         {
-            var site = System.Runtime.CompilerServices.CallSite<Func<System.Runtime.CompilerServices.CallSite, object, object>>.Create(Microsoft.CSharp.RuntimeBinder.Binder.GetMember(0, name, target.GetType(), new[]{ Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo.Create(0, null) }));
+            var site = System.Runtime.CompilerServices.CallSite<Func<System.Runtime.CompilerServices.CallSite, object, object>>.Create(Microsoft.CSharp.RuntimeBinder.Binder.GetMember(0, name, target.GetType(), new[] { Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo.Create(0, null) }));
             return site.Target(site, target);
         }
 

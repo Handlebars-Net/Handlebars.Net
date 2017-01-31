@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using System.Reflection;
 
 namespace HandlebarsDotNet.Compiler
@@ -38,19 +35,6 @@ namespace HandlebarsDotNet.Compiler
             var helper = CompilationContext.Configuration.BlockHelpers[bhex.HelperName.Replace("#", "")];
             var arguments = new Expression[]
             {
-#if netstandard
-                Expression.Property(
-                    CompilationContext.BindingContext,
-                    typeof(BindingContext).GetRuntimeProperty("TextWriter")),
-                Expression.New(
-                        typeof(HelperOptions).GetTypeInfo().GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic)[0],
-                        body,
-                        inversion),
-                Expression.Property(
-                    CompilationContext.BindingContext,
-                    typeof(BindingContext).GetRuntimeProperty("Value")),
-                Expression.NewArrayInit(typeof(object), bhex.Arguments)
-#else
                 Expression.Property(
                     CompilationContext.BindingContext,
                     typeof(BindingContext).GetProperty("TextWriter")),
@@ -62,7 +46,6 @@ namespace HandlebarsDotNet.Compiler
                     CompilationContext.BindingContext,
                     typeof(BindingContext).GetProperty("Value")),
                 Expression.NewArrayInit(typeof(object), bhex.Arguments)
-#endif
             };
             if (helper.Target != null)
             {
