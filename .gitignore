@@ -65,3 +65,4 @@ packages/
 [Tt]est-[Rr]esults/
 *.snk
 /**/project.lock.json
+nupkgs
