@@ -8,7 +8,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{BE226E19-0D94-425C-895C-CCA8FF5E8C60}"
 	ProjectSection(SolutionItems) = preProject
 		global.json = global.json
-		..\Handlebars.Net.nuspec = ..\Handlebars.Net.nuspec
+		..\NugetPackage.cmd = ..\NugetPackage.cmd
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Handlebars", "Handlebars\Handlebars.csproj", "{A09CFF95-B671-48FE-96A8-D3CBDC110B75}"

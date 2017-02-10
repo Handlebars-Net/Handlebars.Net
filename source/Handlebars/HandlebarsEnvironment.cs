@@ -76,6 +76,14 @@ namespace HandlebarsDotNet
                 }
             }
 
+            public void RegisterTemplate(string templateName, string template)
+            {
+                using (var reader = new StringReader(template))
+                {
+                    RegisterTemplate(templateName, Compile(reader));
+                }
+            }
+
             public void RegisterHelper(string helperName, HandlebarsHelper helperFunction)
             {
                 lock (_configuration)

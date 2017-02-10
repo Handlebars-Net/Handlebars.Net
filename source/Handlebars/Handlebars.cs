@@ -34,6 +34,11 @@ namespace HandlebarsDotNet
             Instance.RegisterTemplate(templateName, template);
         }
 
+        public static void RegisterTemplate(string templateName, string template)
+        {
+            Instance.RegisterTemplate(templateName, template);
+        }
+
         public static void RegisterHelper(string helperName, HandlebarsHelper helperFunction)
         {
             Instance.RegisterHelper(helperName, helperFunction);

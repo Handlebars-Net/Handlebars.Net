@@ -31,6 +31,24 @@ namespace HandlebarsDotNet.Test
         }
 
         [Test]
+        public void BasicStringOnlyPartial()
+        {
+            string source = "Hello, {{>person}}!";
+
+            var template = Handlebars.Compile(source);
+
+            var data = new {
+                name = "Marc"
+            };
+
+            var partialSource = "{{name}}";           
+            Handlebars.RegisterTemplate("person", partialSource);            
+
+            var result = template(data);
+            Assert.AreEqual("Hello, Marc!", result);
+        }
+
+        [Test]
         public void BasicPartialWithContext()
         {
             string source = "Hello, {{>person leadDev}}!";
