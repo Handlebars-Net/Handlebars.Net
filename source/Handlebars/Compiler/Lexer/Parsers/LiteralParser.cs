@@ -56,6 +56,10 @@ namespace HandlebarsDotNet.Compiler.Lexer
                         }
                         break;
                     }
+                    else if (!captureDelimiter && (char)node == '}')
+                    {
+                        break;
+                    }
                     else
                     {
                         buffer.Append((char)reader.Read());
