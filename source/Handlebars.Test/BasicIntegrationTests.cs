@@ -872,7 +872,7 @@ namespace HandlebarsDotNet.Test
             var source = @"{{verbatim '{{foo}}'}} something {{verbatim '{{bar}}'}}";
 
             Handlebars.RegisterHelper("verbatim",
-                (writer, context, args) => writer.WriteSafeString(args.FirstOrDefault()));
+                (writer, context, args) => writer.Write(args[0])));
 
             var template = Handlebars.Compile(source);
             
