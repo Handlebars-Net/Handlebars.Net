@@ -867,6 +867,22 @@ namespace HandlebarsDotNet.Test
         }
 
         [Test]
+        public void BasicCurlyBracesInLiterals()
+        {
+            var source = @"{{verbatim '{{foo}}'}} something {{verbatim '{{bar}}'}}";
+
+            Handlebars.RegisterHelper("verbatim",
+                (writer, context, args) => writer.WriteSafeString(args.FirstOrDefault()));
+
+            var template = Handlebars.Compile(source);
+            
+            var data = new { };
+            var result = template(data);
+
+            Assert.AreEqual("{{foo}} something {{bar}}", result);
+        }
+	    
+        [Test]
         public void BasicRoot()
         {
             string source = "{{#people}}- {{this}} is member of {{@root.group}}\n{{/people}}";
