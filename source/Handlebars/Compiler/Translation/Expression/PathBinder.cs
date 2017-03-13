@@ -206,7 +206,7 @@ namespace HandlebarsDotNet.Compiler
                     resolvedValue = contextValue;
                 }
             }
-            else if (segment == "this")
+            else if (segment == "this" || segment == string.Empty)
             {
                 resolvedValue = instance;
             }

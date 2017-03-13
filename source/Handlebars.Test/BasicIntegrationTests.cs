@@ -167,7 +167,33 @@ namespace HandlebarsDotNet.Test
             var result = template(data);
             Assert.AreEqual("Hello, Handlebars.Net!", result);
         }
+        
+        [Test]
+        public void BasicPathDotBinding()
+        {
+            var source = "{{#nestedObject}}{{.}}{{/nestedObject}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+                {
+                    nestedObject = "A dot goes a long way"
+                };
+            var result = template(data);
+            Assert.AreEqual("A dot goes a long way", result);
+        }
 
+        [Test]
+        public void BasicPathRelativeDotBinding()
+        {
+            var source = "{{#nestedObject}}{{../.}}{{/nestedObject}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+                {
+                    nestedObject = "Relative dots, yay"
+                };
+            var result = template(data);
+            Assert.AreEqual("{ nestedObject = Relative dots, yay }", result);
+        }
+        
         [Test]
         public void BasicPropertyOnArray()
         {
