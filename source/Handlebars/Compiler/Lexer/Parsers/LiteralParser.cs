@@ -56,7 +56,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
                         }
                         break;
                     }
-                    else if ((char)node == '}')
+                    else if (!captureDelimiter && (char)node == '}')
                     {
                         break;
                     }
