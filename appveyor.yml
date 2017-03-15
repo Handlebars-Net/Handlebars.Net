@@ -1,0 +1,21 @@
+version: 1.8.1-ci{build}
+
+install:
+  - ps: Invoke-WebRequest "https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotnet-install.ps1" -OutFile ".\dotnet-install.ps1"
+  - ps: $env:DOTNET_INSTALL_DIR = "$pwd\.dotnetcli"
+  - ps: '& .\dotnet-install.ps1 -InstallDir "$env:DOTNET_INSTALL_DIR" -Version 1.0.1 -NoPath'
+  - ps: $env:PATH = "$env:DOTNET_INSTALL_DIR;$env:PATH"
+  - ps: $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = "true"
+
+build_script:
+  - cmd: dotnet --info
+  - cmd: dotnet restore source
+  - cmd: dotnet build source --configuration Debug
+  - cmd: dotnet build source --configuration Release
+
+test_script:
+  - cmd: dotnet test source\Handlebars.Test\Handlebars.Test.csproj --configuration Debug
+  - cmd: dotnet test source\Handlebars.Test\Handlebars.Test.csproj --configuration Release
+
+artifacts:
+  - path: 'source\**\*.nupkg'
