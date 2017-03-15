@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using System;
 using System.Dynamic;
 using System.Collections.Generic;
@@ -6,10 +6,9 @@ using Newtonsoft.Json.Linq;
 
 namespace HandlebarsDotNet.Test
 {
-    [TestFixture]
     public class DynamicTests
     {
-        [Test]
+        [Fact]
 		public void DynamicObjectBasicTest()
         {
             var model = new MyDynamicModel();
@@ -20,10 +19,10 @@ namespace HandlebarsDotNet.Test
 
             var output = template(model);
 
-            Assert.AreEqual("Foo: 1\nBar: hello world", output);
+            Assert.Equal("Foo: 1\nBar: hello world", output);
         }
 
-		[Test]
+		[Fact]
 		public void JsonTestIfTruthy()
 		{
 			var model = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>("{\"myfield\":\"test1\",\"truthy\":\"test2\"}");
@@ -34,10 +33,10 @@ namespace HandlebarsDotNet.Test
 
 			var output = template(model);
 
-			Assert.AreEqual("test1test2", output);
+			Assert.Equal("test1test2", output);
 		}
 
-		[Test]
+		[Fact]
 		public void JsonTestIfFalsyMissingField()
 		{
 			var model = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>("{\"myfield\":\"test1\"}");
@@ -48,10 +47,10 @@ namespace HandlebarsDotNet.Test
 
 			var output = template(model);
 
-			Assert.AreEqual("test1", output);
+			Assert.Equal("test1", output);
 		}
 
-		[Test]
+		[Fact]
 		public void JsonTestIfFalsyValue()
 		{
 			var model = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>("{\"myfield\":\"test1\",\"falsy\":null}");
@@ -62,10 +61,10 @@ namespace HandlebarsDotNet.Test
 
 			var output = template(model);
 
-			Assert.AreEqual("test1", output);
+			Assert.Equal("test1", output);
 		}
 
-        [Test]
+        [Fact]
         public void JsonTestArrays(){
             var model = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>("[{\"Key\": \"Key1\", \"Value\": \"Val1\"},{\"Key\": \"Key2\", \"Value\": \"Val2\"}]");
 
@@ -75,10 +74,10 @@ namespace HandlebarsDotNet.Test
 
             var output = template(model);
 
-            Assert.AreEqual("Key1Val1Key2Val2", output);
+            Assert.Equal("Key1Val1Key2Val2", output);
         }
 
-        [Test]
+        [Fact]
         public void JObjectTest() {
             object nullValue = null;
             var model = JObject.FromObject(new { Nested = new { Prop = "Prop" }, Nested2 = nullValue });
@@ -89,12 +88,12 @@ namespace HandlebarsDotNet.Test
 
             var output = template(model);
 
-            Assert.AreEqual("", output);
+            Assert.Equal("", output);
         }
 
 #if !netstandard
 
-        [Test]
+        [Fact]
         public void SystemJsonTestArrays()
         {
             var model = System.Web.Helpers.Json.Decode("[{\"Key\": \"Key1\", \"Value\": \"Val1\"},{\"Key\": \"Key2\", \"Value\": \"Val2\"}]");
@@ -105,7 +104,7 @@ namespace HandlebarsDotNet.Test
 
             var output = template(model);
 
-            Assert.AreEqual("Key1Val1Key2Val2", output);
+            Assert.Equal("Key1Val1Key2Val2", output);
         }
 
 #endif

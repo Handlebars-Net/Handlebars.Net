@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,10 +7,9 @@ using HandlebarsDotNet.Compiler;
 
 namespace HandlebarsDotNet.Test
 {
-    [TestFixture]
     public class BasicIntegrationTests
     {
-        [Test]
+        [Fact]
         public void BasicPath()
         {
             var source = "Hello, {{name}}!";
@@ -19,10 +18,10 @@ namespace HandlebarsDotNet.Test
                 name = "Handlebars.Net"
             };
             var result = template(data);
-            Assert.AreEqual("Hello, Handlebars.Net!", result);
+            Assert.Equal("Hello, Handlebars.Net!", result);
         }
 
-		[Test]
+		[Fact]
         public void BasicPathUnresolvedBindingFormatter()
         {
             var source = "Hello, {{foo}}!";
@@ -38,10 +37,10 @@ namespace HandlebarsDotNet.Test
                 name = "Handlebars.Net"
             };
             var result = template(data);
-            Assert.AreEqual("Hello, ('foo' is undefined)!", result);
+            Assert.Equal("Hello, ('foo' is undefined)!", result);
         }
 
-		[Test]
+		[Fact]
         public void BasicPathThrowOnUnresolvedBindingExpression()
         {
             var source = "Hello, {{foo}}!";
@@ -59,7 +58,7 @@ namespace HandlebarsDotNet.Test
 	        Assert.Throws<HandlebarsUndefinedBindingException>( () => template( data ) );
         }
 
-        [Test]
+        [Fact]
         public void AssertHandlebarsUndefinedBindingException()
         {
             var source = "Hello, {{person.firstname}} {{person.lastname}}!";
@@ -85,15 +84,15 @@ namespace HandlebarsDotNet.Test
             }
             catch (HandlebarsUndefinedBindingException ex)
             {
-                Assert.AreEqual("person.lastname", ex.Path);
-                Assert.AreEqual("lastname", ex.MissingKey);
+                Assert.Equal("person.lastname", ex.Path);
+                Assert.Equal("lastname", ex.MissingKey);
                 return;
             }
 
-            Assert.Fail("Exception is expected.");
+            Assert.False(true, "Exception is expected.");
         }
 
-        [Test]
+        [Fact]
         public void BasicPathWhiteSpace()
         {
             var source = "Hello, {{ name }}!";
@@ -102,10 +101,10 @@ namespace HandlebarsDotNet.Test
                 name = "Handlebars.Net"
             };
             var result = template(data);
-            Assert.AreEqual("Hello, Handlebars.Net!", result);
+            Assert.Equal("Hello, Handlebars.Net!", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicCurlies()
         {
             var source = "Hello, {name}!";
@@ -114,10 +113,10 @@ namespace HandlebarsDotNet.Test
                 name = "Handlebars.Net"
             };
             var result = template(data);
-            Assert.AreEqual("Hello, {name}!", result);
+            Assert.Equal("Hello, {name}!", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicCurliesWithLeadingSlash()
         {
             var source = "Hello, \\{name\\}!";
@@ -126,10 +125,10 @@ namespace HandlebarsDotNet.Test
                 name = "Handlebars.Net"
             };
             var result = template(data);
-            Assert.AreEqual("Hello, \\{name\\}!", result);
+            Assert.Equal("Hello, \\{name\\}!", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicPathArray()
         {
             var source = "Hello, {{ names.[1] }}!";
@@ -139,10 +138,10 @@ namespace HandlebarsDotNet.Test
                 names = new[] {"Foo", "Handlebars.Net"}
             };
             var result = template(data);
-            Assert.AreEqual("Hello, Handlebars.Net!", result);
+            Assert.Equal("Hello, Handlebars.Net!", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicPathArrayChildPath()
         {
             var source = "Hello, {{ names.[1].name }}!";
@@ -152,10 +151,10 @@ namespace HandlebarsDotNet.Test
                 names = new[] {new {name = "Foo"}, new {name = "Handlebars.Net"}}
             };
             var result = template(data);
-            Assert.AreEqual("Hello, Handlebars.Net!", result);
+            Assert.Equal("Hello, Handlebars.Net!", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicPathArrayNoSquareBracketsChildPath()
         {
             var source = "Hello, {{ names.1.name }}!";
@@ -165,10 +164,10 @@ namespace HandlebarsDotNet.Test
                 names = new[] { new { name = "Foo" }, new { name = "Handlebars.Net" } }
             };
             var result = template(data);
-            Assert.AreEqual("Hello, Handlebars.Net!", result);
+            Assert.Equal("Hello, Handlebars.Net!", result);
         }
         
-        [Test]
+        [Fact]
         public void BasicPathDotBinding()
         {
             var source = "{{#nestedObject}}{{.}}{{/nestedObject}}";
@@ -178,10 +177,10 @@ namespace HandlebarsDotNet.Test
                     nestedObject = "A dot goes a long way"
                 };
             var result = template(data);
-            Assert.AreEqual("A dot goes a long way", result);
+            Assert.Equal("A dot goes a long way", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicPathRelativeDotBinding()
         {
             var source = "{{#nestedObject}}{{../.}}{{/nestedObject}}";
@@ -191,10 +190,10 @@ namespace HandlebarsDotNet.Test
                     nestedObject = "Relative dots, yay"
                 };
             var result = template(data);
-            Assert.AreEqual("{ nestedObject = Relative dots, yay }", result);
+            Assert.Equal("{ nestedObject = Relative dots, yay }", result);
         }
         
-        [Test]
+        [Fact]
         public void BasicPropertyOnArray()
         {
             var source = "Array is {{ names.Length }} item(s) long";
@@ -204,10 +203,10 @@ namespace HandlebarsDotNet.Test
                     names = new[] { new { name = "Foo" }, new { name = "Handlebars.Net" } }
                 };
             var result = template(data);
-            Assert.AreEqual("Array is 2 item(s) long", result);
+            Assert.Equal("Array is 2 item(s) long", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicIfElse()
         {
             var source = "Hello, {{#if basic_bool}}Bob{{else}}Sam{{/if}}!";
@@ -220,11 +219,11 @@ namespace HandlebarsDotNet.Test
             };
             var resultTrue = template(trueData);
             var resultFalse = template(falseData);
-            Assert.AreEqual("Hello, Bob!", resultTrue);
-            Assert.AreEqual("Hello, Sam!", resultFalse);
+            Assert.Equal("Hello, Bob!", resultTrue);
+            Assert.Equal("Hello, Sam!", resultFalse);
         }
 
-        [Test]
+        [Fact]
         public void BasicIfElseIf()
         {
             var source = "{{#if isActive}}active{{else if isInactive}}inactive{{/if}}";
@@ -237,11 +236,11 @@ namespace HandlebarsDotNet.Test
             };
             var resultTrue = template(activeData);
             var resultFalse = template(inactiveData);
-            Assert.AreEqual("active", resultTrue);
-            Assert.AreEqual("inactive", resultFalse);
+            Assert.Equal("active", resultTrue);
+            Assert.Equal("inactive", resultFalse);
         }
 
-        [Test]
+        [Fact]
         public void BasicIfElseIfElse()
         {
             var source = "{{#if isActive}}active{{else if isInactive}}inactive{{else}}nada{{/if}}";
@@ -257,12 +256,12 @@ namespace HandlebarsDotNet.Test
             var resultActive = template(activeData);
             var resultInactive = template(inactiveData);
             var resultElse = template(elseData);
-            Assert.AreEqual("active", resultActive);
-            Assert.AreEqual("inactive", resultInactive);
-            Assert.AreEqual("nada", resultElse);
+            Assert.Equal("active", resultActive);
+            Assert.Equal("inactive", resultInactive);
+            Assert.Equal("nada", resultElse);
         }
 
-        [Test]
+        [Fact]
         public void BasicWith()
         {
             var source = "Hello,{{#with person}} my good friend {{name}}{{/with}}!";
@@ -273,21 +272,21 @@ namespace HandlebarsDotNet.Test
                 }
             };
             var result = template(data);
-            Assert.AreEqual("Hello, my good friend Erik!", result);
+            Assert.Equal("Hello, my good friend Erik!", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicWithInversion()
         {
             var source = "Hello, {{#with person}} my good friend{{else}}nevermind{{/with}}";
             var template = Handlebars.Compile(source);
 
-			Assert.AreEqual("Hello, nevermind", template(new {}));
-			Assert.AreEqual("Hello, nevermind", template(new {person = false}));
-			Assert.AreEqual("Hello, nevermind", template(new {person = new string[] {}}));
+			Assert.Equal("Hello, nevermind", template(new {}));
+			Assert.Equal("Hello, nevermind", template(new {person = false}));
+			Assert.Equal("Hello, nevermind", template(new {person = new string[] {}}));
         }
 
-        [Test]
+        [Fact]
         public void BasicEncoding()
         {
             var source = "Hello, {{name}}!";
@@ -297,10 +296,10 @@ namespace HandlebarsDotNet.Test
                 name = "<b>Bob</b>"
             };
             var result = template(data);
-            Assert.AreEqual("Hello, &lt;b&gt;Bob&lt;/b&gt;!", result);
+            Assert.Equal("Hello, &lt;b&gt;Bob&lt;/b&gt;!", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicComment()
         {
             var source = "Hello, {{!don't render me!}}{{name}}!";
@@ -310,10 +309,10 @@ namespace HandlebarsDotNet.Test
                 name = "Carl"
             };
             var result = template(data);
-            Assert.AreEqual("Hello, Carl!", result);
+            Assert.Equal("Hello, Carl!", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicCommentEscaped()
         {
             var source = "Hello, {{!--don't {{render}} me!--}}{{name}}!";
@@ -323,10 +322,10 @@ namespace HandlebarsDotNet.Test
                 name = "Carl"
             };
             var result = template(data);
-            Assert.AreEqual("Hello, Carl!", result);
+            Assert.Equal("Hello, Carl!", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicObjectEnumerator()
         {
             var source = "{{#each enumerateMe}}{{this}} {{/each}}";
@@ -340,10 +339,10 @@ namespace HandlebarsDotNet.Test
                 }
             };
             var result = template(data);
-            Assert.AreEqual("hello world ", result);
+            Assert.Equal("hello world ", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicObjectEnumeratorWithKey()
         {
             var source = "{{#each enumerateMe}}{{@key}}: {{this}} {{/each}}";
@@ -357,10 +356,10 @@ namespace HandlebarsDotNet.Test
                 }
             };
             var result = template(data);
-            Assert.AreEqual("foo: hello bar: world ", result);
+            Assert.Equal("foo: hello bar: world ", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicDictionaryEnumerator()
         {
             var source = "{{#each enumerateMe}}{{this}} {{/each}}";
@@ -374,10 +373,10 @@ namespace HandlebarsDotNet.Test
                 }
             };
             var result = template(data);
-            Assert.AreEqual("hello world ", result);
+            Assert.Equal("hello world ", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicDictionaryEnumeratorWithIntKeys()
         {
             var source = "{{#each enumerateMe}}{{this}} {{/each}}";
@@ -391,10 +390,10 @@ namespace HandlebarsDotNet.Test
                 }
             };
             var result = template(data);
-            Assert.AreEqual("hello world ", result);
+            Assert.Equal("hello world ", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicDictionaryEnumeratorWithKey()
         {
             var source = "{{#each enumerateMe}}{{@key}}: {{this}} {{/each}}";
@@ -408,10 +407,10 @@ namespace HandlebarsDotNet.Test
                 }
             };
             var result = template(data);
-            Assert.AreEqual("foo: hello bar: world ", result);
+            Assert.Equal("foo: hello bar: world ", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicDictionaryEnumeratorWithLongKey()
         {
             var source = "{{#each enumerateMe}}{{@key}}: {{this}} {{/each}}";
@@ -425,11 +424,11 @@ namespace HandlebarsDotNet.Test
                 }
             };
             var result = template(data);
-            Assert.AreEqual("42: hello 100000000000017: world ", result);
+            Assert.Equal("42: hello 100000000000017: world ", result);
         }
 
 
-        [Test]
+        [Fact]
         public void BasicPathDictionaryStringKeyNoSquareBrackets()
         {
             var source = "Hello, {{ names.Foo }}!";
@@ -442,10 +441,10 @@ namespace HandlebarsDotNet.Test
                 }
             };
             var result = template(data);
-            Assert.AreEqual("Hello, Handlebars.Net!", result);
+            Assert.Equal("Hello, Handlebars.Net!", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicPathDictionaryStringKey()
         {
             var source = "Hello, {{ names.[Foo] }}!";
@@ -458,10 +457,10 @@ namespace HandlebarsDotNet.Test
                 }
             };
             var result = template(data);
-            Assert.AreEqual("Hello, Handlebars.Net!", result);
+            Assert.Equal("Hello, Handlebars.Net!", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicPathDictionaryIntKeyNoSquareBrackets()
         {
             var source = "Hello, {{ names.42 }}!";
@@ -474,10 +473,10 @@ namespace HandlebarsDotNet.Test
                 }
             };
             var result = template(data);
-            Assert.AreEqual("Hello, Handlebars.Net!", result);
+            Assert.Equal("Hello, Handlebars.Net!", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicPathDictionaryLongKeyNoSquareBrackets()
         {
             var source = "Hello, {{ names.42 }}!";
@@ -490,10 +489,10 @@ namespace HandlebarsDotNet.Test
                 }
             };
             var result = template(data);
-            Assert.AreEqual("Hello, Handlebars.Net!", result);
+            Assert.Equal("Hello, Handlebars.Net!", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicPathDictionaryIntKey()
         {
             var source = "Hello, {{ names.[42] }}!";
@@ -506,10 +505,10 @@ namespace HandlebarsDotNet.Test
                 }
             };
             var result = template(data);
-            Assert.AreEqual("Hello, Handlebars.Net!", result);
+            Assert.Equal("Hello, Handlebars.Net!", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicPathDictionaryLongKey()
         {
             var source = "Hello, {{ names.[42] }}!";
@@ -522,11 +521,11 @@ namespace HandlebarsDotNet.Test
                 }
             };
             var result = template(data);
-            Assert.AreEqual("Hello, Handlebars.Net!", result);
+            Assert.Equal("Hello, Handlebars.Net!", result);
         }
 
 
-        [Test]
+        [Fact]
         public void DynamicWithMetadataEnumerator()
         {
             var source = "{{#each enumerateMe}}{{this}} {{/each}}";
@@ -536,10 +535,10 @@ namespace HandlebarsDotNet.Test
             data.enumerateMe.foo = "hello";
             data.enumerateMe.bar = "world";
             var result = template(data);
-            Assert.AreEqual("hello world ", result);
+            Assert.Equal("hello world ", result);
         }
 
-        [Test]
+        [Fact]
         public void DynamicWithMetadataEnumeratorWithKey()
         {
             var source = "{{#each enumerateMe}}{{@key}}: {{this}} {{/each}}";
@@ -549,10 +548,10 @@ namespace HandlebarsDotNet.Test
             data.enumerateMe.foo = "hello";
             data.enumerateMe.bar = "world";
             var result = template(data);
-            Assert.AreEqual("foo: hello bar: world ", result);
+            Assert.Equal("foo: hello bar: world ", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicHelper()
         {
             Handlebars.RegisterHelper("link_to", (writer, context, parameters) => {
@@ -569,10 +568,10 @@ namespace HandlebarsDotNet.Test
             };
 
             var result = template(data);
-            Assert.AreEqual("Click here: <a href='https://github.com/rexm/handlebars.net'>Handlebars.Net</a>", result);
+            Assert.Equal("Click here: <a href='https://github.com/rexm/handlebars.net'>Handlebars.Net</a>", result);
         }
 
-		[Test]
+		[Fact]
 		public void BasicHelperPostRegister()
 		{
 			string source = @"Click here: {{link_to_post_reg url text}}";
@@ -591,10 +590,10 @@ namespace HandlebarsDotNet.Test
 			var result = template(data);
 
 
-			Assert.AreEqual("Click here: <a href='https://github.com/rexm/handlebars.net'>Handlebars.Net</a>", result);
+			Assert.Equal("Click here: <a href='https://github.com/rexm/handlebars.net'>Handlebars.Net</a>", result);
 		}
 
-        [Test]
+        [Fact]
         public void BasicDeferredBlock()
         {
             string source = "Hello, {{#person}}{{name}}{{/person}}!";
@@ -608,10 +607,10 @@ namespace HandlebarsDotNet.Test
             };
 
             var result = template(data);
-            Assert.AreEqual("Hello, Bill!", result);
+            Assert.Equal("Hello, Bill!", result);
         }
 
-		[Test]
+		[Fact]
         public void BasicDeferredBlockString()
         {
             string source = "{{#person}} -{{this}}- {{/person}}";
@@ -619,10 +618,10 @@ namespace HandlebarsDotNet.Test
             var template = Handlebars.Compile(source);
             
             var result = template(new {person = "Bill"});
-            Assert.AreEqual(" -Bill- ", result);
+            Assert.Equal(" -Bill- ", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicDeferredBlockWithWhitespace()
         {
             string source = "Hello, {{ # person }}{{ name }}{{ / person }}!";
@@ -636,10 +635,10 @@ namespace HandlebarsDotNet.Test
             };
 
             var result = template(data);
-            Assert.AreEqual("Hello, Bill!", result);
+            Assert.Equal("Hello, Bill!", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicDeferredBlockFalsy()
         {
             string source = "Hello, {{#person}}{{name}}{{/person}}!";
@@ -651,10 +650,10 @@ namespace HandlebarsDotNet.Test
             };
 
             var result = template(data);
-            Assert.AreEqual("Hello, !", result);
+            Assert.Equal("Hello, !", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicDeferredBlockNull()
         {
             string source = "Hello, {{#person}}{{name}}{{/person}}!";
@@ -666,10 +665,10 @@ namespace HandlebarsDotNet.Test
             };
 
             var result = template(data);
-            Assert.AreEqual("Hello, !", result);
+            Assert.Equal("Hello, !", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicDeferredBlockEnumerable()
         {
             string source = "Hello, {{#people}}{{this}} {{/people}}!";
@@ -684,10 +683,10 @@ namespace HandlebarsDotNet.Test
             };
 
             var result = template(data);
-            Assert.AreEqual("Hello, Bill Mary !", result);
+            Assert.Equal("Hello, Bill Mary !", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicDeferredBlockNegated()
         {
             string source = "Hello, {{^people}}nobody{{/people}}!";
@@ -700,29 +699,29 @@ namespace HandlebarsDotNet.Test
             };
 
             var result = template(data);
-            Assert.AreEqual("Hello, nobody!", result);
+            Assert.Equal("Hello, nobody!", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicDeferredBlockNegatedContext()
         {
             var template = Handlebars.Compile("Hello, {{^obj}}{{name}}{{/obj}}!");
             
-            Assert.AreEqual("Hello, nobody!", template(new {name = "nobody"}));
-            Assert.AreEqual("Hello, nobody!", template(new {name = "nobody", obj = new string[0]}));
+            Assert.Equal("Hello, nobody!", template(new {name = "nobody"}));
+            Assert.Equal("Hello, nobody!", template(new {name = "nobody", obj = new string[0]}));
         }
         
-        [Test]
+        [Fact]
         public void BasicDeferredBlockInversion()
         {
             var template = Handlebars.Compile("Hello, {{#obj}}somebody{{else}}{{name}}{{/obj}}!");
         
-            Assert.AreEqual("Hello, nobody!", template(new {name = "nobody"}));
-            Assert.AreEqual("Hello, nobody!", template(new {name = "nobody", obj = false}));
-            Assert.AreEqual("Hello, nobody!", template(new {name = "nobody", obj = new string[0]}));
+            Assert.Equal("Hello, nobody!", template(new {name = "nobody"}));
+            Assert.Equal("Hello, nobody!", template(new {name = "nobody", obj = false}));
+            Assert.Equal("Hello, nobody!", template(new {name = "nobody", obj = new string[0]}));
         }
         
-        [Test]
+        [Fact]
         public void BasicDeferredBlockNegatedInversion()
         {
             var template = Handlebars.Compile("Hello, {{^obj}}nobody{{else}}{{name}}{{/obj}}!");
@@ -734,12 +733,12 @@ namespace HandlebarsDotNet.Test
                 new {name = "Sarah"}
             };
         
-            Assert.AreEqual("Hello, John and Sarah!", template(new {obj = array}));
-            Assert.AreEqual("Hello, somebody!", template(new {obj = true, name = "somebody"}));
-            Assert.AreEqual("Hello, person!", template(new {obj = new {name = "person"}}));
+            Assert.Equal("Hello, John and Sarah!", template(new {obj = array}));
+            Assert.Equal("Hello, somebody!", template(new {obj = true, name = "somebody"}));
+            Assert.Equal("Hello, person!", template(new {obj = new {name = "person"}}));
         }
 
-		[Test]
+		[Fact]
 		public void BasicPropertyMissing()
 		{
 			string source = "Hello, {{first}} {{last}}!";
@@ -751,10 +750,10 @@ namespace HandlebarsDotNet.Test
 			};
 
 			var result = template(data);
-			Assert.AreEqual("Hello, Marc !", result);
+			Assert.Equal("Hello, Marc !", result);
 		}
 
-        [Test]
+        [Fact]
         public void BasicNullOrMissingSubProperty()
         {
             string source = "Hello, {{name.first}}!";
@@ -766,10 +765,10 @@ namespace HandlebarsDotNet.Test
             };
 
             var result = template(data);
-            Assert.AreEqual("Hello, !", result);
+            Assert.Equal("Hello, !", result);
         }
 
-		[Test]
+		[Fact]
 		public void BasicNumericFalsy()
 		{
 			string source = "Hello, {{#if falsy}}Truthy!{{/if}}";
@@ -781,10 +780,10 @@ namespace HandlebarsDotNet.Test
 			};
 
 			var result = template(data);
-			Assert.AreEqual("Hello, ", result);
+			Assert.Equal("Hello, ", result);
 		}
 
-        [Test]
+        [Fact]
         public void BasicNullFalsy()
         {
             string source = "Hello, {{#if falsy}}Truthy!{{/if}}";
@@ -796,10 +795,10 @@ namespace HandlebarsDotNet.Test
             };
 
             var result = template(data);
-            Assert.AreEqual("Hello, ", result);
+            Assert.Equal("Hello, ", result);
         }
 
-		[Test]
+		[Fact]
 		public void BasicNumericTruthy()
 		{
 			string source = "Hello, {{#if truthy}}Truthy!{{/if}}";
@@ -811,10 +810,10 @@ namespace HandlebarsDotNet.Test
 			};
 
 			var result = template(data);
-			Assert.AreEqual("Hello, Truthy!", result);
+			Assert.Equal("Hello, Truthy!", result);
 		}
 
-		[Test]
+		[Fact]
 		public void BasicStringFalsy()
 		{
 			string source = "Hello, {{#if falsy}}Truthy!{{/if}}";
@@ -826,10 +825,10 @@ namespace HandlebarsDotNet.Test
 			};
 
 			var result = template(data);
-			Assert.AreEqual("Hello, ", result);
+			Assert.Equal("Hello, ", result);
 		}
 
-        [Test]
+        [Fact]
         public void BasicEmptyArrayFalsy()
         {
             var source = "{{#if Array}}stuff: {{#each Array}}{{this}}{{/each}}{{/if}}";
@@ -842,10 +841,10 @@ namespace HandlebarsDotNet.Test
 
             var result = template(data);
 
-            Assert.AreEqual("", result);
+            Assert.Equal("", result);
         }
 
-		[Test]
+		[Fact]
 		public void BasicTripleStash()
 		{
 			string source = "Hello, {{{dangerous_value}}}!";
@@ -857,10 +856,10 @@ namespace HandlebarsDotNet.Test
 			};
 
 			var result = template(data);
-			Assert.AreEqual("Hello, <div>There's HTML here</div>!", result);
+			Assert.Equal("Hello, <div>There's HTML here</div>!", result);
 		}
 
-        [Test]
+        [Fact]
         public void BasicEscape()
         {
             string source = @"Hello, \{{raw_value}}!";
@@ -873,10 +872,10 @@ namespace HandlebarsDotNet.Test
             };
 
             var result = template(data);
-            Assert.AreEqual(@"Hello, {{raw_value}}!", result);
+            Assert.Equal(@"Hello, {{raw_value}}!", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicNumberLiteral()
         {
             string source = "{{eval 2  3}}";
@@ -889,10 +888,10 @@ namespace HandlebarsDotNet.Test
             var data = new { };
 
             var result = template(data);
-            Assert.AreEqual("2 3", result);
+            Assert.Equal("2 3", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicCurlyBracesInLiterals()
         {
             var source = @"{{verbatim '{{foo}}'}} something {{verbatim '{{bar}}'}}";
@@ -905,10 +904,10 @@ namespace HandlebarsDotNet.Test
             var data = new { };
             var result = template(data);
 
-            Assert.AreEqual("{{foo}} something {{bar}}", result);
+            Assert.Equal("{{foo}} something {{bar}}", result);
         }
 	    
-        [Test]
+        [Fact]
         public void BasicRoot()
         {
             string source = "{{#people}}- {{this}} is member of {{@root.group}}\n{{/people}}";
@@ -925,10 +924,10 @@ namespace HandlebarsDotNet.Test
             };
 
             var result = template(data);
-            Assert.AreEqual("- Rex is member of Engineering\n- Todd is member of Engineering\n", result);
+            Assert.Equal("- Rex is member of Engineering\n- Todd is member of Engineering\n", result);
         }
 
-        [Test]
+        [Fact]
         public void ImplicitConditionalBlock()
         {
             var template =
@@ -942,10 +941,10 @@ namespace HandlebarsDotNet.Test
 
             var compiler = Handlebars.Compile(template);
             var result = compiler.Invoke(data);
-            Assert.AreEqual("Welcome to New York City", result);
+            Assert.Equal("Welcome to New York City", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicDictionary()
         {
             var source =
@@ -973,10 +972,10 @@ namespace HandlebarsDotNet.Test
                 "<div id='userInfo'>UserName: Ondrej Language: Slovak</div>"
                 + "<div id='main' style='width:120px; height:80px'>body</div>";
 
-            Assert.AreEqual(expectedResult, result);
+            Assert.Equal(expectedResult, result);
         }
 
-        [Test]
+        [Fact]
         public void BasicHashtable()
         {
             var source = "{{dictionary.[key]}}";
@@ -992,10 +991,10 @@ namespace HandlebarsDotNet.Test
             });
             var expectedResult = "Hello world!";
 
-            Assert.AreEqual(expectedResult, result);
+            Assert.Equal(expectedResult, result);
         }
 
-        [Test]
+        [Fact]
         public void BasicHashtableNoSquareBrackets()
         {
             var source = "{{dictionary.key}}";
@@ -1011,10 +1010,10 @@ namespace HandlebarsDotNet.Test
             });
             var expectedResult = "Hello world!";
 
-            Assert.AreEqual(expectedResult, result);
+            Assert.Equal(expectedResult, result);
         }
         
-        [Test]
+        [Fact]
         public void BasicMockIDictionary()
         {
             var source = "{{dictionary.[key]}}";
@@ -1028,10 +1027,10 @@ namespace HandlebarsDotNet.Test
             var expectedResult = 
                 "Hello world!";
 
-            Assert.AreEqual(expectedResult, result);
+            Assert.Equal(expectedResult, result);
         }
 
-        [Test]
+        [Fact]
         public void DictionaryWithSpaceInKeyName()
         {
             var source = "{{dictionary.[my key]}}";
@@ -1045,10 +1044,10 @@ namespace HandlebarsDotNet.Test
             var expectedResult = 
                 "Hello world!";
 
-            Assert.AreEqual(expectedResult, result);
+            Assert.Equal(expectedResult, result);
         }
 
-        [Test]
+        [Fact]
         public void DictionaryWithSpaceInKeyNameAndChildProperty()
         {
             var source = "{{dictionary.[my key].prop1}}";
@@ -1070,10 +1069,10 @@ namespace HandlebarsDotNet.Test
             var expectedResult = 
                 "Hello world!";
 
-            Assert.AreEqual(expectedResult, result);
+            Assert.Equal(expectedResult, result);
         }
 
-        [Test]
+        [Fact]
         public void BasicMockIDictionaryNoSquareBrackets()
         {
             var source = "{{dictionary.key}}";
@@ -1087,10 +1086,10 @@ namespace HandlebarsDotNet.Test
             var expectedResult =
                 "Hello world!";
 
-            Assert.AreEqual(expectedResult, result);
+            Assert.Equal(expectedResult, result);
         }
 
-        [Test]
+        [Fact]
         public void BasicMockIDictionaryIntKey()
         {
             var source = "{{dictionary.[42]}}";
@@ -1104,10 +1103,10 @@ namespace HandlebarsDotNet.Test
             var expectedResult =
                 "Hello world!";
 
-            Assert.AreEqual(expectedResult, result);
+            Assert.Equal(expectedResult, result);
         }
 
-        [Test]
+        [Fact]
         public void BasicMockIDictionaryIntKeyNoSquareBrackets()
         {
             var source = "{{dictionary.42}}";
@@ -1121,10 +1120,10 @@ namespace HandlebarsDotNet.Test
             var expectedResult =
                 "Hello world!";
 
-            Assert.AreEqual(expectedResult, result);
+            Assert.Equal(expectedResult, result);
         }
 
-        [Test]
+        [Fact]
         public void TestNoWhitespaceBetweenExpressions()
         {
             
@@ -1149,10 +1148,10 @@ namespace HandlebarsDotNet.Test
             var expectedResult =
                 "some program text";
 
-            Assert.AreEqual(expectedResult, result);
+            Assert.Equal(expectedResult, result);
         }
 
-        [Test]
+        [Fact]
         public void DictionaryIteration()
         {
             string source = @"{{#ADictionary}}{{@key}},{{value}}{{/ADictionary}}";
@@ -1168,10 +1167,10 @@ namespace HandlebarsDotNet.Test
                         }
                 });
 
-            Assert.AreEqual("key5,14key6,15key7,16key8,17", result);
+            Assert.Equal("key5,14key6,15key7,16key8,17", result);
         }
 
-        [Test]
+        [Fact]
         public void ObjectEnumeration()
         {
             string source = @"{{#each myObject}}{{#if this.length}}<b>{{@key}}</b>{{#each this}}<li>{{this}}</li>{{/each}}<br>{{/if}}{{/each}}";
@@ -1184,10 +1183,10 @@ namespace HandlebarsDotNet.Test
                     }
                 });
 
-            Assert.AreEqual("<b>arr</b><li>hello</li><li>world</li><br>", result);
+            Assert.Equal("<b>arr</b><li>hello</li><li>world</li><br>", result);
         }
 
-        [Test]
+        [Fact]
         public void NestedDictionaryWithSegmentLiteral()
         {
             var source = "{{dictionary.[my key].[another key]}}";
@@ -1208,7 +1207,7 @@ namespace HandlebarsDotNet.Test
             var expectedResult =
                 "Hello Dictionary!";
 
-            Assert.AreEqual(expectedResult, result);
+            Assert.Equal(expectedResult, result);
         }
 
         private class MockDictionary : IDictionary<string, string>

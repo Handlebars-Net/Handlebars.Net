@@ -1,12 +1,11 @@
 ﻿using System.IO;
-using NUnit.Framework;
+using Xunit;
 
 namespace HandlebarsDotNet.Test.ViewEngine
 {
-    [TestFixture]
     public class CasparTests
     {
-        [Test]
+        [Fact]
         public void CanRenderCasparIndexTemplate()
         {
             var fs = (new DiskFileSystem());
@@ -34,9 +33,9 @@ namespace HandlebarsDotNet.Test.ViewEngine
                 }
             });
             var cq = CsQuery.CQ.CreateDocument(output);
-            Assert.AreEqual("My Post Title", cq["h2.post-title a"].Text());
+            Assert.Equal("My Post Title", cq["h2.post-title a"].Text());
         }
-        [Test]
+        [Fact]
         public void CanRenderCasparPostTemplate()
         {
             var fs = (new DiskFileSystem());
@@ -61,7 +60,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
                 }
             });
             var cq = CsQuery.CQ.CreateDocument(output);
-            Assert.AreEqual("My Post Title", cq["h1.post-title"].Html());
+            Assert.Equal("My Post Title", cq["h1.post-title"].Html());
         }
 
         private static void AddHelpers(IHandlebars handlebars)
@@ -78,7 +77,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
             handlebars.RegisterHelper("excerpt", (writer, context, arguments) => writer.Write("url:" + string.Join("|", arguments)));
         }
 
-        [Test]
+        [Fact]
         public void CanRenderCasparPostNoLayoutTemplate()
         {
             var fs = (new DiskFileSystem());
@@ -97,7 +96,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
                 }
             });
             var cq = CsQuery.CQ.CreateDocument(output);
-            Assert.AreEqual("My Post Title", cq["h1.post-title"].Html());
+            Assert.Equal("My Post Title", cq["h1.post-title"].Html());
         }
 
         class DiskFileSystem : ViewEngineFileSystem

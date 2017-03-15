@@ -1,11 +1,10 @@
 ﻿using System;
 using HandlebarsDotNet.Compiler.Resolvers;
 using Newtonsoft.Json;
-using NUnit.Framework;
+using Xunit;
 
 namespace HandlebarsDotNet.Test
 {
-    [TestFixture]
     public class CustomConfigurationTests
     {
         public IHandlebars HandlebarsInstance { get; private set; }
@@ -16,8 +15,7 @@ namespace HandlebarsDotNet.Test
                         Description = @"<b>AWESOME</b>"
                     };
 
-        [TestFixtureSetUp]
-        public void Init()
+        public CustomConfigurationTests()
         {
             var configuration = new HandlebarsConfiguration
                                     {
@@ -30,31 +28,31 @@ namespace HandlebarsDotNet.Test
 
         #region UpperCamelCaseExpressionNameResolver Tests
 
-        [Test]
+        [Fact]
         public void LowerCamelCaseInputModelNaming()
         {
             var template = "Hello {{person.name}} {{person.surname}} from {{person.address.homeCountry}}. You're {{{description}}}.";
             var output = this.HandlebarsInstance.Compile(template).Invoke(Value);
 
-            Assert.AreEqual(output, ExpectedOutput);
+            Assert.Equal(output, ExpectedOutput);
         }
 
-        [Test]
+        [Fact]
         public void UpperCamelCaseInputModelNaming()
         {
             var template = "Hello {{person.name}} {{person.surname}} from {{person.address.homeCountry}}. You're {{{description}}}.";
             var output = this.HandlebarsInstance.Compile(template).Invoke(Value);
 
-            Assert.AreEqual(output, ExpectedOutput);
+            Assert.Equal(output, ExpectedOutput);
         }
 
-        [Test]
+        [Fact]
         public void SnakeCaseInputModelNaming()
         {
             var template = "Hello {{person.name}} {{person.surname}} from {{person.address.home_Country}}. You're {{{description}}}.";
             var output = this.HandlebarsInstance.Compile(template).Invoke(Value);
 
-            Assert.AreEqual(output, ExpectedOutput);
+            Assert.Equal(output, ExpectedOutput);
         }
 
         #endregion
@@ -70,7 +68,7 @@ namespace HandlebarsDotNet.Test
         }
 
 
-        [Test]
+        [Fact]
         public void NoOutputEncoding()
         {
             var template =
@@ -86,10 +84,10 @@ namespace HandlebarsDotNet.Test
 
             var output = handlebarsInstance.Compile(template).Invoke(Value);
 
-            Assert.AreEqual(ExpectedOutput, output);
+            Assert.Equal(ExpectedOutput, output);
         }
 
-        [Test]
+        [Fact]
         public void JsonEncoding()
         {
             var template = "No html entities, {{Username}}.";
@@ -105,7 +103,7 @@ namespace HandlebarsDotNet.Test
             var value = new {Username = "\"<Eric>\"\n<Sharp>"};
             var output = handlebarsInstance.Compile(template).Invoke(value);
 
-            Assert.AreEqual(@"No html entities, \""<Eric>\""\n<Sharp>.", output);
+            Assert.Equal(@"No html entities, \""<Eric>\""\n<Sharp>.", output);
         }
 
         #endregion

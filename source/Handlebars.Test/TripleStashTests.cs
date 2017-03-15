@@ -1,13 +1,12 @@
 ﻿using System;
-using NUnit.Framework;
+using Xunit;
 using System.IO;
 
 namespace HandlebarsDotNet.Test
 {
-	[TestFixture]
 	public class TripleStashTests
 	{
-		[Test]
+		[Fact]
 		public void UnencodedPartial()
 		{
 			string source = "Hello, {{{>unenc_person}}}!";
@@ -26,10 +25,10 @@ namespace HandlebarsDotNet.Test
 			}
 
 			var result = template(data);
-			Assert.AreEqual("Hello, <div>Marc</div>!", result);
+			Assert.Equal("Hello, <div>Marc</div>!", result);
 		}
 
-		[Test]
+		[Fact]
 		public void EncodedPartialWithUnencodedContents()
 		{
 			string source = "Hello, {{>enc_person}}!";
@@ -48,10 +47,10 @@ namespace HandlebarsDotNet.Test
 			}
 
 			var result = template(data);
-			Assert.AreEqual("Hello, <div><div>Marc</div></div>!", result);
+			Assert.Equal("Hello, <div><div>Marc</div></div>!", result);
 		}
 
-		[Test]
+		[Fact]
 		public void UnencodedObjectEnumeratorItems()
 		{
 			var source = "{{#each enumerateMe}}{{{this}}} {{/each}}";
@@ -65,10 +64,10 @@ namespace HandlebarsDotNet.Test
 				}
 			};
 			var result = template(data);
-			Assert.AreEqual("<div>hello</div> <div>world</div> ", result);
+			Assert.Equal("<div>hello</div> <div>world</div> ", result);
 		}
 
-        [Test]
+        [Fact]
         public void FailingBasicTripleStash()
         {
             string source = "{{#if a_bool}}{{{dangerous_value}}}{{/if}}Hello, {{{dangerous_value}}}!";
@@ -82,10 +81,10 @@ namespace HandlebarsDotNet.Test
                 };
 
             var result = template(data);
-            Assert.AreEqual("Hello, <div>There's HTML here</div>!", result);
+            Assert.Equal("Hello, <div>There's HTML here</div>!", result);
         }
 
-		[Test]
+		[Fact]
         public void UnencodedEncodedUnencoded()
         {
             string source = "{{{dangerous_value}}}...{{dangerous_value}}...{{{dangerous_value}}}!";
@@ -99,7 +98,7 @@ namespace HandlebarsDotNet.Test
                 };
 
             var result = template(data);
-            Assert.AreEqual("<div>There's HTML here</div>...&lt;div&gt;There's HTML here&lt;/div&gt;...<div>There's HTML here</div>!", result);
+            Assert.Equal("<div>There's HTML here</div>...&lt;div&gt;There's HTML here&lt;/div&gt;...<div>There's HTML here</div>!", result);
         }
 	}
 }
