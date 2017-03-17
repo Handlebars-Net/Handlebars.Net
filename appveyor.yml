@@ -1,11 +1,6 @@
 version: 1.8.1-ci{build}
 
-install:
-  - ps: Invoke-WebRequest "https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotnet-install.ps1" -OutFile ".\dotnet-install.ps1"
-  - ps: $env:DOTNET_INSTALL_DIR = "$pwd\.dotnetcli"
-  - ps: '& .\dotnet-install.ps1 -InstallDir "$env:DOTNET_INSTALL_DIR" -Version 1.0.1 -NoPath'
-  - ps: $env:PATH = "$env:DOTNET_INSTALL_DIR;$env:PATH"
-  - ps: $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = "true"
+image: Visual Studio 2017
 
 build_script:
   - cmd: dotnet --info
@@ -14,8 +9,13 @@ build_script:
   - cmd: dotnet build source --configuration Release
 
 test_script:
-  - cmd: dotnet test source\Handlebars.Test\Handlebars.Test.csproj --configuration Debug
-  - cmd: dotnet test source\Handlebars.Test\Handlebars.Test.csproj --configuration Release
+  - cmd: set OpenCover=%UserProfile%\.nuget\packages\OpenCover\4.6.519\tools\OpenCover.Console.exe
+  - cmd: set ReportGenerator=%UserProfile%\.nuget\packages\ReportGenerator\2.5.6\tools\ReportGenerator.exe
+  - cmd: if not exist TestResults mkdir TestResults
+  - cmd: '"%OpenCover%" -target:dotnet.exe -targetargs:"test source\Handlebars.Test\Handlebars.Test.csproj --configuration Release --framework net461" -searchdirs:source\Handlebars.Test\bin\Release\net461 -output:TestResults\Handlebars.netframework.report.xml -register:user -filter:+[Handlebars]* -returntargetcode -oldstyle'
+  - cmd: '"%OpenCover%" -target:dotnet.exe -targetargs:"test source\Handlebars.Test\Handlebars.Test.csproj --configuration Release --framework netcoreapp1.1" -searchdirs:source\Handlebars.Test\bin\Release\netcoreapp1.1 -output:TestResults\Handlebars.netcoreapp.report.xml -register:user -filter:+[Handlebars]* -returntargetcode -oldstyle'
+  - cmd: '"%ReportGenerator%" -reports:TestResults\*.report.xml -targetdir:TestResults\report -reporttypes:Badges;Html'
 
 artifacts:
   - path: 'source\**\*.nupkg'
+  - path: TestResults
