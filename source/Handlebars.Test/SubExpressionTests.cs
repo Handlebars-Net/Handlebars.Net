@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using NUnit.Framework;
+using Xunit;
 
 namespace HandlebarsDotNet.Test
 {
-    [TestFixture]
     public class SubExpressionTests
     {
-        [Test]
+        [Fact]
         public void BasicSubExpression()
         {
             var helperName = "helper-" + Guid.NewGuid().ToString(); //randomize helper name
@@ -29,10 +28,10 @@ namespace HandlebarsDotNet.Test
 
             var expected = "Hello world";
 
-            Assert.AreEqual(expected, output);
+            Assert.Equal(expected, output);
         }
 
-        [Test]
+        [Fact]
         public void BasicSubExpressionWithStringLiteralArgument()
         {
             var helperName = "helper-" + Guid.NewGuid().ToString(); //randomize helper name
@@ -53,10 +52,10 @@ namespace HandlebarsDotNet.Test
 
             var expected = "Outer Inner inner-arg";
 
-            Assert.AreEqual(expected, output);
+            Assert.Equal(expected, output);
         }
 
-        [Test]
+        [Fact]
         public void BasicSubExpressionWithHashArgument()
         {
             var helperName = "helper-" + Guid.NewGuid().ToString(); //randomize helper name
@@ -78,10 +77,10 @@ namespace HandlebarsDotNet.Test
 
             var expected = "Outer Inner inner-arg";
 
-            Assert.AreEqual(expected, output);
+            Assert.Equal(expected, output);
         }
 
-        [Test]
+        [Fact]
         public void BasicSubExpressionWithNumericLiteralArguments()
         {
             var helperName = "helper-" + Guid.NewGuid().ToString(); //randomize helper name
@@ -103,10 +102,10 @@ namespace HandlebarsDotNet.Test
 
             var expected = "Math 3";
 
-            Assert.AreEqual(expected, output);
+            Assert.Equal(expected, output);
         }
 
-        [Test]
+        [Fact]
         public void BasicSubExpressionWithPathArgument()
         {
             var helperName = "helper-" + Guid.NewGuid().ToString(); //randomize helper name
@@ -129,10 +128,10 @@ namespace HandlebarsDotNet.Test
 
             var expected = "Outer Inner inner-arg";
 
-            Assert.AreEqual(expected, output);
+            Assert.Equal(expected, output);
         }
 
-        [Test]
+        [Fact]
         public void TwoBasicSubExpressionsWithNumericLiteralArguments()
         {
             var mathHelper = "math-" + Guid.NewGuid().ToString(); //randomize helper name
@@ -154,10 +153,10 @@ namespace HandlebarsDotNet.Test
 
             var expected = "Math 3 7";
 
-            Assert.AreEqual(expected, output);
+            Assert.Equal(expected, output);
         }
 
-        [Test]
+        [Fact]
         public void BasicSubExpressionWithNumericAndStringLiteralArguments()
         {
             var writeHelper = "write-" + Guid.NewGuid().ToString(); //randomize helper name
@@ -179,10 +178,10 @@ namespace HandlebarsDotNet.Test
 
             var expected = "3 hello";
 
-            Assert.AreEqual(expected, output);
+            Assert.Equal(expected, output);
         }
 
-        [Test]
+        [Fact]
         public void NestedSubExpressionsWithNumericLiteralArguments()
         {
             var writeHelper = "write-" + Guid.NewGuid().ToString(); //randomize helper name
@@ -204,7 +203,7 @@ namespace HandlebarsDotNet.Test
 
             var expected = "6";
 
-            Assert.AreEqual(expected, output);
+            Assert.Equal(expected, output);
         }
     }
 }

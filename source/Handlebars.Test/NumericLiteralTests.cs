@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Linq;
-using NUnit.Framework;
+using Xunit;
 
 namespace HandlebarsDotNet.Test
 {
-    [TestFixture]
     public class NumericLiteralTests
     {
         public NumericLiteralTests()
@@ -16,114 +15,114 @@ namespace HandlebarsDotNet.Test
                 });
         }
 
-        [Test]
+        [Fact]
         public void NumericLiteralTest1()
         {
             var source = "{{numericLiteralAdd 3 4}}";
             var template = Handlebars.Compile(source);
             var data = new {};
             var result = template(data);
-            Assert.AreEqual("7", result);
+            Assert.Equal("7", result);
         }
 
-        [Test]
+        [Fact]
         public void NumericLiteralTest2()
         {
             var source = "{{numericLiteralAdd 3  4}}";
             var template = Handlebars.Compile(source);
             var data = new {};
             var result = template(data);
-            Assert.AreEqual("7", result);
+            Assert.Equal("7", result);
         }
 
-        [Test]
+        [Fact]
         public void NumericLiteralTest3()
         {
             var source = "{{numericLiteralAdd 3 4 }}";
             var template = Handlebars.Compile(source);
             var data = new {};
             var result = template(data);
-            Assert.AreEqual("7", result);
+            Assert.Equal("7", result);
         }
 
-        [Test]
+        [Fact]
         public void NumericLiteralTest4()
         {
             var source = "{{numericLiteralAdd 3    4 }}";
             var template = Handlebars.Compile(source);
             var data = new {};
             var result = template(data);
-            Assert.AreEqual("7", result);
+            Assert.Equal("7", result);
         }
 
-        [Test]
+        [Fact]
         public void NumericLiteralTest5()
         {
             var source = "{{numericLiteralAdd    3    4 }}";
             var template = Handlebars.Compile(source);
             var data = new {};
             var result = template(data);
-            Assert.AreEqual("7", result);
+            Assert.Equal("7", result);
         }
 
-        [Test]
+        [Fact]
         public void NumericLiteralTest6()
         {
             var source = "{{numericLiteralAdd 3 \"4\"}}";
             var template = Handlebars.Compile(source);
             var data = new {};
             var result = template(data);
-            Assert.AreEqual("7", result);
+            Assert.Equal("7", result);
         }
 
-        [Test]
+        [Fact]
         public void NumericLiteralTest7()
         {
             var source = "{{numericLiteralAdd 3 \"4\" }}";
             var template = Handlebars.Compile(source);
             var data = new {};
             var result = template(data);
-            Assert.AreEqual("7", result);
+            Assert.Equal("7", result);
         }
 
-        [Test]
+        [Fact]
         public void NumericLiteralTest8()
         {
             var source = "{{numericLiteralAdd 3    \"4\" }}";
             var template = Handlebars.Compile(source);
             var data = new {};
             var result = template(data);
-            Assert.AreEqual("7", result);
+            Assert.Equal("7", result);
         }
 
-        [Test]
+        [Fact]
         public void NumericLiteralTest9()
         {
             var source = "{{numericLiteralAdd    3   \"4\" }}";
             var template = Handlebars.Compile(source);
             var data = new {};
             var result = template(data);
-            Assert.AreEqual("7", result);
+            Assert.Equal("7", result);
         }
 
-        [Test]
+        [Fact]
         public void NumericLiteralTest10()
         {
             var source = "{{numericLiteralAdd \"3\" 4}}";
             var template = Handlebars.Compile(source);
             var data = new {};
             var result = template(data);
-            Assert.AreEqual("7", result);
+            Assert.Equal("7", result);
         }
 
-        [Test]
+        [Fact]
         public void NumericLiteralTest11()
         {
             var source = "{{numericLiteralAdd \"3\" 4 }}";
             var template = Handlebars.Compile(source);
             var data = new {};
             var result = template(data);
-            Assert.AreEqual("7", result);
+            Assert.Equal("7", result);
         }
     }
 }

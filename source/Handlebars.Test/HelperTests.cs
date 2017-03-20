@@ -1,14 +1,13 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 
 namespace HandlebarsDotNet.Test
 {
-    [TestFixture]
     public class HelperTests
     {
-        [Test]
+        [Fact]
         public void HelperWithLiteralArguments()
         {
             Handlebars.RegisterHelper("myHelper", (writer, context, args) => {
@@ -27,10 +26,10 @@ namespace HandlebarsDotNet.Test
 
             var expected = "Here are some things: \nThing 1: foo\nThing 2: bar";
 
-            Assert.AreEqual(expected, output);
+            Assert.Equal(expected, output);
         }
 
-        [Test]
+        [Fact]
         public void HelperWithLiteralArgumentsWithQuotes()
         {
             var helperName = "helper-" + Guid.NewGuid().ToString(); //randomize helper name
@@ -51,20 +50,20 @@ namespace HandlebarsDotNet.Test
 
             var expected = "Here are some things: \nThing 1: My \"favorite\" movie\nThing 2: bar";
 
-            Assert.AreEqual(expected, output);
+            Assert.Equal(expected, output);
         }
 
-        [Test]
+        [Fact]
         public void InversionNoKey()
         {
             var source = "{{^key}}No key!{{/key}}";
             var template = Handlebars.Compile(source);
             var output = template(new { });
             var expected = "No key!";
-            Assert.AreEqual(expected, output);
+            Assert.Equal(expected, output);
         }
 
-        [Test]
+        [Fact]
         public void InversionFalsy()
         {
             var source = "{{^key}}Falsy value!{{/key}}";
@@ -75,10 +74,10 @@ namespace HandlebarsDotNet.Test
             };
             var output = template(data);
             var expected = "Falsy value!";
-            Assert.AreEqual(expected, output);
+            Assert.Equal(expected, output);
         }
 
-        [Test]
+        [Fact]
         public void InversionEmptySequence()
         {
             var source = "{{^key}}Empty sequence!{{/key}}";
@@ -89,10 +88,10 @@ namespace HandlebarsDotNet.Test
                 };
             var output = template(data);
             var expected = "Empty sequence!";
-            Assert.AreEqual(expected, output);
+            Assert.Equal(expected, output);
         }
 
-        [Test]
+        [Fact]
         public void InversionNonEmptySequence()
         {
             var source = "{{^key}}Empty sequence!{{/key}}";
@@ -103,10 +102,10 @@ namespace HandlebarsDotNet.Test
                 };
             var output = template(data);
             var expected = "";
-            Assert.AreEqual(expected, output);
+            Assert.Equal(expected, output);
         }
 
-        [Test]
+        [Fact]
         public void BlockHelperWithArbitraryInversion()
         {
             var source = "{{#ifCond arg1 arg2}}Args are same{{else}}Args are not same{{/ifCond}}";
@@ -140,11 +139,11 @@ namespace HandlebarsDotNet.Test
             var outputIsDifferent = template(dataWithDifferentValues);
             var expectedIsDifferent = "Args are not same";
 
-            Assert.AreEqual(expectedIsSame, outputIsSame);
-            Assert.AreEqual(expectedIsDifferent, outputIsDifferent);
+            Assert.Equal(expectedIsSame, outputIsSame);
+            Assert.Equal(expectedIsDifferent, outputIsDifferent);
         }
 
-        [Test]
+        [Fact]
         public void HelperWithNumericArguments()
         {
             Handlebars.RegisterHelper("myHelper", (writer, context, args) => {
@@ -163,10 +162,10 @@ namespace HandlebarsDotNet.Test
 
             var expected = "Here are some things: \nThing 1: 123\nThing 2: 4567\nThing 3: -98.76";
 
-            Assert.AreEqual(expected, output);
+            Assert.Equal(expected, output);
         }
 
-        [Test]
+        [Fact]
         public void HelperWithHashArgument()
         {
             Handlebars.RegisterHelper("myHelper", (writer, context, args) => {
@@ -185,10 +184,10 @@ namespace HandlebarsDotNet.Test
 
             var expected = "Here are some things: item1: val1 item2: val2";
 
-            Assert.AreEqual(expected, output);
+            Assert.Equal(expected, output);
         }
             
-        [Test]
+        [Fact]
         public void BlockHelperWithSubExpression()
         {
             Handlebars.RegisterHelper("isEqual", (writer, context, args) =>
@@ -202,14 +201,14 @@ namespace HandlebarsDotNet.Test
         
             var expectedIsTrue = "True";
             var outputIsTrue = template(new { arg1 = 1, arg2 = 1 });
-            Assert.AreEqual(expectedIsTrue, outputIsTrue);
+            Assert.Equal(expectedIsTrue, outputIsTrue);
         
             var expectedIsFalse = "";
             var outputIsFalse = template(new { arg1 = 1, arg2 = 2 });
-            Assert.AreEqual(expectedIsFalse, outputIsFalse);
+            Assert.Equal(expectedIsFalse, outputIsFalse);
         }
 
-        [Test]
+        [Fact]
         public void HelperWithSegmentLiteralArguments()
         {
             Handlebars.RegisterHelper("myHelper", (writer, context, args) => {
@@ -233,7 +232,7 @@ namespace HandlebarsDotNet.Test
 
             var expected = "Here are some things: \nThing 1: foo\nThing 2: bar\nThing 3: another argument";
 
-            Assert.AreEqual(expected, output);
+            Assert.Equal(expected, output);
         }
 
     }

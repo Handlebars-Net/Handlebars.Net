@@ -1,12 +1,11 @@
 ﻿using System.IO;
-using NUnit.Framework;
+using Xunit;
 
 namespace HandlebarsDotNet.Test
 {
-    [TestFixture]
     public class WhitespaceTests
     {
-        [Test]
+        [Fact]
         public void PreceedingWhitespace()
         {
             var source = "Hello, {{~name}} !";
@@ -15,10 +14,10 @@ namespace HandlebarsDotNet.Test
                 name = "Handlebars.Net"
             };
             var result = template(data);
-            Assert.AreEqual("Hello,Handlebars.Net !", result);
+            Assert.Equal("Hello,Handlebars.Net !", result);
         }
 
-        [Test]
+        [Fact]
         public void TrailingWhitespace()
         {
             var source = "Hello, {{name~}} !";
@@ -27,10 +26,10 @@ namespace HandlebarsDotNet.Test
                 name = "Handlebars.Net"
             };
             var result = template(data);
-            Assert.AreEqual("Hello, Handlebars.Net!", result);
+            Assert.Equal("Hello, Handlebars.Net!", result);
         }
 
-        [Test]
+        [Fact]
         public void PrecedingAndTrailingWhitespace()
         {
             var source = "Hello, {{~name~}} !";
@@ -39,10 +38,10 @@ namespace HandlebarsDotNet.Test
                 name = "Handlebars.Net"
             };
             var result = template(data);
-            Assert.AreEqual("Hello,Handlebars.Net!", result);
+            Assert.Equal("Hello,Handlebars.Net!", result);
         }
 
-        [Test]
+        [Fact]
         public void ComplexTest()
         {
             var source =
@@ -71,10 +70,10 @@ namespace HandlebarsDotNet.Test
                 }
             };
             var result = template(data);
-            Assert.AreEqual(@"<a href=""https://google.com"">Google</a><a href=""https://bing.com"">Empty</a>", result);
+            Assert.Equal(@"<a href=""https://google.com"">Google</a><a href=""https://bing.com"">Empty</a>", result);
         }
 
-        [Test]
+        [Fact]
         public void StandaloneEach()
         {
             var source = "Links:\n {{#each nav}}\n  <a href=\"{{url}}\">\n    {{#if test}}\n    {{title}}\n    {{else}}\n    Empty\n    {{/if}}\n  </a>\n  {{/each}}";
@@ -98,10 +97,10 @@ namespace HandlebarsDotNet.Test
                 }
             };
             var result = template(data);
-            Assert.AreEqual( "Links:\n  <a href=\"https://google.com\">\n    Google\n  </a>\n  <a href=\"https://bing.com\">\n    Empty\n  </a>\n", result);
+            Assert.Equal( "Links:\n  <a href=\"https://google.com\">\n    Google\n  </a>\n  <a href=\"https://bing.com\">\n    Empty\n  </a>\n", result);
         }
 
-        [Test]
+        [Fact]
         public void StandaloneSection()
         {
             var source = "  {{#none}}\n{{this}}\n{{else}}\n{{none}}\n{{/none}}  ";
@@ -111,10 +110,10 @@ namespace HandlebarsDotNet.Test
             var data = new {none = "No people"};
             var result = template(data);
 
-            Assert.AreEqual("No people\n", result);
+            Assert.Equal("No people\n", result);
         }
 
-        [Test]
+        [Fact]
         public void StandaloneInvertedSection()
         {
             var source = "  {{^some}}\n{{none}}\n{{else}}\n{{none}}\n{{/some}}  ";
@@ -124,10 +123,10 @@ namespace HandlebarsDotNet.Test
             var data = new {none = "No people"};
             var result = template(data);
 
-            Assert.AreEqual("No people\n", result);
+            Assert.Equal("No people\n", result);
         }
 
-        [Test]
+        [Fact]
         public void StandaloneElseSection()
         {
             var source = "{{#people}}\n{{name}}\n{{else}}\n{{none}}\n{{/people}}\n";
@@ -136,10 +135,10 @@ namespace HandlebarsDotNet.Test
             var data = new {none = "No people"};
             var result = template(data);
 
-            Assert.AreEqual("No people\n", result);
+            Assert.Equal("No people\n", result);
         }
 
-        [Test]
+        [Fact]
         public void StandaloneChainedElseSection()
         {
             var source = "{{#if people}}\n{{people.name}}\n{{else if none}}\n{{none}}\n{{/if}}\n";
@@ -148,10 +147,10 @@ namespace HandlebarsDotNet.Test
             var data = new {none = "No people"};
             var result = template(data);
 
-            Assert.AreEqual("No people\n", result);
+            Assert.Equal("No people\n", result);
         }
 
-        [Test]
+        [Fact]
         public void StandaloneNesting()
         {
             var source = "{{#data}}\n{{#if 'true'}}\n{{this}}\n{{/if}}\n{{/data}}\nOK.";
@@ -160,10 +159,10 @@ namespace HandlebarsDotNet.Test
             var data = new {data = new[] {1, 3, 5}};
             var result = template(data);
 
-            Assert.AreEqual("1\n3\n5\nOK.", result);
+            Assert.Equal("1\n3\n5\nOK.", result);
         }
 
-		[Test]
+		[Fact]
         public void StandaloneComment()
         {
             var source = "{{#none}}\nPeople: \n{{! this is comment }}\n{{this}}\n{{/none}}\n";
@@ -173,10 +172,10 @@ namespace HandlebarsDotNet.Test
             var data = new {none = "No people"};
             var result = template(data);
 
-            Assert.AreEqual("People: \nNo people\n", result);
+            Assert.Equal("People: \nNo people\n", result);
         }
 
-		[Test]
+		[Fact]
         public void StandaloneConsequentComments()
         {
             var source = "{{#none}}\nPeople: \n  {{! this is comment #1 }}  \n{{! this is comment #2 }}\n {{this}}\n{{/none}}\n";
@@ -186,10 +185,10 @@ namespace HandlebarsDotNet.Test
             var data = new {none = "No people"};
             var result = template(data);
 
-            Assert.AreEqual("People: \n No people\n", result);
+            Assert.Equal("People: \n No people\n", result);
         }
 
-        [Test]
+        [Fact]
         public void StandalonePartials()
         {
             string source = "Here are:\n  {{>person}} \n {{>person}}  ";
@@ -206,7 +205,7 @@ namespace HandlebarsDotNet.Test
             }
 
             var result = template(data);
-            Assert.AreEqual("Here are:\nMarcMarc", result);
+            Assert.Equal("Here are:\nMarcMarc", result);
         }
 
     }

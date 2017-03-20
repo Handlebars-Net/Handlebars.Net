@@ -1,11 +1,10 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using System;
 using System.IO;
 using System.Collections;
 
 namespace HandlebarsDotNet.Test
 {
-    [TestFixture]
     public class ComplexIntegrationTests
     {
 		private const string naturalLanguageListTemplate = "{{#each County}}" +
@@ -20,7 +19,7 @@ namespace HandlebarsDotNet.Test
 			"{{/if}}" +
 			"{{/each}}";
 
-        [Test]
+        [Fact]
         public void DeepIf()
         {
             var source = 
@@ -58,13 +57,17 @@ namespace HandlebarsDotNet.Test
             var resultTrueFalse = template(trueFalse);
             var resultFalseTrue = template(falseTrue);
             var resultFalseFalse = template(falseFalse);
-            Assert.AreEqual("a is true" + Environment.NewLine, resultTrueTrue);
-            Assert.AreEqual("a is false" + Environment.NewLine, resultTrueFalse);
-            Assert.AreEqual("b is true" + Environment.NewLine, resultFalseTrue);
-            Assert.AreEqual("b is false" + Environment.NewLine, resultFalseFalse);
+            Assert.Equal(@"a is true
+", resultTrueTrue);
+            Assert.Equal(@"a is false
+", resultTrueFalse);
+            Assert.Equal(@"b is true
+", resultFalseTrue);
+            Assert.Equal(@"b is false
+", resultFalseFalse);
         }
 
-        [Test]
+        [Fact]
         public void IfImplicitIteratorHelper()
         {
             var source = "{{#if outer_bool}}{{#items}}{{link_to url text}}{{/items}}{{/if}}";
@@ -85,10 +88,10 @@ namespace HandlebarsDotNet.Test
             });
 
             var result = template(data);
-            Assert.AreEqual("<a href='http://google.com/'>Google</a><a href='http://yahoo.com/'>Yahoo!</a>", result);
+            Assert.Equal("<a href='http://google.com/'>Google</a><a href='http://yahoo.com/'>Yahoo!</a>", result);
         }
 
-        [Test]
+        [Fact]
         public void BlockHelperHelper()
         {
             var source = "{{#block_helper foo}}{{link_to url text}}{{/block_helper}}";
@@ -115,10 +118,10 @@ namespace HandlebarsDotNet.Test
 			var template = Handlebars.Compile(source);
 
             var result = template(data);
-            Assert.AreEqual("<a href='http://google.com/'>Google</a><a href='http://yahoo.com/'>Yahoo!</a>", result);
+            Assert.Equal("<a href='http://google.com/'>Google</a><a href='http://yahoo.com/'>Yahoo!</a>", result);
         }
 
-        [Test]
+        [Fact]
         public void ContextTest()
         {
             var template = Handlebars.Compile(@"{{#each Foo}}{{../Bar}}: {{#each this}}{{../../Bar}}{{this}},{{/each}};{{/each}}");
@@ -140,10 +143,10 @@ namespace HandlebarsDotNet.Test
                 }
             });
 
-            Assert.AreEqual(expected, result);
+            Assert.Equal(expected, result);
         }
 			
-		[Test]
+		[Fact]
 		public void CountyHasOneValue()
 		{
 			var data = new
@@ -155,10 +158,10 @@ namespace HandlebarsDotNet.Test
 
 			var result = template(data);
 
-			Assert.That(result, Is.EqualTo("Kane"));
+			Assert.Equal("Kane", result);
 		}
 
-		[Test]
+		[Fact]
 		public void CountyHasTwoValue()
 		{
 			var data = new
@@ -170,10 +173,10 @@ namespace HandlebarsDotNet.Test
 
 			var result = template(data);
 
-			Assert.That(result, Is.EqualTo("Kane and Salt Lake"));
+			Assert.Equal("Kane and Salt Lake", result);
 		}
 
-		[Test]
+		[Fact]
 		public void CountyHasMoreThanTwoValue()
 		{
 			var data = new
@@ -185,10 +188,10 @@ namespace HandlebarsDotNet.Test
 
 			var result = template(data);
 
-			Assert.That(result, Is.EqualTo("Kane, Salt Lake and Weber"));
+			Assert.Equal("Kane, Salt Lake and Weber", result);
 		}
 
-        [Test]
+        [Fact]
         public void PartialWithRoot()
         {
             string source = "{{>personcity}}!";
@@ -208,7 +211,7 @@ namespace HandlebarsDotNet.Test
             }
 
             var result = template(data);
-            Assert.AreEqual("Marc is from Wilmington!", result);
+            Assert.Equal("Marc is from Wilmington!", result);
         }
     }
 }

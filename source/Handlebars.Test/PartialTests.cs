@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using NUnit.Framework;
+using Xunit;
 using System.IO;
 
 namespace HandlebarsDotNet.Test
 {
-    [TestFixture]
     public class PartialTests
     {
-        [Test]
+        [Fact]
         public void BasicPartial()
         {
             string source = "Hello, {{>person}}!";
@@ -27,10 +26,10 @@ namespace HandlebarsDotNet.Test
             }
 
             var result = template(data);
-            Assert.AreEqual("Hello, Marc!", result);
+            Assert.Equal("Hello, Marc!", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicStringOnlyPartial()
         {
             string source = "Hello, {{>person}}!";
@@ -45,10 +44,10 @@ namespace HandlebarsDotNet.Test
             Handlebars.RegisterTemplate("person", partialSource);            
 
             var result = template(data);
-            Assert.AreEqual("Hello, Marc!", result);
+            Assert.Equal("Hello, Marc!", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicPartialWithContext()
         {
             string source = "Hello, {{>person leadDev}}!";
@@ -69,10 +68,10 @@ namespace HandlebarsDotNet.Test
             }
 
             var result = template(data);
-            Assert.AreEqual("Hello, Marc!", result);
+            Assert.Equal("Hello, Marc!", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicPartialWithStringParameter()
         {
             string source = "Hello, {{>person first='Pete'}}!";
@@ -87,10 +86,10 @@ namespace HandlebarsDotNet.Test
             }
 
             var result = template(null);
-            Assert.AreEqual("Hello, Pete!", result);
+            Assert.Equal("Hello, Pete!", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicPartialWithMultipleStringParameters()
         {
             string source = "Hello, {{>person first='Pete' last=\"Sampras\"}}!";
@@ -105,10 +104,10 @@ namespace HandlebarsDotNet.Test
             }
 
             var result = template(null);
-            Assert.AreEqual("Hello, Pete Sampras!", result);
+            Assert.Equal("Hello, Pete Sampras!", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicPartialWithContextParameter()
         {
             string source = "Hello, {{>person first=leadDev.marc}}!";
@@ -134,10 +133,10 @@ namespace HandlebarsDotNet.Test
             }
 
             var result = template(data);
-            Assert.AreEqual("Hello, Marc!", result);
+            Assert.Equal("Hello, Marc!", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicPartialWithContextAndStringParameters()
         {
             string source = "Hello, {{>person first=leadDev.marc last='Smith'}}!";
@@ -163,10 +162,10 @@ namespace HandlebarsDotNet.Test
             }
 
             var result = template(data);
-            Assert.AreEqual("Hello, Marc Smith!", result);
+            Assert.Equal("Hello, Marc Smith!", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicPartialWithTypedParameters()
         {
             string source = "Hello, {{>person first=1 last=true}}!";
@@ -181,10 +180,10 @@ namespace HandlebarsDotNet.Test
             }
 
             var result = template(null);
-            Assert.AreEqual("Hello, 1 True!", result);
+            Assert.Equal("Hello, 1 True!", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicPartialWithStringParameterIncludingExpressionChars()
         {
             string source = "Hello, {{>person first='Pe ({~te~}) '}}!";
@@ -199,10 +198,10 @@ namespace HandlebarsDotNet.Test
             }
 
             var result = template(null);
-            Assert.AreEqual("Hello, Pe ({~te~}) !", result);
+            Assert.Equal("Hello, Pe ({~te~}) !", result);
         }
 
-        [Test]
+        [Fact]
         public void DynamicPartial()
         {
             string source = "Hello, {{> (partialNameHelper)}}!";
@@ -221,10 +220,10 @@ namespace HandlebarsDotNet.Test
             var template = Handlebars.Compile(source);
             var data = new { };
             var result = template(data);
-            Assert.AreEqual("Hello, world!", result);
+            Assert.Equal("Hello, world!", result);
         }
 
-        [Test]
+        [Fact]
         public void DynamicPartialWithHelperArguments()
         {
             string source = "Hello, {{> (concat 'par' 'tial' item1='Na' item2='me')}}!";
@@ -244,10 +243,10 @@ namespace HandlebarsDotNet.Test
             var template = Handlebars.Compile(source);
             var data = new { };
             var result = template(data);
-            Assert.AreEqual("Hello, world!", result);
+            Assert.Equal("Hello, world!", result);
         }
 
-        [Test]
+        [Fact]
         public void DynamicPartialWithContext()
         {
             var source = "Hello, {{> (lookup name) context }}!";
@@ -276,10 +275,10 @@ namespace HandlebarsDotNet.Test
             };
 
             var result = template(data);
-            Assert.AreEqual("Hello, Marc Smith!", result);
+            Assert.Equal("Hello, Marc Smith!", result);
         }
 
-        [Test]
+        [Fact]
         public void DynamicPartialWithParameters()
         {
             var source = "Hello, {{> (lookup name) first='Marc' last='Smith' }}!";
@@ -303,10 +302,10 @@ namespace HandlebarsDotNet.Test
             };
 
             var result = template(data);
-            Assert.AreEqual("Hello, Marc Smith!", result);
+            Assert.Equal("Hello, Marc Smith!", result);
         }
 
-        [Test]
+        [Fact]
         public void SuperfluousWhitespace()
         {
             string source = "Hello, {{  >  person  }}!";
@@ -325,10 +324,10 @@ namespace HandlebarsDotNet.Test
             }
 
             var result = template(data);
-            Assert.AreEqual("Hello, Marc!", result);
+            Assert.Equal("Hello, Marc!", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicPartialWithStringParametersAndImplicitContext()
         {
             string source = "Hello, {{>person lastName='Smith'}}!";
@@ -349,10 +348,10 @@ namespace HandlebarsDotNet.Test
             }
 
             var result = template(data);
-            Assert.AreEqual("Hello, Marc Smith!", result);
+            Assert.Equal("Hello, Marc Smith!", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicPartialWithEmptyParameterDoesNotFallback()
         {
             string source = "Hello, {{>person lastName=test}}!";
@@ -373,10 +372,10 @@ namespace HandlebarsDotNet.Test
             }
 
             var result = template(data);
-            Assert.AreEqual("Hello, Marc !", result);
+            Assert.Equal("Hello, Marc !", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicPartialWithIncompleteChildContextDoesNotFallback()
         {
             string source = "Hello, {{>person leadDev}}!";
@@ -401,10 +400,10 @@ namespace HandlebarsDotNet.Test
             }
 
             var result = template(data);
-            Assert.AreEqual("Hello, Marc !", result);
+            Assert.Equal("Hello, Marc !", result);
         }
 
-        [Test]
+        [Fact]
         public void BasicBlockPartial()
         {
             string source = "Hello, {{#>person1}}friend{{/person1}}!";
@@ -417,7 +416,7 @@ namespace HandlebarsDotNet.Test
             };
 
             var result1 = template(data);
-            Assert.AreEqual ("Hello, friend!", result1);
+            Assert.Equal ("Hello, friend!", result1);
 
             var partialSource = "{{firstName}} {{lastName}}";
             using (var reader = new StringReader(partialSource)) {
@@ -426,10 +425,10 @@ namespace HandlebarsDotNet.Test
             }
 
             var result2 = template(data);
-            Assert.AreEqual("Hello, Pete Jones!", result2);
+            Assert.Equal("Hello, Pete Jones!", result2);
         }
 
-        [Test]
+        [Fact]
         public void BasicBlockPartialWithArgument()
         {
             string source = "Hello, {{#>person2 arg='Todd'}}friend{{/person2}}!";
@@ -442,7 +441,7 @@ namespace HandlebarsDotNet.Test
             };
 
             var result1 = template (data);
-            Assert.AreEqual ("Hello, friend!", result1);
+            Assert.Equal ("Hello, friend!", result1);
 
             var partialSource = "{{arg}}";
             using (var reader = new StringReader (partialSource)) {
@@ -451,7 +450,7 @@ namespace HandlebarsDotNet.Test
             }
 
             var result2 = template (data);
-            Assert.AreEqual ("Hello, Todd!", result2);
+            Assert.Equal ("Hello, Todd!", result2);
         }
     }
 }

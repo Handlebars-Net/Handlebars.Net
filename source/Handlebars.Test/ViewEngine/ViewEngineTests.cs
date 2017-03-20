@@ -3,14 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using HandlebarsDotNet;
-using NUnit.Framework;
+using Xunit;
 
 namespace HandlebarsDotNet.Test.ViewEngine
 {
-    [TestFixture]
     public class ViewEngineTests
     {
-        [Test]
+        [Fact]
         public void CanLoadAViewWithALayout()
         {
             //Given a layout in a subfolder
@@ -27,9 +26,9 @@ namespace HandlebarsDotNet.Test.ViewEngine
             var output = renderView(null);
             
             //Then the correct output should be rendered
-            Assert.AreEqual("layout start\r\nThis is the body\r\nlayout end", output);
+            Assert.Equal("layout start\r\nThis is the body\r\nlayout end", output);
         }
-        [Test]
+        [Fact]
         public void CanLoadAViewWithALayoutInTheRoot()
         {
             //Given a layout in the root
@@ -46,10 +45,10 @@ namespace HandlebarsDotNet.Test.ViewEngine
             var output = render(null);
 
             //Then the correct output should be rendered
-            Assert.AreEqual("layout start\r\nThis is the body\r\nlayout end", output);
+            Assert.Equal("layout start\r\nThis is the body\r\nlayout end", output);
         }
 
-        [Test]
+        [Fact]
         public void CanRenderAGlobalVariable()
         {
             //Given a layout in the root which contains an @ variable
@@ -65,7 +64,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
             var output = render(new {@body = new {title = "THING"}});
 
             //Then the correct output should be rendered
-            Assert.AreEqual("This is the THING", output);
+            Assert.Equal("This is the THING", output);
         }
 
         //We have a fake file system. Difference frameworks and apps will use 

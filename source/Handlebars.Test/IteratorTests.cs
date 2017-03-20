@@ -1,12 +1,11 @@
 ﻿using System;
-using NUnit.Framework;
+using Xunit;
 
 namespace HandlebarsDotNet.Test
 {
-    [TestFixture]
     public class IteratorTests
     {
-        [Test]
+        [Fact]
         public void BasicIterator()
         {
             var source = "Hello,{{#each people}}\n- {{name}}{{/each}}";
@@ -22,10 +21,10 @@ namespace HandlebarsDotNet.Test
                 }
             };
             var result = template(data);
-            Assert.AreEqual("Hello,\n- Erik\n- Helen", result);
+            Assert.Equal("Hello,\n- Erik\n- Helen", result);
         }
 
-        [Test]
+        [Fact]
         public void WithIndex()
         {
             var source = "Hello,{{#each people}}\n{{@index}}. {{name}}{{/each}}";
@@ -42,10 +41,10 @@ namespace HandlebarsDotNet.Test
                     }
                 };
             var result = template(data);
-            Assert.AreEqual("Hello,\n0. Erik\n1. Helen", result);
+            Assert.Equal("Hello,\n0. Erik\n1. Helen", result);
         }
 
-        [Test]
+        [Fact]
         public void WithParentIndex()
         {
             var source = @"
@@ -176,10 +175,10 @@ namespace HandlebarsDotNet.Test
 
             Func<string, string> makeFlat = text => text.Replace( " ", "" ).Replace( "\n", "" ).Replace( "\r", "" );
 
-            Assert.AreEqual( makeFlat( expected ), makeFlat( result ) );
+            Assert.Equal( makeFlat( expected ), makeFlat( result ) );
         }
 
-        [Test]
+        [Fact]
         public void WithFirst()
         {
             var source = "Hello,{{#each people}}\n{{@index}}. {{name}} ({{name}} is {{#if @first}}first{{else}}not first{{/if}}){{/each}}";
@@ -196,10 +195,10 @@ namespace HandlebarsDotNet.Test
                     }
                 };
             var result = template(data);
-            Assert.AreEqual("Hello,\n0. Erik (Erik is first)\n1. Helen (Helen is not first)", result);
+            Assert.Equal("Hello,\n0. Erik (Erik is first)\n1. Helen (Helen is not first)", result);
         }
 
-        [Test]
+        [Fact]
         public void WithLast()
         {
             var source = "Hello,{{#each people}}\n{{@index}}. {{name}} ({{name}} is {{#if @last}}last{{else}}not last{{/if}}){{/each}}";
@@ -216,10 +215,10 @@ namespace HandlebarsDotNet.Test
                     }
                 };
             var result = template(data);
-            Assert.AreEqual("Hello,\n0. Erik (Erik is not last)\n1. Helen (Helen is last)", result);
+            Assert.Equal("Hello,\n0. Erik (Erik is not last)\n1. Helen (Helen is last)", result);
         }
 
-        [Test]
+        [Fact]
         public void Empty()
         {
             var source = "Hello,{{#each people}}\n- {{name}}{{else}} (no one listed){{/each}}";
@@ -229,10 +228,10 @@ namespace HandlebarsDotNet.Test
                     people = new object[] { }
                 };
             var result = template(data);
-            Assert.AreEqual("Hello, (no one listed)", result);
+            Assert.Equal("Hello, (no one listed)", result);
         }
 
-        [Test]
+        [Fact]
         public void NullObject()
         {
             var source = "Hello,{{#each people}}\n- {{name}}{{else}} (no one listed){{/each}}";
@@ -242,10 +241,10 @@ namespace HandlebarsDotNet.Test
                     people = (object)null
                 };
             var result = template(data);
-            Assert.AreEqual("Hello, (no one listed)", result);
+            Assert.Equal("Hello, (no one listed)", result);
         }
 
-        [Test]
+        [Fact]
         public void NullSequence()
         {
             var source = "Hello,{{#each people}}\n- {{name}}{{else}} (no one listed){{/each}}";
@@ -255,7 +254,7 @@ namespace HandlebarsDotNet.Test
                     people = (object[])null
                 };
             var result = template(data);
-            Assert.AreEqual("Hello, (no one listed)", result);
+            Assert.Equal("Hello, (no one listed)", result);
         }
     }
 }
