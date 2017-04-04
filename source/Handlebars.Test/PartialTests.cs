@@ -452,6 +452,55 @@ namespace HandlebarsDotNet.Test
             var result2 = template (data);
             Assert.Equal ("Hello, Todd!", result2);
         }
+
+        [Fact]
+        public void BlockPartialWithSpecialNamedPartial()
+        {
+            string source = "Well, {{#>myPartial}}some test{{/myPartial}} !";
+
+            var template = Handlebars.Compile(source);
+
+            var partialSource = "this is {{> @partial-block }} content";
+            using (var reader = new StringReader(partialSource)) {
+                var partialTemplate = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("myPartial", partialTemplate);
+            }
+
+            var data = new { };
+            var result = template(data);
+
+            Assert.Equal("Well, this is some test content !", result);
+        }
+
+        [Fact]
+        public void BlockPartialWithDoubleNestedSpecialNamedPartial()
+        {
+            string source = "Well, {{#>partial1}}some test{{/partial1}} !";
+
+            var template = Handlebars.Compile(source);
+
+            var partialSource1 = "this is {{> @partial-block }} content {{#>partial2}}works{{/partial2}} {{lastName}}";
+            using (var reader = new StringReader(partialSource1))
+            {
+                var partialTemplate = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("partial1", partialTemplate);
+            }
+
+            var partialSource2 = "that {{> @partial-block}} great {{firstName}}";
+            using (var reader = new StringReader(partialSource2))
+            {
+                var partialTemplate = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("partial2", partialTemplate);
+            }
+
+            var data = new {
+                firstName = "Pete",
+                lastName = "Jones"
+            };
+            var result = template(data);
+
+            Assert.Equal("Well, this is some test content that works great Pete Jones !", result);
+        }
     }
 }
 
