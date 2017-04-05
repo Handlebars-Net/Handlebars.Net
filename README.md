@@ -9,11 +9,11 @@ Check out the [handlebars.js documentation](http://handlebarsjs.com) for how to 
 
 Handlebars.Net doesn't use a scripting engine to run a Javascript library - it **compiles Handlebars templates directly to IL bytecode**. It also mimics the JS library's API as closely as possible.
 
-##Install
+## Install
 
     nuget install Handlebars.Net
 
-##Usage
+## Usage
 
 ```c#
 string source =
@@ -43,7 +43,8 @@ var result = template(data);
 */
 ```
 
-###Registering Partials
+### Registering Partials
+
 ```c#
 string source =
 @"<h2>Names</h2>
@@ -78,7 +79,8 @@ var result = template(data);
 */
 ```
 
-###Registering Helpers
+### Registering Helpers
+
 ```c#
 Handlebars.RegisterHelper("link_to", (writer, context, parameters) => {
   writer.WriteSafeString("<a href='" + context.url + "'>" + context.text + "</a>");
@@ -109,10 +111,13 @@ Views\{Controller}\{Action}.hbs
 Views\{Controller}\{Action}\partials\somepartial.hbs 
 ```
 
-##Performance
-###Compilation
+## Performance
+
+### Compilation
+
 Compared to rendering, compiling is a fairly intensive process. While both are still measured in millseconds, compilation accounts for the most of that time by far. So, it is generally ideal to compile once and cache the resulting function to be re-used for the life of your process.
-###Model Types
+
+### Model Types
 Different types of objects have different performance characteristics when used as models.
 - For example, the absolute fastest model is a dictionary (microseconds), because no reflection is necessary at render time.
 - The next fastest is a POCO (typically a few milliseconds for an average-sized template and model), which uses traditional reflection and is fairly fast.
@@ -121,7 +126,7 @@ Different types of objects have different performance characteristics when used 
 
 A frequent performance issue that comes up is JSON.NET's `JObject`, which for reasons we haven't fully researched, has very slow reflection characteristics when used as a model in Handlebars.Net. A simple fix is to just use JSON.NET's built-in ability to deserialize a JSON string to an `ExpandoObject` instead of a `JObject`. This will yield nearly an order of magnitude improvement in render times on average.
 
-##Future roadmap
+## Future roadmap
 
 - [ ] **Add unit tests!**
 - [x] [Support for sub-expressions](https://github.com/rexm/Handlebars.Net/issues/48)
@@ -130,7 +135,7 @@ A frequent performance issue that comes up is JSON.NET's `JObject`, which for re
 - [ ] MVC view engine
 - [ ] Nancy view engine
 
-##Contributing
+## Contributing
 
 Pull requests are welcome! The guidelines are pretty straightforward:
 - Only add capabilities that are already in the Mustache / Handlebars specs
