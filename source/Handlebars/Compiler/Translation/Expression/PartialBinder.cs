@@ -93,8 +93,12 @@ namespace HandlebarsDotNet.Compiler
             var partialBindingContext = context as PartialBindingContext;
             if (partialName.Equals(SpecialPartialBlockName) && partialBindingContext != null)
             {
-                if (partialBindingContext.PartialBlockTemplate != null)
-                    partialBindingContext.PartialBlockTemplate(context.TextWriter, context);
+                if (partialBindingContext.PartialBlockTemplate == null)
+                {
+                    return false;
+                }
+
+                partialBindingContext.PartialBlockTemplate(context.TextWriter, context);
                 return true;
             }
 

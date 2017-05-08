@@ -501,6 +501,19 @@ namespace HandlebarsDotNet.Test
 
             Assert.Equal("Well, this is some test content that works great Pete Jones !", result);
         }
+
+        [Fact]
+        public void TemplateWithSpecialNamedPartial()
+        {
+            string source = "Single template referencing {{> @partial-block }} should throw runtime exception";
+
+            var template = Handlebars.Compile(source);
+
+            var data = new {};
+
+            var ex = Assert.Throws<HandlebarsRuntimeException>(() => template(data));
+            Assert.Equal("Referenced partial name @partial-block could not be resolved", ex.Message);
+        }
     }
 }
 
