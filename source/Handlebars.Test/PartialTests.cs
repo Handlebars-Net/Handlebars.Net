@@ -473,7 +473,7 @@ namespace HandlebarsDotNet.Test
         }
 
         [Fact]
-        public void BlockPartialWithDoubleNestedSpecialNamedPartial()
+        public void BlockPartialWithNestedSpecialNamedPartial()
         {
             string source = "Well, {{#>partial1}}some test{{/partial1}} !";
 
