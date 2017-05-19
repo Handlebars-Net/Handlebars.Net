@@ -4,7 +4,7 @@
     <DebugType>portable</DebugType>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <TargetFrameworks>net40;netstandard1.3</TargetFrameworks>
-    <VersionPrefix>1.8.1</VersionPrefix>
+    <VersionPrefix>1.9.0</VersionPrefix>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)'=='netstandard1.3'">
