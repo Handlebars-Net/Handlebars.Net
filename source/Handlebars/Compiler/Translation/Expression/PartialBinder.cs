@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
 using System.Linq.Expressions;
 #if netstandard
 using System.Reflection;
@@ -8,6 +10,8 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class PartialBinder : HandlebarsExpressionVisitor
     {
+        private static string SpecialPartialBlockName = "@partial-block";
+
         public static Expression Bind(Expression expr, CompilationContext context)
         {
             return new PartialBinder(context).Visit(expr);
@@ -41,15 +45,20 @@ namespace HandlebarsDotNet.Compiler
                     pex.Argument);
             }
 
+            var fb = new FunctionBuilder(CompilationContext.Configuration);
+            var partialBlockTemplate =
+                fb.Compile(pex.Fallback != null ? new[] {pex.Fallback} : Enumerable.Empty<Expression>(), bindingContext);
+
             var partialInvocation = Expression.Call(
 #if netstandard
-                new Func<string, BindingContext, HandlebarsConfiguration, bool>(InvokePartial).GetMethodInfo(),
+                new Func<string, BindingContext, HandlebarsConfiguration, Action<TextWriter, object>, bool>(InvokePartial).GetMethodInfo(),
 #else
-                new Func<string, BindingContext, HandlebarsConfiguration, bool>(InvokePartial).Method,
+                new Func<string, BindingContext, HandlebarsConfiguration, Action<TextWriter, object>, bool>(InvokePartial).Method,
 #endif
                 Expression.Convert(pex.PartialName, typeof(string)),
                 bindingContext,
-                Expression.Constant(CompilationContext.Configuration));
+                Expression.Constant(CompilationContext.Configuration),
+                partialBlockTemplate);
 
             var fallback = pex.Fallback;
             if (fallback == null)
@@ -78,8 +87,26 @@ namespace HandlebarsDotNet.Compiler
         private static bool InvokePartial(
             string partialName,
             BindingContext context,
-            HandlebarsConfiguration configuration)
+            HandlebarsConfiguration configuration,
+            Action<TextWriter, object> partialBlockTemplate)
         {
+            var partialBindingContext = context as PartialBindingContext;
+            if (partialName.Equals(SpecialPartialBlockName) && partialBindingContext != null)
+            {
+                if (partialBindingContext.PartialBlockTemplate == null)
+                {
+                    return false;
+                }
+
+                partialBindingContext.PartialBlockTemplate(context.TextWriter, context);
+                return true;
+            }
+
+            context = new PartialBindingContext(context)
+            {
+                PartialBlockTemplate = partialBlockTemplate
+            };
+
             if (configuration.RegisteredTemplates.ContainsKey(partialName) == false)
             {
                 if (configuration.FileSystem != null && context.TemplatePath != null)
@@ -119,6 +146,24 @@ namespace HandlebarsDotNet.Compiler
                     exception);
             }
 
+        }
+
+        private class PartialBindingContext : BindingContext
+        {
+            public PartialBindingContext(BindingContext context)
+                : base(context.Value, context.TextWriter, context.ParentContext, context.TemplatePath)
+            {
+            }
+
+            public Action<TextWriter, object> PartialBlockTemplate { get; set; }
+
+            public override BindingContext CreateChildContext(object value)
+            {
+                return new PartialBindingContext(base.CreateChildContext(value))
+                {
+                    PartialBlockTemplate = PartialBlockTemplate
+                };
+            }
         }
     }
 }
