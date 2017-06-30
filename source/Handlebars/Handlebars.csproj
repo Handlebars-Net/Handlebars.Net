@@ -3,8 +3,8 @@
   <PropertyGroup>
     <DebugType>portable</DebugType>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <TargetFrameworks>net40;netstandard1.3</TargetFrameworks>
-    <VersionPrefix>1.9.0</VersionPrefix>
+    <TargetFrameworks>net452;netstandard1.3</TargetFrameworks>
+    <Version>1.9.1</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)'=='netstandard1.3'">
@@ -25,7 +25,7 @@
     <RepositoryUrl>https://github.com/rexm/Handlebars.Net</RepositoryUrl>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)'=='net40'">
+  <ItemGroup Condition="'$(TargetFramework)'=='net452'">
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
 
