@@ -25,7 +25,7 @@
     <RepositoryUrl>https://github.com/rexm/Handlebars.Net</RepositoryUrl>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)'=='net40'">
+  <ItemGroup Condition="'$(TargetFramework)'=='net452'">
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
 
