@@ -124,6 +124,10 @@ namespace HandlebarsDotNet.Compiler
             {
                 return Expression.Block(expressions);
             }
+            else if(expressions.Count() == 0)
+            {
+                return Expression.Empty();
+            }
             else
             {
                 return expressions.Single();

@@ -21,7 +21,22 @@ namespace HandlebarsDotNet.Test
             Assert.Equal("Hello, Handlebars.Net!", result);
         }
 
-		[Fact]
+        [Fact]
+        public void EmptyIf()
+        {
+            var source = 
+@"{{#if false}}
+{{else}}
+{{/if}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+            };
+            var result = template(data);
+            Assert.Equal(string.Empty, result);
+        }
+
+        [Fact]
         public void BasicPathUnresolvedBindingFormatter()
         {
             var source = "Hello, {{foo}}!";
