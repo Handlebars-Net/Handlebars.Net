@@ -49,6 +49,46 @@ namespace HandlebarsDotNet.Test.ViewEngine
         }
 
         [Fact]
+        public void CanLoadAViewWithALayoutWithAVariable()
+        {
+            //Given a layout in the root
+            var files = new FakeFileSystem()
+            {
+                {"somelayout.hbs", "{{var1}} start\r\n{{{body}}}\r\n{{var1}} end"},
+                //And a view in a subfolder folder which uses that layout
+                { "views\\someview.hbs", "{{!< somelayout}}This is the {{var2}}"}
+            };
+
+            //When a viewengine renders that view
+            var handleBars = Handlebars.Create(new HandlebarsConfiguration() { FileSystem = files });
+            var renderView = handleBars.CompileView("views\\someview.hbs");
+            var output = renderView(new { var1 = "layout", var2 = "body" });
+
+            //Then the correct output should be rendered
+            Assert.Equal("layout start\r\nThis is the body\r\nlayout end", output);
+        }
+
+        [Fact]
+        public void CanLoadAViewWithALayoutInTheRootWithAVariable()
+        {
+            //Given a layout in the root
+            var files = new FakeFileSystem()
+            {
+                {"somelayout.hbs", "{{var1}} start\r\n{{{body}}}\r\n{{var1}} end"},
+                //And a view in a subfolder folder which uses that layout
+                { "views\\someview.hbs", "{{!< somelayout}}This is the {{var2}}"}
+            };
+
+            //When a viewengine renders that view
+            var handlebars = Handlebars.Create(new HandlebarsConfiguration() { FileSystem = files });
+            var render = handlebars.CompileView("views\\someview.hbs");
+            var output = render(new { var1 = "layout", var2 = "body" });
+
+            //Then the correct output should be rendered
+            Assert.Equal("layout start\r\nThis is the body\r\nlayout end", output);
+        }
+
+        [Fact]
         public void CanRenderAGlobalVariable()
         {
             //Given a layout in the root which contains an @ variable
