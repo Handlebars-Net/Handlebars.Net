@@ -74,6 +74,52 @@ namespace HandlebarsDotNet.Test
         }
 
         [Fact]
+        public void BasicPathThrowOnNestedUnresolvedBindingExpression()
+        {
+            var source = "Hello, {{foo.bar}}!";
+
+            var config = new HandlebarsConfiguration
+            {
+                ThrowOnUnresolvedBindingExpression = true
+            };
+            var handlebars = Handlebars.Create(config);
+            var template = handlebars.Compile(source);
+
+            var data = new
+            {
+                foo = (object)null
+            };
+            var ex = Assert.Throws<HandlebarsUndefinedBindingException>(() => template(data));
+            Assert.Equal("bar is undefined", ex.Message);
+        }
+
+        [Fact]
+        public void BasicPathNoThrowOnNullExpression()
+        {
+            var source =
+@"{{#if foo}}
+{{foo.bar}}
+{{else}}
+false
+{{/if}}
+";
+
+            var config = new HandlebarsConfiguration
+            {
+                ThrowOnUnresolvedBindingExpression = true
+            };
+            var handlebars = Handlebars.Create(config);
+            var template = handlebars.Compile(source);
+
+            var data = new
+            {
+                foo = (string)null
+            };
+            var result = template(data);
+            Assert.Contains("false", result);
+        }
+
+        [Fact]
         public void AssertHandlebarsUndefinedBindingException()
         {
             var source = "Hello, {{person.firstname}} {{person.lastname}}!";
