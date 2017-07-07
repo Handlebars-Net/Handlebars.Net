@@ -322,12 +322,12 @@ namespace HandlebarsDotNet.Compiler
             if (propertyInfo != null)
             {
                 var propertyValue = propertyInfo.GetValue(instance, null);
-                return propertyValue ?? new UndefinedBindingResult(resolvedMemberName, CompilationContext.Configuration);
+                return propertyValue;
             }
             if (preferredMember is FieldInfo)
             {
                 var fieldValue = ((FieldInfo)preferredMember).GetValue(instance);
-                return fieldValue ?? new UndefinedBindingResult(resolvedMemberName, CompilationContext.Configuration);
+                return fieldValue;
             }
             return new UndefinedBindingResult(resolvedMemberName, CompilationContext.Configuration);
         }
