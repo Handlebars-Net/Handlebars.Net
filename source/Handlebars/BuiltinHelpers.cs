@@ -25,6 +25,12 @@ namespace HandlebarsDotNet
             }
         }
 
+        [Description("*inline")]
+        public static void Inline(TextWriter output, HelperOptions options, dynamic context, params object[] arguments)
+        {   //there may be a better way to do this, but leaving these blank seems to work.
+
+        }
+
         public static IEnumerable<KeyValuePair<string, HandlebarsHelper>> Helpers
         {
             get

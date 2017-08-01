@@ -47,6 +47,25 @@ namespace HandlebarsDotNet.Compiler
                     typeof(BindingContext).GetProperty("Value")),
                 Expression.NewArrayInit(typeof(object), bhex.Arguments)
             };
+
+
+            //this is the hackiest part of the inline partial PR. This codebase looks like
+            //it would take me a long time to figure out. Stuffing this here makes it work though.
+            //Hopefully you have a better idea of where this should go
+            if (bhex.HelperName == "#*inline")
+            {   
+                //This block is an inline block so we will compile it and register it as a partial template
+                var args = bhex.Arguments.GetEnumerator();
+                args.MoveNext();
+
+                var partialName = ((ConstantExpression)args.Current).Value.ToString();
+
+                var compiledPartial = fb.Compile(((BlockExpression)bhex.Body).Expressions, null);
+                    
+                CompilationContext.Configuration.RegisteredTemplates.AddOrUpdate(partialName, compiledPartial);
+            }
+
+
             if (helper.Target != null)
             {
                 return Expression.Call(
