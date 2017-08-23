@@ -1,4 +1,7 @@
-﻿using System.Linq.Expressions;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace HandlebarsDotNet.Compiler
@@ -29,7 +32,16 @@ namespace HandlebarsDotNet.Compiler
 
         protected override Expression VisitBlockHelperExpression(BlockHelperExpression bhex)
         {
+            var isInlinePartial = bhex.HelperName == "#*inline";
+
             var fb = new FunctionBuilder(CompilationContext.Configuration);
+
+
+            var bindingContext = isInlinePartial ? (Expression)CompilationContext.BindingContext :
+                            Expression.Property(
+                                CompilationContext.BindingContext,
+                                typeof(BindingContext).GetProperty("Value"));
+
             var body = fb.Compile(((BlockExpression)bhex.Body).Expressions, CompilationContext.BindingContext);
             var inversion = fb.Compile(((BlockExpression)bhex.Inversion).Expressions, CompilationContext.BindingContext);
             var helper = CompilationContext.Configuration.BlockHelpers[bhex.HelperName.Replace("#", "")];
@@ -42,28 +54,11 @@ namespace HandlebarsDotNet.Compiler
                         typeof(HelperOptions).GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic)[0],
                         body,
                         inversion),
-                Expression.Property(
-                    CompilationContext.BindingContext,
-                    typeof(BindingContext).GetProperty("Value")),
+                //this next arg is usually data, like { first: "Marc" } 
+                //but for inline partials this is the complete BindingContext.
+                bindingContext,
                 Expression.NewArrayInit(typeof(object), bhex.Arguments)
             };
-
-
-            //this is the hackiest part of the inline partial PR. This codebase looks like
-            //it would take me a long time to figure out. Stuffing this here makes it work though.
-            //Hopefully you have a better idea of where this should go
-            if (bhex.HelperName == "#*inline")
-            {   
-                //This block is an inline block so we will compile it and register it as a partial template
-                var args = bhex.Arguments.GetEnumerator();
-                args.MoveNext();
-
-                var partialName = ((ConstantExpression)args.Current).Value.ToString();
-
-                var compiledPartial = fb.Compile(((BlockExpression)bhex.Body).Expressions, null);
-                    
-                CompilationContext.Configuration.RegisteredTemplates.AddOrUpdate(partialName, compiledPartial);
-            }
 
 
             if (helper.Target != null)

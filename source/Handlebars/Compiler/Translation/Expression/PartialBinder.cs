@@ -107,6 +107,14 @@ namespace HandlebarsDotNet.Compiler
                 PartialBlockTemplate = partialBlockTemplate
             };
 
+            //if we have an inline partial, skip the file system and RegisteredTemplates collection
+            if (context.InlinePartialTemplates.ContainsKey(partialName))
+            {
+                context.InlinePartialTemplates[partialName](context.TextWriter, context);
+                return true;
+            }
+
+            
             if (configuration.RegisteredTemplates.ContainsKey(partialName) == false)
             {
                 if (configuration.FileSystem != null && context.TemplatePath != null)
@@ -151,7 +159,7 @@ namespace HandlebarsDotNet.Compiler
         private class PartialBindingContext : BindingContext
         {
             public PartialBindingContext(BindingContext context)
-                : base(context.Value, context.TextWriter, context.ParentContext, context.TemplatePath)
+                : base(context.Value, context.TextWriter, context.ParentContext, context.TemplatePath, context)
             {
             }
 

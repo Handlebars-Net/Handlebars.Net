@@ -59,6 +59,7 @@ namespace HandlebarsDotNet.Compiler
         {
             try
             {
+
                 var expression = Compile(expressions, null, templatePath);
                 return ((Expression<Action<TextWriter, object>>)expression).Compile();
             }

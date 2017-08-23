@@ -2,6 +2,7 @@
 using System.IO;
 using System.Reflection;
 using System.Collections.Generic;
+using HandlebarsDotNet.Compiler;
 
 namespace HandlebarsDotNet
 {
@@ -27,8 +28,27 @@ namespace HandlebarsDotNet
 
         [Description("*inline")]
         public static void Inline(TextWriter output, HelperOptions options, dynamic context, params object[] arguments)
-        {   //there may be a better way to do this, but leaving these blank seems to work.
+        {
+            if (arguments.Length != 1)
+            {
+                throw new HandlebarsException("{{*inline}} helper must have exactly one argument");
+            }
 
+            //This helper needs the "context" var to be the complete BindingContext as opposed to just the
+            //data { firstName: "todd" }. The full BindingContext is needed for registering the partial templates
+
+            if (context as BindingContext == null)
+            {
+                throw new HandlebarsException("{{*inline}} helper must receiving the full BindingContext");
+            }
+
+            var key = arguments[0] as string;
+            
+            //Inline partials cannot use the Handlebars.RegisterTemplate method
+            //because it is static and therefore app-wide. To prevent collisions
+            //this helper will add the compiled partial to a dicionary
+            //that is passed around in the context without fear of collisions.
+            context.InlinePartialTemplates.Add(key, options.Template);
         }
 
         public static IEnumerable<KeyValuePair<string, HandlebarsHelper>> Helpers

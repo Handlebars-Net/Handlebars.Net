@@ -1,4 +1,7 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -11,18 +14,42 @@ namespace HandlebarsDotNet.Compiler
 
         public EncodedTextWriter TextWriter { get; private set; }
 
+        public IDictionary<string, Action<TextWriter, object>> InlinePartialTemplates { get; private set; }
+
+
         public bool SuppressEncoding
         {
             get { return TextWriter.SuppressEncoding; }
             set { TextWriter.SuppressEncoding = value; }
         }
 
-        public BindingContext(object value, EncodedTextWriter writer, BindingContext parent, string templatePath)
+        public BindingContext(object value, EncodedTextWriter writer, BindingContext parent, string templatePath) :
+            this(value, writer, parent, templatePath, null) { }
+
+        public BindingContext(object value, EncodedTextWriter writer, BindingContext parent, string templatePath, BindingContext current)
         {
             TemplatePath = parent != null ? (parent.TemplatePath ?? templatePath) : templatePath;
             TextWriter = writer;
             _value = value;
             _parent = parent;
+
+            //Inline partials cannot use the Handlebars.RegisteredTemplate method
+            //because it pollutes the static dictionary and creates collisions 
+            //where the same partial name might exist in multiple templates. 
+            //To avoid collisions, pass around a dictionary of compiled partials 
+            //in the context
+            if (parent != null)
+            {
+                InlinePartialTemplates = parent.InlinePartialTemplates;
+            }
+            else if (current != null)
+            {
+                InlinePartialTemplates = current.InlinePartialTemplates;
+            }
+            else
+            {
+                InlinePartialTemplates = new Dictionary<string, Action<TextWriter, object>>(StringComparer.OrdinalIgnoreCase);
+            }
         }
 
         public virtual object Value
