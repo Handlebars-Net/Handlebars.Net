@@ -35,7 +35,8 @@ namespace HandlebarsDotNet
             }
 
             //This helper needs the "context" var to be the complete BindingContext as opposed to just the
-            //data { firstName: "todd" }. The full BindingContext is needed for registering the partial templates
+            //data { firstName: "todd" }. The full BindingContext is needed for registering the partial templates.
+            //This magic happens in BlockHelperFunctionbinder.VisitBlockHelperExpression
 
             if (context as BindingContext == null)
             {
