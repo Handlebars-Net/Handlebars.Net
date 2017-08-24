@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Xunit;
-using System.IO;
+﻿using Xunit;
 
 namespace HandlebarsDotNet.Test
 {
