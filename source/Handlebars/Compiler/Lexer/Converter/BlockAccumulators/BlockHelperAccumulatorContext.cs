@@ -48,7 +48,7 @@ namespace HandlebarsDotNet.Compiler
 
         private bool IsClosingNode(Expression item)
         {
-            var helperName = _startingNode.HelperName.Replace("#", "");
+            var helperName = _startingNode.HelperName.Replace("#", "").Replace("*", "");
             return item is PathExpression && ((PathExpression)item).Path == "/" + helperName;
         }
 
