@@ -9,14 +9,15 @@ namespace HandlebarsDotNet.Compiler
         StatementExpression = 6001,
         BlockExpression = 6002,
         HelperExpression = 6003,
-        PathExpression = 6004,
-        IteratorExpression = 6005,
-        DeferredSection = 6006,
-        PartialExpression = 6007,
-        BoolishExpression = 6008,
-        SubExpression = 6009,
-        HashParametersExpression = 6010,
-		CommentExpression = 6011
+        BlockHelperExpression = 6004,
+        PathExpression = 6005,
+        IteratorExpression = 6006,
+        DeferredSection = 6007,
+        PartialExpression = 6008,
+        BoolishExpression = 6009,
+        SubExpression = 6010,
+        HashParametersExpression = 6011,
+		CommentExpression = 6012
     }
 
     internal abstract class HandlebarsExpression : Expression
