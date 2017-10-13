@@ -104,6 +104,8 @@ namespace HandlebarsDotNet.Test
             };
             var template = Handlebars.Compile(source);
             var result = template(data);
+
+            Assert.Equal("block_helperValue", result);
         }
 
         [Fact]
