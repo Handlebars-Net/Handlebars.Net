@@ -17,6 +17,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
             var renderView = handlebars.CompileView("ViewEngine/Casper-master/index.hbs");
             var output = renderView(new
             {
+                meta_title = "This is the blog title",
                 blog = new
                 {
                     url = "http://someblog.com",
@@ -34,6 +35,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
             });
             var cq = CsQuery.CQ.CreateDocument(output);
             Assert.Equal("My Post Title", cq["h2.post-title a"].Text());
+            Assert.Equal("This is the blog title", cq["section.copyright a"].Text());
         }
         [Fact]
         public void CanRenderCasparPostTemplate()

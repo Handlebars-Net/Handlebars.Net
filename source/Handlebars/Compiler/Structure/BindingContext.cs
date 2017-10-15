@@ -87,6 +87,10 @@ namespace HandlebarsDotNet.Compiler
         {
             object returnValue;
             variableName = variableName.TrimStart('@');
+            if (target.GetType() == typeof(HandlebarsCompiler.DynamicViewModel))
+            {
+                target = ((HandlebarsCompiler.DynamicViewModel) target).Objects[1];
+            }
             var member = target.GetType().GetMember(variableName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
             if (member.Length > 0)
             {

@@ -68,17 +68,18 @@ namespace HandlebarsDotNet.Compiler
 
         internal class DynamicViewModel : DynamicObject
         {
-            private readonly object[] _objects;
             private static readonly BindingFlags BindingFlags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase;
+
+            public object[] Objects { get; }
 
             public DynamicViewModel(params object[] objects)
             {
-                _objects = objects;
+                Objects = objects;
             }
 
             public override IEnumerable<string> GetDynamicMemberNames()
             {
-                return _objects.Select(o => o.GetType())
+                return Objects.Select(o => o.GetType())
                     .SelectMany(t => t.GetMembers(BindingFlags))
                     .Select(m => m.Name);
             }
@@ -86,7 +87,7 @@ namespace HandlebarsDotNet.Compiler
             public override bool TryGetMember(GetMemberBinder binder, out object result)
             {
                 result = null;
-                foreach (var target in _objects)
+                foreach (var target in Objects)
                 {
                     var member = target.GetType().GetMember(binder.Name, BindingFlags);
                     if (member.Length > 0)
