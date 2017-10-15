@@ -91,7 +91,7 @@ namespace HandlebarsDotNet.Test
         }
 
         [Fact]
-        public void BlockHelperWithSameName()
+        public void BlockHelperWithSameNameVariable()
         {
             var source = "{{#block_helper}}{{block_helper}}{{/block_helper}}";
             Handlebars.RegisterHelper("block_helper", (writer, options, context, arguments) =>
@@ -106,6 +106,15 @@ namespace HandlebarsDotNet.Test
             var result = template(data);
 
             Assert.Equal("block_helperValue", result);
+        }
+
+        [Fact]
+        public void BlockHelperWithSameNameHelper()
+        {
+            var source = "{{block_helper}}";
+            Handlebars.RegisterHelper("block_helper", (writer, options, context, arguments) => { });
+            Handlebars.RegisterHelper("block_helper", ((output, context, arguments) => { }));
+            Handlebars.Compile(source);
         }
 
         [Fact]
