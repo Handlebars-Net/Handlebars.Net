@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using HtmlAgilityPack;
 using Xunit;
 
 namespace HandlebarsDotNet.Test.ViewEngine
@@ -32,9 +33,13 @@ namespace HandlebarsDotNet.Test.ViewEngine
                     }
                 }
             });
-            var cq = CsQuery.CQ.CreateDocument(output);
-            Assert.Equal("My Post Title", cq["h2.post-title a"].Text());
+
+            var doc = new HtmlDocument();
+            doc.LoadHtml(output);
+            var postTitle = doc.DocumentNode.SelectSingleNode("//h2[@class='post-title']/a").InnerText;
+            Assert.Equal("My Post Title", postTitle);
         }
+
         [Fact]
         public void CanRenderCasparPostTemplate()
         {
@@ -59,8 +64,10 @@ namespace HandlebarsDotNet.Test.ViewEngine
                     post_class = "somepostclass"
                 }
             });
-            var cq = CsQuery.CQ.CreateDocument(output);
-            Assert.Equal("My Post Title", cq["h1.post-title"].Html());
+            var doc = new HtmlDocument();
+            doc.LoadHtml(output);
+            var postTitle = doc.DocumentNode.SelectSingleNode("//h1[@class='post-title']").InnerText;
+            Assert.Equal("My Post Title", postTitle);
         }
 
         private static void AddHelpers(IHandlebars handlebars)
@@ -95,8 +102,10 @@ namespace HandlebarsDotNet.Test.ViewEngine
                     post_class = "somepostclass"
                 }
             });
-            var cq = CsQuery.CQ.CreateDocument(output);
-            Assert.Equal("My Post Title", cq["h1.post-title"].Html());
+            var doc = new HtmlDocument();
+            doc.LoadHtml(output);
+            var postTitle = doc.DocumentNode.SelectSingleNode("//h1[@class='post-title']").InnerText;
+            Assert.Equal("My Post Title", postTitle);
         }
 
         [Fact]
@@ -130,10 +139,12 @@ namespace HandlebarsDotNet.Test.ViewEngine
                     }
                 }
             });
-            var cq = CsQuery.CQ.CreateDocument(output);
-            Assert.Equal("My Post Title", cq["h2.post-title a"].Text());
-        }
 
+            var doc = new HtmlDocument();
+            doc.LoadHtml(output);
+            var postTitle = doc.DocumentNode.SelectSingleNode("//h2[@class='post-title']/a").InnerText;
+            Assert.Equal("My Post Title", postTitle);
+        }
 
         class DiskFileSystem : ViewEngineFileSystem
         {
