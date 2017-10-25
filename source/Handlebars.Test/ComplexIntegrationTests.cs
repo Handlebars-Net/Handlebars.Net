@@ -1,7 +1,6 @@
-﻿using Xunit;
-using System;
+﻿using System.Collections;
 using System.IO;
-using System.Collections;
+using Xunit;
 
 namespace HandlebarsDotNet.Test
 {
@@ -89,6 +88,33 @@ namespace HandlebarsDotNet.Test
 
             var result = template(data);
             Assert.Equal("<a href='http://google.com/'>Google</a><a href='http://yahoo.com/'>Yahoo!</a>", result);
+        }
+
+        [Fact]
+        public void BlockHelperWithSameNameVariable()
+        {
+            var source = "{{#block_helper}}{{block_helper}}{{/block_helper}}";
+            Handlebars.RegisterHelper("block_helper", (writer, options, context, arguments) =>
+            {
+                options.Template(writer, context);
+            });
+            var data = new
+            {
+                block_helper = "block_helperValue"
+            };
+            var template = Handlebars.Compile(source);
+            var result = template(data);
+
+            Assert.Equal("block_helperValue", result);
+        }
+
+        [Fact]
+        public void BlockHelperWithSameNameHelper()
+        {
+            var source = "{{block_helper}}";
+            Handlebars.RegisterHelper("block_helper", (writer, options, context, arguments) => { });
+            Handlebars.RegisterHelper("block_helper", ((output, context, arguments) => { }));
+            Handlebars.Compile(source);
         }
 
         [Fact]

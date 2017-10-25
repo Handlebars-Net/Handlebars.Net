@@ -16,7 +16,7 @@ namespace HandlebarsDotNet.Compiler
         BoolishExpression = 6008,
         SubExpression = 6009,
         HashParametersExpression = 6010,
-		CommentExpression = 6011
+        CommentExpression = 6011
     }
 
     internal abstract class HandlebarsExpression : Expression
@@ -108,10 +108,10 @@ namespace HandlebarsDotNet.Compiler
             return new HashParametersExpression(parameters);
         }
 
-	    public static CommentExpression Comment( string value )
-	    {
-		    return new CommentExpression(value);
-	    }
+        public static CommentExpression Comment(string value)
+        {
+            return new CommentExpression(value);
+        }
     }
 }
 

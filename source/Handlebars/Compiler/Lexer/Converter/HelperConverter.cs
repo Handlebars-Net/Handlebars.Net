@@ -39,10 +39,20 @@ namespace HandlebarsDotNet.Compiler
                         yield return item;
                         continue;
                     }
-                    var word = item as WordExpressionToken;
-                    if (word != null && IsRegisteredHelperName(word.Value))
+                    if (item is WordExpressionToken word)
                     {
-                        yield return HandlebarsExpression.Helper(word.Value);
+                        if (IsRegisteredHelperName(word.Value))
+                        {
+                            yield return HandlebarsExpression.Helper(word.Value);
+                        }
+                        else if (IsRegisteredBlockHelperName(word.Value))
+                        {
+                            yield return HandlebarsExpression.Helper(word.Value);
+                        }
+                        else
+                        {
+                            yield return item;
+                        }
                     }
                     else
                     {
@@ -56,13 +66,16 @@ namespace HandlebarsDotNet.Compiler
             }
         }
 
-
         private bool IsRegisteredHelperName(string name)
         {
+            return _configuration.Helpers.ContainsKey(name) || builtInHelpers.Contains(name);
+        }
+
+        private bool IsRegisteredBlockHelperName(string name)
+        {
+            if (name[0] != '#') return false;
             name = name.Replace("#", "");
-            return _configuration.Helpers.ContainsKey(name)
-            || _configuration.BlockHelpers.ContainsKey(name)
-            || builtInHelpers.Contains(name);
+            return _configuration.BlockHelpers.ContainsKey(name) || builtInHelpers.Contains(name);
         }
 
         private static object GetNext(IEnumerator<object> enumerator)
