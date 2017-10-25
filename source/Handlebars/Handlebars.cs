@@ -28,6 +28,11 @@ namespace HandlebarsDotNet
         {
             return Instance.Compile(template);
         }
+        
+        public static Func<object, string> CompileView(string templatePath)
+        {
+            return Instance.CompileView(templatePath);
+        }
 
         public static void RegisterTemplate(string templateName, Action<TextWriter, object> template)
         {
