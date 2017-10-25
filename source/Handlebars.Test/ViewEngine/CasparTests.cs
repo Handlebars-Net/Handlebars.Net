@@ -99,6 +99,42 @@ namespace HandlebarsDotNet.Test.ViewEngine
             Assert.Equal("My Post Title", cq["h1.post-title"].Html());
         }
 
+        [Fact]
+        public void CanRenderCasparIndexTemplateWithStaticInstance()
+        {
+
+            Handlebars.RegisterHelper("asset",(writer, context, arguments) => writer.Write("asset:" + string.Join("|", arguments)));
+            Handlebars.RegisterHelper("date", (writer, context, arguments) => writer.Write("date:" + string.Join("|", arguments)));
+            Handlebars.RegisterHelper("tags", (writer, context, arguments) => writer.Write("tags:" + string.Join("|", arguments)));
+            Handlebars.RegisterHelper("encode", (writer, context, arguments) => writer.Write("encode:" + string.Join("|", arguments)));
+            Handlebars.RegisterHelper("url", (writer, context, arguments) => writer.Write("url:" + string.Join("|", arguments)));
+            Handlebars.RegisterHelper("excerpt", (writer, context, arguments) => writer.Write("url:" + string.Join("|", arguments)));
+
+            Handlebars.Configuration.FileSystem = new DiskFileSystem();
+
+            var renderView = Handlebars.CompileView("ViewEngine/Casper-master/index.hbs");
+            var output = renderView(new
+            {
+                blog = new
+                {
+                    url = "http://someblog.com",
+                    title = "This is the blog title"
+                },
+                posts = new[]
+                {
+                    new
+                    {
+                        title = "My Post Title",
+                        image = "/someimage.png",
+                        post_class = "somepostclass"
+                    }
+                }
+            });
+            var cq = CsQuery.CQ.CreateDocument(output);
+            Assert.Equal("My Post Title", cq["h2.post-title a"].Text());
+        }
+
+
         class DiskFileSystem : ViewEngineFileSystem
         {
             public override string GetFileContent(string filename)
