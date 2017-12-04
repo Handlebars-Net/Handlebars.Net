@@ -18,8 +18,12 @@ script:
   - dotnet restore source
   - dotnet build source/Handlebars/Handlebars.csproj --configuration Debug --framework netstandard1.3
   - dotnet build source/Handlebars/Handlebars.csproj --configuration Release --framework netstandard1.3
+  - dotnet build source/Handlebars/Handlebars.csproj --configuration Debug --framework netstandard2.0
+  - dotnet build source/Handlebars/Handlebars.csproj --configuration Release --framework netstandard2.0
   - dotnet test source/Handlebars.Test/Handlebars.Test.csproj --configuration Debug --framework netcoreapp1.1
   - dotnet test source/Handlebars.Test/Handlebars.Test.csproj --configuration Release --framework netcoreapp1.1
+  - dotnet test source/Handlebars.Test/Handlebars.Test.csproj --configuration Debug --framework netcoreapp2.0
+  - dotnet test source/Handlebars.Test/Handlebars.Test.csproj --configuration Release --framework netcoreapp2.0
 
 notifications:
   email:
