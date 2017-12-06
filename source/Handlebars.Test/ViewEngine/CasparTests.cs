@@ -5,6 +5,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
 {
     public class CasparTests
     {
+#if !netstandard
         [Fact]
         public void CanRenderCasparIndexTemplate()
         {
@@ -35,6 +36,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
             var cq = CsQuery.CQ.CreateDocument(output);
             Assert.Equal("My Post Title", cq["h2.post-title a"].Text());
         }
+
         [Fact]
         public void CanRenderCasparPostTemplate()
         {
@@ -62,7 +64,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
             var cq = CsQuery.CQ.CreateDocument(output);
             Assert.Equal("My Post Title", cq["h1.post-title"].Html());
         }
-
+#endif
         private static void AddHelpers(IHandlebars handlebars)
         {
             handlebars.RegisterHelper("asset",
@@ -76,12 +78,12 @@ namespace HandlebarsDotNet.Test.ViewEngine
             handlebars.RegisterHelper("url", (writer, context, arguments) => writer.Write("url:" + string.Join("|", arguments)));
             handlebars.RegisterHelper("excerpt", (writer, context, arguments) => writer.Write("url:" + string.Join("|", arguments)));
         }
-
+#if !netstandard
         [Fact]
         public void CanRenderCasparPostNoLayoutTemplate()
         {
             var fs = (new DiskFileSystem());
-            var handlebarsConfiguration = new HandlebarsConfiguration() {FileSystem = fs};
+            var handlebarsConfiguration = new HandlebarsConfiguration() { FileSystem = fs };
             var handlebars = Handlebars.Create(handlebarsConfiguration);
 
             AddHelpers(handlebars);
@@ -103,7 +105,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
         public void CanRenderCasparIndexTemplateWithStaticInstance()
         {
 
-            Handlebars.RegisterHelper("asset",(writer, context, arguments) => writer.Write("asset:" + string.Join("|", arguments)));
+            Handlebars.RegisterHelper("asset", (writer, context, arguments) => writer.Write("asset:" + string.Join("|", arguments)));
             Handlebars.RegisterHelper("date", (writer, context, arguments) => writer.Write("date:" + string.Join("|", arguments)));
             Handlebars.RegisterHelper("tags", (writer, context, arguments) => writer.Write("tags:" + string.Join("|", arguments)));
             Handlebars.RegisterHelper("encode", (writer, context, arguments) => writer.Write("encode:" + string.Join("|", arguments)));
@@ -133,7 +135,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
             var cq = CsQuery.CQ.CreateDocument(output);
             Assert.Equal("My Post Title", cq["h2.post-title a"].Text());
         }
-
+#endif
 
         class DiskFileSystem : ViewEngineFileSystem
         {

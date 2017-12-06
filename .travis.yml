@@ -1,3 +1,6 @@
+language: csharp
+mono: none
+dotnet: 2.0.0
 dist: trusty
 
 sudo: required
@@ -5,10 +8,11 @@ sudo: required
 addons:
   apt:
     sources:
-    - sourceline: 'deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ trusty main'
-      key_url: 'https://apt-mo.trafficmanager.net/keys/microsoft.asc'
+    - sourceline: 'deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-trusty-prod trusty main'
+      key_url: 'https://packages.microsoft.com/keys/microsoft.asc'
     packages:
-    - dotnet-dev-1.0.1
+    - dotnet-hostfxr-1.0.1
+    - dotnet-sharedframework-microsoft.netcore.app-1.1.2
 
 env:  
   - DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true
@@ -18,8 +22,12 @@ script:
   - dotnet restore source
   - dotnet build source/Handlebars/Handlebars.csproj --configuration Debug --framework netstandard1.3
   - dotnet build source/Handlebars/Handlebars.csproj --configuration Release --framework netstandard1.3
+  - dotnet build source/Handlebars/Handlebars.csproj --configuration Debug --framework netstandard2.0
+  - dotnet build source/Handlebars/Handlebars.csproj --configuration Release --framework netstandard2.0
   - dotnet test source/Handlebars.Test/Handlebars.Test.csproj --configuration Debug --framework netcoreapp1.1
   - dotnet test source/Handlebars.Test/Handlebars.Test.csproj --configuration Release --framework netcoreapp1.1
+  - dotnet test source/Handlebars.Test/Handlebars.Test.csproj --configuration Debug --framework netcoreapp2.0
+  - dotnet test source/Handlebars.Test/Handlebars.Test.csproj --configuration Release --framework netcoreapp2.0
 
 notifications:
   email:

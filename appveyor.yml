@@ -14,6 +14,7 @@ test_script:
   - cmd: if not exist TestResults mkdir TestResults
   - cmd: '"%OpenCover%" -target:dotnet.exe -targetargs:"test source\Handlebars.Test\Handlebars.Test.csproj --configuration Release --framework net461" -searchdirs:source\Handlebars.Test\bin\Release\net461 -output:TestResults\Handlebars.netframework.report.xml -register:user -filter:+[Handlebars]* -returntargetcode -oldstyle'
   - cmd: '"%OpenCover%" -target:dotnet.exe -targetargs:"test source\Handlebars.Test\Handlebars.Test.csproj --configuration Release --framework netcoreapp1.1" -searchdirs:source\Handlebars.Test\bin\Release\netcoreapp1.1 -output:TestResults\Handlebars.netcoreapp.report.xml -register:user -filter:+[Handlebars]* -returntargetcode -oldstyle'
+  - cmd: '"%OpenCover%" -target:dotnet.exe -targetargs:"test source\Handlebars.Test\Handlebars.Test.csproj --configuration Release --framework netcoreapp2.0" -searchdirs:source\Handlebars.Test\bin\Release\netcoreapp2.0 -output:TestResults\Handlebars.netcoreapp2.report.xml -register:user -filter:+[Handlebars]* -returntargetcode -oldstyle'
   - cmd: '"%ReportGenerator%" -reports:TestResults\*.report.xml -targetdir:TestResults\report -reporttypes:Badges;Html'
 
 artifacts:
