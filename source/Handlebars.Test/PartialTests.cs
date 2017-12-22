@@ -40,8 +40,8 @@ namespace HandlebarsDotNet.Test
                 name = "Marc"
             };
 
-            var partialSource = "{{name}}";           
-            Handlebars.RegisterTemplate("person", partialSource);            
+            var partialSource = "{{name}}";
+            Handlebars.RegisterTemplate("person", partialSource);
 
             var result = template(data);
             Assert.Equal("Hello, Marc!", result);
@@ -401,6 +401,33 @@ namespace HandlebarsDotNet.Test
 
             var result = template(data);
             Assert.Equal("Hello, Marc !", result);
+        }
+
+        [Fact]
+        public void BasicPartialWithCustomBlockHelper()
+        {
+            string source = "Hello, {{>person title='Mr.'}}!";
+
+            var template = Handlebars.Compile(source);
+
+            var data = new
+            {
+                firstName = "Pete",
+                lastName = "Jones",
+            };
+
+            Handlebars.RegisterHelper("block", (writer, options, context, parameters) =>
+                options.Template(writer, context));
+
+            var partialSource = "{{#block}}{{title}} {{firstName}} {{lastName}}{{/block}}";
+            using (var reader = new StringReader(partialSource))
+            {
+                var partialTemplate = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("person", partialTemplate);
+            }
+
+            var result = template(data);
+            Assert.Equal("Hello, Mr. Pete Jones!", result);
         }
 
         [Fact]

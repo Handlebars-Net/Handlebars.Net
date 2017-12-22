@@ -34,13 +34,21 @@ namespace HandlebarsDotNet.Compiler
             _parent = parent;
 
             //Inline partials cannot use the Handlebars.RegisteredTemplate method
-            //because it pollutes the static dictionary and creates collisions 
-            //where the same partial name might exist in multiple templates. 
-            //To avoid collisions, pass around a dictionary of compiled partials 
+            //because it pollutes the static dictionary and creates collisions
+            //where the same partial name might exist in multiple templates.
+            //To avoid collisions, pass around a dictionary of compiled partials
             //in the context
             if (parent != null)
             {
                 InlinePartialTemplates = parent.InlinePartialTemplates;
+
+                if (value is HashParameterDictionary dictionary) {
+                    // Populate value with parent context
+                    foreach (var item in GetContextDictionary(parent.Value)) {
+                        if (!dictionary.ContainsKey(item.Key))
+                            dictionary[item.Key] = item.Value;
+                    }
+                }
             }
             else if (current != null)
             {
@@ -112,6 +120,34 @@ namespace HandlebarsDotNet.Compiler
                 returnValue = null;
             }
             return returnValue;
+        }
+
+        private IDictionary<string, object> GetContextDictionary(object target)
+        {
+            var dict = new Dictionary<string, object>();
+
+            if (target == null)
+                return dict;
+
+            if (target is IDictionary<string, object> dictionary) {
+                foreach (var item in dictionary)
+                    dict[item.Key] = item.Value;
+            } else {
+                var type = target.GetType();
+
+                var fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
+                foreach (var field in fields) {
+                    dict[field.Name] = field.GetValue(target);
+                }
+
+                var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+                foreach (var property in properties) {
+                    if (property.GetIndexParameters().Length == 0)
+                        dict[property.Name] = property.GetValue(target);
+                }
+            }
+
+            return dict;
         }
 
         public virtual BindingContext CreateChildContext(object value)
