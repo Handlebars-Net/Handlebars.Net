@@ -192,7 +192,7 @@ false
         [Fact]
         public void BasicCurliesWithEscapedLeadingSlash()
         {
-            var source = @"Hello, \\{name}}!";
+            var source = @"Hello, \\{{name}}!";
             var template = Handlebars.Compile(source);
             var data = new {
                 name = "Handlebars.Net"
