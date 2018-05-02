@@ -190,6 +190,18 @@ false
         }
 
         [Fact]
+        public void BasicCurliesWithEscapedLeadingSlash()
+        {
+            var source = @"Hello, \\{name}}!";
+            var template = Handlebars.Compile(source);
+            var data = new {
+                name = "Handlebars.Net"
+            };
+            var result = template(data);
+            Assert.Equal(@"Hello, \Handlebars.Net!", result);
+        }
+
+        [Fact]
         public void BasicPathArray()
         {
             var source = "Hello, {{ names.[1] }}!";

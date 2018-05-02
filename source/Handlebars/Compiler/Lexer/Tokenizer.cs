@@ -113,7 +113,13 @@ namespace HandlebarsDotNet.Compiler.Lexer
                 }
                 else
                 {
-                    if ((char)node == '\\' && (char)source.Peek() == '{')
+                    if ((char)node == '\\' && (char)source.Peek() == '\\')
+                    {
+                        source.Read();
+                        buffer.Append('\\');
+                        node = source.Read();
+                    }
+                    else if ((char)node == '\\' && (char)source.Peek() == '{')
                     {
                         source.Read();
                         if ((char)source.Peek() == '{')
