@@ -39,18 +39,20 @@ namespace HandlebarsDotNet.Compiler
         {
             if (IsClosingNode(item))
             {
+                // If the template has no content within the block, e.g. `{{#each ...}}{{/each}`, then the block body is a no-op.
+                var bodyStatements = _body.Count != 0 ? _body : new List<Expression>{ Expression.Empty() };
                 if (_accumulatedExpression == null)
                 {
                     _accumulatedExpression = HandlebarsExpression.Iterator(
                         _startingNode.Arguments.Single(),
-                        Expression.Block(_body));
+                        Expression.Block(bodyStatements));
                 }
                 else
                 {
                     _accumulatedExpression = HandlebarsExpression.Iterator(
                         ((IteratorExpression)_accumulatedExpression).Sequence,
                         ((IteratorExpression)_accumulatedExpression).Template,
-                        Expression.Block(_body));
+                        Expression.Block(bodyStatements));
                 }
                 return true;
             }

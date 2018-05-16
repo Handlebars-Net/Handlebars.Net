@@ -25,6 +25,26 @@ namespace HandlebarsDotNet.Test
         }
 
         [Fact]
+        public void EmptyElementTemplate()
+        {
+            var source = "Hello,{{#each people}}{{/each}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                people = new[]{
+                    new {
+                        name = "Erik"
+                    },
+                    new {
+                        name = "Helen"
+                    }
+                }
+            };
+            var result = template(data);
+            Assert.Equal("Hello,", result);
+        }
+
+        [Fact]
         public void WithIndex()
         {
             var source = "Hello,{{#each people}}\n{{@index}}. {{name}}{{/each}}";
