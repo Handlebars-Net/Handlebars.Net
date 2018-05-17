@@ -11,6 +11,11 @@ namespace HandlebarsDotNet
         {
             return !IsFalsy(value);
         }
+        
+        public static bool IsUndefinedBindingResult(object value)
+        {
+            return value is UndefinedBindingResult;
+        }
 
         public static bool IsFalsy(object value)
         {
