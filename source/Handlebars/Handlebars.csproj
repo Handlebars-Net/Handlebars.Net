@@ -17,15 +17,17 @@
   <PropertyGroup>
     <Authors>Rex Morgan</Authors>
     <Copyright>Copyright © 2014-2018 Rex Morgan</Copyright>
-    <Description>Blistering-fast Handlebars.js templates in your .NET application.</Description>
+    <Description>Blistering-fast Handlebars.js templates in your .NET application (signed).</Description>
     <PackageIconUrl>https://raw.githubusercontent.com/rexm/Handlebars.Net/master/hbnet-icon.png</PackageIconUrl>
-    <PackageId>Handlebars.Net</PackageId>
+    <PackageId>Handlebars.Net.Signed</PackageId>
     <PackageLicenseUrl>https://opensource.org/licenses/mit</PackageLicenseUrl>
-    <PackageProjectUrl>https://github.com/rexm/Handlebars.Net</PackageProjectUrl>
-    <PackageReleaseNotes>Various bug fixes</PackageReleaseNotes>
+    <PackageProjectUrl>https://github.com/TrackableEntities/Handlebars.Net</PackageProjectUrl>
+    <PackageReleaseNotes>Forked from github.com/rexm/Handlebars.Net</PackageReleaseNotes>
     <PackageTags>handlebars;mustache;templating;engine;compiler</PackageTags>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/rexm/Handlebars.Net</RepositoryUrl>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>key.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)'=='net452'">
