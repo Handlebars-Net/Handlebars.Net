@@ -138,6 +138,9 @@ namespace HandlebarsDotNet.Compiler
         //TODO: make path resolution logic smarter
         private object ResolvePath(BindingContext context, string path)
         {
+            if (path == "null")
+                return null;
+
             var containsVariable = path.StartsWith("@");
             if (containsVariable)
             {

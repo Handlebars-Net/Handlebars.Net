@@ -965,6 +965,22 @@ false
         }
 
         [Fact]
+        public void BasicNullLiteral()
+        {
+            string source = "{{eval null}}";
+
+            Handlebars.RegisterHelper("eval",
+                (writer, context, args) => writer.Write(args[0] == null));
+
+            var template = Handlebars.Compile(source);
+
+            var data = new { };
+
+            var result = template(data);
+            Assert.Equal("True", result);
+        }
+
+        [Fact]
         public void BasicCurlyBracesInLiterals()
         {
             var source = @"{{verbatim '{{foo}}'}} something {{verbatim '{{bar}}'}}";
