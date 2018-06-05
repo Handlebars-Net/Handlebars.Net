@@ -25,7 +25,7 @@ namespace HandlebarsDotNet.Compiler
         {
             if (IsInversionBlock(item))
             {
-                _accumulatedBody = Expression.Block(_body);
+                _accumulatedBody = GetBlockBody();
                 _body = new List<Expression>();
             }
             else
@@ -56,17 +56,14 @@ namespace HandlebarsDotNet.Compiler
         {
             if (_accumulatedBody == null)
             {
-                _accumulatedBody = Expression.Block(_body);
+                _accumulatedBody = GetBlockBody();
                 _accumulatedInversion = Expression.Block(Expression.Empty());
             }
-            else if (_accumulatedInversion == null && _body.Any())
+            else if (_accumulatedInversion == null)
             {
-                _accumulatedInversion = Expression.Block(_body);
+                _accumulatedInversion = GetBlockBody();
             }
-            else
-            {
-                _accumulatedInversion = Expression.Block(Expression.Empty());
-            }
+
             return HandlebarsExpression.BlockHelper(
                 _startingNode.HelperName,
                 _startingNode.Arguments,
@@ -74,6 +71,12 @@ namespace HandlebarsDotNet.Compiler
                 _accumulatedInversion);
         }
 
+        private Expression GetBlockBody()
+        {
+            return _body.Any() ?
+                Expression.Block(_body) :
+                Expression.Block(Expression.Empty());
+        }
     }
 }
 
