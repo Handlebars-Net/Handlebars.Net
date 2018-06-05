@@ -235,6 +235,24 @@ namespace HandlebarsDotNet.Test
             Assert.Equal(expected, output);
         }
 
+        [Fact]
+        public void EmptyBlockHelperWithInversion()
+        {
+            var source = "{{#ifCond}}{{else}}Inverse{{/ifCond}}";
+
+            Handlebars.RegisterHelper("ifCond", (writer, options, context, arguments) => {
+                options.Inverse(writer, (object)context);
+            });
+
+            var data = new
+            {
+            };
+
+            var template = Handlebars.Compile(source);
+
+            var output = template(data);
+            Assert.Equal("Inverse", output);
+        }
     }
 }
 
