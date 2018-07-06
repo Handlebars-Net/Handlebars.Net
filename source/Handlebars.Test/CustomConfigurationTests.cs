@@ -40,7 +40,7 @@ namespace HandlebarsDotNet.Test
         [Fact]
         public void UpperCamelCaseInputModelNaming()
         {
-            var template = "Hello {{person.name}} {{person.surname}} from {{person.address.homeCountry}}. You're {{{description}}}.";
+            var template = "Hello {{person.name}} {{person.surname}} from {{person.address.HomeCountry}}. You're {{{description}}}.";
             var output = this.HandlebarsInstance.Compile(template).Invoke(Value);
 
             Assert.Equal(output, ExpectedOutput);
