@@ -11,7 +11,7 @@ Handlebars.Net doesn't use a scripting engine to run a Javascript library - it *
 
 ## Install
 
-    nuget install Handlebars.Net
+    dotnet add package Handlebars.Net
 
 ## Usage
 
@@ -117,9 +117,11 @@ Views\{Controller}\{Action}\partials\somepartial.hbs
 
 Compared to rendering, compiling is a fairly intensive process. While both are still measured in millseconds, compilation accounts for the most of that time by far. So, it is generally ideal to compile once and cache the resulting function to be re-used for the life of your process.
 
-### Model Types
-Different types of objects have different performance characteristics when used as models.
-- For example, the absolute fastest model is a dictionary (microseconds), because no reflection is necessary at render time.
+### Rendering
+Nearly all time spent in rendering is in the routine that resolves values against the model. Different types of objects have different performance characteristics when used as models.
+
+#### Model Types
+- The absolute fastest model is a dictionary (microseconds), because no reflection is necessary at render time.
 - The next fastest is a POCO (typically a few milliseconds for an average-sized template and model), which uses traditional reflection and is fairly fast.
 - Rendering starts to get slower (into the tens of milliseconds or more) on dynamic objects.
 - The slowest (up to hundreds of milliseconds or worse) tend to be objects with custom type implementations (such as `ICustomTypeDescriptor`) that are not optimized for heavy reflection.
