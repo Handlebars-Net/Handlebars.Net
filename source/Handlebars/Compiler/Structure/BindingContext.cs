@@ -16,6 +16,7 @@ namespace HandlebarsDotNet.Compiler
 
         public IDictionary<string, Action<TextWriter, object>> InlinePartialTemplates { get; private set; }
 
+        public Action<TextWriter, object> PartialBlockTemplate { get; private set; }
 
         public bool SuppressEncoding
         {
@@ -24,9 +25,12 @@ namespace HandlebarsDotNet.Compiler
         }
 
         public BindingContext(object value, EncodedTextWriter writer, BindingContext parent, string templatePath) :
-            this(value, writer, parent, templatePath, null) { }
+            this(value, writer, parent, templatePath, null, null) { }
 
-        public BindingContext(object value, EncodedTextWriter writer, BindingContext parent, string templatePath, BindingContext current)
+        public BindingContext(object value, EncodedTextWriter writer, BindingContext parent, string templatePath, Action<TextWriter, object> partialBlockTemplate) :
+            this(value, writer, parent, templatePath, partialBlockTemplate, null) { }
+
+        public BindingContext(object value, EncodedTextWriter writer, BindingContext parent, string templatePath, Action<TextWriter, object> partialBlockTemplate, BindingContext current)
         {
             TemplatePath = parent != null ? (parent.TemplatePath ?? templatePath) : templatePath;
             TextWriter = writer;
@@ -58,6 +62,8 @@ namespace HandlebarsDotNet.Compiler
             {
                 InlinePartialTemplates = new Dictionary<string, Action<TextWriter, object>>(StringComparer.OrdinalIgnoreCase);
             }
+
+            PartialBlockTemplate = partialBlockTemplate;
         }
 
         public virtual object Value
@@ -150,10 +156,9 @@ namespace HandlebarsDotNet.Compiler
             return dict;
         }
 
-        public virtual BindingContext CreateChildContext(object value)
+        public virtual BindingContext CreateChildContext(object value, Action<TextWriter, object> partialBlockTemplate)
         {
-            return new BindingContext(value, TextWriter, this, TemplatePath);
+            return new BindingContext(value ?? Value, TextWriter, this, TemplatePath, partialBlockTemplate ?? PartialBlockTemplate);
         }
     }
 }
-

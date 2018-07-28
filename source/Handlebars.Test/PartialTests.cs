@@ -530,6 +530,33 @@ namespace HandlebarsDotNet.Test
         }
 
         [Fact]
+        public void BlockPartialWithNestedSpecialNamedPartial2()
+        {
+            string source = "A {{#>partial1}} B {{#>partial2}} {{VarC}} {{/partial2}} D {{/partial1}} E";
+
+            var template = Handlebars.Compile(source);
+
+            var partialSource1 = "1 {{> @partial-block }} 2";
+            using (var reader = new StringReader(partialSource1))
+            {
+                var partialTemplate = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("partial1", partialTemplate);
+            }
+
+            var partialSource2 = "3 {{> @partial-block }} 4";
+            using (var reader = new StringReader(partialSource2))
+            {
+                var partialTemplate = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("partial2", partialTemplate);
+            }
+
+            var data = new { VarC = "C" };
+            var result = template(data);
+
+            Assert.Equal("A 1  B 3  C  4 D  2 E", result);
+        }
+
+        [Fact]
         public void TemplateWithSpecialNamedPartial()
         {
             string source = "Single template referencing {{> @partial-block }} should throw runtime exception";
