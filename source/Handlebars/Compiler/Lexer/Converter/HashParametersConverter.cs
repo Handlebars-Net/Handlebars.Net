@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using HandlebarsDotNet.Compiler.Lexer;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -20,74 +21,59 @@ namespace HandlebarsDotNet.Compiler
             {
                 var item = enumerator.Current;
 
-                if (item is HashParameterToken)
+                Dictionary<string, object> parameters = null;
+                while (item is PathExpression param)
                 {
-                    var parameters = AccumulateParameters(enumerator);
-
-                    if (parameters.Any())
+                    item = GetNext(enumerator);
+                    if (!(item is AssignmentToken))
                     {
-                        yield return HandlebarsExpression.HashParametersExpression(parameters);
+                        yield return param;
+                        continue;
                     }
-
-                    yield return enumerator.Current;
+                    if (!enumerator.MoveNext())
+                    {
+                        throw new HandlebarsException("No value assigned to parameter");
+                    }
+                    if (enumerator.Current is StartSubExpressionToken)
+                    {
+                        yield return param;
+                        yield return item;
+                        yield return enumerator.Current;
+                        item = GetNext(enumerator);
+                        continue;
+                    }
+                    if (parameters == null)
+                    {
+                        parameters = new Dictionary<string, object>();
+                    }
+                    if (enumerator.Current is PathExpression valuePath)
+                    {
+                        if (valuePath.Path == "true")
+                        {
+                            parameters.Add(param.Path, Expression.Constant(true));
+                        }
+                        else if (valuePath.Path == "false")
+                        {
+                            parameters.Add(param.Path, Expression.Constant(false));
+                        }
+                        else
+                        {
+                            parameters.Add(param.Path, valuePath);
+                        }
+                    }
+                    else
+                    {
+                        parameters.Add(param.Path, enumerator.Current);
+                    }
+                    item = GetNext(enumerator);
                 }
-                else
+                if (parameters != null)
                 {
-                    yield return item;
-                }
-            }
-        }
-
-        private static Dictionary<string, object> AccumulateParameters(IEnumerator<object> enumerator)
-        {
-            var parameters = new Dictionary<string, object>();
-
-            var item = enumerator.Current;
-
-            while ((item is EndExpressionToken) == false)
-            {
-                var parameter = item as HashParameterToken;
-
-                if (parameter != null)
-                {
-                    var segments = parameter.Value.Split('=');
-                    var value = ParseValue(segments[1]);
-                    parameters.Add(segments[0], value);
+                    yield return HandlebarsExpression.HashParametersExpression(parameters);
                 }
 
-                if (item is EndSubExpressionToken)
-                {
-                    break;
-                }
-
-                item = GetNext(enumerator);
+                yield return item;
             }
-
-            return parameters;
-        }
-
-        private static object ParseValue(string value)
-        {
-            if (value.StartsWith("'") || value.StartsWith("\""))
-            {
-                return value.Trim('\'', '"');
-            }
-
-            bool boolValue;
-
-            if (bool.TryParse(value, out boolValue))
-            {
-                return boolValue;
-            }
-
-            int intValue;
-
-            if (int.TryParse(value, out intValue))
-            {
-                return intValue;
-            }
-
-            return HandlebarsExpression.Path(value);
         }
 
         private static object GetNext(IEnumerator<object> enumerator)

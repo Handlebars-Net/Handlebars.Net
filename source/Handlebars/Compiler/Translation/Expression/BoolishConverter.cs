@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using HandlebarsDotNet.Compiler;
 using System.Linq.Expressions;
@@ -27,38 +27,6 @@ namespace HandlebarsDotNet.Compiler
                 new Func<object, bool>(HandlebarsUtils.IsTruthyOrNonEmpty).Method,
 #endif
                 Visit(bex.Condition));
-        }
-
-        protected override Expression VisitBlock(BlockExpression node)
-        {
-            return Expression.Block(
-                node.Type,
-                node.Variables,
-                node.Expressions.Select(expr => Visit(expr)));
-        }
-
-        protected override Expression VisitUnary(UnaryExpression node)
-        {
-            return Expression.MakeUnary(
-                node.NodeType,
-                Visit(node.Operand),
-                node.Type);
-        }
-
-        protected override Expression VisitMethodCall(MethodCallExpression node)
-        {
-            return Expression.Call(
-                Visit(node.Object),
-                node.Method,
-                node.Arguments.Select(n => Visit(n)));
-        }
-
-        protected override Expression VisitConditional(ConditionalExpression node)
-        {
-            return Expression.Condition(
-                Visit(node.Test),
-                Visit(node.IfTrue),
-                Visit(node.IfFalse));
         }
     }
 }

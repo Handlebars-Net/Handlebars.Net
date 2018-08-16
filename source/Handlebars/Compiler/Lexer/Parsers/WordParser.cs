@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -15,14 +15,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
             {
                 var buffer = AccumulateWord(reader);
 
-                if (buffer.Contains("="))
-                {
-                    return Token.HashParameter(buffer);
-                }
-                else
-                {
-                    return Token.Word(buffer);
-                }
+                return Token.Word(buffer);
             }
             return null;
         }
@@ -45,7 +38,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
                 {
                     var peek = (char)reader.Peek();
 
-                    if (peek == '}' || peek == '~' || peek == ')' || (char.IsWhiteSpace(peek) && CanBreakAtSpace(buffer.ToString())))
+                    if (peek == '}' || peek == '~' || peek == ')' || peek == '=' || (char.IsWhiteSpace(peek) && CanBreakAtSpace(buffer.ToString())))
                     {
                         break;
                     }

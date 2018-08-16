@@ -1,8 +1,8 @@
-﻿using System;
-using System.Linq.Expressions;
+using System;
 using System.IO;
-using System.Text;
+using System.Linq.Expressions;
 using System.Reflection;
+using System.Text;
 
 namespace HandlebarsDotNet.Compiler
 {

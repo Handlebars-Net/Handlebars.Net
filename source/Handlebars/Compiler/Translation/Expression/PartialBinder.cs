@@ -1,10 +1,7 @@
-﻿using System;
+using System;
 using System.IO;
-using System.Linq;
 using System.Linq.Expressions;
-#if netstandard
 using System.Reflection;
-#endif
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -20,6 +17,11 @@ namespace HandlebarsDotNet.Compiler
         private PartialBinder(CompilationContext context)
             : base(context)
         {
+        }
+
+        protected override Expression VisitBlockHelperExpression(BlockHelperExpression bhex)
+        {
+            return bhex;
         }
 
         protected override Expression VisitStatementExpression(StatementExpression sex)
