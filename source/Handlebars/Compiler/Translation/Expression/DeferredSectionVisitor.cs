@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq.Expressions;
 using System.Collections;
 using System.Linq;
@@ -31,7 +31,6 @@ namespace HandlebarsDotNet.Compiler
             Expression[] templates = GetDeferredSectionTemplates(dsex);
 
             return Expression.Call(method, new[] {path, context}.Concat(templates));
-
         }
 
         private Expression[] GetDeferredSectionTemplates(DeferredSectionExpression dsex)

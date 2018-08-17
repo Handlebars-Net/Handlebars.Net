@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -18,13 +18,6 @@ namespace HandlebarsDotNet.Compiler
         {
         }
 
-        protected override Expression VisitBlock(BlockExpression node)
-        {
-            return Expression.Block(
-                node.Variables,
-                node.Expressions.Select(expr => Visit(expr)));
-        }
-
         protected override Expression VisitStatementExpression(StatementExpression sex)
         {
             if (sex.Body is HelperExpression)
@@ -35,26 +28,6 @@ namespace HandlebarsDotNet.Compiler
             {
                 return sex;
             }
-        }
-
-        protected override Expression VisitBoolishExpression(BoolishExpression bex)
-        {
-            return HandlebarsExpression.Boolish(Visit(bex.Condition));
-        }
-
-        protected override Expression VisitBlockHelperExpression(BlockHelperExpression bhex)
-        {
-            return HandlebarsExpression.BlockHelper(
-                bhex.HelperName,
-                bhex.Arguments.Select(arg => Visit(arg)),
-                Visit(bhex.Body),
-                Visit(bhex.Inversion));
-        }
-
-        protected override Expression VisitSubExpression(SubExpressionExpression subex)
-        {
-            return HandlebarsExpression.SubExpression(
-                Visit(subex.Expression));
         }
 
         protected override Expression VisitHelperExpression(HelperExpression hex)

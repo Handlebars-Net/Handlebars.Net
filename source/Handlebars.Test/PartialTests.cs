@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Xunit;
 using System.IO;
@@ -180,6 +180,28 @@ namespace HandlebarsDotNet.Test
             }
 
             var result = template(null);
+            Assert.Equal("Hello, 1 True!", result);
+        }
+   
+        [Fact]
+        public void BasicPartialWithSubExpressionParameters()
+        {
+            string source = "Hello, {{>person first=(_ f) last=(_ l)}}!";
+
+            Handlebars.RegisterHelper("_", (output, context, arguments) =>
+            {
+                output.Write(arguments[0].ToString());
+            });
+            var template = Handlebars.Compile(source);
+
+            var partialSource = "{{first}} {{last}}";
+            using (var reader = new StringReader(partialSource))
+            {
+                var partialTemplate = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("person", partialTemplate);
+            }
+
+            var result = template(new { f = 1, l = true });
             Assert.Equal("Hello, 1 True!", result);
         }
 
