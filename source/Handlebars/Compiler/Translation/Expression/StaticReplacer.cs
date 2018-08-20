@@ -16,13 +16,6 @@ namespace HandlebarsDotNet.Compiler
         {
         }
 
-        protected override Expression VisitBlock(BlockExpression node)
-        {
-            return Expression.Block(
-                node.Variables,
-                node.Expressions.Select(expr => Visit(expr)));
-        }
-
         protected override Expression VisitStaticExpression(StaticExpression stex)
         {
 	        var encodedTextWriter = Expression.Property(CompilationContext.BindingContext, "TextWriter");
@@ -33,14 +26,6 @@ namespace HandlebarsDotNet.Compiler
 #endif
 
             return Expression.Call(encodedTextWriter, writeMethod, Expression.Constant(stex.Value), Expression.Constant(false));
-        }
-
-        protected override Expression VisitConditional(ConditionalExpression node)
-        {
-            return Expression.Condition(
-                node.Test,
-                Visit(node.IfTrue),
-                Visit(node.IfFalse));
         }
     }
 }
