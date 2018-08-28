@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
@@ -6,9 +6,9 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class HashParametersExpression : HandlebarsExpression
     {
-        public Dictionary<string, object> Parameters { get; set; }
+        public Dictionary<string, Expression> Parameters { get; set; }
 
-        public HashParametersExpression(Dictionary<string, object> parameters)
+        public HashParametersExpression(Dictionary<string, Expression> parameters)
         {
             Parameters = parameters;
         }
