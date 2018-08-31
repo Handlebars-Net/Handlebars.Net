@@ -1,8 +1,7 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Collections.Generic;
-using HandlebarsDotNet.Compiler.Lexer;
 using System.Linq.Expressions;
 
 namespace HandlebarsDotNet.Compiler
@@ -46,6 +45,7 @@ namespace HandlebarsDotNet.Compiler
                 expression = BoolishConverter.Convert(expression, compilationContext);
                 expression = PathBinder.Bind(expression, compilationContext);
                 expression = SubExpressionVisitor.Visit(expression, compilationContext);
+                expression = HashParameterBinder.Bind(expression, compilationContext);
                 expression = ContextBinder.Bind(expression, compilationContext, parentContext, templatePath);
                 return expression;
             }

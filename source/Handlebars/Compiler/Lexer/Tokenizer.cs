@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -74,6 +74,13 @@ namespace HandlebarsDotNet.Compiler.Lexer
                     if (token != null)
                     {
                         yield return token;
+
+                        if ((char)source.Peek() == '=')
+                        {
+                            source.Read();
+                            yield return Token.Assignment();
+                            continue;
+                        }
                     }
                     if ((char)node == '}' && (char)source.Read() == '}')
                     {

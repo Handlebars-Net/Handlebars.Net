@@ -1,4 +1,4 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
 using System.Collections.Generic;
 
 namespace HandlebarsDotNet.Compiler
@@ -15,8 +15,9 @@ namespace HandlebarsDotNet.Compiler
         PartialExpression = 6007,
         BoolishExpression = 6008,
         SubExpression = 6009,
-        HashParametersExpression = 6010,
-        CommentExpression = 6011
+        HashParameterAssignmentExpression = 6010,
+        HashParametersExpression = 6011,
+        CommentExpression = 6012
     }
 
     internal abstract class HandlebarsExpression : Expression
@@ -103,7 +104,12 @@ namespace HandlebarsDotNet.Compiler
             return new SubExpressionExpression(expression);
         }
 
-        public static HashParametersExpression HashParametersExpression(Dictionary<string, object> parameters)
+        public static HashParameterAssignmentExpression HashParameterAssignmentExpression(string name)
+        {
+            return new HashParameterAssignmentExpression(name);
+        }
+
+        public static HashParametersExpression HashParametersExpression(Dictionary<string, Expression> parameters)
         {
             return new HashParametersExpression(parameters);
         }

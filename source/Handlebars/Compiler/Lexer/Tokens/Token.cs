@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace HandlebarsDotNet.Compiler.Lexer
 {
@@ -58,10 +58,9 @@ namespace HandlebarsDotNet.Compiler.Lexer
             return new EndSubExpressionToken();
         }
 
-        public static HashParameterToken HashParameter(string parameter)
+        public static AssignmentToken Assignment()
         {
-            return new HashParameterToken(parameter);
+            return new AssignmentToken();
         }
     }
 }
-

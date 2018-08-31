@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Linq;
 using System.Linq.Expressions;
@@ -21,43 +21,6 @@ namespace HandlebarsDotNet.Compiler
         private PathBinder(CompilationContext context)
             : base(context)
         {
-        }
-
-        protected override Expression VisitBlock(BlockExpression node)
-        {
-            return Expression.Block(
-                node.Variables,
-                node.Expressions.Select(Visit));
-        }
-
-        protected override Expression VisitUnary(UnaryExpression node)
-        {
-            return Expression.MakeUnary(
-                node.NodeType,
-                Visit(node.Operand),
-                node.Type);
-        }
-
-        protected override Expression VisitMethodCall(MethodCallExpression node)
-        {
-            return Expression.Call(
-                Visit(node.Object),
-                node.Method,
-                node.Arguments.Select(Visit));
-        }
-
-        protected override Expression VisitConditional(ConditionalExpression node)
-        {
-            return Expression.Condition(
-                Visit(node.Test),
-                Visit(node.IfTrue),
-                Visit(node.IfFalse));
-        }
-
-        protected override Expression VisitSubExpression(SubExpressionExpression subex)
-        {
-            return HandlebarsExpression.SubExpression(
-                Visit(subex.Expression));
         }
 
         protected override Expression VisitStatementExpression(StatementExpression sex)
@@ -92,47 +55,6 @@ namespace HandlebarsDotNet.Compiler
 #endif
                 CompilationContext.BindingContext,
                 Expression.Constant(pex.Path));
-        }
-
-        protected override Expression VisitHelperExpression(HelperExpression hex)
-        {
-            return HandlebarsExpression.Helper(
-                hex.HelperName,
-                hex.Arguments.Select(Visit));
-        }
-
-        protected override Expression VisitHashParametersExpression(HashParametersExpression hpex)
-        {
-            return Expression.Call(
-                Expression.Constant(this),
-#if netstandard
-                new Func<BindingContext, HashParametersExpression, object>(ResolveParameters).GetMethodInfo(),
-#else
-                new Func<BindingContext, HashParametersExpression, object>(ResolveParameters).Method,
-#endif
-                CompilationContext.BindingContext,
-                Expression.Constant(hpex));
-        }
-
-        private object ResolveParameters(BindingContext context, HashParametersExpression hpex)
-        {
-            var parameters = new HashParameterDictionary();
-
-            foreach (var parameter in hpex.Parameters)
-            {
-                var path = parameter.Value as PathExpression;
-
-                if (path != null)
-                {
-                    parameters.Add(parameter.Key, ResolvePath(context, path.Path));
-                }
-                else
-                {
-                    parameters.Add(parameter.Key, parameter.Value);
-                }
-            }
-
-            return parameters;
         }
 
         //TODO: make path resolution logic smarter
