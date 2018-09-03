@@ -12,7 +12,7 @@ namespace HandlebarsDotNet.Test
         {
             Handlebars.RegisterHelper("myHelper", (writer, context, args) => {
                 var count = 0;
-                foreach(var arg in args)
+                foreach (var arg in args)
                 {
                     writer.Write("\nThing {0}: {1}", ++count, arg);
                 }
@@ -35,7 +35,7 @@ namespace HandlebarsDotNet.Test
             var helperName = "helper-" + Guid.NewGuid().ToString(); //randomize helper name
             Handlebars.RegisterHelper(helperName, (writer, context, args) => {
                 var count = 0;
-                foreach(var arg in args)
+                foreach (var arg in args)
                 {
                     writer.WriteSafeString(
                         string.Format("\nThing {0}: {1}", ++count, arg));
@@ -83,9 +83,9 @@ namespace HandlebarsDotNet.Test
             var source = "{{^key}}Empty sequence!{{/key}}";
             var template = Handlebars.Compile(source);
             var data = new
-                {
-                    key = new string[] { }
-                };
+            {
+                key = new string[] { }
+            };
             var output = template(data);
             var expected = "Empty sequence!";
             Assert.Equal(expected, output);
@@ -97,9 +97,9 @@ namespace HandlebarsDotNet.Test
             var source = "{{^key}}Empty sequence!{{/key}}";
             var template = Handlebars.Compile(source);
             var data = new
-                {
-                    key = new string[] { "element" }
-                };
+            {
+                key = new string[] { "element" }
+            };
             var output = template(data);
             var expected = "";
             Assert.Equal(expected, output);
@@ -111,7 +111,7 @@ namespace HandlebarsDotNet.Test
             var source = "{{#ifCond arg1 arg2}}Args are same{{else}}Args are not same{{/ifCond}}";
 
             Handlebars.RegisterHelper("ifCond", (writer, options, context, arguments) => {
-                if(arguments[0] == arguments[1])
+                if (arguments[0] == arguments[1])
                 {
                     options.Template(writer, (object)context);
                 }
@@ -122,15 +122,15 @@ namespace HandlebarsDotNet.Test
             });
 
             var dataWithSameValues = new
-                {
-                    arg1 = "a",
-                    arg2 = "a"
-                };
+            {
+                arg1 = "a",
+                arg2 = "a"
+            };
             var dataWithDifferentValues = new
-                {
-                    arg1 = "a",
-                    arg2 = "b"
-                };
+            {
+                arg1 = "a",
+                arg2 = "b"
+            };
 
             var template = Handlebars.Compile(source);
 
@@ -148,7 +148,7 @@ namespace HandlebarsDotNet.Test
         {
             Handlebars.RegisterHelper("myHelper", (writer, context, args) => {
                 var count = 0;
-                foreach(var arg in args)
+                foreach (var arg in args)
                 {
                     writer.Write("\nThing {0}: {1}", ++count, arg);
                 }
@@ -170,7 +170,7 @@ namespace HandlebarsDotNet.Test
         {
             Handlebars.RegisterHelper("myHelper", (writer, context, args) => {
                 var hash = args[2] as Dictionary<string, object>;
-                foreach(var item in hash)
+                foreach (var item in hash)
                 {
                     writer.Write(" {0}: {1}", item.Key, item.Value);
                 }
@@ -186,7 +186,7 @@ namespace HandlebarsDotNet.Test
 
             Assert.Equal(expected, output);
         }
-            
+
         [Fact]
         public void BlockHelperWithSubExpression()
         {
@@ -194,15 +194,15 @@ namespace HandlebarsDotNet.Test
             {
                 writer.WriteSafeString(args[0].ToString() == args[1].ToString() ? "true" : null);
             });
-        
-            var source = "{{#if (isEqual arg1 arg2)}}True{{/if}}";
-        
+
+            var source = "{{#isEqual arg1 arg2}}{{/isEqual}} {{#if (isEqual arg1 arg2)}}True{{/if}}";
+
             var template = Handlebars.Compile(source);
-        
+
             var expectedIsTrue = "True";
             var outputIsTrue = template(new { arg1 = 1, arg2 = 1 });
             Assert.Equal(expectedIsTrue, outputIsTrue);
-        
+
             var expectedIsFalse = "";
             var outputIsFalse = template(new { arg1 = 1, arg2 = 2 });
             Assert.Equal(expectedIsFalse, outputIsFalse);
