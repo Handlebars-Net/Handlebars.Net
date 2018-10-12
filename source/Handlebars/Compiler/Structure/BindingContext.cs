@@ -24,13 +24,13 @@ namespace HandlebarsDotNet.Compiler
             set { TextWriter.SuppressEncoding = value; }
         }
 
-        public BindingContext(object value, EncodedTextWriter writer, BindingContext parent, string templatePath) :
-            this(value, writer, parent, templatePath, null, null) { }
+        public BindingContext(object value, EncodedTextWriter writer, BindingContext parent, string templatePath, IDictionary<string, Action<TextWriter, object>> inlinePartialTemplates) :
+            this(value, writer, parent, templatePath, null, null, inlinePartialTemplates) { }
 
-        public BindingContext(object value, EncodedTextWriter writer, BindingContext parent, string templatePath, Action<TextWriter, object> partialBlockTemplate) :
-            this(value, writer, parent, templatePath, partialBlockTemplate, null) { }
+        public BindingContext(object value, EncodedTextWriter writer, BindingContext parent, string templatePath, Action<TextWriter, object> partialBlockTemplate, IDictionary<string, Action<TextWriter, object>> inlinePartialTemplates) :
+            this(value, writer, parent, templatePath, partialBlockTemplate, null, inlinePartialTemplates) { }
 
-        public BindingContext(object value, EncodedTextWriter writer, BindingContext parent, string templatePath, Action<TextWriter, object> partialBlockTemplate, BindingContext current)
+        public BindingContext(object value, EncodedTextWriter writer, BindingContext parent, string templatePath, Action<TextWriter, object> partialBlockTemplate, BindingContext current, IDictionary<string, Action<TextWriter, object>> inlinePartialTemplates)
         {
             TemplatePath = parent != null ? (parent.TemplatePath ?? templatePath) : templatePath;
             TextWriter = writer;
@@ -57,6 +57,10 @@ namespace HandlebarsDotNet.Compiler
             else if (current != null)
             {
                 InlinePartialTemplates = current.InlinePartialTemplates;
+            }
+            else if (inlinePartialTemplates != null)
+            {
+                InlinePartialTemplates = inlinePartialTemplates;
             }
             else
             {
@@ -158,7 +162,7 @@ namespace HandlebarsDotNet.Compiler
 
         public virtual BindingContext CreateChildContext(object value, Action<TextWriter, object> partialBlockTemplate)
         {
-            return new BindingContext(value ?? Value, TextWriter, this, TemplatePath, partialBlockTemplate ?? PartialBlockTemplate);
+            return new BindingContext(value ?? Value, TextWriter, this, TemplatePath, partialBlockTemplate ?? PartialBlockTemplate, null);
         }
     }
 }

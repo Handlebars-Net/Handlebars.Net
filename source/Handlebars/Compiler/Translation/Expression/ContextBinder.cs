@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
@@ -23,13 +24,14 @@ namespace HandlebarsDotNet.Compiler
             {
                 parentContext = Expression.Constant(null, typeof(BindingContext));
             }
+            var inlinePartialsParameter = Expression.Constant(null, typeof(IDictionary<string, Action<TextWriter, object>>));
 
             var encodedWriterExpression = ResolveEncodedWriter(writerParameter, context.Configuration.TextEncoder);
             var templatePathExpression = Expression.Constant(templatePath, typeof(string));
             var newBindingContext = Expression.New(
                             typeof(BindingContext).GetConstructor(
-                                new[] { typeof(object), typeof(EncodedTextWriter), typeof(BindingContext), typeof(string) }),
-                            new[] { objectParameter, encodedWriterExpression, parentContext, templatePathExpression });
+                                new[] { typeof(object), typeof(EncodedTextWriter), typeof(BindingContext), typeof(string), typeof(IDictionary<string, Action<TextWriter, object>>) }),
+                            new[] { objectParameter, encodedWriterExpression, parentContext, templatePathExpression, inlinePartialsParameter });
             return Expression.Lambda<Action<TextWriter, object>>(
                 Expression.Block(
                     new[] { context.BindingContext },

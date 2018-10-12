@@ -335,6 +335,26 @@ namespace HandlebarsDotNet.Test
             Assert.Equal("Well, this is some test content that works great Pete Jones !", result);
         }
 
+        [Fact]
+        public void InlinePartialInEach()
+        {
+            string source = "{{#*inline \"item\"}}{{id}}{{/inline}}{{#each items}}{{>item}}{{/each}}";
+
+            var template = Handlebars.Compile(source);
+
+            var data = new
+            {
+                items = new[]
+                {
+                    new
+                    { id = 1 },
+                    new { id = 2 }
+                }
+            };
+
+            var result = template(data);
+            Assert.Equal("12", result);
+        }
     }
 }
 
