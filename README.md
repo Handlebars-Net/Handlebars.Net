@@ -110,7 +110,41 @@ Views\partials\somepartial.hbs   <--shared as in  \Views\partials
 Views\{Controller}\{Action}.hbs 
 Views\{Controller}\{Action}\partials\somepartial.hbs 
 ```
+### Registering Block Helpers
 
+```c#
+HandlebarsBlockHelper _stringEqualityBlockHelper = (TextWriter output, HelperOptions options, dynamic context, object[] arguments) => {
+	if (arguments.Length != 2)
+	{
+		throw new HandlebarsException("{{StringEqualityBlockHelper}} helper must have exactly two argument");
+	}
+	string left = arguments[0] as string;
+	string right = arguments[1] as string;
+	if (left == right)
+	{
+		options.Template(output, null);
+	}
+	else
+	{
+		options.Inverse(output, null);
+	}
+};
+Handlebars.RegisterHelper("StringEqualityBlockHelper", _stringEqualityBlockHelper);
+Dictionary<string, string> animals = new Dictionary<string, string>() {
+	{"Fluffy", "cat" },
+	{"Fido", "dog" },
+	{"Chewy", "hamster" }
+};
+string template = "{{#each @value}}The animal, {{@key}}, {{StringEqualityBlockHelper @value 'dog'}}is a dog{{else}}is not a dog{{/StringEqualityBlockHelper}}.\r\n{{/each}}";
+Func<object, string> compiledTemplate = Handlebars.Compile(template);
+string templateOutput = compiledTemplate(animals);
+
+/* Would render
+The animal, Fluffy, is not a dog.
+The animal, Fido, is a dog.
+The animal, Chewy, is not a dog.
+*/
+```
 ## Performance
 
 ### Compilation
