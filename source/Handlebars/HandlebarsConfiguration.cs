@@ -29,6 +29,11 @@ namespace HandlebarsDotNet
         /// </summary>
         public IPartialTemplateResolver PartialTemplateResolver { get; set; }
 
+        /// <summary>
+        /// The handler called when a partial template cannot be found.
+        /// </summary>
+        public IMissingPartialTemplateHandler MissingPartialTemplateHandler { get; set; }
+
         public HandlebarsConfiguration()
         {
             this.Helpers = new Dictionary<string, HandlebarsHelper>(StringComparer.OrdinalIgnoreCase);

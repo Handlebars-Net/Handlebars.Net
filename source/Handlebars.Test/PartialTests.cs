@@ -596,6 +596,31 @@ namespace HandlebarsDotNet.Test
             var ex = Assert.Throws<HandlebarsRuntimeException>(() => template(data));
             Assert.Equal("Referenced partial name @partial-block could not be resolved", ex.Message);
         }
+
+        public class TestMissingPartialTemplateHandler : IMissingPartialTemplateHandler
+        {
+            public void Handle(HandlebarsConfiguration configuration, string partialName, TextWriter textWriter)
+            {
+                textWriter.Write($"Partial Not Found: {partialName}");
+            }
+        }
+
+        [Fact]
+        public void MissingPartialTemplateHandler()
+        {
+            var source = "Missing template should not throw exception: {{> missing }}";
+
+            var handlebars = Handlebars.Create(new HandlebarsConfiguration
+            {
+                MissingPartialTemplateHandler = new TestMissingPartialTemplateHandler()
+            });
+
+            var template = handlebars.Compile(source);
+            var data = new { };
+            var result = template(data);
+
+            Assert.Equal("Missing template should not throw exception: Partial Not Found: missing", result);
+        }
     }
 }
 

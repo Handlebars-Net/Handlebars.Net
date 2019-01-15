@@ -73,8 +73,17 @@ namespace HandlebarsDotNet.Compiler
             if (!InvokePartial(partialName, context, configuration))
             {
                 if (context.PartialBlockTemplate == null)
-                    throw new HandlebarsRuntimeException(
-                        string.Format("Referenced partial name {0} could not be resolved", partialName));
+                {
+                    if (configuration.MissingPartialTemplateHandler != null)
+                    {
+                        configuration.MissingPartialTemplateHandler.Handle(configuration, partialName, context.TextWriter);
+                        return;
+                    }
+                    else
+                    {
+                        throw new HandlebarsRuntimeException(string.Format("Referenced partial name {0} could not be resolved", partialName));
+                    }
+                }
 
                 context.PartialBlockTemplate(context.TextWriter, context);
             }
