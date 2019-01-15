@@ -102,30 +102,14 @@ namespace HandlebarsDotNet.Compiler
                 context.InlinePartialTemplates[partialName](context.TextWriter, context);
                 return true;
             }
-
+            
+            // Partial is not found, so call the resolver and attempt to load it.
             if (configuration.RegisteredTemplates.ContainsKey(partialName) == false)
             {
-                if (configuration.FileSystem != null && context.TemplatePath != null)
+                if (configuration.PartialTemplateResolver == null 
+                    || configuration.PartialTemplateResolver.TryRegisterPartial(Handlebars.Create(configuration), partialName, context.TemplatePath) == false)
                 {
-                    var partialPath = configuration.FileSystem.Closest(context.TemplatePath,
-                        "partials/" + partialName + ".hbs");
-                    if (partialPath != null)
-                    {
-                        var compiled = Handlebars.Create(configuration)
-                            .CompileView(partialPath);
-                        configuration.RegisteredTemplates.Add(partialName, (writer, o) =>
-                        {
-                            writer.Write(compiled(o));
-                        });
-                    }
-                    else
-                    {
-                        // Failed to find partial in filesystem
-                        return false;
-                    }
-                }
-                else
-                {
+                    // Template not found.
                     return false;
                 }
             }
