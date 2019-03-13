@@ -32,6 +32,7 @@ namespace HandlebarsDotNet.Compiler
                 var item = enumerator.Current;
                 if (item is StartExpressionToken)
                 {
+                    var isRaw = ((StartExpressionToken)item).IsRaw;
                     yield return item;
                     item = GetNext(enumerator);
                     if (item is Expression)
@@ -45,7 +46,7 @@ namespace HandlebarsDotNet.Compiler
                         {
                             yield return HandlebarsExpression.Helper(word.Value);
                         }
-                        else if (IsRegisteredBlockHelperName(word.Value))
+                        else if (IsRegisteredBlockHelperName(word.Value, isRaw))
                         {
                             yield return HandlebarsExpression.Helper(word.Value);
                         }
@@ -71,9 +72,9 @@ namespace HandlebarsDotNet.Compiler
             return _configuration.Helpers.ContainsKey(name) || builtInHelpers.Contains(name);
         }
 
-        private bool IsRegisteredBlockHelperName(string name)
+        private bool IsRegisteredBlockHelperName(string name, bool isRaw)
         {
-            if (name[0] != '#') return false;
+            if (!isRaw && name[0] != '#') return false;
             name = name.Replace("#", "");
             return _configuration.BlockHelpers.ContainsKey(name) || builtInHelpers.Contains(name);
         }
