@@ -85,13 +85,20 @@ namespace HandlebarsDotNet.Compiler.Lexer
                     if ((char)node == '}' && (char)source.Read() == '}')
                     {
                         bool escaped = true;
+                        bool raw = false;
                         if ((char)source.Peek() == '}')
                         {
                             node = source.Read();
                             escaped = false;
                         }
+                        if ((char)source.Peek() == '}')
+                        {
+                            node = source.Read();
+                            escaped = true;
+                            raw = true;
+                        }
                         node = source.Read();
-                        yield return Token.EndExpression(escaped, trimWhitespace);
+                        yield return Token.EndExpression(escaped, trimWhitespace, raw);
                         inExpression = false;
                     }
                     else if ((char)node == ')')
@@ -143,12 +150,19 @@ namespace HandlebarsDotNet.Compiler.Lexer
                     else if ((char)node == '{' && (char)source.Peek() == '{')
                     {
                         bool escaped = true;
+                        bool raw = false;
                         trimWhitespace = false;
                         node = source.Read();
                         if ((char)source.Peek() == '{')
                         {
                             node = source.Read();
                             escaped = false;
+                        }
+                        if ((char)source.Peek() == '{')
+                        {
+                            node = source.Read();
+                            escaped = true;
+                            raw = true;
                         }
                         if ((char)source.Peek() == '~')
                         {
@@ -157,7 +171,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
                             trimWhitespace = true;
                         }
                         yield return Token.Static(buffer.ToString());
-                        yield return Token.StartExpression(escaped, trimWhitespace);
+                        yield return Token.StartExpression(escaped, trimWhitespace, raw);
                         trimWhitespace = false;
                         buffer = new StringBuilder();
                         inExpression = true;
