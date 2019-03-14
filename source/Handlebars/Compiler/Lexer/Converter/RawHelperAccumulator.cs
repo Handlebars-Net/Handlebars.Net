@@ -17,14 +17,11 @@ namespace HandlebarsDotNet.Compiler
         public override IEnumerable<object> ConvertTokens(IEnumerable<object> sequence)
         {
             var enumerator = sequence.GetEnumerator();
-            var buffer = new StringBuilder();
-            var isInRawHelperBody = false;
-            string openRawHelperName = null;
 
             while (enumerator.MoveNext())
             {
                 var item = enumerator.Current;
-                if (openRawHelperName == null && item is StartExpressionToken startExpressionTokenItem)
+                if (item is StartExpressionToken startExpressionTokenItem)
                 {
                     yield return item;
 
@@ -39,42 +36,15 @@ namespace HandlebarsDotNet.Compiler
                         throw new HandlebarsCompilerException("Expected HelperExpression, got " + item);
                     }
 
-                    openRawHelperName = helperExpression.HelperName;
                     yield return item;
-                }
-                else if (item is StartExpressionToken startExpressionToken)
-                {
-                    item = GetNext(enumerator);
-                    if (item is WordExpressionToken word && word.Value == ("/" + openRawHelperName))
-                    {
-                        yield return Token.Static(buffer.ToString());
-                        yield return startExpressionToken;
-                        yield return item;
 
-                        openRawHelperName = null;
-                        isInRawHelperBody = false;
-                        buffer = new StringBuilder();
-                    }
-                    else
+                    foreach (var param in CollectParameters(enumerator, helperExpression.HelperName))
                     {
-                        buffer.Append(Stringify(startExpressionToken));
-                        buffer.Append(Stringify(item));
+                        yield return param;
                     }
-                }
-                else if (openRawHelperName != null)
-                {
-                    if (!isInRawHelperBody && item is EndExpressionToken endExpression && endExpression.IsRaw)
+                    foreach (var bodyMember in CollectBody(enumerator, helperExpression.HelperName))
                     {
-                        isInRawHelperBody = true;
-                        yield return item;
-                    }
-                    else if (!isInRawHelperBody)
-                    {
-                        yield return item;
-                    }
-                    else
-                    {
-                        buffer.Append(Stringify(item));
+                        yield return bodyMember;
                     }
                 }
                 else
@@ -82,11 +52,73 @@ namespace HandlebarsDotNet.Compiler
                     yield return item;
                 }
             }
+        }
 
-            if (isInRawHelperBody || openRawHelperName != null)
+        private IEnumerable<object> CollectParameters(IEnumerator<object> enumerator, string rawHelperName)
+        {
+            var unclosedExpressions = 1;
+            while (enumerator.MoveNext())
             {
-                throw new HandlebarsCompilerException($"Reached end of template before raw block helper expression '{openRawHelperName}' was closed");
+                var item = enumerator.Current;
+                if (item is EndExpressionToken)
+                {
+                    unclosedExpressions--;
+                    yield return item;
+
+                    if (unclosedExpressions == 0)
+                    {
+                        yield break;
+                    }
+                }
+                if (item is StartExpressionToken)
+                {
+                    unclosedExpressions++;
+                    yield return item;
+                }
+                else
+                {
+                    yield return item;
+                }
             }
+
+            throw new HandlebarsCompilerException($"Reached end of template before raw block helper expression '{rawHelperName}' tag was closed");
+        }
+
+        private IEnumerable<object> CollectBody(IEnumerator<object> enumerator, string rawHelperName)
+        {
+            var buffer = new StringBuilder();
+
+            while (enumerator.MoveNext())
+            {
+                var item = enumerator.Current;
+                if (item is StartExpressionToken startExpressionToken)
+                {
+                    item = GetNext(enumerator);
+                    if (IsClosingTag(startExpressionToken, item, rawHelperName))
+                    {
+                        yield return Token.Static(buffer.ToString());
+                        yield return startExpressionToken;
+                        yield return item;
+                        yield break;
+                    }
+
+                    buffer.Append(Stringify(startExpressionToken));
+                    buffer.Append(Stringify(item));
+                }
+                else
+                {
+                    buffer.Append(Stringify(item));
+                }
+            }
+
+            throw new HandlebarsCompilerException($"Reached end of template before raw block helper expression '{rawHelperName}' was closed");
+        }
+
+        private bool IsClosingTag(StartExpressionToken startExpressionToken, object item, string helperName)
+        {
+            return startExpressionToken.IsRaw
+                && item is WordExpressionToken word
+                && word.Value == ("/" + helperName);
         }
 
         private static string Stringify(object item)
