@@ -48,7 +48,7 @@ namespace HandlebarsDotNet.Compiler
                         }
                         else if (IsRegisteredBlockHelperName(word.Value, isRaw))
                         {
-                            yield return HandlebarsExpression.Helper(word.Value);
+                            yield return HandlebarsExpression.Helper(word.Value, isRaw);
                         }
                         else
                         {

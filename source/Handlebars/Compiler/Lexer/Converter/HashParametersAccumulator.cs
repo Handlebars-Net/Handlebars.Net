@@ -93,7 +93,8 @@ namespace HandlebarsDotNet.Compiler
                 {
                     return HandlebarsExpression.Helper(
                         helperExpression.HelperName,
-                        arguments);
+                        arguments,
+                        helperExpression.IsRaw);
                 }
             }
             if (expression is SubExpressionExpression subExpression)

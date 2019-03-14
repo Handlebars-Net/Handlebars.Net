@@ -76,7 +76,7 @@ namespace HandlebarsDotNet.Compiler
             var arguments = VisitExpressionList(hex.Arguments);
             if (arguments != hex.Arguments)
             {
-                return HandlebarsExpression.Helper(hex.HelperName, arguments);
+                return HandlebarsExpression.Helper(hex.HelperName, arguments, hex.IsRaw);
             }
             return hex;
         }
@@ -88,7 +88,7 @@ namespace HandlebarsDotNet.Compiler
 
             if (arguments != bhex.Arguments)
             {
-                return HandlebarsExpression.BlockHelper(bhex.HelperName, arguments, bhex.Body, bhex.Inversion);
+                return HandlebarsExpression.BlockHelper(bhex.HelperName, arguments, bhex.Body, bhex.Inversion, bhex.IsRaw);
             }
             return bhex;
         }

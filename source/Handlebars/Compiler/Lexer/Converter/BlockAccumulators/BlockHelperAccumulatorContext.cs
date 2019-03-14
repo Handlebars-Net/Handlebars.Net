@@ -68,7 +68,8 @@ namespace HandlebarsDotNet.Compiler
                 _startingNode.HelperName,
                 _startingNode.Arguments,
                 _accumulatedBody,
-                _accumulatedInversion);
+                _accumulatedInversion,
+                _startingNode.IsRaw);
         }
 
         private Expression GetBlockBody()

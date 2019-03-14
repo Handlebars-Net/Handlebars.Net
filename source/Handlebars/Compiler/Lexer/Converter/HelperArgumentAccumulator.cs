@@ -29,7 +29,8 @@ namespace HandlebarsDotNet.Compiler
                     var helperArguments = AccumulateArguments(enumerator);
                     yield return HandlebarsExpression.Helper(
                         helper.HelperName,
-                        helperArguments);
+                        helperArguments,
+                        helper.IsRaw);
                     yield return enumerator.Current;
                 }
                 else if (item is PathExpression)
@@ -40,7 +41,8 @@ namespace HandlebarsDotNet.Compiler
                         var path = item as PathExpression;
                         yield return HandlebarsExpression.Helper(
                             path.Path,
-                            helperArguments);
+                            helperArguments,
+                            (enumerator.Current as EndExpressionToken).IsRaw);
                         yield return enumerator.Current;
                     }
                     else

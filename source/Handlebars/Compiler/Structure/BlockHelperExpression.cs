@@ -13,8 +13,9 @@ namespace HandlebarsDotNet.Compiler
             string helperName,
             IEnumerable<Expression> arguments,
             Expression body,
-            Expression inversion)
-            : base(helperName, arguments)
+            Expression inversion,
+            bool isRaw = false)
+            : base(helperName, arguments, isRaw)
         {
             _body = body;
             _inversion = inversion;
