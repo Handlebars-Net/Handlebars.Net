@@ -102,6 +102,22 @@ namespace HandlebarsDotNet.Test
         }
 
         [Fact]
+        public void RawHelperShouldNotMangleArgumentsInBody()
+        {
+            var inst = Handlebars.Create();
+            var source = "{{{{rawBlockHelper}}}}{{someHelper fooArg fooHashArg='foo' fooHashArgDoubleQuote=\"foo!\" barHashArg=unquotedValue bazHashArg=@root.baz.nested}}{{{{/rawBlockHelper}}}}";
+
+            inst.RegisterHelper("rawBlockHelper", (writer, options, context, arguments) => {
+                options.Template(writer, null);
+            });
+
+            var template = inst.Compile(source);
+            var output = template(new { });
+
+            Assert.Equal("{{someHelper fooArg fooHashArg='foo' fooHashArgDoubleQuote=\"foo!\" barHashArg=unquotedValue bazHashArg=@root.baz.nested}}", output);
+        }
+
+        [Fact]
         public void TestNonClosingRawBlockExpressionException()
         {
             var inst = Handlebars.Create();

@@ -87,10 +87,12 @@ namespace HandlebarsDotNet.Compiler
         private IEnumerable<object> CollectBody(IEnumerator<object> enumerator, string rawHelperName)
         {
             var buffer = new StringBuilder();
+            object precedingItem = null;
 
             while (enumerator.MoveNext())
             {
                 var item = enumerator.Current;
+
                 if (item is StartExpressionToken startExpressionToken)
                 {
                     item = GetNext(enumerator);
@@ -102,13 +104,15 @@ namespace HandlebarsDotNet.Compiler
                         yield break;
                     }
 
-                    buffer.Append(Stringify(startExpressionToken));
-                    buffer.Append(Stringify(item));
+                    buffer.Append(Stringify(startExpressionToken, precedingItem));
+                    buffer.Append(Stringify(item, startExpressionToken));
                 }
                 else
                 {
-                    buffer.Append(Stringify(item));
+                    buffer.Append(Stringify(item, precedingItem));
                 }
+
+                precedingItem = item;
             }
 
             throw new HandlebarsCompilerException($"Reached end of template before raw block helper expression '{rawHelperName}' was closed");
@@ -121,11 +125,11 @@ namespace HandlebarsDotNet.Compiler
                 && word.Value == ("/" + helperName);
         }
 
-        private static string Stringify(object item)
+        private static string Stringify(object item, object precedingItem)
         {
             if (item is Token token)
             {
-                return token.Value;
+                return PrependWhitespaceWhereNeeded(StringifyToken(token), token, precedingItem);
             }
 
             if (item is HelperExpression helperExpression)
@@ -134,6 +138,29 @@ namespace HandlebarsDotNet.Compiler
             }
 
             return item.ToString();
+        }
+
+        private static string PrependWhitespaceWhereNeeded(string value, Token currToken, object precedingItem)
+        {
+            if (precedingItem == null || !(precedingItem is Token prevToken))
+            {
+                return value;
+            }
+
+            if ((currToken.Type == TokenType.Word || currToken.Type == TokenType.Literal) &&
+                (prevToken.Type == TokenType.Word || prevToken.Type == TokenType.Literal))
+            {
+                return " " + value;
+            }
+
+            return value;
+        }
+
+        private static string StringifyToken(Token token)
+        {
+            return (token is LiteralExpressionToken literalExpressionToken && literalExpressionToken.IsDelimitedLiteral)
+                ? $"{literalExpressionToken.Delimiter}{literalExpressionToken.Value}{literalExpressionToken.Delimiter}"
+                : token.Value;
         }
 
         private static object GetNext(IEnumerator<object> enumerator)
