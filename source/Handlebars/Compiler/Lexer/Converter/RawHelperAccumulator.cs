@@ -142,13 +142,22 @@ namespace HandlebarsDotNet.Compiler
 
         private static string PrependWhitespaceWhereNeeded(string value, Token currToken, object precedingItem)
         {
-            if (precedingItem == null || !(precedingItem is Token prevToken))
+            if (precedingItem == null)
             {
                 return value;
             }
 
-            if ((currToken.Type == TokenType.Word || currToken.Type == TokenType.Literal) &&
-                (prevToken.Type == TokenType.Word || prevToken.Type == TokenType.Literal))
+            if (currToken.Type != TokenType.Word && currToken.Type != TokenType.Literal)
+            {
+                return value;
+            }
+
+            if (precedingItem is HelperExpression)
+            {
+                return " " + value;
+            }
+
+            if (precedingItem is Token prevToken && (prevToken.Type == TokenType.Word || prevToken.Type == TokenType.Literal))
             {
                 return " " + value;
             }

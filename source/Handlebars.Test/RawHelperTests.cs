@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace HandlebarsDotNet.Test
@@ -109,6 +110,27 @@ namespace HandlebarsDotNet.Test
 
             inst.RegisterHelper("rawBlockHelper", (writer, options, context, arguments) => {
                 options.Template(writer, null);
+            });
+
+            var template = inst.Compile(source);
+            var output = template(new { });
+
+            Assert.Equal("{{someHelper fooArg fooHashArg='foo' fooHashArgDoubleQuote=\"foo!\" barHashArg=unquotedValue bazHashArg=@root.baz.nested}}", output);
+        }
+
+        [Fact]
+        public void RawHelperShouldNotMangleArgumentsInBodyIfAnExistingHelperIsReferenced()
+        {
+            var inst = Handlebars.Create();
+            var source = "{{{{rawBlockHelper}}}}{{someHelper fooArg fooHashArg='foo' fooHashArgDoubleQuote=\"foo!\" barHashArg=unquotedValue bazHashArg=@root.baz.nested}}{{{{/rawBlockHelper}}}}";
+
+            inst.RegisterHelper("rawBlockHelper", (writer, options, context, arguments) => {
+                options.Template(writer, null);
+            });
+
+            inst.RegisterHelper("someHelper", (writer, context, parameters) =>
+            {
+                throw new Exception("If this gets called, something went terribly wrong.");
             });
 
             var template = inst.Compile(source);
