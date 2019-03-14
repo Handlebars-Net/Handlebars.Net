@@ -94,7 +94,6 @@ namespace HandlebarsDotNet.Compiler.Lexer
                         if ((char)source.Peek() == '}')
                         {
                             node = source.Read();
-                            escaped = true;
                             raw = true;
                         }
                         node = source.Read();
@@ -161,7 +160,6 @@ namespace HandlebarsDotNet.Compiler.Lexer
                         if ((char)source.Peek() == '{')
                         {
                             node = source.Read();
-                            escaped = true;
                             raw = true;
                         }
                         if ((char)source.Peek() == '~')
