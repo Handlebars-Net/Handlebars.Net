@@ -173,9 +173,10 @@ namespace HandlebarsDotNet.Compiler
             {
                 try
                 {
-                    var result = GetProperty(instance, resolvedMemberName);
+                    var key = resolvedMemberName.Trim('[', ']'); // Ensure square brackets removed
+                    var result = GetProperty(instance, key);
                     if (result == null)
-                        return new UndefinedBindingResult(resolvedMemberName, CompilationContext.Configuration);
+                        return new UndefinedBindingResult(key, CompilationContext.Configuration);
 
                     return result;
                 }

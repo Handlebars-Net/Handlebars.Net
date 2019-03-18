@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
 using HandlebarsDotNet.Compiler;
+using Newtonsoft.Json;
 
 namespace HandlebarsDotNet.Test
 {
@@ -597,6 +598,27 @@ false
             Assert.Equal("Hello, Handlebars.Net!", result);
         }
 
+        [Fact]
+        public void BasicPathExpandoObjectIntKeyRoot()
+        {
+            var source = "Hello, {{ [42].name }}!";
+            var template = Handlebars.Compile(source);
+            var data = JsonConvert.DeserializeObject<ExpandoObject>("{ 42 : { \"name\": \"Handlebars.Net\" } }");
+            
+            var result = template(data);
+            Assert.Equal("Hello, Handlebars.Net!", result);
+        }
+
+        [Fact]
+        public void BasicPathExpandoObjectIntKeyArray()
+        {
+            var source = "Hello, {{ names.[1].name }}!";
+            var template = Handlebars.Compile(source);
+            var data = JsonConvert.DeserializeObject<ExpandoObject>("{ names : [ { \"name\": \"nope!\" }, { \"name\": \"Handlebars.Net\" } ] }");
+
+            var result = template(data);
+            Assert.Equal("Hello, Handlebars.Net!", result);
+        }
 
         [Fact]
         public void DynamicWithMetadataEnumerator()
