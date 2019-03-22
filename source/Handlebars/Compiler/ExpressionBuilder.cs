@@ -15,10 +15,11 @@ namespace HandlebarsDotNet.Compiler
 
         public IEnumerable<Expression> ConvertTokensToExpressions(IEnumerable<object> tokens)
         {
+            tokens = HelperConverter.Convert(tokens, _configuration);
+            tokens = RawHelperAccumulator.Accumulate(tokens);
             tokens = CommentAndLayoutConverter.Convert(tokens);
             tokens = LiteralConverter.Convert(tokens);
             tokens = HashParameterConverter.Convert(tokens);
-            tokens = HelperConverter.Convert(tokens, _configuration);
             tokens = PathConverter.Convert(tokens);
             tokens = SubExpressionConverter.Convert(tokens);
             tokens = HashParametersAccumulator.Accumulate(tokens);

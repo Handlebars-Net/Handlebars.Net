@@ -15,7 +15,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
 
         public bool IsDelimitedLiteral
         {
-            get { return _delimiter == null; }
+            get { return _delimiter != null; }
         }
 
         public string Delimiter

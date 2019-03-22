@@ -8,6 +8,8 @@ namespace HandlebarsDotNet.Compiler
     internal class BlockHelperAccumulatorContext : BlockAccumulatorContext
     {
         private readonly HelperExpression _startingNode;
+        private readonly bool _trimBefore;
+        private readonly bool _trimAfter;
         private Expression _accumulatedBody;
         private Expression _accumulatedInversion;
         private List<Expression> _body = new List<Expression>();
@@ -15,6 +17,11 @@ namespace HandlebarsDotNet.Compiler
         public BlockHelperAccumulatorContext(Expression startingNode)
             : base(startingNode)
         {
+            if (startingNode is StatementExpression statementExpression)
+            {
+                _trimBefore = statementExpression.TrimBefore;
+                _trimAfter = statementExpression.TrimAfter;
+            }
             startingNode = UnwrapStatement(startingNode);
             _startingNode = (HelperExpression)startingNode;
         }
@@ -64,11 +71,23 @@ namespace HandlebarsDotNet.Compiler
                 _accumulatedInversion = GetBlockBody();
             }
 
-            return HandlebarsExpression.BlockHelper(
+            var resultExpr = HandlebarsExpression.BlockHelper(
                 _startingNode.HelperName,
                 _startingNode.Arguments,
                 _accumulatedBody,
-                _accumulatedInversion);
+                _accumulatedInversion,
+                _startingNode.IsRaw);
+
+            if (_startingNode.IsRaw)
+            {
+                return HandlebarsExpression.Statement(
+                    resultExpr,
+                    false,
+                    _trimBefore,
+                    _trimAfter);
+            }
+
+            return resultExpr;
         }
 
         private Expression GetBlockBody()

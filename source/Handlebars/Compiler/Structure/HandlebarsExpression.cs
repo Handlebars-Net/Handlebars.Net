@@ -22,23 +22,24 @@ namespace HandlebarsDotNet.Compiler
 
     internal abstract class HandlebarsExpression : Expression
     {
-        public static HelperExpression Helper(string helperName, IEnumerable<Expression> arguments)
+        public static HelperExpression Helper(string helperName, IEnumerable<Expression> arguments, bool isRaw = false)
         {
-            return new HelperExpression(helperName, arguments);
+            return new HelperExpression(helperName, arguments, isRaw);
         }
 
-        public static HelperExpression Helper(string helperName)
+        public static HelperExpression Helper(string helperName, bool isRaw = false)
         {
-            return new HelperExpression(helperName);
+            return new HelperExpression(helperName, isRaw);
         }
 
         public static BlockHelperExpression BlockHelper(
             string helperName,
             IEnumerable<Expression> arguments,
             Expression body,
-            Expression inversion)
+            Expression inversion,
+            bool isRaw = false)
         {
-            return new BlockHelperExpression(helperName, arguments, body, inversion);
+            return new BlockHelperExpression(helperName, arguments, body, inversion, isRaw);
         }
 
         public static PathExpression Path(string path)

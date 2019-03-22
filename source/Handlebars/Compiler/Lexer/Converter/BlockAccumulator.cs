@@ -30,7 +30,6 @@ namespace HandlebarsDotNet.Compiler
                 var context = BlockAccumulatorContext.Create(item, _configuration);
                 if (context != null)
                 {
-                    item = UnwrapStatement(item);
                     yield return AccumulateBlock(enumerator, context);
                 }
                 else
@@ -63,18 +62,6 @@ namespace HandlebarsDotNet.Compiler
             }
             throw new HandlebarsCompilerException(
                 $"Reached end of template before block expression '{context.Name}' was closed");
-        }
-
-        private Expression UnwrapStatement(Expression item)
-        {
-            if (item is StatementExpression)
-            {
-                return ((StatementExpression)item).Body;
-            }
-            else
-            {
-                return item;
-            }
         }
     }
 }
