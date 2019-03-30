@@ -1,5 +1,6 @@
 Handlebars.Net [![Build Status](https://travis-ci.org/rexm/Handlebars.Net.svg?branch=master)](https://travis-ci.org/rexm/Handlebars.Net)
 ==============
+**[Call for Input on v2](https://github.com/rexm/Handlebars.Net/issues/294)**
 
 Blistering-fast [Handlebars.js templates](http://handlebarsjs.com) in your .NET application.
 
