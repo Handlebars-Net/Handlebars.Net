@@ -165,12 +165,7 @@ A frequent performance issue that comes up is JSON.NET's `JObject`, which for re
 
 ## Future roadmap
 
-- [ ] **Add unit tests!**
-- [x] [Support for sub-expressions](https://github.com/rexm/Handlebars.Net/issues/48)
-- [ ] `lookup`, `log`, and `helperMissing` helpers
-- [x] [Support for whitespace control](https://github.com/rexm/Handlebars.Net/issues/52)
-- [ ] MVC view engine
-- [ ] Nancy view engine
+**[Call for Input on v2](https://github.com/rexm/Handlebars.Net/issues/294)**
 
 ## Contributing
 
