@@ -144,6 +144,177 @@ namespace HandlebarsDotNet.Test
         }
 
         [Fact]
+        public void BlockHelperWithArbitraryInversionAndComplexOperator()
+        {
+            Handlebars.RegisterHelper("ifCond", (writer, options, context, args) => {
+                if (args.Length != 3)
+                {
+                    writer.Write("ifCond:Wrong number of arguments");
+                    return;
+                }
+                if (args[0] == null || args[0].GetType().Name == "UndefinedBindingResult")
+                {
+                    writer.Write("ifCond:args[0] undefined");
+                    return;
+                }
+                if (args[1] == null || args[1].GetType().Name == "UndefinedBindingResult")
+                {
+                    writer.Write("ifCond:args[1] undefined");
+                    return;
+                }
+                if (args[2] == null || args[2].GetType().Name == "UndefinedBindingResult")
+                {
+                    writer.Write("ifCond:args[2] undefined");
+                    return;
+                }
+                if (args[0].GetType().Name == "String" || args[0].GetType().Name == "JValue")
+                {
+                    var val1 = args[0].ToString();
+                    var val2 = args[2].ToString();
+
+                    switch (args[1].ToString())
+                    {
+                        case ">":
+                            if (val1.Length > val2.Length)
+                            {
+                                options.Template(writer, (object)context);
+                            }
+                            else
+                            {
+                                options.Inverse(writer, (object)context);
+                            }
+                            break;
+                        case "=":
+                        case "==":
+                            if (val1 == val2)
+                            {
+                                options.Template(writer, (object)context);
+                            }
+                            else
+                            {
+                                options.Inverse(writer, (object)context);
+                            }
+                            break;
+                        case "<":
+                            if (val1.Length < val2.Length)
+                            {
+                                options.Template(writer, (object)context);
+                            }
+                            else
+                            {
+                                options.Inverse(writer, (object)context);
+                            }
+                            break;
+                        case "!=":
+                        case "<>":
+                            if (val1 != val2)
+                            {
+                                options.Template(writer, (object)context);
+                            }
+                            else
+                            {
+                                options.Inverse(writer, (object)context);
+                            }
+                            break;
+                    }
+                }
+                else
+                {
+                    var val1 = float.Parse(args[0].ToString());
+                    var val2 = float.Parse(args[2].ToString());
+
+                    switch (args[1].ToString())
+                    {
+                        case ">":
+                            if (val1 > val2)
+                            {
+                                options.Template(writer, (object)context);
+                            }
+                            else
+                            {
+                                options.Inverse(writer, (object)context);
+                            }
+                            break;
+                        case "=":
+                        case "==":
+                            if (val1 == val2)
+                            {
+                                options.Template(writer, (object)context);
+                            }
+                            else
+                            {
+                                options.Inverse(writer, (object)context);
+                            }
+                            break;
+                        case "<":
+                            if (val1 < val2)
+                            {
+                                options.Template(writer, (object)context);
+                            }
+                            else
+                            {
+                                options.Inverse(writer, (object)context);
+                            }
+                            break;
+                        case "!=":
+                        case "<>":
+                            if (val1 != val2)
+                            {
+                                options.Template(writer, (object)context);
+                            }
+                            else
+                            {
+                                options.Inverse(writer, (object)context);
+                            }
+                            break;
+                    }
+                }
+            });
+
+            var template = Handlebars.Compile(@"{{#ifCond arg1 '>' arg2}}{{arg1}} is greater than {{arg2}}{{else}}{{arg1}} is less than {{arg2}}{{/ifCond}}");
+            var data = new { arg1 = 2, arg2 = 1 };
+            var result = template(data);
+            Assert.Equal("2 is greater than 1", result);
+
+            data = new { arg1 = 1, arg2 = 2 };
+            result = template(data);
+            Assert.Equal("1 is less than 2", result);
+
+            template = Handlebars.Compile(@"{{#ifCond arg1 '<' arg2}}{{arg1}} is less than {{arg2}}{{else}}{{arg1}} is greater than {{arg2}}{{/ifCond}}");
+            data = new { arg1 = 2, arg2 = 1 };
+            result = template(data);
+            Assert.Equal("2 is greater than 1", result);
+
+            data = new { arg1 = 1, arg2 = 2 };
+            result = template(data);
+            Assert.Equal("1 is less than 2", result);
+
+            template = Handlebars.Compile(@"{{#ifCond arg1 '=' arg2}}{{arg1}} is eq to {{arg2}}{{else}}{{arg1}} is not eq to {{arg2}}{{/ifCond}}");
+            data = new { arg1 = 1, arg2 = 1 };
+            result = template(data);
+            Assert.Equal("1 is eq to 1", result);
+
+            data = new { arg1 = 2, arg2 = 1 };
+            result = template(data);
+            Assert.Equal("2 is not eq to 1", result);
+
+            template = Handlebars.Compile(@"{{#ifCond arg1 '!=' arg2}}{{arg1}} is not eq to {{arg2}}{{else}}{{arg1}} is eq to {{arg2}}{{/ifCond}}");
+            data = new { arg1 = 2, arg2 = 1 };
+            result = template(data);
+            Assert.Equal("2 is not eq to 1", result);
+
+            template = Handlebars.Compile(@"{{#ifCond str '!=' ''}}not empty{{else}}empty{{/ifCond}}");
+            var datastr = new { str = "abc" };
+            result = template(datastr);
+            Assert.Equal("not empty", result);
+
+            template = Handlebars.Compile(@"{{#ifCond str '==' ''}}empty{{else}}not empty{{/ifCond}}");
+            datastr = new { str = "" };
+            result = template(datastr);
+            Assert.Equal("empty", result);
+        }
+
+        [Fact]
         public void HelperWithNumericArguments()
         {
             Handlebars.RegisterHelper("myHelper", (writer, context, args) => {
