@@ -1,4 +1,4 @@
-using HandlebarsDotNet;
+ï»¿using HandlebarsDotNet;
 using System;
 using Xunit;
 
@@ -14,7 +14,7 @@ namespace Handlebars.Test
         [InlineData("<", "&lt;")]
         [InlineData(">", "&gt;")]
         [InlineData("  >  ","  &gt;  ")]
-        [InlineData("ü", "&#252;")]
+        [InlineData("ï¿½", "&#65533;")]
         [InlineData("\"", "&quot;")]
         [InlineData("&a&", "&amp;a&amp;")]
         [InlineData("a&a", "a&amp;a")]
