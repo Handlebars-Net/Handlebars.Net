@@ -8,6 +8,7 @@ using System.Dynamic;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Globalization;
+using Handlebars;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -174,7 +175,7 @@ namespace HandlebarsDotNet.Compiler
                 try
                 {
                     var key = resolvedMemberName.Trim('[', ']'); // Ensure square brackets removed
-                    var result = GetProperty(instance, key);
+                    var result = GetProperty((IDynamicMetaObjectProvider)instance, key);
                     if (result == null)
                         return new UndefinedBindingResult(key, CompilationContext.Configuration);
 
@@ -274,10 +275,9 @@ namespace HandlebarsDotNet.Compiler
                 );
         }
 
-        private static object GetProperty(object target, string name)
+        private static object GetProperty(IDynamicMetaObjectProvider target, string name)
         {
-            var site = System.Runtime.CompilerServices.CallSite<Func<System.Runtime.CompilerServices.CallSite, object, object>>.Create(Microsoft.CSharp.RuntimeBinder.Binder.GetMember(0, name, target.GetType(), new[] { Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo.Create(0, null) }));
-            return site.Target(site, target);
+            return DynamicMetaObjectHelper.GetProperty(target, name);
         }
 
         private string ResolveMemberName(object instance, string memberName)
