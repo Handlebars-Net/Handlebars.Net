@@ -1,4 +1,5 @@
-﻿using System.Dynamic;
+﻿using System;
+using System.Dynamic;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using Microsoft.CSharp.RuntimeBinder;
@@ -17,10 +18,8 @@ namespace Handlebars
                 Expression.Label(CallSiteBinder.UpdateLabel),
                 member.Expression
             );
-            var param = Expression.Parameter(typeof(object));
-            var lambda = Expression.Lambda(final, param);
-            var @delegate = lambda.Compile();
-            return @delegate.DynamicInvoke(target);
+            var lambda = Expression.Lambda<Func<object>>(final).Compile();
+            return lambda();
         }
     }
 }
