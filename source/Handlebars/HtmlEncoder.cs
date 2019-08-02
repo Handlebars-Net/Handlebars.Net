@@ -8,7 +8,7 @@ namespace HandlebarsDotNet
     {
         public string Encode(string text)
         {
-            if (text == null)
+            if (string.IsNullOrEmpty(text))
                 return String.Empty;
 
 
