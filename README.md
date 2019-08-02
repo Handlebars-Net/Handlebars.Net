@@ -1,4 +1,4 @@
-Handlebars.Net [![Build Status](https://travis-ci.org/rexm/Handlebars.Net.svg?branch=master)](https://travis-ci.org/rexm/Handlebars.Net)
+Handlebars.Net [![Build Status](https://travis-ci.org/rexm/Handlebars.Net.svg?branch=master)](https://travis-ci.org/rexm/Handlebars.Net) [![Nuget](https://img.shields.io/nuget/v/Handlebars.Net)](https://www.nuget.org/packages/Handlebars.Net/)
 ==============
 **[Call for Input on v2](https://github.com/rexm/Handlebars.Net/issues/294)**
 
