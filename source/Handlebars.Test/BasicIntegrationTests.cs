@@ -15,7 +15,8 @@ namespace HandlebarsDotNet.Test
         {
             var source = "Hello, {{name}}!";
             var template = Handlebars.Compile(source);
-            var data = new {
+            var data = new
+            {
                 name = "Handlebars.Net"
             };
             var result = template(data);
@@ -25,7 +26,7 @@ namespace HandlebarsDotNet.Test
         [Fact]
         public void EmptyIf()
         {
-            var source = 
+            var source =
 @"{{#if false}}
 {{else}}
 {{/if}}";
@@ -42,36 +43,38 @@ namespace HandlebarsDotNet.Test
         {
             var source = "Hello, {{foo}}!";
 
-	        var config = new HandlebarsConfiguration
-	        {
-		        UnresolvedBindingFormatter = "('{0}' is undefined)"
-	        };
-	        var handlebars = Handlebars.Create( config );
+            var config = new HandlebarsConfiguration
+            {
+                UnresolvedBindingFormatter = "('{0}' is undefined)"
+            };
+            var handlebars = Handlebars.Create(config);
 
             var template = handlebars.Compile(source);
-            var data = new {
+            var data = new
+            {
                 name = "Handlebars.Net"
             };
             var result = template(data);
             Assert.Equal("Hello, ('foo' is undefined)!", result);
         }
 
-		[Fact]
+        [Fact]
         public void BasicPathThrowOnUnresolvedBindingExpression()
         {
             var source = "Hello, {{foo}}!";
 
             var config = new HandlebarsConfiguration
-	        {
-		        ThrowOnUnresolvedBindingExpression = true
-	        };
-	        var handlebars = Handlebars.Create( config );
-	        var template = handlebars.Compile( source );
+            {
+                ThrowOnUnresolvedBindingExpression = true
+            };
+            var handlebars = Handlebars.Create(config);
+            var template = handlebars.Compile(source);
 
-            var data = new {
+            var data = new
+            {
                 name = "Handlebars.Net"
             };
-	        Assert.Throws<HandlebarsUndefinedBindingException>( () => template( data ) );
+            Assert.Throws<HandlebarsUndefinedBindingException>(() => template(data));
         }
 
         [Fact]
@@ -159,7 +162,8 @@ false
         {
             var source = "Hello, {{ name }}!";
             var template = Handlebars.Compile(source);
-            var data = new {
+            var data = new
+            {
                 name = "Handlebars.Net"
             };
             var result = template(data);
@@ -171,7 +175,8 @@ false
         {
             var source = "Hello, {name}!";
             var template = Handlebars.Compile(source);
-            var data = new {
+            var data = new
+            {
                 name = "Handlebars.Net"
             };
             var result = template(data);
@@ -183,7 +188,8 @@ false
         {
             var source = "Hello, \\{name\\}!";
             var template = Handlebars.Compile(source);
-            var data = new {
+            var data = new
+            {
                 name = "Handlebars.Net"
             };
             var result = template(data);
@@ -195,7 +201,8 @@ false
         {
             var source = @"Hello, \\{{name}}!";
             var template = Handlebars.Compile(source);
-            var data = new {
+            var data = new
+            {
                 name = "Handlebars.Net"
             };
             var result = template(data);
@@ -209,7 +216,7 @@ false
             var template = Handlebars.Compile(source);
             var data = new
             {
-                names = new[] {"Foo", "Handlebars.Net"}
+                names = new[] { "Foo", "Handlebars.Net" }
             };
             var result = template(data);
             Assert.Equal("Hello, Handlebars.Net!", result);
@@ -222,7 +229,7 @@ false
             var template = Handlebars.Compile(source);
             var data = new
             {
-                names = new[] {new {name = "Foo"}, new {name = "Handlebars.Net"}}
+                names = new[] { new { name = "Foo" }, new { name = "Handlebars.Net" } }
             };
             var result = template(data);
             Assert.Equal("Hello, Handlebars.Net!", result);
@@ -240,16 +247,16 @@ false
             var result = template(data);
             Assert.Equal("Hello, Handlebars.Net!", result);
         }
-        
+
         [Fact]
         public void BasicPathDotBinding()
         {
             var source = "{{#nestedObject}}{{.}}{{/nestedObject}}";
             var template = Handlebars.Compile(source);
             var data = new
-                {
-                    nestedObject = "A dot goes a long way"
-                };
+            {
+                nestedObject = "A dot goes a long way"
+            };
             var result = template(data);
             Assert.Equal("A dot goes a long way", result);
         }
@@ -260,22 +267,22 @@ false
             var source = "{{#nestedObject}}{{../.}}{{/nestedObject}}";
             var template = Handlebars.Compile(source);
             var data = new
-                {
-                    nestedObject = "Relative dots, yay"
-                };
+            {
+                nestedObject = "Relative dots, yay"
+            };
             var result = template(data);
             Assert.Equal("{ nestedObject = Relative dots, yay }", result);
         }
-        
+
         [Fact]
         public void BasicPropertyOnArray()
         {
             var source = "Array is {{ names.Length }} item(s) long";
             var template = Handlebars.Compile(source);
             var data = new
-                {
-                    names = new[] { new { name = "Foo" }, new { name = "Handlebars.Net" } }
-                };
+            {
+                names = new[] { new { name = "Foo" }, new { name = "Handlebars.Net" } }
+            };
             var result = template(data);
             Assert.Equal("Array is 2 item(s) long", result);
         }
@@ -285,10 +292,12 @@ false
         {
             var source = "Hello, {{#if basic_bool}}Bob{{else}}Sam{{/if}}!";
             var template = Handlebars.Compile(source);
-            var trueData = new {
+            var trueData = new
+            {
                 basic_bool = true
             };
-            var falseData = new {
+            var falseData = new
+            {
                 basic_bool = false
             };
             var resultTrue = template(trueData);
@@ -302,10 +311,12 @@ false
         {
             var source = "{{#if isActive}}active{{else if isInactive}}inactive{{/if}}";
             var template = Handlebars.Compile(source);
-            var activeData = new {
+            var activeData = new
+            {
                 isActive = true
             };
-            var inactiveData = new {
+            var inactiveData = new
+            {
                 isInactive = true
             };
             var resultTrue = template(activeData);
@@ -319,13 +330,16 @@ false
         {
             var source = "{{#if isActive}}active{{else if isInactive}}inactive{{else}}nada{{/if}}";
             var template = Handlebars.Compile(source);
-            var activeData = new {
+            var activeData = new
+            {
                 isActive = true
             };
-            var inactiveData = new {
+            var inactiveData = new
+            {
                 isInactive = true
             };
-            var elseData = new {
+            var elseData = new
+            {
             };
             var resultActive = template(activeData);
             var resultInactive = template(inactiveData);
@@ -340,8 +354,10 @@ false
         {
             var source = "Hello,{{#with person}} my good friend {{name}}{{/with}}!";
             var template = Handlebars.Compile(source);
-            var data = new {
-                person = new {
+            var data = new
+            {
+                person = new
+                {
                     name = "Erik"
                 }
             };
@@ -355,9 +371,9 @@ false
             var source = "Hello, {{#with person}} my good friend{{else}}nevermind{{/with}}";
             var template = Handlebars.Compile(source);
 
-			Assert.Equal("Hello, nevermind", template(new {}));
-			Assert.Equal("Hello, nevermind", template(new {person = false}));
-			Assert.Equal("Hello, nevermind", template(new {person = new string[] {}}));
+            Assert.Equal("Hello, nevermind", template(new { }));
+            Assert.Equal("Hello, nevermind", template(new { person = false }));
+            Assert.Equal("Hello, nevermind", template(new { person = new string[] { } }));
         }
 
         [Fact]
@@ -604,7 +620,7 @@ false
             var source = "Hello, {{ [42].name }}!";
             var template = Handlebars.Compile(source);
             var data = JsonConvert.DeserializeObject<ExpandoObject>("{ 42 : { \"name\": \"Handlebars.Net\" } }");
-            
+
             var result = template(data);
             Assert.Equal("Hello, Handlebars.Net!", result);
         }
@@ -649,7 +665,8 @@ false
         [Fact]
         public void BasicHelper()
         {
-            Handlebars.RegisterHelper("link_to", (writer, context, parameters) => {
+            Handlebars.RegisterHelper("link_to", (writer, context, parameters) =>
+            {
                 writer.WriteSafeString("<a href='" + parameters[0] + "'>" + parameters[1] + "</a>");
             });
 
@@ -657,7 +674,8 @@ false
 
             var template = Handlebars.Compile(source);
 
-            var data = new {
+            var data = new
+            {
                 url = "https://github.com/rexm/handlebars.net",
                 text = "Handlebars.Net"
             };
@@ -666,27 +684,29 @@ false
             Assert.Equal("Click here: <a href='https://github.com/rexm/handlebars.net'>Handlebars.Net</a>", result);
         }
 
-		[Fact]
-		public void BasicHelperPostRegister()
-		{
-			string source = @"Click here: {{link_to_post_reg url text}}";
+        [Fact]
+        public void BasicHelperPostRegister()
+        {
+            string source = @"Click here: {{link_to_post_reg url text}}";
 
-			var template = Handlebars.Compile(source);
+            var template = Handlebars.Compile(source);
 
-			Handlebars.RegisterHelper("link_to_post_reg", (writer, context, parameters) => {
-				writer.WriteSafeString("<a href='" + parameters[0] + "'>" + parameters[1] + "</a>");
-			});
+            Handlebars.RegisterHelper("link_to_post_reg", (writer, context, parameters) =>
+            {
+                writer.WriteSafeString("<a href='" + parameters[0] + "'>" + parameters[1] + "</a>");
+            });
 
-			var data = new {
-				url = "https://github.com/rexm/handlebars.net",
-				text = "Handlebars.Net"
-			};
+            var data = new
+            {
+                url = "https://github.com/rexm/handlebars.net",
+                text = "Handlebars.Net"
+            };
 
-			var result = template(data);
+            var result = template(data);
 
 
-			Assert.Equal("Click here: <a href='https://github.com/rexm/handlebars.net'>Handlebars.Net</a>", result);
-		}
+            Assert.Equal("Click here: <a href='https://github.com/rexm/handlebars.net'>Handlebars.Net</a>", result);
+        }
 
         [Fact]
         public void BasicDeferredBlock()
@@ -695,8 +715,10 @@ false
 
             var template = Handlebars.Compile(source);
 
-            var data = new {
-                person = new {
+            var data = new
+            {
+                person = new
+                {
                     name = "Bill"
                 }
             };
@@ -705,14 +727,14 @@ false
             Assert.Equal("Hello, Bill!", result);
         }
 
-		[Fact]
+        [Fact]
         public void BasicDeferredBlockString()
         {
             string source = "{{#person}} -{{this}}- {{/person}}";
-            
+
             var template = Handlebars.Compile(source);
-            
-            var result = template(new {person = "Bill"});
+
+            var result = template(new { person = "Bill" });
             Assert.Equal(" -Bill- ", result);
         }
 
@@ -723,8 +745,10 @@ false
 
             var template = Handlebars.Compile(source);
 
-            var data = new {
-                person = new {
+            var data = new
+            {
+                person = new
+                {
                     name = "Bill"
                 }
             };
@@ -740,7 +764,8 @@ false
 
             var template = Handlebars.Compile(source);
 
-            var data = new {
+            var data = new
+            {
                 person = false
             };
 
@@ -755,7 +780,8 @@ false
 
             var template = Handlebars.Compile(source);
 
-            var data = new {
+            var data = new
+            {
                 person = (object)null
             };
 
@@ -770,8 +796,9 @@ false
 
             var template = Handlebars.Compile(source);
 
-            var data = new {
-                people = new [] {
+            var data = new
+            {
+                people = new[] {
                     "Bill",
                     "Mary"
                 }
@@ -788,7 +815,8 @@ false
 
             var template = Handlebars.Compile(source);
 
-            var data = new {
+            var data = new
+            {
                 people = new string[] {
                 }
             };
@@ -801,52 +829,53 @@ false
         public void BasicDeferredBlockNegatedContext()
         {
             var template = Handlebars.Compile("Hello, {{^obj}}{{name}}{{/obj}}!");
-            
-            Assert.Equal("Hello, nobody!", template(new {name = "nobody"}));
-            Assert.Equal("Hello, nobody!", template(new {name = "nobody", obj = new string[0]}));
+
+            Assert.Equal("Hello, nobody!", template(new { name = "nobody" }));
+            Assert.Equal("Hello, nobody!", template(new { name = "nobody", obj = new string[0] }));
         }
-        
+
         [Fact]
         public void BasicDeferredBlockInversion()
         {
             var template = Handlebars.Compile("Hello, {{#obj}}somebody{{else}}{{name}}{{/obj}}!");
-        
-            Assert.Equal("Hello, nobody!", template(new {name = "nobody"}));
-            Assert.Equal("Hello, nobody!", template(new {name = "nobody", obj = false}));
-            Assert.Equal("Hello, nobody!", template(new {name = "nobody", obj = new string[0]}));
+
+            Assert.Equal("Hello, nobody!", template(new { name = "nobody" }));
+            Assert.Equal("Hello, nobody!", template(new { name = "nobody", obj = false }));
+            Assert.Equal("Hello, nobody!", template(new { name = "nobody", obj = new string[0] }));
         }
-        
+
         [Fact]
         public void BasicDeferredBlockNegatedInversion()
         {
             var template = Handlebars.Compile("Hello, {{^obj}}nobody{{else}}{{name}}{{/obj}}!");
-        
+
             var array = new[]
             {
                 new {name = "John"},
                 new {name = " and "},
                 new {name = "Sarah"}
             };
-        
-            Assert.Equal("Hello, John and Sarah!", template(new {obj = array}));
-            Assert.Equal("Hello, somebody!", template(new {obj = true, name = "somebody"}));
-            Assert.Equal("Hello, person!", template(new {obj = new {name = "person"}}));
+
+            Assert.Equal("Hello, John and Sarah!", template(new { obj = array }));
+            Assert.Equal("Hello, somebody!", template(new { obj = true, name = "somebody" }));
+            Assert.Equal("Hello, person!", template(new { obj = new { name = "person" } }));
         }
 
-		[Fact]
-		public void BasicPropertyMissing()
-		{
-			string source = "Hello, {{first}} {{last}}!";
+        [Fact]
+        public void BasicPropertyMissing()
+        {
+            string source = "Hello, {{first}} {{last}}!";
 
-			var template = Handlebars.Compile(source);
+            var template = Handlebars.Compile(source);
 
-			var data = new {
-				first = "Marc"
-			};
+            var data = new
+            {
+                first = "Marc"
+            };
 
-			var result = template(data);
-			Assert.Equal("Hello, Marc !", result);
-		}
+            var result = template(data);
+            Assert.Equal("Hello, Marc !", result);
+        }
 
         [Fact]
         public void BasicNullOrMissingSubProperty()
@@ -855,7 +884,8 @@ false
 
             var template = Handlebars.Compile(source);
 
-            var data = new {
+            var data = new
+            {
                 name = (object)null
             };
 
@@ -863,20 +893,21 @@ false
             Assert.Equal("Hello, !", result);
         }
 
-		[Fact]
-		public void BasicNumericFalsy()
-		{
-			string source = "Hello, {{#if falsy}}Truthy!{{/if}}";
+        [Fact]
+        public void BasicNumericFalsy()
+        {
+            string source = "Hello, {{#if falsy}}Truthy!{{/if}}";
 
-			var template = Handlebars.Compile(source);
+            var template = Handlebars.Compile(source);
 
-			var data = new {
-				falsy = 0
-			};
+            var data = new
+            {
+                falsy = 0
+            };
 
-			var result = template(data);
-			Assert.Equal("Hello, ", result);
-		}
+            var result = template(data);
+            Assert.Equal("Hello, ", result);
+        }
 
         [Fact]
         public void BasicNullFalsy()
@@ -885,7 +916,8 @@ false
 
             var template = Handlebars.Compile(source);
 
-            var data = new {
+            var data = new
+            {
                 falsy = (object)null
             };
 
@@ -893,35 +925,37 @@ false
             Assert.Equal("Hello, ", result);
         }
 
-		[Fact]
-		public void BasicNumericTruthy()
-		{
-			string source = "Hello, {{#if truthy}}Truthy!{{/if}}";
+        [Fact]
+        public void BasicNumericTruthy()
+        {
+            string source = "Hello, {{#if truthy}}Truthy!{{/if}}";
 
-			var template = Handlebars.Compile(source);
+            var template = Handlebars.Compile(source);
 
-			var data = new {
-				truthy = -0.1
-			};
+            var data = new
+            {
+                truthy = -0.1
+            };
 
-			var result = template(data);
-			Assert.Equal("Hello, Truthy!", result);
-		}
+            var result = template(data);
+            Assert.Equal("Hello, Truthy!", result);
+        }
 
-		[Fact]
-		public void BasicStringFalsy()
-		{
-			string source = "Hello, {{#if falsy}}Truthy!{{/if}}";
+        [Fact]
+        public void BasicStringFalsy()
+        {
+            string source = "Hello, {{#if falsy}}Truthy!{{/if}}";
 
-			var template = Handlebars.Compile(source);
+            var template = Handlebars.Compile(source);
 
-			var data = new {
-				falsy = ""
-			};
+            var data = new
+            {
+                falsy = ""
+            };
 
-			var result = template(data);
-			Assert.Equal("Hello, ", result);
-		}
+            var result = template(data);
+            Assert.Equal("Hello, ", result);
+        }
 
         [Fact]
         public void BasicEmptyArrayFalsy()
@@ -930,8 +964,9 @@ false
 
             var template = Handlebars.Compile(source);
 
-            var data = new {
-                Array = new object[] {}
+            var data = new
+            {
+                Array = new object[] { }
             };
 
             var result = template(data);
@@ -939,20 +974,21 @@ false
             Assert.Equal("", result);
         }
 
-		[Fact]
-		public void BasicTripleStash()
-		{
-			string source = "Hello, {{{dangerous_value}}}!";
+        [Fact]
+        public void BasicTripleStash()
+        {
+            string source = "Hello, {{{dangerous_value}}}!";
 
-			var template = Handlebars.Compile(source);
+            var template = Handlebars.Compile(source);
 
-			var data = new {
-				dangerous_value = "<div>There's HTML here</div>"
-			};
+            var data = new
+            {
+                dangerous_value = "<div>There's HTML here</div>"
+            };
 
-			var result = template(data);
-			Assert.Equal("Hello, <div>There's HTML here</div>!", result);
-		}
+            var result = template(data);
+            Assert.Equal("Hello, <div>There's HTML here</div>!", result);
+        }
 
         [Fact]
         public void BasicEscape()
@@ -1011,13 +1047,13 @@ false
                 (writer, context, args) => writer.Write(args[0]));
 
             var template = Handlebars.Compile(source);
-            
+
             var data = new { };
             var result = template(data);
 
             Assert.Equal("{{foo}} something {{bar}}", result);
         }
-	    
+
         [Fact]
         public void BasicRoot()
         {
@@ -1025,9 +1061,10 @@ false
 
             var template = Handlebars.Compile(source);
 
-            var data = new {
+            var data = new
+            {
                 group = "Engineering",
-                people = new []
+                people = new[]
                     {
                         "Rex",
                         "Todd"
@@ -1044,7 +1081,8 @@ false
             var template =
                 "{{#home}}Welcome Home{{/home}}{{^home}}Welcome to {{newCity}}{{/home}}";
 
-            var data = new {
+            var data = new
+            {
                 newCity = "New York City",
                 oldCity = "Los Angeles",
                 home = false
@@ -1065,7 +1103,7 @@ false
             var template = Handlebars.Compile(source);
 
             var embeded = new Dictionary<string, object>();
-            embeded.Add("userInfo", 
+            embeded.Add("userInfo",
                 new
                 {
                     userName = "Ondrej",
@@ -1079,7 +1117,7 @@ false
                 });
 
             var result = template(embeded);
-            var expectedResult = 
+            var expectedResult =
                 "<div id='userInfo'>UserName: Ondrej Language: Slovak</div>"
                 + "<div id='main' style='width:120px; height:80px'>body</div>";
 
@@ -1123,7 +1161,7 @@ false
 
             Assert.Equal(expectedResult, result);
         }
-        
+
         [Fact]
         public void BasicMockIDictionary()
         {
@@ -1135,7 +1173,7 @@ false
             {
                 dictionary = new MockDictionary()
             });
-            var expectedResult = 
+            var expectedResult =
                 "Hello world!";
 
             Assert.Equal(expectedResult, result);
@@ -1149,10 +1187,10 @@ false
             var template = Handlebars.Compile(source);
 
             var result = template(new
-                {
-                    dictionary = new MockDictionary()
-                });
-            var expectedResult = 
+            {
+                dictionary = new MockDictionary()
+            });
+            var expectedResult =
                 "Hello world!";
 
             Assert.Equal(expectedResult, result);
@@ -1166,8 +1204,8 @@ false
             var template = Handlebars.Compile(source);
 
             var result = template(new
-                {
-                    dictionary = new Dictionary<string, object>
+            {
+                dictionary = new Dictionary<string, object>
                     {
                         {
                             "my key", new
@@ -1176,8 +1214,8 @@ false
                             }
                         }
                     }
-                });
-            var expectedResult = 
+            });
+            var expectedResult =
                 "Hello world!";
 
             Assert.Equal(expectedResult, result);
@@ -1237,12 +1275,12 @@ false
         [Fact]
         public void TestNoWhitespaceBetweenExpressions()
         {
-            
+
             var source = @"{{#is ProgramID """"}}no program{{/is}}{{#is ProgramID ""1081""}}some program text{{/is}}";
 
             Handlebars.RegisterHelper("is", (output, options, context, args) =>
                 {
-                    if(args[0] == args[1])
+                    if (args[0] == args[1])
                     {
                         options.Template(output, context);
                     }
@@ -1252,10 +1290,10 @@ false
             var template = Handlebars.Compile(source);
 
             var result = template(new
-                {
-                    ProgramID = "1081"
-                });
-            
+            {
+                ProgramID = "1081"
+            });
+
             var expectedResult =
                 "some program text";
 
@@ -1267,16 +1305,16 @@ false
         {
             string source = @"{{#ADictionary}}{{@key}},{{value}}{{/ADictionary}}";
             var template = Handlebars.Compile(source);
-            var result = template(new 
-                {
-                    ADictionary = new Dictionary<string, int>
+            var result = template(new
+            {
+                ADictionary = new Dictionary<string, int>
                         {
                             { "key5", 14 },
                             { "key6", 15 },
                             { "key7", 16 },
                             { "key8", 17 }
                         }
-                });
+            });
 
             Assert.Equal("key5,14key6,15key7,16key8,17", result);
         }
@@ -1286,13 +1324,14 @@ false
         {
             string source = @"{{#each myObject}}{{#if this.length}}<b>{{@key}}</b>{{#each this}}<li>{{this}}</li>{{/each}}<br>{{/if}}{{/each}}";
             var template = Handlebars.Compile(source);
-            var result = template(new 
+            var result = template(new
+            {
+                myObject = new
                 {
-                    myObject = new {
-                        arr = new []{ "hello", "world" },
-                        notArr = 1
-                    }
-                });
+                    arr = new[] { "hello", "world" },
+                    notArr = 1
+                }
+            });
 
             Assert.Equal("<b>arr</b><li>hello</li><li>world</li><br>", result);
         }
@@ -1319,6 +1358,19 @@ false
                 "Hello Dictionary!";
 
             Assert.Equal(expectedResult, result);
+        }
+
+        [Fact]
+        public void ImplicitIDictionaryImplementationShouldNotThrowNullref()
+        {
+            // Arrange
+            IHandlebars handlebars = Handlebars.Create();
+            handlebars.RegisterHelper("foo", (writer, context, arguments) => { });
+            var compile = handlebars.Compile(@"{{foo bar}}");
+            var mock = new MockDictionaryImplicitlyImplemented(new Dictionary<string, object> { { "bar", 1 } });
+
+            // Act
+            compile.Invoke(mock);
         }
 
         private class MockDictionary : IDictionary<string, string>
@@ -1405,6 +1457,79 @@ false
             System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
             {
                 throw new NotImplementedException();
+            }
+        }
+
+
+        public class MockDictionaryImplicitlyImplemented : IDictionary<string, object>
+        {
+            private Dictionary<string, object> data;
+
+            /// <inheritdoc />
+            public MockDictionaryImplicitlyImplemented(Dictionary<string, object> data)
+            {
+                this.data = data;
+            }
+
+            bool IDictionary<string, object>.ContainsKey(string key)
+            {
+                return ((IDictionary<string, object>)data).ContainsKey(key);
+            }
+
+            public object this[string key] { get => ((IDictionary<string, object>)data)[key]; set => ((IDictionary<string, object>)data)[key] = value; }
+            public ICollection<string> Keys => ((IDictionary<string, object>)data).Keys;
+            public ICollection<object> Values => ((IDictionary<string, object>)data).Values;
+            public int Count => ((IDictionary<string, object>)data).Count;
+            public bool IsReadOnly => ((IDictionary<string, object>)data).IsReadOnly;
+
+            public void Add(string key, object value)
+            {
+                ((IDictionary<string, object>)data).Add(key, value);
+            }
+
+            public void Add(KeyValuePair<string, object> item)
+            {
+                ((IDictionary<string, object>)data).Add(item);
+            }
+
+            public void Clear()
+            {
+                ((IDictionary<string, object>)data).Clear();
+            }
+
+            public bool Contains(KeyValuePair<string, object> item)
+            {
+                return ((IDictionary<string, object>)data).Contains(item);
+            }
+
+            public void CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
+            {
+                ((IDictionary<string, object>)data).CopyTo(array, arrayIndex);
+            }
+
+            public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+            {
+                return ((IDictionary<string, object>)data).GetEnumerator();
+            }
+
+            public bool Remove(string key)
+            {
+                return ((IDictionary<string, object>)data).Remove(key);
+            }
+
+            public bool Remove(KeyValuePair<string, object> item)
+            {
+                return ((IDictionary<string, object>)data).Remove(item);
+            }
+
+            public bool TryGetValue(string key, out object value)
+            {
+                return ((IDictionary<string, object>)data).TryGetValue(key, out value);
+            }
+
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+            {
+                return ((IDictionary<string, object>)data).GetEnumerator();
             }
         }
     }

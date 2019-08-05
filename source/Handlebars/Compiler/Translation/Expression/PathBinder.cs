@@ -210,9 +210,19 @@ namespace HandlebarsDotNet.Compiler
                     }
                 }
 
-                if ((bool)instanceType.GetMethod("ContainsKey").Invoke(instance, new[] { key }))
+
+                //Type ifaceType = typeof(IDictionary<>);
+                //Type tempType = instanceType;
+                //InterfaceMapping map = tempType.GetInterfaceMap(ifaceType);
+
+                //instance as IDictionary
+
+                var methodName = "ContainsKey";
+                var methodInfo = GetDictionaryMethod(instanceType, methodName);
+
+                if ((bool)methodInfo.Invoke(instance, new[] { key }))
                 {
-                    return instanceType.GetMethod("get_Item").Invoke(instance, new[] { key });
+                    return GetDictionaryMethod(instanceType, "get_Item").Invoke(instance, new[] { key });
                 }
                 else
                 {
@@ -256,6 +266,20 @@ namespace HandlebarsDotNet.Compiler
                 return fieldValue;
             }
             return new UndefinedBindingResult(resolvedMemberName, CompilationContext.Configuration);
+        }
+
+
+        private static MethodInfo GetDictionaryMethod(Type instanceType, string methodName)
+        {
+            var methodInfo = instanceType.GetMethod(methodName);
+
+            if (methodInfo == null)
+            {
+                // Support implicit interface impl.
+                methodInfo = instanceType.GetTypeInfo().DeclaredMethods.FirstOrDefault(m => m.IsPrivate && m.Name.StartsWith("System.Collections.Generic.IDictionary") && m.Name.EndsWith(methodName));
+            }
+
+            return methodInfo;
         }
 
         static Type FirstGenericDictionaryTypeInstance(Type instanceType)
