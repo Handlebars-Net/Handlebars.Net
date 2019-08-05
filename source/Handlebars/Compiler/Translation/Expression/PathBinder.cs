@@ -210,19 +210,22 @@ namespace HandlebarsDotNet.Compiler
                     }
                 }
 
+                var containsKeyMethod = GetDictionaryMethod(instanceType, "ContainsKey");
 
-                //Type ifaceType = typeof(IDictionary<>);
-                //Type tempType = instanceType;
-                //InterfaceMapping map = tempType.GetInterfaceMap(ifaceType);
-
-                //instance as IDictionary
-
-                var methodName = "ContainsKey";
-                var methodInfo = GetDictionaryMethod(instanceType, methodName);
-
-                if ((bool)methodInfo.Invoke(instance, new[] { key }))
+                if (containsKeyMethod == null)
                 {
-                    return GetDictionaryMethod(instanceType, "get_Item").Invoke(instance, new[] { key });
+                    throw new MethodAccessException("Method ContainsKey not found");
+                }
+
+                if ((bool)containsKeyMethod.Invoke(instance, new[] { key }))
+                {
+                    var itemProperty = GetDictionaryMethod(instanceType, "get_Item");
+                    if (itemProperty == null)
+                    {
+                        throw new MethodAccessException("Property Item not found");
+                    }
+
+                    return itemProperty.Invoke(instance, new[] { key });
                 }
                 else
                 {
