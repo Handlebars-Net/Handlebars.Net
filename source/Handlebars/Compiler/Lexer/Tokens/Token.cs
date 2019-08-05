@@ -4,9 +4,17 @@ namespace HandlebarsDotNet.Compiler.Lexer
 {
     internal abstract class Token
     {
+        internal string OriginalValue { get; }
+
         public abstract TokenType Type { get; }
 
         public abstract string Value { get; }
+
+        protected Token(string originalValue)
+        {
+            OriginalValue = originalValue;
+        }
+
 
         public static StaticToken Static(string value)
         {
@@ -40,7 +48,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
 
         public static PartialToken Partial()
         {
-            return new PartialToken();
+            return new PartialToken("");
         }
 
         public static LayoutToken Layout(string layout)

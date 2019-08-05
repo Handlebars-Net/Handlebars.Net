@@ -7,7 +7,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
         private readonly string _value;
         private readonly string _original;
 
-        private StaticToken(string value, string original)
+        private StaticToken(string value, string original) : base(original)
         {
             _value = value;
             _original = original;

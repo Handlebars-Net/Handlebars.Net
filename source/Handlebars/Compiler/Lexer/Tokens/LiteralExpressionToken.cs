@@ -7,7 +7,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
         private readonly string _value;
         private readonly string _delimiter;
 
-        public LiteralExpressionToken(string value, string delimiter = null)
+        public LiteralExpressionToken(string value, string delimiter = null) : base(value) //todo
         {
             _value = value;
             _delimiter = delimiter;

@@ -8,7 +8,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
         private readonly bool _trimWhitespace;
         private readonly bool _isRaw;
 
-        public EndExpressionToken(bool isEscaped, bool trimWhitespace, bool isRaw)
+        public EndExpressionToken(bool isEscaped, bool trimWhitespace, bool isRaw) : base(GetValue(isRaw, isEscaped))
         {
             _isEscaped = isEscaped;
             _trimWhitespace = trimWhitespace;
@@ -32,7 +32,12 @@ namespace HandlebarsDotNet.Compiler.Lexer
 
         public override string Value
         {
-            get { return IsRaw ? "}}}}" : IsEscaped ? "}}" : "}}}"; }
+            get { return GetValue(IsRaw, IsEscaped); }
+        }
+
+        private static string GetValue(bool isRaw, bool isEscaped)
+        {
+            return isRaw ? "}}}}" : isEscaped ? "}}" : "}}}";
         }
 
         public override TokenType Type

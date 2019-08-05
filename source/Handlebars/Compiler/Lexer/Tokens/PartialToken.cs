@@ -2,6 +2,11 @@
 {
     internal class PartialToken : Token
     {
+        /// <inheritdoc />
+        public PartialToken(string originalValue) : base(originalValue)
+        {
+        }
+
         public override TokenType Type
         {
             get { return TokenType.Partial; }

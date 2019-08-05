@@ -6,7 +6,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
     {
         private readonly string _comment;
 
-        public CommentToken(string comment)
+        public CommentToken(string comment) : base(comment)
         {
             _comment = comment.Trim('-', ' ');
         }

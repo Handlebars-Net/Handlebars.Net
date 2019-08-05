@@ -4,7 +4,7 @@
     {
         private readonly string _layout;
 
-        public LayoutToken(string layout)
+        public LayoutToken(string layout) : base(layout)
         {
             _layout = layout.Trim('-', ' ');
         }

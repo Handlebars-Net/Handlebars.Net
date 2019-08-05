@@ -6,7 +6,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
     {
         private readonly string _word;
 
-        public WordExpressionToken(string word)
+        public WordExpressionToken(string word) : base(word)
         {
             _word = word;
         }

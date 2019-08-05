@@ -4,7 +4,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
 {
     internal class StartSubExpressionToken : ExpressionScopeToken
     {
-        public StartSubExpressionToken()
+        public StartSubExpressionToken() : base("(")
         {
         }
 
