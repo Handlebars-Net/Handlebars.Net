@@ -8,12 +8,39 @@ namespace HandlebarsDotNet
     {
         public string Encode(string text)
         {
-            if (text == null)
+            if (string.IsNullOrEmpty(text))
                 return String.Empty;
 
-            var sb = new StringBuilder(text.Length);
 
+            // Detect if we need to allocate a stringbuilder and new string
             for (var i = 0; i < text.Length; i++)
+            {
+                switch (text[i])
+                {
+                    case '"':
+                    case '&':
+                    case '<':
+                    case '>':
+                        return ReallyEncode(text, i);
+                    default:
+                        if (text[i] > 159)
+                        {
+                            return ReallyEncode(text, i);
+                        }
+                        else
+
+                            break;
+                }
+            }
+
+            return text;
+        }
+
+        private static string ReallyEncode(string text, int i)
+        {
+            var sb = new StringBuilder(text.Length + 5);
+            sb.Append(text, 0, i);
+            for (; i < text.Length; i++)
             {
                 switch (text[i])
                 {
@@ -34,14 +61,16 @@ namespace HandlebarsDotNet
                         if (text[i] > 159)
                         {
                             sb.Append("&#");
-                            sb.Append(((int) text[i]).ToString(CultureInfo.InvariantCulture));
+                            sb.Append(((int)text[i]).ToString(CultureInfo.InvariantCulture));
                             sb.Append(";");
                         }
                         else
                             sb.Append(text[i]);
+
                         break;
                 }
             }
+
             return sb.ToString();
         }
     }
