@@ -424,6 +424,51 @@ namespace HandlebarsDotNet.Test
             var output = template(data);
             Assert.Equal("Inverse", output);
         }
+
+        [Fact]
+        public void HelperWithLiteralHashValues()
+        {
+            var source = "{{literalHelper Bool=true Integer=1 String=\"abc\"}}";
+
+            Handlebars.RegisterHelper("literalHelper", (writer, context, arguments) => {
+                var parameters = arguments[0] as IDictionary<string, object>;
+                Assert.IsType<bool>(parameters["Bool"]);
+                Assert.IsType<int>(parameters["Integer"]);
+                Assert.IsType<string>(parameters["String"]);
+                writer.Write($"{parameters["Bool"]} {parameters["Integer"]} {parameters["String"]}");
+            });
+
+            var data = new
+            {
+            };
+
+            var template = Handlebars.Compile(source);
+
+            var output = template(data);
+            Assert.Equal("True 1 abc", output);
+        }
+
+        [Fact]
+        public void HelperWithLiteralValues()
+        {
+            var source = "{{literalHelper true 1 \"abc\"}}";
+
+            Handlebars.RegisterHelper("literalHelper", (writer, context, arguments) => {
+                Assert.IsType<bool>(arguments[0]);
+                Assert.IsType<int>(arguments[1]);
+                Assert.IsType<string>(arguments[2]);
+                writer.Write($"{arguments[0]} {arguments[1]} {arguments[2]}");
+            });
+
+            var data = new
+            {
+            };
+
+            var template = Handlebars.Compile(source);
+
+            var output = template(data);
+            Assert.Equal("True 1 abc", output);
+        }
     }
 }
 
