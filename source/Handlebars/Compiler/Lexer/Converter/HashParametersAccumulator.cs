@@ -54,16 +54,7 @@ namespace HandlebarsDotNet.Compiler
                 item = GetNext(enumerator);
                 if (item is Expression value)
                 {
-                    if (value is PathExpression path
-                        && (path.Path == "true" || path.Path == "false"))
-                    {
-                        parameters.Add(parameterAssignment.Name,
-                            Expression.Convert(Expression.Constant(path.Path == "true"), typeof(object)));
-                    }
-                    else
-                    {
-                        parameters.Add(parameterAssignment.Name, Visit(value));
-                    }
+                    parameters.Add(parameterAssignment.Name, Visit(value));
                 }
                 else
                 {

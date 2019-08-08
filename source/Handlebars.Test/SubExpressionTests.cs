@@ -90,7 +90,6 @@ namespace HandlebarsDotNet.Test
             });
 
             Handlebars.RegisterHelper(subHelperName, (writer, context, args) => {
-                args = args.Select(a => (object)int.Parse((string)a)).ToArray();
                 writer.Write((int)args[0] + (int)args[1]);
             });
 
@@ -141,7 +140,6 @@ namespace HandlebarsDotNet.Test
             });
 
             Handlebars.RegisterHelper(addHelper, (writer, context, args) => {
-                args = args.Select(a => (object)int.Parse((string)a)).ToArray();
                 writer.Write((int)args[0] + (int)args[1]);
             });
 
@@ -166,7 +164,6 @@ namespace HandlebarsDotNet.Test
             });
 
             Handlebars.RegisterHelper(addHelper, (writer, context, args) => {
-                args = args.Select(a => (object)int.Parse((string)a)).ToArray();
                 writer.Write((int)args[0] + (int)args[1]);
             });
 
@@ -191,7 +188,7 @@ namespace HandlebarsDotNet.Test
             });
 
             Handlebars.RegisterHelper(addHelper, (writer, context, args) => {
-                args = args.Select(a => (object)int.Parse((string)a)).ToArray();
+                args = args.Select(a => (object)int.Parse(a.ToString())).ToArray();
                 writer.Write((int)args[0] + (int)args[1]);
             });
 

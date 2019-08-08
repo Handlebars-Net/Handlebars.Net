@@ -10,7 +10,7 @@ namespace HandlebarsDotNet.Test
         {
             Handlebars.RegisterHelper("numericLiteralAdd", (writer, context, args) =>
                 {
-                    args = args.Select(a => (object)int.Parse((string)a)).ToArray();
+                    args = args.Select(a => (object)int.Parse(a.ToString())).ToArray();
                     writer.Write(args.Aggregate(0, (a, i) => a + (int)i));
                 });
         }

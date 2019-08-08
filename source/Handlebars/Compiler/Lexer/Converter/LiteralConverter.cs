@@ -21,14 +21,30 @@ namespace HandlebarsDotNet.Compiler
         {
             foreach (var item in sequence)
             {
-                if (item is LiteralExpressionToken)
+                bool boolValue;
+                int intValue;
+
+                object result = item;
+
+                if (item is LiteralExpressionToken literalExpression)
                 {
-                    yield return Expression.Constant(((LiteralExpressionToken)item).Value);
+                    result = Expression.Convert(Expression.Constant(literalExpression.Value), typeof(object));
+
+                    if (!literalExpression.IsDelimitedLiteral)
+                    {
+                        if (int.TryParse(literalExpression.Value, out intValue))
+                        {
+                            result = Expression.Convert(Expression.Constant(intValue), typeof(object));
+                        }
+                    }
                 }
-                else
+                else if (item is WordExpressionToken wordExpression
+                    && bool.TryParse(wordExpression.Value, out boolValue))
                 {
-                    yield return item;
+                    result = Expression.Convert(Expression.Constant(boolValue), typeof(object));
                 }
+
+                yield return result;
             }
         }
     }
