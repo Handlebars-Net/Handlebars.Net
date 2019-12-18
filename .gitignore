@@ -66,3 +66,6 @@ packages/
 *.snk
 /**/project.lock.json
 nupkgs
+
+# Rider files
+.idea/
