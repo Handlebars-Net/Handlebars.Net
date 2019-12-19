@@ -52,7 +52,7 @@ namespace HandlebarsDotNet.Compiler
             public void Reset()
             {
                 _next = null;
-                Current = default;
+                Current = null;
                 _enumerator.Reset();
                 PerformIteration();
             }
