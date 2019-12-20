@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using HandlebarsDotNet.Compiler;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace HandlebarsDotNet.Test
 {
@@ -1371,6 +1372,73 @@ false
 
             // Act
             compile.Invoke(mock);
+        }
+
+        [Fact]
+        public void ShouldBeAbleToHandleFieldContainingDots()
+        {
+            var source = "Everybody was {{ foo.bar }}-{{ [foo.bar] }} {{ foo.[bar.baz].buz }}!";
+            var template = Handlebars.Compile(source);
+            var data = new Dictionary<string, object>()
+            {
+                {"foo.bar", "fu"},
+                {"foo", new Dictionary<string,object>{{ "bar", "kung" }, { "bar.baz", new Dictionary<string, object> {{ "buz", "fighting" }} }} }
+            };
+            var result = template(data);
+            Assert.Equal("Everybody was kung-fu fighting!", result);
+        }
+
+        [Fact]
+        public void ShouldBeAbleToHandleListWithNumericalFields()
+        {
+            var source = "{{ [0] }}";
+            var template = Handlebars.Compile(source);
+            var data = new List<string> {"FOOBAR"};
+            var result = template(data);
+            Assert.Equal("FOOBAR", result);
+        }
+
+        [Fact]
+        public void ShouldBeAbleToHandleDictionaryWithNumericalFields()
+        {
+            var source = "{{ [0] }}";
+            var template = Handlebars.Compile(source);
+            var data = new Dictionary<string,string>
+            {
+                {"0", "FOOBAR"},
+            };
+            var result = template(data);
+            Assert.Equal("FOOBAR", result);
+        }
+
+        [Fact]
+        public void ShouldBeAbleToHandleJObjectsWithNumericalFields()
+        {
+            var source = "{{ [0] }}";
+            var template = Handlebars.Compile(source);
+            var data = new JObject
+            {
+                {"0", "FOOBAR"},
+            };
+            var result = template(data);
+            Assert.Equal("FOOBAR", result);
+        }
+
+        [Fact]
+        public void ShouldBeAbleToHandleKeysStartingAndEndingWithSquareBrackets()
+        {
+            var source =
+                "{{ noBracket }} {{ [noBracket] }} {{ [[startsWithBracket] }} {{ [endsWithBracket]] }} {{ [[bothBrackets]] }}";
+            var template = Handlebars.Compile(source);
+            var data = new Dictionary<string, string>
+            {
+                {"noBracket", "foo"},
+                {"[startsWithBracket", "bar"},
+                {"endsWithBracket]", "baz"},
+                {"[bothBrackets]", "buz"}
+            };
+            var result = template(data);
+            Assert.Equal("foo foo bar baz buz", result);
         }
 
         private class MockDictionary : IDictionary<string, string>
