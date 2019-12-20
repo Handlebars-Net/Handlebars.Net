@@ -1,4 +1,4 @@
-﻿using Xunit;
+using Xunit;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -431,6 +431,23 @@ false
             var result = template(data);
             Assert.Equal("hello world ", result);
         }
+        
+        [Fact]
+        public void BasicObjectEnumeratorWithLast()
+        {
+            var source = "{{#each enumerateMe}}{{@last}} {{/each}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                enumerateMe = new
+                {
+                    foo = "hello",
+                    bar = "world"
+                }
+            };
+            var result = template(data);
+            Assert.Equal("False True ", result);
+        }
 
         [Fact]
         public void BasicObjectEnumeratorWithKey()
@@ -464,6 +481,24 @@ false
             };
             var result = template(data);
             Assert.Equal("hello world ", result);
+        }
+        
+        [Fact]
+        public void DictionaryWithLastEnumerator()
+        {
+            var source = "{{#each enumerateMe}}{{@last}} {{/each}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                enumerateMe = new Dictionary<string, object>
+                {
+                    { "1", "1" },
+                    { "2", "2" },
+                    { "3", "3" }
+                }
+            };
+            var result = template(data);
+            Assert.Equal("False False True ", result);
         }
 
         [Fact]

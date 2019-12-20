@@ -173,18 +173,21 @@ namespace HandlebarsDotNet.Compiler
             if (HandlebarsUtils.IsTruthy(target))
             {
                 context.Index = 0;
-                foreach (MemberInfo member in target.GetType()
-                    .GetProperties(BindingFlags.Instance | BindingFlags.Public).OfType<MemberInfo>()
-                    .Concat(
-                        target.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance)
-                    ))
+                var targetType = target.GetType();
+                var properties = targetType.GetProperties(BindingFlags.Instance | BindingFlags.Public).OfType<MemberInfo>();
+                var fields = targetType.GetFields(BindingFlags.Public | BindingFlags.Instance);
+                foreach (var enumerableValue in new ExtendedEnumerable<MemberInfo>(properties.Concat(fields)))
                 {
+                    var member = enumerableValue.Value;
                     context.Key = member.Name;
                     var value = AccessMember(target, member);
-                    context.First = (context.Index == 0);
+                    context.First = enumerableValue.IsFirst;
+                    context.Last = enumerableValue.IsLast;
+                    context.Index = enumerableValue.Index;
+
                     template(context.TextWriter, value);
-                    context.Index++;
                 }
+
                 if (context.Index == 0)
                 {
                     ifEmpty(context.TextWriter, context.Value);
@@ -205,23 +208,29 @@ namespace HandlebarsDotNet.Compiler
             if (HandlebarsUtils.IsTruthy(target))
             {
                 context.Index = 0;
+                var targetType = target.GetType();
 #if netstandard
-                var keysProperty = target.GetType().GetRuntimeProperty("Keys");
+                var keysProperty = targetType.GetRuntimeProperty("Keys");
 #else
-                var keysProperty = target.GetType().GetProperty("Keys");
+                var keysProperty = targetType.GetProperty("Keys");
 #endif
                 if (keysProperty != null)
                 {
                     var keys = keysProperty.GetGetMethod().Invoke(target, null) as IEnumerable;
                     if (keys != null)
                     {
-                        foreach (var key in keys)
+                        var getItemMethodInfo = targetType.GetMethod("get_Item");
+                        var parameters = new object[1];
+                        foreach (var enumerableValue in new ExtendedEnumerable<object>(keys))
                         {
+                            var key = parameters[0] = enumerableValue.Value;
                             context.Key = key.ToString();
-                            var value = target.GetType().GetMethod("get_Item").Invoke(target, new[] { key });
-                            context.First = (context.Index == 0);
+                            var value = getItemMethodInfo.Invoke(target, parameters);
+                            context.First = enumerableValue.IsFirst;
+                            context.Last = enumerableValue.IsLast;
+                            context.Index = enumerableValue.Index;
+
                             template(context.TextWriter, value);
-                            context.Index++;
                         }
                     }
                 }
@@ -246,14 +255,18 @@ namespace HandlebarsDotNet.Compiler
             {
                 context.Index = 0;
                 var meta = target.GetMetaObject(Expression.Constant(target));
-                foreach (var name in meta.GetDynamicMemberNames())
+                foreach (var enumerableValue in new ExtendedEnumerable<string>(meta.GetDynamicMemberNames()))
                 {
+                    var name = enumerableValue.Value;
                     context.Key = name;
                     var value = GetProperty(target, name);
-                    context.First = (context.Index == 0);
+                    context.First = enumerableValue.IsFirst;
+                    context.Last = enumerableValue.IsLast;
+                    context.Index = enumerableValue.Index;
+
                     template(context.TextWriter, value);
-                    context.Index++;
                 }
+
                 if (context.Index == 0)
                 {
                     ifEmpty(context.TextWriter, context.Value);
@@ -272,26 +285,14 @@ namespace HandlebarsDotNet.Compiler
             Action<TextWriter, object> ifEmpty)
         {
             context.Index = 0;
-
-            var iter = sequence.GetEnumerator();
-            using (iter as IDisposable)
+            foreach (var enumeratorValue in new ExtendedEnumerable<object>(sequence))
             {
-                if (iter.MoveNext())
-                {
-                    var item = iter.Current;
-                    while (!context.Last)
-                    {
-                        context.Last = !iter.MoveNext();
-                        context.First = (context.Index == 0);
-                        template(context.TextWriter, item);
-                        context.Index++;
+                var item = enumeratorValue.Value;
+                context.First = enumeratorValue.IsFirst;
+                context.Last = enumeratorValue.IsLast;
+                context.Index = enumeratorValue.Index;
 
-                        if (!context.Last)
-                        {
-                            item = iter.Current;
-                        }
-                    }
-                }
+                template(context.TextWriter, item);
             }
 
             if (context.Index == 0)
@@ -321,18 +322,14 @@ namespace HandlebarsDotNet.Compiler
             public bool Last { get; set; }
         }
 
-        private class ObjectEnumeratorBindingContext : BindingContext
+        private class ObjectEnumeratorBindingContext : IteratorBindingContext
         {
             public ObjectEnumeratorBindingContext(BindingContext context)
-                : base(context.Value, context.TextWriter, context.ParentContext, context.TemplatePath, context.InlinePartialTemplates)
+                : base(context)
             {
             }
 
             public string Key { get; set; }
-
-            public int Index { get; set; }
-
-            public bool First { get; set; }
         }
 
         private static object AccessMember(object instance, MemberInfo member)
