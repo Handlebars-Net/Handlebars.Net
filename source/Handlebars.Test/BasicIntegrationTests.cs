@@ -221,6 +221,19 @@ false
             var result = template(data);
             Assert.Equal("Hello, Handlebars.Net!", result);
         }
+        
+        [Fact]
+        public void BasicPathArrayWithLiteralIndex()
+        {
+            var source = "{{#each names}}{{@root.names.[@index]}}{{/each}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                names = new[] { "Foo", "Handlebars.Net" }
+            };
+            var result = template(data);
+            Assert.Equal("FooHandlebars.Net", result);
+        }
 
         [Fact]
         public void BasicPathArrayChildPath()
@@ -548,6 +561,40 @@ false
             };
             var result = template(data);
             Assert.Equal("Hello, Handlebars.Net!", result);
+        }
+        
+        [Fact]
+        public void BasicPathDictionaryWithLiteralKey()
+        {
+            var source = "{{#each enumerateMe}}{{ @root.enumerateMe.@key }} {{/each}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                enumerateMe = new Dictionary<string, object>
+                {
+                    { "foo", "hello" },
+                    { "bar", "world" }
+                }
+            };
+            var result = template(data);
+            Assert.Equal("hello world ", result);
+        }
+        
+        [Fact]
+        public void BasicPathDictionaryWithLiteralKeyInSquareBrackets()
+        {
+            var source = "{{#each enumerateMe}}{{ @root.enumerateMe.[@key] }} {{/each}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                enumerateMe = new Dictionary<string, object>
+                {
+                    { "foo", "hello" },
+                    { "bar", "world" }
+                }
+            };
+            var result = template(data);
+            Assert.Equal("hello world ", result);
         }
 
         [Fact]
