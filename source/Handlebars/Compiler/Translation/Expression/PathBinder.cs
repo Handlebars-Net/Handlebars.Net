@@ -91,9 +91,38 @@ namespace HandlebarsDotNet.Compiler
                 }
                 else
                 {
-                    var objectPropertiesChain = containsVariable ? "@" + segment : segment;
+                    var segmentString = containsVariable ? "@" + segment : segment;
+                    var insideEscapeBlock = false;
+                    var pathChain = segmentString.Split('.').Aggregate(new List<string>(), (list, next) =>
+                    {
+                        if (insideEscapeBlock)
+                        {
+                            if (next.EndsWith("]"))
+                            {
+                                insideEscapeBlock = false;
+                            }
 
-                    foreach (var memberName in objectPropertiesChain.Split('.'))
+                            list[list.Count - 1] = list[list.Count - 1] + "." + next;
+                            return list;
+                        }
+                        else
+                        {
+                            if (next.StartsWith("["))
+                            {
+                                insideEscapeBlock = true;
+                            }
+
+                            if (next.EndsWith("]"))
+                            {
+                                insideEscapeBlock = false;
+                            }
+                            
+                            list.Add(next);
+                            return list;
+                        }
+                    });
+                    
+                    foreach (var memberName in pathChain)
                     {
                         instance = ResolveValue(context, instance, memberName);
 
@@ -143,11 +172,29 @@ namespace HandlebarsDotNet.Compiler
         }
 
         private static readonly Regex IndexRegex = new Regex(@"^\[?(?<index>\d+)\]?$", RegexOptions.None);
-
+        
         private object AccessMember(object instance, string memberName)
         {
             if (instance == null)
                 return new UndefinedBindingResult(memberName, CompilationContext.Configuration);
+            
+            var resolvedMemberName = ResolveMemberName(instance, memberName);
+            var instanceType = instance.GetType();
+
+            // Give preference to a string index getter if one exists
+            var stringIndexPropertyGetter = GetStringIndexPropertyGetter(instanceType);
+            if (stringIndexPropertyGetter != null)
+            {
+                string key = TrimSquareBrackets(resolvedMemberName); // Ensure square brackets removed
+                try
+                {
+                    return stringIndexPropertyGetter.Invoke(instance, new object[] {key});
+                }
+                catch
+                {
+                    return new UndefinedBindingResult(key, CompilationContext.Configuration);
+                }
+            }
 
             var enumerable = instance as IEnumerable<object>;
             if (enumerable != null)
@@ -156,7 +203,8 @@ namespace HandlebarsDotNet.Compiler
                 if (match.Success)
                 {
                     int index;
-                    if (match.Groups["index"].Success == false || int.TryParse(match.Groups["index"].Value, out index) == false)
+                    if (match.Groups["index"].Success == false ||
+                        int.TryParse(match.Groups["index"].Value, out index) == false)
                     {
                         return new UndefinedBindingResult(memberName, CompilationContext.Configuration);
                     }
@@ -166,14 +214,13 @@ namespace HandlebarsDotNet.Compiler
                     return result ?? new UndefinedBindingResult(memberName, CompilationContext.Configuration);
                 }
             }
-            var resolvedMemberName = ResolveMemberName(instance, memberName);
-            var instanceType = instance.GetType();
+            
             //crude handling for dynamic objects that don't have metadata
             if (typeof(IDynamicMetaObjectProvider).IsAssignableFrom(instanceType))
             {
                 try
                 {
-                    var key = resolvedMemberName.Trim('[', ']'); // Ensure square brackets removed
+                    var key = TrimSquareBrackets(resolvedMemberName); // Ensure square brackets removed
                     var result = GetProperty(instance, key);
                     if (result == null)
                         return new UndefinedBindingResult(key, CompilationContext.Configuration);
@@ -192,7 +239,7 @@ namespace HandlebarsDotNet.Compiler
             if (iDictInstance != null)
             {
                 var genericArgs = iDictInstance.GetGenericArguments();
-                object key = resolvedMemberName.Trim('[', ']');    // Ensure square brackets removed.
+                object key = TrimSquareBrackets(resolvedMemberName); // Ensure square brackets removed
                 if (genericArgs.Length > 0)
                 {
                     // Dictionary key type isn't a string, so attempt to convert.
@@ -236,7 +283,7 @@ namespace HandlebarsDotNet.Compiler
             // Check if the instance is IDictionary (ie, System.Collections.Hashtable)
             if (typeof(IDictionary).IsAssignableFrom(instanceType))
             {
-                var key = resolvedMemberName.Trim('[', ']');    // Ensure square brackets removed.
+                var key = TrimSquareBrackets(resolvedMemberName); // Ensure square brackets removed
                 // Only string keys supported - indexer takes an object, but no nice
                 // way to check if the hashtable check if it should be a different type.
                 return ((IDictionary)instance)[key];
@@ -269,6 +316,34 @@ namespace HandlebarsDotNet.Compiler
                 return fieldValue;
             }
             return new UndefinedBindingResult(resolvedMemberName, CompilationContext.Configuration);
+        }
+
+        //Only trim a single layer of brackets.
+        private static string TrimSquareBrackets(string key)
+        {
+            if (key.StartsWith("[") && key.EndsWith("]"))
+            {
+                return key.Substring(1, key.Length - 2);
+            }
+
+            return key;
+        }
+
+        private static MethodInfo GetStringIndexPropertyGetter(Type type)
+        {
+            return type
+                   .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                   .Where(prop => prop.Name == "Item" && prop.CanRead)
+                   .SingleOrDefault(prop =>
+                   {
+                       var indexParams = prop.GetIndexParameters();
+                       if (indexParams.Length == 1 && indexParams.Single().ParameterType == typeof(string))
+                       {
+                           return true;
+                       }
+
+                       return false;
+                   })?.GetMethod;
         }
 
 
