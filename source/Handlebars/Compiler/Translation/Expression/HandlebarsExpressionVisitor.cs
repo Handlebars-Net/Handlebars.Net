@@ -88,7 +88,7 @@ namespace HandlebarsDotNet.Compiler
 
             if (arguments != bhex.Arguments)
             {
-                return HandlebarsExpression.BlockHelper(bhex.HelperName, arguments, bhex.Body, bhex.Inversion, bhex.IsRaw);
+                return HandlebarsExpression.BlockHelper(bhex.HelperName, arguments, bhex.BlockParams, bhex.Body, bhex.Inversion, bhex.IsRaw);
             }
             return bhex;
         }
@@ -105,7 +105,7 @@ namespace HandlebarsDotNet.Compiler
 
             if (sequence != iex.Sequence)
             {
-                return HandlebarsExpression.Iterator(sequence, iex.Template, iex.IfEmpty);
+                return HandlebarsExpression.Iterator(sequence, iex.BlockParams, iex.Template, iex.IfEmpty);
             }
             return iex;
         }

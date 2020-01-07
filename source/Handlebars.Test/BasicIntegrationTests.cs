@@ -144,18 +144,9 @@ false
                 }
             };
 
-            try
-            {
-                template(data);
-            }
-            catch (HandlebarsUndefinedBindingException ex)
-            {
-                Assert.Equal("person.lastname", ex.Path);
-                Assert.Equal("lastname", ex.MissingKey);
-                return;
-            }
-
-            Assert.False(true, "Exception is expected.");
+            var exception = Assert.Throws<HandlebarsUndefinedBindingException>(() => template(data));
+            Assert.Equal("person.lastname", exception.Path);
+            Assert.Equal("lastname", exception.MissingKey);
         }
 
         [Fact]
@@ -365,6 +356,23 @@ false
             var result = template(data);
             Assert.Equal("Hello, my good friend Erik!", result);
         }
+        
+        [Fact]
+        public void WithWithBlockParams()
+        {
+            var source = "{{#with person as |person|}}{{person.name}} is {{age}} years old{{/with}}.";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                person = new
+                {
+                    name = "Erik",
+                    age = 42
+                }
+            };
+            var result = template(data);
+            Assert.Equal("Erik is 42 years old.", result);
+        }
 
         [Fact]
         public void BasicWithInversion()
@@ -466,6 +474,23 @@ false
             var result = template(data);
             Assert.Equal("foo: hello bar: world ", result);
         }
+        
+        [Fact]
+        public void ObjectEnumeratorWithBlockParams()
+        {
+            var source = "{{#each enumerateMe as |item val|}}{{@item}}: {{@val}} {{/each}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                enumerateMe = new
+                {
+                    foo = "hello",
+                    bar = "world"
+                }
+            };
+            var result = template(data);
+            Assert.Equal("foo: hello bar: world ", result);
+        }
 
         [Fact]
         public void BasicDictionaryEnumerator()
@@ -482,6 +507,23 @@ false
             };
             var result = template(data);
             Assert.Equal("hello world ", result);
+        }
+        
+        [Fact]
+        public void DictionaryEnumeratorWithBlockParams()
+        {
+            var source = "{{#each enumerateMe as |item val|}}{{item}} {{val}} {{/each}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                enumerateMe = new Dictionary<string, object>
+                {
+                    { "foo", "hello"},
+                    { "bar", "world"}
+                }
+            };
+            var result = template(data);
+            Assert.Equal("foo hello bar world ", result);
         }
         
         [Fact]
@@ -1408,6 +1450,73 @@ false
             // Act
             compile.Invoke(mock);
         }
+        
+        [Fact] 
+        public void ShouldBeAbleToHandleFieldContainingDots() 
+        { 
+            var source = "Everybody was {{ foo.bar }}-{{ [foo.bar] }} {{ foo.[bar.baz].buz }}!"; 
+            var template = Handlebars.Compile(source); 
+            var data = new Dictionary<string, object>() 
+            { 
+                {"foo.bar", "fu"}, 
+                {"foo", new Dictionary<string,object>{{ "bar", "kung" }, { "bar.baz", new Dictionary<string, object> {{ "buz", "fighting" }} }} } 
+            }; 
+            var result = template(data); 
+            Assert.Equal("Everybody was kung-fu fighting!", result); 
+        } 
+ 
+        [Fact] 
+        public void ShouldBeAbleToHandleListWithNumericalFields() 
+        { 
+            var source = "{{ [0] }}"; 
+            var template = Handlebars.Compile(source); 
+            var data = new List<string> {"FOOBAR"}; 
+            var result = template(data); 
+            Assert.Equal("FOOBAR", result); 
+        } 
+ 
+        [Fact] 
+        public void ShouldBeAbleToHandleDictionaryWithNumericalFields() 
+        { 
+            var source = "{{ [0] }}"; 
+            var template = Handlebars.Compile(source); 
+            var data = new Dictionary<string,string> 
+            { 
+                {"0", "FOOBAR"}, 
+            }; 
+            var result = template(data); 
+            Assert.Equal("FOOBAR", result); 
+        } 
+ 
+        [Fact] 
+        public void ShouldBeAbleToHandleJObjectsWithNumericalFields() 
+        { 
+            var source = "{{ [0] }}"; 
+            var template = Handlebars.Compile(source); 
+            var data = new JObject 
+            { 
+                {"0", "FOOBAR"}, 
+            }; 
+            var result = template(data); 
+            Assert.Equal("FOOBAR", result); 
+        } 
+ 
+        [Fact] 
+        public void ShouldBeAbleToHandleKeysStartingAndEndingWithSquareBrackets() 
+        { 
+            var source = 
+                "{{ noBracket }} {{ [noBracket] }} {{ [[startsWithBracket] }} {{ [endsWithBracket]] }} {{ [[bothBrackets]] }}"; 
+            var template = Handlebars.Compile(source); 
+            var data = new Dictionary<string, string> 
+            { 
+                {"noBracket", "foo"}, 
+                {"[startsWithBracket", "bar"}, 
+                {"endsWithBracket]", "baz"}, 
+                {"[bothBrackets]", "buz"} 
+            }; 
+            var result = template(data); 
+            Assert.Equal("foo foo bar baz buz", result); 
+        }
 
         [Fact]
         public void ShouldBeAbleToHandleFieldContainingDots()
@@ -1484,7 +1593,7 @@ false
             }
             public bool ContainsKey(string key)
             {
-                return true;
+                throw new NotImplementedException();
             }
             public bool Remove(string key)
             {
@@ -1492,13 +1601,14 @@ false
             }
             public bool TryGetValue(string key, out string value)
             {
-                throw new NotImplementedException();
+                value = "Hello world!";
+                return true;
             }
             public string this[string index]
             {
                 get
                 {
-                    return "Hello world!";
+                    throw new NotImplementedException();
                 }
                 set
                 {

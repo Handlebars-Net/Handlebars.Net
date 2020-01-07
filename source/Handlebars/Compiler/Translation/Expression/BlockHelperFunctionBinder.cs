@@ -1,4 +1,7 @@
-﻿using System.Linq.Expressions;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace HandlebarsDotNet.Compiler
@@ -39,7 +42,11 @@ namespace HandlebarsDotNet.Compiler
                                 CompilationContext.BindingContext,
                                 typeof(BindingContext).GetProperty("Value"));
 
-            var body = fb.Compile(((BlockExpression)bhex.Body).Expressions, CompilationContext.BindingContext);
+            var configuration = Expression.Constant(CompilationContext.Configuration);
+            var ctor = typeof(BlockParamsValueProvider).GetConstructors().Single();
+            var blockParamsExpression = Expression.New(ctor, CompilationContext.BindingContext, configuration, bhex.BlockParams);
+
+            var body = fb.Compile(((BlockExpression) bhex.Body).Expressions, CompilationContext.BindingContext);
             var inversion = fb.Compile(((BlockExpression)bhex.Inversion).Expressions, CompilationContext.BindingContext);
             var helper = CompilationContext.Configuration.BlockHelpers[bhex.HelperName.Replace("#", "")];
             var arguments = new Expression[]
@@ -50,7 +57,8 @@ namespace HandlebarsDotNet.Compiler
                 Expression.New(
                         typeof(HelperOptions).GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic)[0],
                         body,
-                        inversion),
+                        inversion,
+                        blockParamsExpression),
                 //this next arg is usually data, like { first: "Marc" } 
                 //but for inline partials this is the complete BindingContext.
                 bindingContext,

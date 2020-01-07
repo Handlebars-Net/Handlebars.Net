@@ -2,6 +2,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using HandlebarsDotNet.Compiler;
 
 namespace HandlebarsDotNet.Test
 {
@@ -25,6 +27,31 @@ namespace HandlebarsDotNet.Test
             var output = template(new { });
 
             var expected = "Here are some things: \nThing 1: foo\nThing 2: bar";
+
+            Assert.Equal(expected, output);
+        }
+        
+        [Fact]
+        public void BlockHelperWithBlockParams()
+        {
+            Handlebars.RegisterHelper("myHelper", (writer, options, context, args) => {
+                var count = 0;
+                options.BlockParams((parameters, binder) => 
+                    binder(parameters.Keys.First(), () => ++count));
+                
+                foreach(var arg in args)
+                {
+                    options.Template(writer, arg);
+                }
+            });
+
+            var source = "Here are some things: {{#myHelper 'foo' 'bar' as |counter|}}{{counter}}:{{this}}\n{{/myHelper}}";
+
+            var template = Handlebars.Compile(source);
+
+            var output = template(new { });
+
+            var expected = "Here are some things: 1:foo\n2:bar\n";
 
             Assert.Equal(expected, output);
         }

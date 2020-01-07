@@ -1,12 +1,13 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Reflection;
 using System.Collections.Generic;
+using System.Linq;
 using HandlebarsDotNet.Compiler;
 
 namespace HandlebarsDotNet
 {
-    internal static class BuiltinHelpers
+    internal class BuiltinHelpers
     {
         [Description("with")]
         public static void With(TextWriter output, HelperOptions options, dynamic context, params object[] arguments)
@@ -16,6 +17,9 @@ namespace HandlebarsDotNet
                 throw new HandlebarsException("{{with}} helper must have exactly one argument");
             }
 
+            options.BlockParams((parameters, binder) => 
+                binder(parameters.Keys.First(), () => arguments[0]));
+            
             if (HandlebarsUtils.IsTruthyOrNonEmpty(arguments[0]))
             {
                 options.Template(output, arguments[0]);

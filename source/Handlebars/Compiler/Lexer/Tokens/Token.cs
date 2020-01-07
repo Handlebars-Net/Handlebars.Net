@@ -62,5 +62,10 @@ namespace HandlebarsDotNet.Compiler.Lexer
         {
             return new AssignmentToken();
         }
+        
+        public static BlockParameterToken BlockParams(string blockParams)
+        {
+            return new BlockParameterToken(blockParams);
+        }
     }
 }

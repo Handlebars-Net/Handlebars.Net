@@ -10,11 +10,12 @@ namespace HandlebarsDotNet.Compiler.Lexer
     {
         private readonly HandlebarsConfiguration _configuration;
 
-        private static Parser _wordParser = new WordParser();
-        private static Parser _literalParser = new LiteralParser();
-        private static Parser _commentParser = new CommentParser();
-        private static Parser _partialParser = new PartialParser();
-        private static Parser _blockWordParser = new BlockWordParser();
+        private static readonly Parser WordParser = new WordParser();
+        private static readonly Parser LiteralParser = new LiteralParser();
+        private static readonly Parser CommentParser = new CommentParser();
+        private static readonly Parser PartialParser = new PartialParser();
+        private static readonly Parser BlockWordParser = new BlockWordParser();
+        private static readonly Parser BlockParamsParser = new BlockParamsParser();
         //TODO: structure parser
 
         public Tokenizer(HandlebarsConfiguration configuration)
@@ -65,16 +66,17 @@ namespace HandlebarsDotNet.Compiler.Lexer
                     }
 
                     Token token = null;
-                    token = token ?? _wordParser.Parse(source);
-                    token = token ?? _literalParser.Parse(source);
-                    token = token ?? _commentParser.Parse(source);
-                    token = token ?? _partialParser.Parse(source);
-                    token = token ?? _blockWordParser.Parse(source);
+                    token = token ?? WordParser.Parse(source);
+                    token = token ?? LiteralParser.Parse(source);
+                    token = token ?? CommentParser.Parse(source);
+                    token = token ?? PartialParser.Parse(source);
+                    token = token ?? BlockWordParser.Parse(source);
+                    token = token ?? BlockParamsParser.Parse(source);
 
                     if (token != null)
                     {
                         yield return token;
-
+                            
                         if ((char)source.Peek() == '=')
                         {
                             source.Read();
