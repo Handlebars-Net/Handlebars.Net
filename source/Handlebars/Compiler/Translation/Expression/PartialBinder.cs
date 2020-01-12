@@ -47,7 +47,7 @@ namespace HandlebarsDotNet.Compiler
             {
                 bindingContext = Expression.Call(
                     bindingContext,
-                    typeof(BindingContext).GetMethod("CreateChildContext"),
+                    typeof(BindingContext).GetMethod(nameof(BindingContext.CreateChildContext)),
                     pex.Argument ?? Expression.Constant(null),
                     partialBlockTemplate ?? Expression.Constant(null, typeof(Action<TextWriter, object>)));
             }

@@ -144,18 +144,9 @@ false
                 }
             };
 
-            try
-            {
-                template(data);
-            }
-            catch (HandlebarsUndefinedBindingException ex)
-            {
-                Assert.Equal("person.lastname", ex.Path);
-                Assert.Equal("lastname", ex.MissingKey);
-                return;
-            }
-
-            Assert.False(true, "Exception is expected.");
+            var exception = Assert.Throws<HandlebarsUndefinedBindingException>(() => template(data));
+            Assert.Equal("person.lastname", exception.Path);
+            Assert.Equal("lastname", exception.MissingKey);
         }
 
         [Fact]
@@ -365,6 +356,23 @@ false
             var result = template(data);
             Assert.Equal("Hello, my good friend Erik!", result);
         }
+        
+        [Fact]
+        public void WithWithBlockParams()
+        {
+            var source = "{{#with person as |person|}}{{person.name}} is {{age}} years old{{/with}}.";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                person = new
+                {
+                    name = "Erik",
+                    age = 42
+                }
+            };
+            var result = template(data);
+            Assert.Equal("Erik is 42 years old.", result);
+        }
 
         [Fact]
         public void BasicWithInversion()
@@ -466,6 +474,23 @@ false
             var result = template(data);
             Assert.Equal("foo: hello bar: world ", result);
         }
+        
+        [Fact]
+        public void ObjectEnumeratorWithBlockParams()
+        {
+            var source = "{{#each enumerateMe as |item val|}}{{@item}}: {{@val}} {{/each}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                enumerateMe = new
+                {
+                    foo = "hello",
+                    bar = "world"
+                }
+            };
+            var result = template(data);
+            Assert.Equal("hello: foo world: bar ", result);
+        }
 
         [Fact]
         public void BasicDictionaryEnumerator()
@@ -482,6 +507,23 @@ false
             };
             var result = template(data);
             Assert.Equal("hello world ", result);
+        }
+        
+        [Fact]
+        public void DictionaryEnumeratorWithBlockParams()
+        {
+            var source = "{{#each enumerateMe as |item val|}}{{item}} {{val}} {{/each}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                enumerateMe = new Dictionary<string, object>
+                {
+                    { "foo", "hello"},
+                    { "bar", "world"}
+                }
+            };
+            var result = template(data);
+            Assert.Equal("hello foo world bar ", result);
         }
         
         [Fact]

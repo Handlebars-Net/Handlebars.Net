@@ -73,7 +73,8 @@ namespace HandlebarsDotNet.Compiler
 
             var resultExpr = HandlebarsExpression.BlockHelper(
                 _startingNode.HelperName,
-                _startingNode.Arguments,
+                _startingNode.Arguments.Where(o => o.NodeType != (ExpressionType)HandlebarsExpressionType.BlockParamsExpression),
+                _startingNode.Arguments.OfType<BlockParamsExpression>().SingleOrDefault() ?? BlockParamsExpression.Empty(),
                 _accumulatedBody,
                 _accumulatedInversion,
                 _startingNode.IsRaw);

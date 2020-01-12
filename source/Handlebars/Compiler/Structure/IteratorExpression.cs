@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace HandlebarsDotNet.Compiler
 {
-    internal class IteratorExpression : HandlebarsExpression
+    internal class IteratorExpression : BlockHelperExpression
     {
         private readonly Expression _sequence;
         private readonly Expression _template;
@@ -16,6 +18,13 @@ namespace HandlebarsDotNet.Compiler
         }
 
         public IteratorExpression(Expression sequence, Expression template, Expression ifEmpty)
+            :this(sequence, BlockParamsExpression.Empty(),  template, ifEmpty)
+        {
+            
+        }
+        
+        public IteratorExpression(Expression sequence, BlockParamsExpression blockParams, Expression template, Expression ifEmpty)
+            :base("each", Enumerable.Empty<Expression>(), blockParams, template, ifEmpty, false)
         {
             _sequence = sequence;
             _template = template;

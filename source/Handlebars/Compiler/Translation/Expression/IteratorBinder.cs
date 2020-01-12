@@ -24,11 +24,16 @@ namespace HandlebarsDotNet.Compiler
         protected override Expression VisitIteratorExpression(IteratorExpression iex)
         {
             var iteratorBindingContext = Expression.Variable(typeof(BindingContext), "context");
+            var blockParamsValueBinder = Expression.Variable(typeof(BlockParamsValueProvider), "blockParams");
+            var ctor = typeof(BlockParamsValueProvider).GetConstructors().Single();
+
             return Expression.Block(
-                new ParameterExpression[]
+                new[]
                 {
-                    iteratorBindingContext
+                    iteratorBindingContext, blockParamsValueBinder
                 },
+                Expression.Assign(iteratorBindingContext, CompilationContext.BindingContext),
+                Expression.Assign(blockParamsValueBinder, Expression.New(ctor, iteratorBindingContext, iex.BlockParams)),
                 Expression.IfThenElse(
                     Expression.TypeIs(iex.Sequence, typeof(IEnumerable)),
                     Expression.IfThenElse(
@@ -37,109 +42,93 @@ namespace HandlebarsDotNet.Compiler
 #else
                         Expression.Call(new Func<object, bool>(IsNonListDynamic).Method, new[] { iex.Sequence }),
 #endif
-                        GetDynamicIterator(iteratorBindingContext, iex),
+                        GetDynamicIterator(iteratorBindingContext, blockParamsValueBinder, iex),
                         Expression.IfThenElse(
 #if netstandard
                             Expression.Call(new Func<object, bool>(IsGenericDictionary).GetMethodInfo(), new[] { iex.Sequence }),
 #else
                             Expression.Call(new Func<object, bool>(IsGenericDictionary).Method, new[] { iex.Sequence }),
 #endif
-                            GetDictionaryIterator(iteratorBindingContext, iex),
-                            GetEnumerableIterator(iteratorBindingContext, iex))),
-                    GetObjectIterator(iteratorBindingContext, iex))
+                            GetDictionaryIterator(iteratorBindingContext, blockParamsValueBinder, iex),
+                            GetEnumerableIterator(iteratorBindingContext, blockParamsValueBinder, iex))),
+                    GetObjectIterator(iteratorBindingContext, blockParamsValueBinder, iex))
             );
         }
 
-        private Expression GetEnumerableIterator(Expression contextParameter, IteratorExpression iex)
+        private Expression GetEnumerableIterator(Expression contextParameter, Expression blockParamsParameter, IteratorExpression iex)
         {
             var fb = new FunctionBuilder(CompilationContext.Configuration);
-            return Expression.Block(
-                Expression.Assign(contextParameter,
-                    Expression.New(
-                        typeof(IteratorBindingContext).GetConstructor(new[] { typeof(BindingContext) }),
-                        new Expression[] { CompilationContext.BindingContext })),
-                Expression.Call(
+            return Expression.Call(
 #if netstandard
-                    new Action<IteratorBindingContext, IEnumerable, Action<TextWriter, object>, Action<TextWriter, object>>(Iterate).GetMethodInfo(),
+                new Action<BindingContext, BlockParamsValueProvider, IEnumerable, Action<TextWriter, object>, Action<TextWriter, object>>(IterateEnumerable).GetMethodInfo(),
 #else
-                    new Action<IteratorBindingContext, IEnumerable, Action<TextWriter, object>, Action<TextWriter, object>>(Iterate).Method,
+                    new Action<BindingContext, BlockParamsValueProvider, IEnumerable, Action<TextWriter, object>, Action<TextWriter, object>>(IterateEnumerable).Method,
 #endif
-                    new Expression[]
-                    {
-                        Expression.Convert(contextParameter, typeof(IteratorBindingContext)),
-                        Expression.Convert(iex.Sequence, typeof(IEnumerable)),
-                        fb.Compile(new [] { iex.Template }, contextParameter),
-                        fb.Compile(new [] { iex.IfEmpty }, CompilationContext.BindingContext)
-                    }));
+                new Expression[]
+                {
+                    contextParameter,
+                    blockParamsParameter,
+                    Expression.Convert(iex.Sequence, typeof(IEnumerable)),
+                    fb.Compile(new [] { iex.Template }, contextParameter),
+                    fb.Compile(new [] { iex.IfEmpty }, CompilationContext.BindingContext)
+                });
         }
 
-        private Expression GetObjectIterator(Expression contextParameter, IteratorExpression iex)
+        private Expression GetObjectIterator(Expression contextParameter, Expression blockParamsParameter, IteratorExpression iex)
         {
             var fb = new FunctionBuilder(CompilationContext.Configuration);
-            return Expression.Block(
-                Expression.Assign(contextParameter,
-                    Expression.New(
-                        typeof(ObjectEnumeratorBindingContext).GetConstructor(new[] { typeof(BindingContext) }),
-                        new Expression[] { CompilationContext.BindingContext })),
-                Expression.Call(
+            return Expression.Call(
 #if netstandard
-                    new Action<ObjectEnumeratorBindingContext, object, Action<TextWriter, object>, Action<TextWriter, object>>(Iterate).GetMethodInfo(),
+                new Action<BindingContext, BlockParamsValueProvider, object, Action<TextWriter, object>, Action<TextWriter, object>>(IterateObject).GetMethodInfo(),
 #else
-                    new Action<ObjectEnumeratorBindingContext, object, Action<TextWriter, object>, Action<TextWriter, object>>(Iterate).Method,
+                    new Action<BindingContext, BlockParamsValueProvider, object, Action<TextWriter, object>, Action<TextWriter, object>>(IterateObject).Method,
 #endif
-                    new Expression[]
-                    {
-                        Expression.Convert(contextParameter, typeof(ObjectEnumeratorBindingContext)),
-                        iex.Sequence,
-                        fb.Compile(new [] { iex.Template }, contextParameter),
-                        fb.Compile(new [] { iex.IfEmpty }, CompilationContext.BindingContext)
-                    }));
+                new[]
+                {
+                    contextParameter,
+                    blockParamsParameter,
+                    iex.Sequence,
+                    fb.Compile(new [] { iex.Template }, contextParameter),
+                    fb.Compile(new [] { iex.IfEmpty }, CompilationContext.BindingContext)
+                });
         }
 
-        private Expression GetDictionaryIterator(Expression contextParameter, IteratorExpression iex)
+        private Expression GetDictionaryIterator(Expression contextParameter, Expression blockParamsParameter, IteratorExpression iex)
         {
             var fb = new FunctionBuilder(CompilationContext.Configuration);
-            return Expression.Block(
-                Expression.Assign(contextParameter,
-                    Expression.New(
-                        typeof(ObjectEnumeratorBindingContext).GetConstructor(new[] { typeof(BindingContext) }),
-                        new Expression[] { CompilationContext.BindingContext })),
-                Expression.Call(
+            return Expression.Call(
 #if netstandard
-                    new Action<ObjectEnumeratorBindingContext, IEnumerable, Action<TextWriter, object>, Action<TextWriter, object>>(Iterate).GetMethodInfo(),
+                new Action<BindingContext, BlockParamsValueProvider, IEnumerable, Action<TextWriter, object>, Action<TextWriter, object>>(IterateDictionary).GetMethodInfo(),
 #else
-                    new Action<ObjectEnumeratorBindingContext, IEnumerable, Action<TextWriter, object>, Action<TextWriter, object>>(Iterate).Method,
+                    new Action<BindingContext, BlockParamsValueProvider, IEnumerable, Action<TextWriter, object>, Action<TextWriter, object>>(IterateDictionary).Method,
 #endif
-                    new Expression[]
-                    {
-                        Expression.Convert(contextParameter, typeof(ObjectEnumeratorBindingContext)),
-                        Expression.Convert(iex.Sequence, typeof(IEnumerable)),
-                        fb.Compile(new [] { iex.Template }, contextParameter),
-                        fb.Compile(new [] { iex.IfEmpty }, CompilationContext.BindingContext)
-                    }));
+                new[]
+                {
+                    contextParameter,
+                    blockParamsParameter,
+                    Expression.Convert(iex.Sequence, typeof(IEnumerable)),
+                    fb.Compile(new[] {iex.Template}, contextParameter),
+                    fb.Compile(new[] {iex.IfEmpty}, CompilationContext.BindingContext)
+                });
         }
 
-        private Expression GetDynamicIterator(Expression contextParameter, IteratorExpression iex)
+        private Expression GetDynamicIterator(Expression contextParameter, Expression blockParamsParameter, IteratorExpression iex)
         {
             var fb = new FunctionBuilder(CompilationContext.Configuration);
-            return Expression.Block(
-                Expression.Assign(contextParameter,
-                    Expression.New(
-                        typeof(ObjectEnumeratorBindingContext).GetConstructor(new[] { typeof(BindingContext) }),
-                        new Expression[] { CompilationContext.BindingContext })),
-                Expression.Call(
+            return Expression.Call(
 #if netstandard
-                    new Action<ObjectEnumeratorBindingContext, IDynamicMetaObjectProvider, Action<TextWriter, object>, Action<TextWriter, object>>(Iterate).GetMethodInfo(),
+                new Action<BindingContext, BlockParamsValueProvider, IDynamicMetaObjectProvider, Action<TextWriter, object>,Action<TextWriter, object>>(IterateDynamic).GetMethodInfo(),
 #else
-                    new Action<ObjectEnumeratorBindingContext, IDynamicMetaObjectProvider, Action<TextWriter, object>, Action<TextWriter, object>>(Iterate).Method,
+                    new Action<BindingContext, BlockParamsValueProvider, IDynamicMetaObjectProvider, Action<TextWriter, object>, Action<TextWriter, object>>(IterateDynamic).Method,
 #endif
-                    new Expression[]
-                    {
-                        Expression.Convert(contextParameter, typeof(ObjectEnumeratorBindingContext)),
-                        Expression.Convert(iex.Sequence, typeof(IDynamicMetaObjectProvider)),
-                        fb.Compile(new [] { iex.Template }, contextParameter),
-                        fb.Compile(new [] { iex.IfEmpty }, CompilationContext.BindingContext)
-                    }));
+                new[]
+                {
+                    contextParameter,
+                    blockParamsParameter,
+                    Expression.Convert(iex.Sequence, typeof(IDynamicMetaObjectProvider)),
+                    fb.Compile(new[] {iex.Template}, contextParameter),
+                    fb.Compile(new[] {iex.IfEmpty}, CompilationContext.BindingContext)
+                });
         }
 
         private static bool IsNonListDynamic(object target)
@@ -164,31 +153,40 @@ namespace HandlebarsDotNet.Compiler
                     .Any(i => i.GetGenericTypeDefinition() == typeof(IDictionary<,>));
         }
 
-        private static void Iterate(
-            ObjectEnumeratorBindingContext context,
+        private static void IterateObject(
+            BindingContext context,
+            BlockParamsValueProvider blockParamsValueProvider,
             object target,
             Action<TextWriter, object> template,
             Action<TextWriter, object> ifEmpty)
         {
             if (HandlebarsUtils.IsTruthy(target))
             {
-                context.Index = 0;
+                var objectEnumerator = new ObjectEnumeratorValueProvider();
+                context.RegisterValueProvider(objectEnumerator);
+                blockParamsValueProvider.Configure((parameters, binder) =>
+                {
+                    binder(parameters.ElementAtOrDefault(0), () => objectEnumerator.Value);
+                    binder(parameters.ElementAtOrDefault(1), () => objectEnumerator.Key);
+                });
+
+                objectEnumerator.Index = 0;
                 var targetType = target.GetType();
                 var properties = targetType.GetProperties(BindingFlags.Instance | BindingFlags.Public).OfType<MemberInfo>();
                 var fields = targetType.GetFields(BindingFlags.Public | BindingFlags.Instance);
                 foreach (var enumerableValue in new ExtendedEnumerable<MemberInfo>(properties.Concat(fields)))
                 {
                     var member = enumerableValue.Value;
-                    context.Key = member.Name;
-                    var value = AccessMember(target, member);
-                    context.First = enumerableValue.IsFirst;
-                    context.Last = enumerableValue.IsLast;
-                    context.Index = enumerableValue.Index;
+                    objectEnumerator.Key = member.Name;
+                    objectEnumerator.Value = AccessMember(target, member);
+                    objectEnumerator.First = enumerableValue.IsFirst;
+                    objectEnumerator.Last = enumerableValue.IsLast;
+                    objectEnumerator.Index = enumerableValue.Index;
 
-                    template(context.TextWriter, value);
+                    template(context.TextWriter, objectEnumerator.Value);
                 }
 
-                if (context.Index == 0)
+                if (objectEnumerator.Index == 0)
                 {
                     ifEmpty(context.TextWriter, context.Value);
                 }
@@ -199,42 +197,47 @@ namespace HandlebarsDotNet.Compiler
             }
         }
 
-        private static void Iterate(
-            ObjectEnumeratorBindingContext context,
+        private static void IterateDictionary(
+            BindingContext context,
+            BlockParamsValueProvider blockParamsValueProvider,
             IEnumerable target,
             Action<TextWriter, object> template,
             Action<TextWriter, object> ifEmpty)
         {
             if (HandlebarsUtils.IsTruthy(target))
             {
-                context.Index = 0;
+                var objectEnumerator = new ObjectEnumeratorValueProvider();
+                context.RegisterValueProvider(objectEnumerator);
+                blockParamsValueProvider.Configure((parameters, binder) =>
+                {
+                    binder(parameters.ElementAtOrDefault(0), () => objectEnumerator.Value);
+                    binder(parameters.ElementAtOrDefault(1), () => objectEnumerator.Key);
+                });
+                
+                objectEnumerator.Index = 0;
                 var targetType = target.GetType();
 #if netstandard
                 var keysProperty = targetType.GetRuntimeProperty("Keys");
 #else
                 var keysProperty = targetType.GetProperty("Keys");
 #endif
-                if (keysProperty != null)
+                if (keysProperty?.GetGetMethod().Invoke(target, null) is IEnumerable keys)
                 {
-                    var keys = keysProperty.GetGetMethod().Invoke(target, null) as IEnumerable;
-                    if (keys != null)
+                    var getItemMethodInfo = targetType.GetMethod("get_Item");
+                    var parameters = new object[1];
+                    foreach (var enumerableValue in new ExtendedEnumerable<object>(keys))
                     {
-                        var getItemMethodInfo = targetType.GetMethod("get_Item");
-                        var parameters = new object[1];
-                        foreach (var enumerableValue in new ExtendedEnumerable<object>(keys))
-                        {
-                            var key = parameters[0] = enumerableValue.Value;
-                            context.Key = key.ToString();
-                            var value = getItemMethodInfo.Invoke(target, parameters);
-                            context.First = enumerableValue.IsFirst;
-                            context.Last = enumerableValue.IsLast;
-                            context.Index = enumerableValue.Index;
+                        var key = parameters[0] = enumerableValue.Value;
+                        objectEnumerator.Key = key.ToString();
+                        objectEnumerator.Value = getItemMethodInfo.Invoke(target, parameters);
+                        objectEnumerator.First = enumerableValue.IsFirst;
+                        objectEnumerator.Last = enumerableValue.IsLast;
+                        objectEnumerator.Index = enumerableValue.Index;
 
-                            template(context.TextWriter, value);
-                        }
+                        template(context.TextWriter, objectEnumerator.Value);
                     }
                 }
-                if (context.Index == 0)
+                if (objectEnumerator.Index == 0)
                 {
                     ifEmpty(context.TextWriter, context.Value);
                 }
@@ -245,29 +248,38 @@ namespace HandlebarsDotNet.Compiler
             }
         }
 
-        private static void Iterate(
-            ObjectEnumeratorBindingContext context,
+        private static void IterateDynamic(
+            BindingContext context,
+            BlockParamsValueProvider blockParamsValueProvider,
             IDynamicMetaObjectProvider target,
             Action<TextWriter, object> template,
             Action<TextWriter, object> ifEmpty)
         {
             if (HandlebarsUtils.IsTruthy(target))
             {
-                context.Index = 0;
+                var objectEnumerator = new ObjectEnumeratorValueProvider();
+                context.RegisterValueProvider(objectEnumerator);
+                blockParamsValueProvider.Configure((parameters, binder) =>
+                {
+                    binder(parameters.ElementAtOrDefault(0), () => objectEnumerator.Value);
+                    binder(parameters.ElementAtOrDefault(1), () => objectEnumerator.Key);
+                });
+                
+                objectEnumerator.Index = 0;
                 var meta = target.GetMetaObject(Expression.Constant(target));
                 foreach (var enumerableValue in new ExtendedEnumerable<string>(meta.GetDynamicMemberNames()))
                 {
                     var name = enumerableValue.Value;
-                    context.Key = name;
-                    var value = GetProperty(target, name);
-                    context.First = enumerableValue.IsFirst;
-                    context.Last = enumerableValue.IsLast;
-                    context.Index = enumerableValue.Index;
+                    objectEnumerator.Key = name;
+                    objectEnumerator.Value = GetProperty(target, name);
+                    objectEnumerator.First = enumerableValue.IsFirst;
+                    objectEnumerator.Last = enumerableValue.IsLast;
+                    objectEnumerator.Index = enumerableValue.Index;
 
-                    template(context.TextWriter, value);
+                    template(context.TextWriter, objectEnumerator.Value);
                 }
 
-                if (context.Index == 0)
+                if (objectEnumerator.Index == 0)
                 {
                     ifEmpty(context.TextWriter, context.Value);
                 }
@@ -278,24 +290,33 @@ namespace HandlebarsDotNet.Compiler
             }
         }
 
-        private static void Iterate(
-            IteratorBindingContext context,
+        private static void IterateEnumerable(
+            BindingContext context,
+            BlockParamsValueProvider blockParamsValueProvider,
             IEnumerable sequence,
             Action<TextWriter, object> template,
             Action<TextWriter, object> ifEmpty)
         {
-            context.Index = 0;
+            var iterator = new IteratorValueProvider();
+            context.RegisterValueProvider(iterator);
+            blockParamsValueProvider.Configure((parameters, binder) =>
+            {
+                binder(parameters.ElementAtOrDefault(0), () => iterator.Value);
+                binder(parameters.ElementAtOrDefault(1), () => iterator.Index);
+            });
+            
+            iterator.Index = 0;
             foreach (var enumeratorValue in new ExtendedEnumerable<object>(sequence))
             {
-                var item = enumeratorValue.Value;
-                context.First = enumeratorValue.IsFirst;
-                context.Last = enumeratorValue.IsLast;
-                context.Index = enumeratorValue.Index;
+                iterator.Value = enumeratorValue.Value;
+                iterator.First = enumeratorValue.IsFirst;
+                iterator.Last = enumeratorValue.IsLast;
+                iterator.Index = enumeratorValue.Index;
 
-                template(context.TextWriter, item);
+                template(context.TextWriter, iterator.Value);
             }
 
-            if (context.Index == 0)
+            if (iterator.Index == 0)
             {
                 ifEmpty(context.TextWriter, context.Value);
             }
@@ -308,41 +329,71 @@ namespace HandlebarsDotNet.Compiler
             return site.Target(site, target);
         }
 
-        private class IteratorBindingContext : BindingContext
+        private class IteratorValueProvider : IValueProvider
         {
-            public IteratorBindingContext(BindingContext context)
-                : base(context.Value, context.TextWriter, context.ParentContext, context.TemplatePath, context.InlinePartialTemplates)
-            {
-            }
-
+            public object Value { get; set; }
+            
             public int Index { get; set; }
 
             public bool First { get; set; }
 
             public bool Last { get; set; }
-        }
 
-        private class ObjectEnumeratorBindingContext : IteratorBindingContext
-        {
-            public ObjectEnumeratorBindingContext(BindingContext context)
-                : base(context)
+            public bool ProvidesNonContextVariables { get; } = false;
+
+            public virtual bool TryGetValue(string memberName, out object value)
             {
+                switch (memberName.ToLowerInvariant())
+                {
+                    case "index": 
+                        value = Index;
+                        return true;
+                    case "first": 
+                        value = First;
+                        return true;
+                    case "last": 
+                        value = Last;
+                        return true;
+                    case "value": 
+                        value = Value;
+                        return true;
+                    
+                    default:
+                        value = null;
+                        return false;
+                }
             }
-
+        }
+        
+        private class ObjectEnumeratorValueProvider : IteratorValueProvider
+        {
             public string Key { get; set; }
+
+            public override bool TryGetValue(string memberName, out object value)
+            {
+                switch (memberName.ToLowerInvariant())
+                {
+                    case "key":
+                        value = Key;
+                        return true;
+                    
+                    default:
+                        return base.TryGetValue(memberName, out value);
+                }
+            }
         }
 
         private static object AccessMember(object instance, MemberInfo member)
         {
-            if (member is PropertyInfo)
+            switch (member)
             {
-                return ((PropertyInfo)member).GetValue(instance, null);
+                case PropertyInfo propertyInfo:
+                    return propertyInfo.GetValue(instance, null);
+                case FieldInfo fieldInfo:
+                    return fieldInfo.GetValue(instance);
+                default:
+                    throw new InvalidOperationException("Requested member was not a field or property");
             }
-            if (member is FieldInfo)
-            {
-                return ((FieldInfo)member).GetValue(instance);
-            }
-            throw new InvalidOperationException("Requested member was not a field or property");
         }
     }
 }

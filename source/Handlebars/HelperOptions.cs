@@ -1,30 +1,27 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using HandlebarsDotNet.Compiler;
 
 namespace HandlebarsDotNet
 {
     public sealed class HelperOptions
     {
-        private readonly Action<TextWriter, object> _template;
-        private readonly Action<TextWriter, object> _inverse;
-
         internal HelperOptions(
             Action<TextWriter, object> template,
-            Action<TextWriter, object> inverse)
+            Action<TextWriter, object> inverse,
+            BlockParamsValueProvider blockParamsValueProvider)
         {
-            _template = template;
-            _inverse = inverse;
+            Template = template;
+            Inverse = inverse;
+            BlockParams = blockParamsValueProvider.Configure;
         }
 
-        public Action<TextWriter, object> Template
-        {
-            get { return _template; }
-        }
+        public Action<TextWriter, object> Template { get; }
 
-        public Action<TextWriter, object> Inverse
-        {
-            get { return _inverse; }
-        }
+        public Action<TextWriter, object> Inverse { get; }
+
+        public Action<ConfigureBlockParams> BlockParams { get; }
     }
 }
 

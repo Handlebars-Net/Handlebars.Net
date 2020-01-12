@@ -7,23 +7,8 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class BindingContext
     {
-        private readonly object _value;
-        private readonly BindingContext _parent;
-
-        public string TemplatePath { get; private set; }
-
-        public EncodedTextWriter TextWriter { get; private set; }
-
-        public IDictionary<string, Action<TextWriter, object>> InlinePartialTemplates { get; private set; }
-
-        public Action<TextWriter, object> PartialBlockTemplate { get; private set; }
-
-        public bool SuppressEncoding
-        {
-            get { return TextWriter.SuppressEncoding; }
-            set { TextWriter.SuppressEncoding = value; }
-        }
-
+        private readonly List<IValueProvider> _valueProviders = new List<IValueProvider>();
+        
         public BindingContext(object value, EncodedTextWriter writer, BindingContext parent, string templatePath, IDictionary<string, Action<TextWriter, object>> inlinePartialTemplates) :
             this(value, writer, parent, templatePath, null, null, inlinePartialTemplates) { }
 
@@ -32,10 +17,12 @@ namespace HandlebarsDotNet.Compiler
 
         public BindingContext(object value, EncodedTextWriter writer, BindingContext parent, string templatePath, Action<TextWriter, object> partialBlockTemplate, BindingContext current, IDictionary<string, Action<TextWriter, object>> inlinePartialTemplates)
         {
+            RegisterValueProvider(new BindingContextValueProvider(this));
+            
             TemplatePath = parent != null ? (parent.TemplatePath ?? templatePath) : templatePath;
             TextWriter = writer;
-            _value = value;
-            _parent = parent;
+            Value = value;
+            ParentContext = parent;
 
             //Inline partials cannot use the Handlebars.RegisteredTemplate method
             //because it pollutes the static dictionary and creates collisions
@@ -70,69 +57,59 @@ namespace HandlebarsDotNet.Compiler
             PartialBlockTemplate = partialBlockTemplate;
         }
 
-        public virtual object Value
-        {
-            get { return _value; }
-        }
+        public string TemplatePath { get; }
 
-        public virtual BindingContext ParentContext
-        {
-            get { return _parent; }
-        }
+        public EncodedTextWriter TextWriter { get; }
 
-        public virtual object Root
+        public IDictionary<string, Action<TextWriter, object>> InlinePartialTemplates { get; }
+
+        public Action<TextWriter, object> PartialBlockTemplate { get; }
+
+        public bool SuppressEncoding
         {
-            get
-            {
-                var currentContext = this;
-                while (currentContext.ParentContext != null)
-                {
-                    currentContext = currentContext.ParentContext;
-                }
-                return currentContext.Value;
-            }
+            get => TextWriter.SuppressEncoding;
+            set => TextWriter.SuppressEncoding = value;
+        }
+        
+        public virtual object Value { get; }
+
+        public virtual BindingContext ParentContext { get; }
+
+        public virtual object Root => ParentContext?.Root ?? this;
+
+        public void RegisterValueProvider(IValueProvider valueProvider)
+        {
+            if(valueProvider == null) throw new ArgumentNullException(nameof(valueProvider));
+            
+            _valueProviders.Add(valueProvider);
         }
 
         public virtual object GetContextVariable(string variableName)
         {
-            var target = this;
+            // accessing value providers in reverse order as it gives more probability of hit
+            for (var index = _valueProviders.Count - 1; index >= 0; index--)
+            {
+                if (_valueProviders[index].TryGetValue(variableName, out var value)) return value;
+            }
 
-            return GetContextVariable(variableName, target)
-                   ?? GetContextVariable(variableName, target.Value);
+            return null;
         }
-
-        private object GetContextVariable(string variableName, object target)
+        
+        public virtual object GetVariable(string variableName)
         {
-            object returnValue;
-            variableName = variableName.TrimStart('@');
-            var member = target.GetType().GetMember(variableName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-            if (member.Length > 0)
+            // accessing value providers in reverse order as it gives more probability of hit
+            for (var index = _valueProviders.Count - 1; index >= 0; index--)
             {
-                if (member[0] is PropertyInfo)
-                {
-                    returnValue = ((PropertyInfo)member[0]).GetValue(target, null);
-                }
-                else if (member[0] is FieldInfo)
-                {
-                    returnValue = ((FieldInfo)member[0]).GetValue(target);
-                }
-                else
-                {
-                    throw new HandlebarsRuntimeException("Context variable references a member that is not a field or property");
-                }
+                var valueProvider = _valueProviders[index];
+                if(!valueProvider.ProvidesNonContextVariables) continue;
+                
+                if (valueProvider.TryGetValue(variableName, out var value)) return value;
             }
-            else if (_parent != null)
-            {
-                returnValue = _parent.GetContextVariable(variableName);
-            }
-            else
-            {
-                returnValue = null;
-            }
-            return returnValue;
+
+            return ParentContext?.GetVariable(variableName);
         }
 
-        private IDictionary<string, object> GetContextDictionary(object target)
+        private static IDictionary<string, object> GetContextDictionary(object target)
         {
             var dict = new Dictionary<string, object>();
 

@@ -166,7 +166,8 @@ namespace HandlebarsDotNet.Compiler
             }
             else
             {
-                resolvedValue = AccessMember(instance, segment);
+                var variable = context.GetVariable(segment);
+                resolvedValue = variable ?? AccessMember(instance, segment);
             }
             return resolvedValue;
         }
@@ -177,6 +178,11 @@ namespace HandlebarsDotNet.Compiler
         {
             if (instance == null)
                 return new UndefinedBindingResult(memberName, CompilationContext.Configuration);
+
+            if (instance is BindingContext context)
+            {
+                return AccessMember(context.Value, memberName);
+            }
             
             var resolvedMemberName = ResolveMemberName(instance, memberName);
             var instanceType = instance.GetType();

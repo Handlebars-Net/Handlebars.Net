@@ -17,7 +17,8 @@ namespace HandlebarsDotNet.Compiler
         SubExpression = 6009,
         HashParameterAssignmentExpression = 6010,
         HashParametersExpression = 6011,
-        CommentExpression = 6012
+        CommentExpression = 6012,
+        BlockParamsExpression = 6013
     }
 
     internal abstract class HandlebarsExpression : Expression
@@ -35,16 +36,22 @@ namespace HandlebarsDotNet.Compiler
         public static BlockHelperExpression BlockHelper(
             string helperName,
             IEnumerable<Expression> arguments,
+            BlockParamsExpression blockParams,
             Expression body,
             Expression inversion,
             bool isRaw = false)
         {
-            return new BlockHelperExpression(helperName, arguments, body, inversion, isRaw);
+            return new BlockHelperExpression(helperName, arguments, blockParams, body, inversion, isRaw);
         }
 
         public static PathExpression Path(string path)
         {
             return new PathExpression(path);
+        }
+        
+        public static BlockParamsExpression BlockParams(string action, string blockParams)
+        {
+            return new BlockParamsExpression(action, blockParams);
         }
 
         public static StaticExpression Static(string value)
@@ -59,17 +66,19 @@ namespace HandlebarsDotNet.Compiler
 
         public static IteratorExpression Iterator(
             Expression sequence,
+            BlockParamsExpression blockParams,
             Expression template)
         {
-            return new IteratorExpression(sequence, template);
+            return new IteratorExpression(sequence, blockParams, template, Empty());
         }
 
         public static IteratorExpression Iterator(
             Expression sequence,
+            BlockParamsExpression blockParams,
             Expression template,
             Expression ifEmpty)
         {
-            return new IteratorExpression(sequence, template, ifEmpty);
+            return new IteratorExpression(sequence, blockParams, template, ifEmpty);
         }
 
         public static DeferredSectionExpression DeferredSection(
