@@ -141,7 +141,7 @@ namespace HandlebarsDotNet.Compiler
             return resolvedValue;
         }
 
-        private bool TryAccessMember(object instance, string memberName, out object value)
+        public bool TryAccessMember(object instance, string memberName, out object value)
         {
             value = new UndefinedBindingResult(memberName, _configuration);
             if (instance == null)

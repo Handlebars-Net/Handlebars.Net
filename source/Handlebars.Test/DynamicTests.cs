@@ -76,11 +76,24 @@ namespace HandlebarsDotNet.Test
 
             Assert.Equal("Key1Val1Key2Val2", output);
         }
+        
+        [Fact]
+        public void JsonTestObjects(){
+	        var model = JObject.Parse("{\"Key1\": \"Val1\", \"Key2\": \"Val2\"}");
+
+	        var source = "{{#each this}}{{@key}}{{@value}}{{/each}}";
+
+	        var template = Handlebars.Compile(source);
+
+	        var output = template(model);
+
+	        Assert.Equal("Key1Val1Key2Val2", output);
+        }
 
         [Fact]
         public void JObjectTest() {
             object nullValue = null;
-            var model = JObject.FromObject(new { Nested = new { Prop = "Prop" }, Nested2 = nullValue });
+            JObject model = JObject.FromObject(new { Nested = new { Prop = "Prop" }, Nested2 = nullValue });
 
             var source = "{{NotExists.Prop}}";
 

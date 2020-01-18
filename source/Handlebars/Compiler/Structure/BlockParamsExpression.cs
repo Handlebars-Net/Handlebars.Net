@@ -31,7 +31,7 @@ namespace HandlebarsDotNet.Compiler
 
         protected override Expression Accept(ExpressionVisitor visitor)
         {
-            return visitor.Visit(Constant(_blockParam));
+            return visitor.Visit(Expression.Convert(Constant(_blockParam), typeof(BlockParam)));
         }
     }
 

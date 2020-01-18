@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Linq.Expressions;
-#if netstandard
-using System.Reflection;
-#endif
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -16,48 +12,23 @@ namespace HandlebarsDotNet.Compiler
         {
         }
 
-        public static Expression Bind(Expression body, CompilationContext context, Expression parentContext, string templatePath)
+        public static Expression<Action<TextWriter, object>> Bind(Expression body, CompilationContext context, Expression parentContext, string templatePath)
         {
-            var writerParameter = Expression.Parameter(typeof(TextWriter), "buffer");
-            var objectParameter = Expression.Parameter(typeof(object), "data");
-            if (parentContext == null)
-            {
-                parentContext = Expression.Constant(null, typeof(BindingContext));
-            }
-            var inlinePartialsParameter = Expression.Constant(null, typeof(IDictionary<string, Action<TextWriter, object>>));
+            var writerParameter = E.Parameter<TextWriter>("buffer");
+            var objectParameter = E.Parameter<object>("data");
+            
+            var bindingContext = E.Arg<BindingContext>(context.BindingContext);
+            var inlinePartialsParameter = E.Null<IDictionary<string, Action<TextWriter, object>>>();
+            var encodedWriterExpression = E.Call(() => EncodedTextWriter.From(E.Arg<TextWriter>(writerParameter), context.Configuration.TextEncoder));
+            var newBindingContext = E.New(
+                () => new BindingContext(objectParameter, encodedWriterExpression, E.Arg<BindingContext>(parentContext), templatePath, (IDictionary<string, Action<TextWriter, object>>) inlinePartialsParameter)
+            );
 
-            var encodedWriterExpression = ResolveEncodedWriter(writerParameter, context.Configuration.TextEncoder);
-            var templatePathExpression = Expression.Constant(templatePath, typeof(string));
-            var newBindingContext = Expression.New(
-                            typeof(BindingContext).GetConstructor(
-                                new[] { typeof(object), typeof(EncodedTextWriter), typeof(BindingContext), typeof(string), typeof(IDictionary<string, Action<TextWriter, object>>) }),
-                            new[] { objectParameter, encodedWriterExpression, parentContext, templatePathExpression, inlinePartialsParameter });
-            return Expression.Lambda<Action<TextWriter, object>>(
-                Expression.Block(
-                    new[] { context.BindingContext },
-                    new Expression[]
-                    {
-                        Expression.IfThenElse(
-                            Expression.TypeIs(objectParameter, typeof(BindingContext)),
-                            Expression.Assign(context.BindingContext, Expression.TypeAs(objectParameter, typeof(BindingContext))),
-                            Expression.Assign(context.BindingContext, newBindingContext))
-                    }.Concat(
-                        ((BlockExpression)body).Expressions
-                    )),
-                new[] { writerParameter, objectParameter });
-        }
-
-        private static Expression ResolveEncodedWriter(ParameterExpression writerParameter, ITextEncoder textEncoder)
-        {
-            var outputEncoderExpression = Expression.Constant(textEncoder, typeof(ITextEncoder));
-
-#if netstandard
-            var encodedWriterFromMethod = typeof(EncodedTextWriter).GetRuntimeMethod("From", new[] { typeof(TextWriter), typeof(ITextEncoder) });
-#else
-            var encodedWriterFromMethod = typeof(EncodedTextWriter).GetMethod("From", new[] { typeof(TextWriter), typeof(ITextEncoder) });
-#endif
-
-            return Expression.Call(encodedWriterFromMethod, writerParameter, outputEncoderExpression);
+            var blockBuilder = E.Block().Parameter(bindingContext)
+                .Line(bindingContext.TernaryAssign(objectParameter.Is<BindingContext>(), objectParameter.As<BindingContext>(), newBindingContext))
+                .Lines(((BlockExpression) body).Expressions);
+            
+            return Expression.Lambda<Action<TextWriter, object>>(blockBuilder, (ParameterExpression) writerParameter.Expression, (ParameterExpression) objectParameter.Expression);
         }
     }
 }

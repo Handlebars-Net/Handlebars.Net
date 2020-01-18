@@ -1,8 +1,6 @@
-using System;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
-using System.Collections.Generic;
+using System.IO;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -20,90 +18,58 @@ namespace HandlebarsDotNet.Compiler
 
         protected override Expression VisitStatementExpression(StatementExpression sex)
         {
-            if (sex.Body is HelperExpression)
-            {
-                return Visit(sex.Body);
-            }
-            else
-            {
-                return sex;
-            }
+            return sex.Body is HelperExpression ? Visit(sex.Body) : sex;
         }
-
+        
         protected override Expression VisitHelperExpression(HelperExpression hex)
         {
-            if (CompilationContext.Configuration.Helpers.ContainsKey(hex.HelperName))
+            var bindingContext = E.Arg<BindingContext>(CompilationContext.BindingContext);
+            var textWriter = bindingContext.Property(o => o.TextWriter);
+            var args = E.Array<object>(hex.Arguments.Select(Visit));
+
+            if (CompilationContext.Configuration.Helpers.TryGetValue(hex.HelperName, out var helper))
             {
-                var helper = CompilationContext.Configuration.Helpers[hex.HelperName];
-                var arguments = new Expression[]
-                {
-                    Expression.Property(
-                        CompilationContext.BindingContext,
-#if netstandard
-                        typeof(BindingContext).GetRuntimeProperty("TextWriter")),
-#else
-                        typeof(BindingContext).GetProperty("TextWriter")),
-#endif
-                    Expression.Property(
-                        CompilationContext.BindingContext,
-#if netstandard
-                        typeof(BindingContext).GetRuntimeProperty("Value")),
-#else
-                        typeof(BindingContext).GetProperty("Value")),
-#endif
-                    Expression.NewArrayInit(typeof(object), hex.Arguments.Select(a => Visit(a)))
-                };
-                if (helper.Target != null)
-                {
-                    return Expression.Call(
-                        Expression.Constant(helper.Target),
-#if netstandard
-                        helper.GetMethodInfo(),
-#else
-                        helper.Method,
-#endif
-                        arguments);
-                }
-                else
-                {
-                    return Expression.Call(
-#if netstandard
-                        helper.GetMethodInfo(),
-#else
-                        helper.Method,
-#endif
-                        arguments);
-                }
+                return E.Call(() => helper(textWriter, bindingContext, args));
             }
-            else
+            
+            if (CompilationContext.Configuration.ReturnHelpers.TryGetValue(hex.HelperName, out var returnHelper))
             {
-                return Expression.Call(
-                    Expression.Constant(this),
-#if netstandard
-                    new Action<BindingContext, string, IEnumerable<object>>(LateBindHelperExpression).GetMethodInfo(),
-#else
-                    new Action<BindingContext, string, IEnumerable<object>>(LateBindHelperExpression).Method,
-#endif
-                    CompilationContext.BindingContext,
-                    Expression.Constant(hex.HelperName),
-                    Expression.NewArrayInit(typeof(object), hex.Arguments));
+                return E.Call(() => CaptureResult(textWriter, 
+                    E.Call(() => returnHelper(bindingContext, args)))
+                );
             }
+
+            return E.Call(() => CaptureResult(bindingContext.Property(o => o.TextWriter),
+                E.Call(() => LateBindHelperExpression(bindingContext, hex.HelperName, args)))
+            );
         }
 
-        private void LateBindHelperExpression(
+        private object LateBindHelperExpression(
             BindingContext context,
             string helperName,
-            IEnumerable<object> arguments)
+            object[] arguments)
         {
-            if (CompilationContext.Configuration.Helpers.ContainsKey(helperName))
+            if (CompilationContext.Configuration.Helpers.TryGetValue(helperName, out var helper))
             {
-                var helper = CompilationContext.Configuration.Helpers[helperName];
-                helper(context.TextWriter, context.Value, arguments.ToArray());
+                using (var write = new StringWriter())
+                {
+                    helper(write, context.Value, arguments.ToArray());
+                    return write.ToString();
+                }
             }
-            else
+            
+            if (CompilationContext.Configuration.ReturnHelpers.TryGetValue(helperName, out var returnHelper))
             {
-                throw new HandlebarsRuntimeException(string.Format("Template references a helper that is not registered. Could not find helper '{0}'", helperName));
+                return returnHelper(context.Value, arguments.ToArray());
             }
+
+            throw new HandlebarsRuntimeException($"Template references a helper that is not registered. Could not find helper '{helperName}'");
+        }
+        
+        private static object CaptureResult(TextWriter writer, object result)
+        {
+            writer?.WriteSafeString(result);
+            return result;
         }
     }
 }

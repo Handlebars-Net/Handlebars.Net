@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
+﻿using System.Linq.Expressions;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -20,14 +16,7 @@ namespace HandlebarsDotNet.Compiler
 
         protected override Expression VisitStatementExpression(StatementExpression sex)
         {
-            if (sex.Body is BlockHelperExpression)
-            {
-                return Visit(sex.Body);
-            }
-            else
-            {
-                return sex;
-            }
+            return sex.Body is BlockHelperExpression ? Visit(sex.Body) : sex;
         }
 
         protected override Expression VisitBlockHelperExpression(BlockHelperExpression bhex)
@@ -36,57 +25,26 @@ namespace HandlebarsDotNet.Compiler
 
             var fb = new FunctionBuilder(CompilationContext.Configuration);
 
+            var context = E.Arg<BindingContext>(CompilationContext.BindingContext);
+            var bindingContext = isInlinePartial 
+                ? context.Cast<object>()
+                : context.Property(o => o.Value);
 
-            var bindingContext = isInlinePartial ? (Expression)CompilationContext.BindingContext :
-                            Expression.Property(
-                                CompilationContext.BindingContext,
-                                typeof(BindingContext).GetProperty("Value"));
-
-            var configuration = Expression.Constant(CompilationContext.Configuration);
-            var ctor = typeof(BlockParamsValueProvider).GetConstructors().Single();
-            var blockParamsExpression = Expression.New(ctor, CompilationContext.BindingContext, configuration, bhex.BlockParams);
-
-            var body = fb.Compile(((BlockExpression) bhex.Body).Expressions, CompilationContext.BindingContext);
-            var inversion = fb.Compile(((BlockExpression)bhex.Inversion).Expressions, CompilationContext.BindingContext);
+            var blockParamsExpression = E.New(
+                () => new BlockParamsValueProvider(context, E.Arg<BlockParam>(bhex.BlockParams))
+            );
+            
+            var body = fb.Compile(((BlockExpression) bhex.Body).Expressions, context);
+            var inversion = fb.Compile(((BlockExpression) bhex.Inversion).Expressions, context);
             var helper = CompilationContext.Configuration.BlockHelpers[bhex.HelperName.Replace("#", "")];
-            var arguments = new Expression[]
-            {
-                Expression.Property(
-                    CompilationContext.BindingContext,
-                    typeof(BindingContext).GetProperty("TextWriter")),
-                Expression.New(
-                        typeof(HelperOptions).GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic)[0],
-                        body,
-                        inversion,
-                        blockParamsExpression),
-                //this next arg is usually data, like { first: "Marc" } 
-                //but for inline partials this is the complete BindingContext.
-                bindingContext,
-                Expression.NewArrayInit(typeof(object), bhex.Arguments)
-            };
-
-
-            if (helper.Target != null)
-            {
-                return Expression.Call(
-                    Expression.Constant(helper.Target),
-#if netstandard
-                    helper.GetMethodInfo(),
-#else
-                    helper.Method,
-#endif
-                    arguments);
-            }
-            else
-            {
-                return Expression.Call(
-#if netstandard
-                    helper.GetMethodInfo(),
-#else
-                    helper.Method,
-#endif
-                    arguments);
-            }
+            
+            var helperOptions = E.New(
+                () => new HelperOptions(E.Arg(body), E.Arg(inversion), blockParamsExpression)
+            );
+            
+            return E.Call(
+                () => helper(context.Property(o => o.TextWriter), helperOptions, bindingContext, E.Array<object>(bhex.Arguments))
+            );
         }
     }
 }

@@ -37,7 +37,7 @@ namespace HandlebarsDotNet.Test
             Handlebars.RegisterHelper("myHelper", (writer, options, context, args) => {
                 var count = 0;
                 options.BlockParams((parameters, binder) => 
-                    binder(parameters.Keys.First(), () => ++count));
+                    binder(parameters.ElementAtOrDefault(0), () => ++count));
                 
                 foreach(var arg in args)
                 {

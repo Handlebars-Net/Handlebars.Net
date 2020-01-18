@@ -18,7 +18,7 @@ namespace HandlebarsDotNet
             }
 
             options.BlockParams((parameters, binder) => 
-                binder(parameters.Keys.First(), () => arguments[0]));
+                binder(parameters.ElementAtOrDefault(0), () => arguments[0]));
             
             if (HandlebarsUtils.IsTruthyOrNonEmpty(arguments[0]))
             {
@@ -29,7 +29,23 @@ namespace HandlebarsDotNet
                 options.Inverse(output, context);
             }
         }
+        
+        [Description("Lookup")]
+        public static object Lookup(dynamic context, params object[] arguments)
+        {
+            if (arguments.Length != 2)
+            {
+                throw new HandlebarsException("{{lookup}} helper must have exactly two argument");
+            }
 
+            var configuration = new HandlebarsConfiguration();
+            var pathResolver = new PathResolver(configuration);
+            var memberName = arguments[1].ToString();
+            return !pathResolver.TryAccessMember(arguments[0], memberName, out var value) 
+                ? new UndefinedBindingResult(memberName, configuration)
+                : value;
+        }
+        
         [Description("*inline")]
         public static void Inline(TextWriter output, HelperOptions options, dynamic context, params object[] arguments)
         {
@@ -61,6 +77,14 @@ namespace HandlebarsDotNet
             get
             {
                 return GetHelpers<HandlebarsHelper>();
+            }
+        }
+        
+        public static IEnumerable<KeyValuePair<string, HandlebarsReturnHelper>> ReturnHelpers
+        {
+            get
+            {
+                return GetHelpers<HandlebarsReturnHelper>();
             }
         }
 

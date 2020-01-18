@@ -4,6 +4,7 @@ using System.IO;
 namespace HandlebarsDotNet
 {
     public delegate void HandlebarsHelper(TextWriter output, dynamic context, params object[] arguments);
+    public delegate object HandlebarsReturnHelper(dynamic context, params object[] arguments);
     public delegate void HandlebarsBlockHelper(TextWriter output, HelperOptions options, dynamic context, params object[] arguments);
 
     public sealed partial class Handlebars
@@ -45,6 +46,11 @@ namespace HandlebarsDotNet
         }
 
         public static void RegisterHelper(string helperName, HandlebarsHelper helperFunction)
+        {
+            Instance.RegisterHelper(helperName, helperFunction);
+        }
+        
+        public static void RegisterHelper(string helperName, HandlebarsReturnHelper helperFunction)
         {
             Instance.RegisterHelper(helperName, helperFunction);
         }

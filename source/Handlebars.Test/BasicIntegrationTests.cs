@@ -489,7 +489,7 @@ false
                 }
             };
             var result = template(data);
-            Assert.Equal("foo: hello bar: world ", result);
+            Assert.Equal("hello: foo world: bar ", result);
         }
 
         [Fact]
@@ -523,7 +523,7 @@ false
                 }
             };
             var result = template(data);
-            Assert.Equal("foo hello bar world ", result);
+            Assert.Equal("hello foo world bar ", result);
         }
         
         [Fact]
@@ -1517,72 +1517,139 @@ false
             var result = template(data); 
             Assert.Equal("foo foo bar baz buz", result); 
         }
-
+        
         [Fact]
-        public void ShouldBeAbleToHandleFieldContainingDots()
+        public void BasicReturnFromHelper()
         {
-            var source = "Everybody was {{ foo.bar }}-{{ [foo.bar] }} {{ foo.[bar.baz].buz }}!";
+            var getData = $"getData{Guid.NewGuid()}";
+            Handlebars.RegisterHelper(getData, (context, arguments) => arguments[0]);
+            var source = $"{{{{{getData} 'data'}}}}";
             var template = Handlebars.Compile(source);
-            var data = new Dictionary<string, object>()
+            
+            var result = template(new object());
+            Assert.Equal("data", result);
+        }
+        
+        [Fact]
+        public void CollectionReturnFromHelper()
+        {
+            var getData = $"getData{Guid.NewGuid()}";
+            Handlebars.RegisterHelper(getData, (context, arguments) =>
             {
-                {"foo.bar", "fu"},
-                {"foo", new Dictionary<string,object>{{ "bar", "kung" }, { "bar.baz", new Dictionary<string, object> {{ "buz", "fighting" }} }} }
-            };
-            var result = template(data);
-            Assert.Equal("Everybody was kung-fu fighting!", result);
+                var data = new Dictionary<string, string>
+                {
+                    {"Nils", arguments[0].ToString()},
+                    {"Yehuda", arguments[1].ToString()}
+                };
+
+                return data;
+            });
+            var source = $"{{{{#each ({getData} 'Darmstadt' 'San Francisco')}}}}{{{{@key}}}} lives in {{{{@value}}}}. {{{{/each}}}}";
+            var template = Handlebars.Compile(source);
+            
+            var result = template(new object());
+            Assert.Equal("Nils lives in Darmstadt. Yehuda lives in San Francisco. ", result);
+        }
+        
+        
+        [Fact]
+        public void ReturnFromHelperWithSubExpression()
+        {
+            var formatData = $"formatData{Guid.NewGuid()}";
+            Handlebars.RegisterHelper(formatData, (writer, context, arguments) =>
+            {
+                writer.WriteSafeString(arguments[0]);
+                writer.WriteSafeString(" ");
+                writer.WriteSafeString(arguments[1]);
+            });
+
+            var getData = $"getData{Guid.NewGuid()}";
+            Handlebars.RegisterHelper(getData, (context, arguments) =>
+            {
+                return arguments[0];
+            });
+            
+            var source = $"{{{{{getData} ({formatData} 'data' '42')}}}}";
+            var template = Handlebars.Compile(source);
+
+            var result = template(new object());
+            Assert.Equal("data 42", result);
+        }
+        
+        [Fact]
+        public void ReturnFromHelperLateBindWithSubExpression()
+        {
+            var formatData = $"formatData{Guid.NewGuid()}";
+            var getData = $"getData{Guid.NewGuid()}";
+            
+            var source = $"{{{{{getData} ({formatData} 'data' '42')}}}}";
+            var template = Handlebars.Compile(source);
+            
+            Handlebars.RegisterHelper(formatData, (writer, context, arguments) =>
+            {
+                writer.WriteSafeString(arguments[0]);
+                writer.WriteSafeString(" ");
+                writer.WriteSafeString(arguments[1]);
+            });
+            
+            Handlebars.RegisterHelper(getData, (context, arguments) => arguments[0]);
+            
+            var result = template(new object());
+            Assert.Equal("data 42", result);
         }
 
         [Fact]
-        public void ShouldBeAbleToHandleListWithNumericalFields()
+        public void BasicLookup()
         {
-            var source = "{{ [0] }}";
-            var template = Handlebars.Compile(source);
-            var data = new List<string> {"FOOBAR"};
+            var source = "{{#each people}}{{.}} lives in {{lookup ../cities @index}} {{/each}}";
+            var template = Handlebars.Create().Compile(source);
+            var data = new
+            {
+                people = new[]{"Nils", "Yehuda"},
+                cities = new[]{"Darmstadt", "San Francisco"}
+            };
+            
             var result = template(data);
-            Assert.Equal("FOOBAR", result);
+            Assert.Equal("Nils lives in Darmstadt Yehuda lives in San Francisco ", result);
         }
 
         [Fact]
-        public void ShouldBeAbleToHandleDictionaryWithNumericalFields()
+        public void LookupAsSubExpression()
         {
-            var source = "{{ [0] }}";
-            var template = Handlebars.Compile(source);
-            var data = new Dictionary<string,string>
+            var source = "{{#each persons}}{{name}} lives in {{#with (lookup ../cities [resident])~}}{{name}} ({{country}}){{/with}}{{/each}}";
+            var template = Handlebars.Create().Compile(source);
+            var data = new
             {
-                {"0", "FOOBAR"},
+                persons = new[]
+                {
+                    new
+                    {
+                        name = "Nils",
+                        resident = "darmstadt"
+                    },
+                    new
+                    {
+                        name = "Yehuda",
+                        resident = "san-francisco"
+                    }
+                },
+                cities = new Dictionary<string, object>
+                {
+                    ["darmstadt"] = new
+                    {
+                        name = "Darmstadt",
+                        country = "Germany"
+                    },
+                    ["san-francisco"] = new
+                    {
+                        name = "San Francisco",
+                        country = "USA"
+                    }
+                }
             };
+            
             var result = template(data);
-            Assert.Equal("FOOBAR", result);
-        }
-
-        [Fact]
-        public void ShouldBeAbleToHandleJObjectsWithNumericalFields()
-        {
-            var source = "{{ [0] }}";
-            var template = Handlebars.Compile(source);
-            var data = new JObject
-            {
-                {"0", "FOOBAR"},
-            };
-            var result = template(data);
-            Assert.Equal("FOOBAR", result);
-        }
-
-        [Fact]
-        public void ShouldBeAbleToHandleKeysStartingAndEndingWithSquareBrackets()
-        {
-            var source =
-                "{{ noBracket }} {{ [noBracket] }} {{ [[startsWithBracket] }} {{ [endsWithBracket]] }} {{ [[bothBrackets]] }}";
-            var template = Handlebars.Compile(source);
-            var data = new Dictionary<string, string>
-            {
-                {"noBracket", "foo"},
-                {"[startsWithBracket", "bar"},
-                {"endsWithBracket]", "baz"},
-                {"[bothBrackets]", "buz"}
-            };
-            var result = template(data);
-            Assert.Equal("foo foo bar baz buz", result);
+            Assert.Equal("Nils lives in Darmstadt (Germany)Yehuda lives in San Francisco (USA)", result);
         }
 
         private class MockDictionary : IDictionary<string, string>

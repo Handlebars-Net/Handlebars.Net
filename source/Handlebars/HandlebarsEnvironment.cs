@@ -91,6 +91,14 @@ namespace HandlebarsDotNet
                     _configuration.Helpers.AddOrUpdate(helperName, helperFunction);
                 }
             }
+            
+            public void RegisterHelper(string helperName, HandlebarsReturnHelper helperFunction)
+            {
+                lock (_configuration)
+                {
+                    _configuration.ReturnHelpers.AddOrUpdate(helperName, helperFunction);
+                }
+            }
 
             public void RegisterHelper(string helperName, HandlebarsBlockHelper helperFunction)
             {
@@ -103,6 +111,10 @@ namespace HandlebarsDotNet
             private void RegisterBuiltinHelpers()
             {
                 foreach (var helperDefinition in BuiltinHelpers.Helpers)
+                {
+                    RegisterHelper(helperDefinition.Key, helperDefinition.Value);
+                }
+                foreach (var helperDefinition in BuiltinHelpers.ReturnHelpers)
                 {
                     RegisterHelper(helperDefinition.Key, helperDefinition.Value);
                 }

@@ -7,7 +7,7 @@ namespace HandlebarsDotNet.Compiler
     /// <summary/>
     /// <param name="parameters">Parameters passed to BlockParams.</param>
     /// <param name="valueBinder">Function that perform binding of parameter to <see cref="BindingContext"/>.</param>
-    public delegate void ConfigureBlockParams(IReadOnlyDictionary<string, Lazy<object>> parameters, ValueBinder valueBinder);
+    public delegate void ConfigureBlockParams(string[] parameters, ValueBinder valueBinder);
         
     /// <summary>
     /// Function that perform binding of parameter to <see cref="BindingContext"/>.
@@ -22,13 +22,11 @@ namespace HandlebarsDotNet.Compiler
         private readonly BlockParam _params;
         private readonly Action<Action<BindingContext>> _invoker;
         private readonly Dictionary<string, Func<object>> _accessors;
-        private readonly PathResolver _pathResolver;
-        
-        public BlockParamsValueProvider(BindingContext context, HandlebarsConfiguration configuration, object @params)
+
+        public BlockParamsValueProvider(BindingContext context, BlockParam @params)
         {
-            _params = @params as BlockParam;
+            _params = @params;
             _invoker = action => action(context);
-            _pathResolver = new PathResolver(configuration);
             _accessors = new Dictionary<string, Func<object>>(StringComparer.OrdinalIgnoreCase);
             
             context.RegisterValueProvider(this);
@@ -42,9 +40,6 @@ namespace HandlebarsDotNet.Compiler
         public void Configure(ConfigureBlockParams blockParamsConfiguration)
         {
             if(_params == null) return;
-
-            Lazy<object> ValueAccessor(BindingContext context, string paramName) => 
-                new Lazy<object>(() => _pathResolver.ResolvePath(context, paramName));
             
             void BlockParamsAction(BindingContext context)
             {
@@ -52,11 +47,8 @@ namespace HandlebarsDotNet.Compiler
                 {
                     if (!string.IsNullOrEmpty(name)) _accessors[name] = value;
                 }
-
-                var values = _params.Parameters
-                    .ToDictionary(parameter => parameter, parameter => ValueAccessor(context, parameter));
                 
-                blockParamsConfiguration.Invoke(values, ValueBinder);
+                blockParamsConfiguration.Invoke(_params.Parameters, ValueBinder);
             }
 
             _invoker(BlockParamsAction);

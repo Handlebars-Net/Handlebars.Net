@@ -9,7 +9,7 @@ namespace HandlebarsDotNet.Compiler
     internal class FunctionBuilder
     {
         private readonly HandlebarsConfiguration _configuration;
-        private static readonly Expression _emptyLambda =
+        private static readonly Expression<Action<TextWriter, object>> _emptyLambda =
             Expression.Lambda<Action<TextWriter, object>>(
                 Expression.Empty(),
                 Expression.Parameter(typeof(TextWriter)),
@@ -20,7 +20,25 @@ namespace HandlebarsDotNet.Compiler
             _configuration = configuration;
         }
 
-        public Expression Compile(IEnumerable<Expression> expressions, Expression parentContext, string templatePath = null)
+        public Expression Reduce(Expression expression, CompilationContext compilationContext)
+        {
+            expression = CommentVisitor.Visit(expression, compilationContext);
+            expression = UnencodedStatementVisitor.Visit(expression, compilationContext);
+            expression = PartialBinder.Bind(expression, compilationContext);
+            expression = StaticReplacer.Replace(expression, compilationContext);
+            expression = IteratorBinder.Bind(expression, compilationContext);
+            expression = BlockHelperFunctionBinder.Bind(expression, compilationContext);
+            expression = DeferredSectionVisitor.Bind(expression, compilationContext);
+            expression = HelperFunctionBinder.Bind(expression, compilationContext);
+            expression = BoolishConverter.Convert(expression, compilationContext);
+            expression = PathBinder.Bind(expression, compilationContext);
+            expression = SubExpressionVisitor.Visit(expression, compilationContext);
+            expression = HashParameterBinder.Bind(expression, compilationContext);
+            
+            return expression;
+        }
+
+        public Expression<Action<TextWriter, object>> Compile(IEnumerable<Expression> expressions, Expression parentContext, string templatePath = null)
         {
             try
             {
@@ -34,20 +52,9 @@ namespace HandlebarsDotNet.Compiler
                 }
                 var compilationContext = new CompilationContext(_configuration);
                 var expression = CreateExpressionBlock(expressions);
-                expression = CommentVisitor.Visit(expression, compilationContext);
-                expression = UnencodedStatementVisitor.Visit(expression, compilationContext);
-                expression = PartialBinder.Bind(expression, compilationContext);
-                expression = StaticReplacer.Replace(expression, compilationContext);
-                expression = IteratorBinder.Bind(expression, compilationContext);
-                expression = BlockHelperFunctionBinder.Bind(expression, compilationContext);
-                expression = DeferredSectionVisitor.Bind(expression, compilationContext);
-                expression = HelperFunctionBinder.Bind(expression, compilationContext);
-                expression = BoolishConverter.Convert(expression, compilationContext);
-                expression = PathBinder.Bind(expression, compilationContext);
-                expression = SubExpressionVisitor.Visit(expression, compilationContext);
-                expression = HashParameterBinder.Bind(expression, compilationContext);
-                expression = ContextBinder.Bind(expression, compilationContext, parentContext, templatePath);
-                return expression;
+                expression = Reduce(expression, compilationContext);
+                
+                return ContextBinder.Bind(expression, compilationContext, parentContext, templatePath);
             }
             catch (Exception ex)
             {
@@ -61,16 +68,15 @@ namespace HandlebarsDotNet.Compiler
             {
 
                 var expression = Compile(expressions, null, templatePath);
-                return ((Expression<Action<TextWriter, object>>)expression).Compile();
+                return expression.Compile();
             }
             catch (Exception ex)
             {
                 throw new HandlebarsCompilerException("An unhandled exception occurred while trying to compile the template", ex);
             }
         }
-
-
-        private Expression CreateExpressionBlock(IEnumerable<Expression> expressions)
+        
+        private static Expression CreateExpressionBlock(IEnumerable<Expression> expressions)
         {
             return Expression.Block(expressions);
         }
