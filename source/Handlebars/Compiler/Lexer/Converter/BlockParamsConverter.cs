@@ -22,19 +22,30 @@ namespace HandlebarsDotNet.Compiler
             bool foundBlockParams = false;
             foreach (var item in sequence)
             {
-                if (item is BlockParameterToken blockParameterToken)
+                switch (item)
                 {
-                    if(foundBlockParams) throw new HandlebarsCompilerException("multiple blockParams expressions are not supported");
+                    case BlockParameterToken blockParameterToken when foundBlockParams:
+                        throw new HandlebarsCompilerException("multiple blockParams expressions are not supported");
                     
-                    foundBlockParams = true;
-                    if(!(result.Last() is PathExpression pathExpression)) throw new HandlebarsCompilerException("blockParams definition has incorrect syntax");
-                    if(!string.Equals("as", pathExpression.Path, StringComparison.OrdinalIgnoreCase)) throw new HandlebarsCompilerException("blockParams definition has incorrect syntax");
+                    case BlockParameterToken blockParameterToken:
+                        foundBlockParams = true;
+                        if (!(result.Last() is PathExpression pathExpression))
+                            throw new HandlebarsCompilerException("blockParams definition has incorrect syntax");
+                        if (!string.Equals("as", pathExpression.Path, StringComparison.OrdinalIgnoreCase))
+                            throw new HandlebarsCompilerException("blockParams definition has incorrect syntax");
+
+                        result[result.Count - 1] =
+                            HandlebarsExpression.BlockParams(pathExpression.Path, blockParameterToken.Value);
+                        break;
                     
-                    result[result.Count - 1] = HandlebarsExpression.BlockParams(pathExpression.Path, blockParameterToken.Value);
-                }
-                else
-                {
-                    result.Add(item);
+                    case EndExpressionToken _:
+                        foundBlockParams = false;
+                        result.Add(item);
+                        break;
+
+                    default:
+                        result.Add(item);
+                        break;
                 }
             }
 

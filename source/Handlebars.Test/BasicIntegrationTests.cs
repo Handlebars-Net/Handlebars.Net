@@ -527,6 +527,35 @@ false
         }
         
         [Fact]
+        public void DictionaryEnumeratorWithInnerBlockParams()
+        {
+            var source = "{{#each enumerateMe as |item k|}}{{#each item as |item1 k|}}{{item1}} {{k}} {{/each}}{{/each}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                enumerateMe = new Dictionary<string, object>
+                {
+                    {
+                        "foo", new Dictionary<string, object>
+                        {
+                            {"foo1", "hello1"},
+                            {"bar1", "world1"}
+                        }
+                    },
+                    {
+                        "bar", new Dictionary<string, object>
+                        {
+                            {"foo2", "hello2"},
+                            {"bar2", "world2"}
+                        }
+                    }
+                }
+            };
+            var result = template(data);
+            Assert.Equal("hello1 foo1 world1 bar1 hello2 foo2 world2 bar2 ", result);
+        }
+
+        [Fact]
         public void DictionaryWithLastEnumerator()
         {
             var source = "{{#each enumerateMe}}{{@last}} {{/each}}";
