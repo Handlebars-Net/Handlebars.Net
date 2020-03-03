@@ -1,26 +1,70 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Text;
 using HandlebarsDotNet.Compiler;
 
 namespace HandlebarsDotNet
 {
+    internal abstract class ObjectPool<T>
+    {
+        private readonly ConcurrentQueue<T> _objects;
+
+        protected ObjectPool()
+        {
+            _objects = new ConcurrentQueue<T>();
+        }
+
+        public T GetObject()
+        {
+            return _objects.TryDequeue(out var item) 
+                ? item 
+                : CreateObject();
+        }
+
+        public virtual void PutObject(T item)
+        {
+            _objects.Enqueue(item);
+        }
+
+        protected abstract T CreateObject();
+    }
+
+    internal class StringBuilderPool : ObjectPool<StringBuilder>
+    {
+        private static readonly Lazy<StringBuilderPool> Lazy = new Lazy<StringBuilderPool>(() => new StringBuilderPool());
+        
+        private readonly int _initialCapacity;
+
+        public static StringBuilderPool Shared => Lazy.Value;
+        
+        public StringBuilderPool(int initialCapacity = 100)
+        {
+            _initialCapacity = initialCapacity;
+        }
+        
+        protected override StringBuilder CreateObject()
+        {
+            return new StringBuilder(_initialCapacity);
+        }
+
+        public override void PutObject(StringBuilder item)
+        {
+            item.Length = 0;
+            base.PutObject(item);
+        }
+    }
+    
     public partial class Handlebars
     {
         private class HandlebarsEnvironment : IHandlebars
         {
-            private readonly HandlebarsConfiguration _configuration;
             private readonly HandlebarsCompiler _compiler;
 
             public HandlebarsEnvironment(HandlebarsConfiguration configuration)
             {
-                if (configuration == null)
-                {
-                    throw new ArgumentNullException("configuration");
-                }
-
-                _configuration = configuration;
-                _compiler = new HandlebarsCompiler(_configuration);
+                Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+                _compiler = new HandlebarsCompiler(Configuration);
                 RegisterBuiltinHelpers();
             }
 
@@ -29,22 +73,23 @@ namespace HandlebarsDotNet
                 var compiledView = _compiler.CompileView(templatePath);
                 return (vm) =>
                 {
-                    var sb = new StringBuilder();
-                    using (var tw = new StringWriter(sb))
+                    var sb = StringBuilderPool.Shared.GetObject();
+                    try
                     {
-                        compiledView(tw, vm);
+                        using (var tw = new StringWriter(sb))
+                        {
+                            compiledView(tw, vm);
+                        }
+                        return sb.ToString();
                     }
-                    return sb.ToString();
+                    finally
+                    {
+                        StringBuilderPool.Shared.PutObject(sb);
+                    }
                 };
             }
 
-            public HandlebarsConfiguration Configuration
-            {
-                get
-                {
-                    return this._configuration;
-                }
-            }
+            public HandlebarsConfiguration Configuration { get; }
 
             public Action<TextWriter, object> Compile(TextReader template)
             {
@@ -58,21 +103,28 @@ namespace HandlebarsDotNet
                     var compiledTemplate = Compile(reader);
                     return context =>
                     {
-                        var builder = new StringBuilder();
-                        using (var writer = new StringWriter(builder))
+                        var builder = StringBuilderPool.Shared.GetObject();
+                        try
                         {
-                            compiledTemplate(writer, context);
+                            using (var writer = new StringWriter(builder))
+                            {
+                                compiledTemplate(writer, context);
+                            }
+                            return builder.ToString();
                         }
-                        return builder.ToString();
+                        finally
+                        {
+                            StringBuilderPool.Shared.PutObject(builder);
+                        }
                     };
                 }
             }
 
             public void RegisterTemplate(string templateName, Action<TextWriter, object> template)
             {
-                lock (_configuration)
+                lock (Configuration)
                 {
-                    _configuration.RegisteredTemplates.AddOrUpdate(templateName, template);
+                    Configuration.RegisteredTemplates.AddOrUpdate(templateName, template);
                 }
             }
 
@@ -86,25 +138,25 @@ namespace HandlebarsDotNet
 
             public void RegisterHelper(string helperName, HandlebarsHelper helperFunction)
             {
-                lock (_configuration)
+                lock (Configuration)
                 {
-                    _configuration.Helpers.AddOrUpdate(helperName, helperFunction);
+                    Configuration.Helpers.AddOrUpdate(helperName, helperFunction);
                 }
             }
             
             public void RegisterHelper(string helperName, HandlebarsReturnHelper helperFunction)
             {
-                lock (_configuration)
+                lock (Configuration)
                 {
-                    _configuration.ReturnHelpers.AddOrUpdate(helperName, helperFunction);
+                    Configuration.ReturnHelpers.AddOrUpdate(helperName, helperFunction);
                 }
             }
 
             public void RegisterHelper(string helperName, HandlebarsBlockHelper helperFunction)
             {
-                lock (_configuration)
+                lock (Configuration)
                 {
-                    _configuration.BlockHelpers.AddOrUpdate(helperName, helperFunction);
+                    Configuration.BlockHelpers.AddOrUpdate(helperName, helperFunction);
                 }
             }
 

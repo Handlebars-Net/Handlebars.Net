@@ -10,13 +10,13 @@ using Newtonsoft.Json.Linq;
 
 namespace Benchmark
 {
-    [SimpleJob(RuntimeMoniker.Net461)]
+    //[SimpleJob(RuntimeMoniker.Net461)]
     [SimpleJob(RuntimeMoniker.NetCoreApp21, baseline: true)]
     public class Execution
     {
         private IHandlebars _handlebars;
         
-        [Params(10000)]
+        [Params(100)]
         public int N;
         
         private Faker _faker;
@@ -34,21 +34,35 @@ namespace Benchmark
             _handlebars = Handlebars.Create();
             _faker = new Faker();
 
-            const string eachTemplate = "{{#each County}}{{this}} {{/each}}";
-            const string blockParamsEach = "{{#each County as |item val|}}{{item}} {{val}} {{/each}}";
+            const string eachTemplate = "{{#each County}}{{@key}}:{{@value}}\n{{/each}}";
             const string complexTemplate = "{{#each County}}" +
                                            "{{#if @first}}" +
-                                           "{{this}}" +
+                                           "{{@key}}:{{@value}}\n" +
                                            "{{else}}" +
-                                           "{{#if @last}}" +
-                                           " and {{this}}" +
-                                           "{{else}}" +
-                                           ", {{this}}" +
-                                           "{{/if}}" +
+                                           ", {{@key}}" +
                                            "{{/if}}" +
                                            "{{/each}}";
             const string helperTemplate = "{{customHelper 'value'}}";
             const string notRegisteredHelperTemplate = "{{not_registered_helper 'value'}}";
+            const string withParentIndex = @"
+                {{#each level1}}
+                    id={{id}}
+                    index=[{{@../../index}}:{{@../index}}:{{@index}}]
+                    first=[{{@../../first}}:{{@../first}}:{{@first}}]
+                    last=[{{@../../last}}:{{@../last}}:{{@last}}]
+                    {{#each level2}}
+                        id={{id}}
+                        index=[{{@../../index}}:{{@../index}}:{{@index}}]
+                        first=[{{@../../first}}:{{@../first}}:{{@first}}]
+                        last=[{{@../../last}}:{{@../last}}:{{@last}}]
+                        {{#each level3}}
+                            id={{id}}
+                            index=[{{@../../index}}:{{@../index}}:{{@index}}]
+                            first=[{{@../../first}}:{{@../first}}:{{@first}}]
+                            last=[{{@../../last}}:{{@../last}}:{{@last}}]
+                        {{/each}}
+                    {{/each}}    
+                {{/each}}";
             
             _handlebars.RegisterHelper("customHelper", (writer, context, parameters) =>
             {
@@ -72,14 +86,14 @@ namespace Benchmark
             _templates = new[]
             {
                 _handlebars.Compile(eachTemplate),
-                _handlebars.Compile(blockParamsEach),
+                _handlebars.Compile(withParentIndex),
                 _handlebars.Compile(complexTemplate),
                 _handlebars.Compile(helperTemplate),
                 _handlebars.Compile(notRegisteredHelperTemplate),
             };
         }
 
-        [IterationSetup(Targets = new[]{nameof(SimpleEachJsonInput), nameof(EachBlockParamsJsonInput), nameof(ComplexJsonInput)})]
+        [IterationSetup(Targets = new[]{nameof(SimpleEachJsonInput)/*, nameof(EachBlockParamsJsonInput)*/, nameof(ComplexJsonInput)})]
         public void JsonIterationSetup()
         {
             var json = new JObject();
@@ -90,29 +104,29 @@ namespace Benchmark
             
             _jsonData = new Dictionary<string, object>
             {
-                ["Country"] = json
+                ["County"] = json
             };
         }
         
-        [IterationSetup(Targets = new[]{nameof(SimpleEachDictionaryInput), nameof(EachBlockParamsDictionaryInput), nameof(ComplexDictionaryInput)})]
+        [IterationSetup(Targets = new[]{nameof(SimpleEachDictionaryInput)/*, nameof(EachBlockParamsDictionaryInput)*/, nameof(ComplexDictionaryInput)})]
         public void DictionaryIterationSetup()
         {
             _dictionaryData = new Dictionary<string, object>
             {
-                ["Country"] = _propertyNames.ToDictionary(o => o, o => Guid.NewGuid().ToString())
+                ["County"] = _propertyNames.ToDictionary(o => o, o => Guid.NewGuid().ToString())
             };
         }
         
-        [IterationSetup(Targets = new[]{nameof(SimpleEachArrayInput), nameof(EachBlockParamsArrayInput), nameof(ComplexArrayInput)})]
+        [IterationSetup(Targets = new[]{nameof(SimpleEachArrayInput)/*, nameof(EachBlockParamsArrayInput)*/, nameof(ComplexArrayInput)})]
         public void ArrayIterationSetup()
         {
             _arrayData = new Dictionary<string, object>
             {
-                ["Country"] = _propertyNames.Select(o => Guid.NewGuid().ToString()).ToArray()
+                ["County"] = _propertyNames.Select(o => Guid.NewGuid().ToString()).ToArray()
             };
         }
         
-        [IterationSetup(Targets = new[]{nameof(SimpleEachObjectInput), nameof(EachBlockParamsObjectInput), nameof(ComplexObjectInput)})]
+        [IterationSetup(Targets = new[]{nameof(SimpleEachObjectInput)/*, nameof(EachBlockParamsObjectInput)*/, nameof(ComplexObjectInput)})]
         public void ObjectIterationSetup()
         {
             var data = Activator.CreateInstance(_type);
@@ -124,7 +138,7 @@ namespace Benchmark
             
             _objectData = new Dictionary<string, object>
             {
-                ["Country"] = data
+                ["County"] = data
             };
         }
         
@@ -139,11 +153,11 @@ namespace Benchmark
             return _templates[0].Invoke(_arrayData);
         }
         
-        [Benchmark]
-        public string EachBlockParamsArrayInput()
-        {
-            return _templates[1].Invoke(_arrayData);
-        }
+        // [Benchmark]
+        // public string EachBlockParamsArrayInput()
+        // {
+        //     return _templates[1].Invoke(_arrayData);
+        // }
         
         [Benchmark]
         public string ComplexArrayInput()
@@ -157,11 +171,11 @@ namespace Benchmark
             return _templates[0].Invoke(_objectData);
         }
         
-        [Benchmark]
-        public string EachBlockParamsObjectInput()
-        {
-            return _templates[1].Invoke(_objectData);
-        }
+        // [Benchmark]
+        // public string EachBlockParamsObjectInput()
+        // {
+        //     return _templates[1].Invoke(_objectData);
+        // }
         
         [Benchmark]
         public string ComplexObjectInput()
@@ -175,11 +189,11 @@ namespace Benchmark
             return _templates[0].Invoke(_jsonData);
         }
         
-        [Benchmark]
-        public string EachBlockParamsJsonInput()
-        {
-            return _templates[1].Invoke(_jsonData);
-        }
+        // [Benchmark]
+        // public string EachBlockParamsJsonInput()
+        // {
+        //     return _templates[1].Invoke(_jsonData);
+        // }
         
         [Benchmark]
         public string ComplexJsonInput()
@@ -193,11 +207,11 @@ namespace Benchmark
             return _templates[0].Invoke(_dictionaryData);
         }
         
-        [Benchmark]
-        public string EachBlockParamsDictionaryInput()
-        {
-            return _templates[1].Invoke(_dictionaryData);
-        }
+        // [Benchmark]
+        // public string EachBlockParamsDictionaryInput()
+        // {
+        //     return _templates[1].Invoke(_dictionaryData);
+        // }
         
         [Benchmark]
         public string ComplexDictionaryInput()
@@ -220,6 +234,56 @@ namespace Benchmark
             });
 
             return _templates[4].Invoke(new object());
+        }
+
+        [Benchmark]
+        public string WithParentIndex()
+        {
+            var data = new
+            {
+                level1 = new[]{
+                    new {
+                        id = "0",
+                        level2 = new[]{
+                            new {
+                                id = "0-0",
+                                level3 = new[]{
+                                    new { id = "0-0-0" },
+                                    new { id = "0-0-1" }
+                                }
+                            },
+                            new {
+                                id = "0-1",
+                                level3 = new[]{
+                                    new { id = "0-1-0" },
+                                    new { id = "0-1-1" }
+                                }
+                            }
+                        }
+                    },
+                    new {
+                        id = "1",
+                        level2 = new[]{
+                            new {
+                                id = "1-0",
+                                level3 = new[]{
+                                    new { id = "1-0-0" },
+                                    new { id = "1-0-1" }
+                                }
+                            },
+                            new {
+                                id = "1-1",
+                                level3 = new[]{
+                                    new { id = "1-1-0" },
+                                    new { id = "1-1-1" }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            return _templates[1].Invoke(data);
         }
     }
 }

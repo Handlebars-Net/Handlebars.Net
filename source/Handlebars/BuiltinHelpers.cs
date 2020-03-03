@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Reflection;
 using System.Collections.Generic;
@@ -30,7 +30,7 @@ namespace HandlebarsDotNet
             }
         }
         
-        [Description("Lookup")]
+        [Description("lookup")]
         public static object Lookup(dynamic context, params object[] arguments)
         {
             if (arguments.Length != 2)
@@ -39,9 +39,9 @@ namespace HandlebarsDotNet
             }
 
             var configuration = new HandlebarsConfiguration();
-            var pathResolver = new PathResolver(configuration);
+            var pathResolver = new PathResolver();
             var memberName = arguments[1].ToString();
-            return !pathResolver.TryAccessMember(arguments[0], memberName, out var value) 
+            return !pathResolver.TryAccessMember(arguments[0], new ChainSegment(memberName), configuration, out var value) 
                 ? new UndefinedBindingResult(memberName, configuration)
                 : value;
         }
@@ -72,29 +72,11 @@ namespace HandlebarsDotNet
             context.InlinePartialTemplates.Add(key, options.Template);
         }
 
-        public static IEnumerable<KeyValuePair<string, HandlebarsHelper>> Helpers
-        {
-            get
-            {
-                return GetHelpers<HandlebarsHelper>();
-            }
-        }
-        
-        public static IEnumerable<KeyValuePair<string, HandlebarsReturnHelper>> ReturnHelpers
-        {
-            get
-            {
-                return GetHelpers<HandlebarsReturnHelper>();
-            }
-        }
+        public static IEnumerable<KeyValuePair<string, HandlebarsHelper>> Helpers => GetHelpers<HandlebarsHelper>();
 
-        public static IEnumerable<KeyValuePair<string, HandlebarsBlockHelper>> BlockHelpers
-        {
-            get
-            {
-                return GetHelpers<HandlebarsBlockHelper>();
-            }
-        }
+        public static IEnumerable<KeyValuePair<string, HandlebarsReturnHelper>> ReturnHelpers => GetHelpers<HandlebarsReturnHelper>();
+
+        public static IEnumerable<KeyValuePair<string, HandlebarsBlockHelper>> BlockHelpers => GetHelpers<HandlebarsBlockHelper>();
 
         private static IEnumerable<KeyValuePair<string, T>> GetHelpers<T>()
         {

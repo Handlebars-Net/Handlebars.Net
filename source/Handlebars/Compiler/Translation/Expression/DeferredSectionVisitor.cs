@@ -21,20 +21,17 @@ namespace HandlebarsDotNet.Compiler
 
         protected override Expression VisitDeferredSectionExpression(DeferredSectionExpression dsex)
         {
-#if netstandard
-            var method = new Action<object, BindingContext, Action<TextWriter, object>, Action<TextWriter, object>>(RenderSection).GetMethodInfo();
-#else
-            var method = new Action<object, BindingContext, Action<TextWriter, object>, Action<TextWriter, object>>(RenderSection).Method;
-#endif
-            Expression path = HandlebarsExpression.Path(dsex.Path.Path.Substring(1));
-            Expression context = CompilationContext.BindingContext;
-            Expression[] templates = GetDeferredSectionTemplates(dsex);
+            var templates = GetDeferredSectionTemplates(dsex);
+            
+            var path = ExpressionShortcuts.Arg<object>(HandlebarsExpression.Path(dsex.Path.Path.Substring(1)));
+            var context = ExpressionShortcuts.Arg<BindingContext>(CompilationContext.BindingContext);
+            var body = ExpressionShortcuts.Arg(templates[0]);
+            var inversion = ExpressionShortcuts.Arg(templates[1]);
 
-            return Expression.Call(method, new[] {path, context}.Concat(templates));
-
+            return ExpressionShortcuts.Call(() => RenderSection(path, context, body, inversion));
         }
 
-        private Expression[] GetDeferredSectionTemplates(DeferredSectionExpression dsex)
+        private Expression<Action<TextWriter, object>>[] GetDeferredSectionTemplates(DeferredSectionExpression dsex)
         {
             var fb = new FunctionBuilder(CompilationContext.Configuration);
             var body = fb.Compile(dsex.Body.Expressions, CompilationContext.BindingContext);

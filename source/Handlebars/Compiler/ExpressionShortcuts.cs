@@ -36,7 +36,7 @@ namespace HandlebarsDotNet.Compiler
     /// <summary>
     /// Provides strongly typed container for <see cref="Expression"/>.
     /// </summary>
-    /// <remarks>Used to trick C# compiler in cases like <see cref="E.Call"/> in order to pass value to target method.</remarks>
+    /// <remarks>Used to trick C# compiler in cases like <see cref="ExpressionShortcuts.Call"/> in order to pass value to target method.</remarks>
     /// <typeparam name="T">Type of expected <see cref="Expression"/> result value.</typeparam>
     internal class ExpressionContainer<T> : ExpressionContainer
     {
@@ -50,7 +50,7 @@ namespace HandlebarsDotNet.Compiler
     /// <summary>
     /// Stands for <see cref="Expression"/> shortcuts.
     /// </summary>
-    internal static class E
+    internal static class ExpressionShortcuts
     {
         /// <summary>
         /// Creates strongly typed representation of the <paramref name="expression"/>
@@ -180,19 +180,6 @@ namespace HandlebarsDotNet.Compiler
         {
             return new ExpressionContainer(ProcessCallLambda(invocationExpression));
         }
-        
-        /// <summary>
-        /// Creates <see cref="MethodCallExpression"/> or <see cref="InvocationExpression"/> based on <paramref name="invocationExpression"/>.
-        /// Parameters are resolved based on actual passed parameters.
-        /// </summary>
-        /// <param name="invocationExpression">Expression used to invoke the method.</param>
-        /// <returns><see cref="Void"/></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ExpressionContainer Call(ExpressionContainer instance, ExpressionContainer<MethodInfo> method, params ExpressionContainer[] parameters)
-        {
-            var methodCallExpression = (MethodCallExpression) ProcessCall(method, instance);
-            return methodCallExpression.Update(methodCallExpression.Object, parameters.Cast<Expression>());
-        }
 
         /// <summary>
         /// Creates <see cref="MethodCallExpression"/> or <see cref="InvocationExpression"/> based on <paramref name="invocationExpression"/>.
@@ -231,9 +218,9 @@ namespace HandlebarsDotNet.Compiler
         /// Provides fluent interface for <see cref="BlockExpression"/> creation
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static BlockBuilder Block()
+        public static BlockBuilder Block(Type returnType = null)
         {
-            return new BlockBuilder();
+            return new BlockBuilder(returnType);
         }
 
         /// <summary>
@@ -286,20 +273,6 @@ namespace HandlebarsDotNet.Compiler
         }
         
         /// <summary>
-        /// Creates strongly typed representation of the <see cref="Expression.Property(System.Linq.Expressions.Expression,System.String)"/>
-        /// </summary>
-        /// <param name="instance"/>
-        /// <param name="propertyAccessor">Property accessor expression</param>
-        /// <typeparam name="T">Expected type of resulting target <see cref="Expression"/></typeparam>
-        /// <typeparam name="TV">Expected type of resulting <see cref="MemberExpression"/></typeparam>
-        /// <returns><see cref="ExpressionContainer{T}"/></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ExpressionContainer<TV> Property<TV>(this ExpressionContainer instance, string propertyName)
-        {
-            return Property<TV>(instance.Expression, propertyName);
-        }
-        
-        /// <summary>
         /// Creates <see cref="MethodCallExpression"/> or <see cref="InvocationExpression"/> based on <paramref name="invocationExpression"/>.
         /// Parameters are resolved based on actual passed parameters.
         /// </summary>
@@ -311,6 +284,33 @@ namespace HandlebarsDotNet.Compiler
         {
             return Arg<TV>(ProcessCallLambda(invocationExpression, instance));
         }
+        
+        /// <summary>
+        /// Creates <see cref="TryExpression"/>.
+        /// Parameters are resolved based on actual passed parameters.
+        /// </summary>
+        /// <param name="instance"/>
+        /// <param name="blockBody">Expressions used inside of <c>try</c> block.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TryExpression Using<T>(this ExpressionContainer<T> instance, Func<ExpressionContainer<T>, BlockBody> blockBody) where T : IDisposable
+        {
+            ExpressionContainer<T> variable = Var<T>();
+            var block = Block()
+                .Parameter(variable, instance)
+                .Lines(blockBody(variable));
+
+            return Expression.TryFinally(block, instance.Call(o => o.Dispose()));
+        }
+
+        public static Expression[] Return<T>(this ExpressionContainer<T> instance)
+        {
+            LabelTarget returnTarget = Expression.Label(typeof(T));
+
+            GotoExpression returnExpression = Expression.Return(returnTarget, instance, typeof(T));
+            LabelExpression returnLabel = Expression.Label(returnTarget, Null<T>());
+
+            return new Expression[]{returnExpression, returnLabel};
+        }
 
         /// <summary>
         /// Creates assign <see cref="BinaryExpression"/>.
@@ -320,6 +320,16 @@ namespace HandlebarsDotNet.Compiler
         public static ExpressionContainer Assign<T>(this ExpressionContainer<T> target, ExpressionContainer<T> value)
         {
             return new ExpressionContainer(Expression.Assign(target, value));
+        }
+        
+        /// <summary>
+        /// Creates assign <see cref="BinaryExpression"/>.
+        /// Parameters are resolved based on actual passed parameters.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ExpressionContainer Assign<T>(this ExpressionContainer<T> target, T value)
+        {
+            return new ExpressionContainer(Expression.Assign(target, Expression.Constant(value, typeof(T))));
         }
         
         /// <summary>
@@ -492,11 +502,13 @@ namespace HandlebarsDotNet.Compiler
 
         internal class BlockBuilder: ExpressionContainer
         {
+            private readonly Type _returnType;
             private readonly List<Expression> _expressions;
             private readonly List<ParameterExpression> _parameters;
 
-            public BlockBuilder() : base(null)
+            public BlockBuilder(Type returnType) : base(null)
             {
+                _returnType = returnType;
                 _expressions = new List<Expression>();
                 _parameters = new List<ParameterExpression>();
             }
@@ -581,10 +593,14 @@ namespace HandlebarsDotNet.Compiler
             /// </summary>
             public ExpressionContainer<T> Invoke<T>(params ExpressionContainer[] parameters)
             {
-                return Arg<T>(Expression.Lambda(Expression, parameters.Select(o => (ParameterExpression) o.Expression)));
+                var lambda = Expression.Lambda(Expression, parameters.Select(o => (ParameterExpression) o.Expression));
+                return Arg<T>(Expression.Invoke(lambda));
             }
 
-            public override Expression Expression => Expression.Block(_parameters, _expressions);
+            public override Expression Expression => 
+                _returnType == null 
+                    ? Expression.Block(_parameters, _expressions) 
+                    : Expression.Block(_returnType, _parameters, _expressions);
         }
     }
 

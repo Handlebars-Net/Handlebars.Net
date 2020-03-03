@@ -11,40 +11,23 @@ namespace HandlebarsDotNet
         {
             return !IsFalsy(value);
         }
-        
-        public static bool IsUndefinedBindingResult(object value)
-        {
-            return value is UndefinedBindingResult;
-        }
 
         public static bool IsFalsy(object value)
         {
-            if (value is UndefinedBindingResult)
+            switch (value)
             {
-                return true;
-            }
-            if (value == null)
-            {
-                return true;
-            }
-            else if (value is bool)
-            {
-                return !(bool)value;
-            }
-            else if (value is string)
-            {
-                if ((string)value == "")
-                {
+                case UndefinedBindingResult _:
+                case null:
                     return true;
-                }
-                else
-                {
-                    return false;
-                }
+                case bool b:
+                    return !b;
+                case string s:
+                    return s == string.Empty;
             }
-            else if (IsNumber(value))
+
+            if (IsNumber(value))
             {
-                return !System.Convert.ToBoolean(value);
+                return !Convert.ToBoolean(value);
             }
             return false;
         }

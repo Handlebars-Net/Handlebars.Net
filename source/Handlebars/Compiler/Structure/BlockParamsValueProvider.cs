@@ -32,7 +32,7 @@ namespace HandlebarsDotNet.Compiler
             context.RegisterValueProvider(this);
         }
 
-        public bool ProvidesNonContextVariables { get; } = true;
+        public ValueTypes SupportedValueTypes { get; } = ValueTypes.Context | ValueTypes.All;
 
         /// <summary>
         /// Configures behavior of BlockParams.

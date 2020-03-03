@@ -23,37 +23,41 @@ namespace HandlebarsDotNet.Compiler
             while (enumerator.MoveNext())
             {
                 var item = enumerator.Current;
-                if (item is HelperExpression)
+                switch (item)
                 {
-                    var helper = item as HelperExpression;
-                    var helperArguments = AccumulateArguments(enumerator);
-                    yield return HandlebarsExpression.Helper(
-                        helper.HelperName,
-                        helperArguments,
-                        helper.IsRaw);
-                    yield return enumerator.Current;
-                }
-                else if (item is PathExpression)
-                {
-                    var helperArguments = AccumulateArguments(enumerator);
-                    if (helperArguments.Count > 0)
+                    case HelperExpression helper:
                     {
-                        var path = item as PathExpression;
+                        var helperArguments = AccumulateArguments(enumerator);
                         yield return HandlebarsExpression.Helper(
-                            path.Path,
+                            helper.HelperName,
                             helperArguments,
-                            (enumerator.Current as EndExpressionToken).IsRaw);
+                            helper.IsRaw);
                         yield return enumerator.Current;
+                        break;
                     }
-                    else
+                    case PathExpression path:
                     {
-                        yield return item;
-                        yield return enumerator.Current;
+                        var helperArguments = AccumulateArguments(enumerator);
+                        if (helperArguments.Count > 0)
+                        {
+                            yield return HandlebarsExpression.Helper(
+                                path.Path,
+                                helperArguments,
+                                ((EndExpressionToken) enumerator.Current)?.IsRaw ?? false);
+                            yield return enumerator.Current;
+                        }
+                        else
+                        {
+                            yield return path;
+                            yield return enumerator.Current;
+                        }
+
+                        break;
                     }
-                }
-                else
-                {
-                    yield return item;
+                    
+                    default:
+                        yield return item;
+                        break;
                 }
             }
         }

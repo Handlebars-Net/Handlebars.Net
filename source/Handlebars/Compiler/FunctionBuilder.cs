@@ -20,7 +20,7 @@ namespace HandlebarsDotNet.Compiler
             _configuration = configuration;
         }
 
-        public Expression Reduce(Expression expression, CompilationContext compilationContext)
+        public static Expression Reduce(Expression expression, CompilationContext compilationContext)
         {
             expression = CommentVisitor.Visit(expression, compilationContext);
             expression = UnencodedStatementVisitor.Visit(expression, compilationContext);

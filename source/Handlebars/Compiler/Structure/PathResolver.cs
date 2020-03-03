@@ -2,46 +2,123 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Dynamic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace HandlebarsDotNet.Compiler
 {
+    [DebuggerDisplay("{Path}")]
+    internal class PathInfo
+    {
+        public bool HasValue { get; set; }
+        public string Path { get; set; }
+        public bool IsVariable { get; set; }
+        public IList<PathSegment> Segments { get; set; } = new List<PathSegment>();
+    }
+        
+    [DebuggerDisplay("{Segment}")]
+    internal class PathSegment
+    {
+        public string Segment { get; }
+
+        public PathSegment(string segment, IEnumerable<ChainSegment> chain)
+        {
+            Segment = segment;
+            PathChain = chain.ToArray();
+        }
+
+        public bool IsSwitch { get; set; }
+
+        public ChainSegment[] PathChain { get; }
+    }
+
+    [DebuggerDisplay("{Value}")]
+    internal class ChainSegment
+    {
+        public ChainSegment(string value)
+        {
+            Value = value;
+            IsVariable = value.StartsWith("@");
+            IsThis = string.IsNullOrEmpty(value) || string.Equals(value, "this", StringComparison.OrdinalIgnoreCase);
+            TrimmedValue = TrimSquareBrackets(value);
+        }
+
+        public string Value { get; }
+        public string TrimmedValue { get; }
+        public bool IsVariable { get; }
+        public bool IsThis { get; }
+        
+        private static string TrimSquareBrackets(string key)
+        {
+            //Only trim a single layer of brackets.
+            if (key.StartsWith("[") && key.EndsWith("]"))
+            {
+                return key.Substring(1, key.Length - 2);
+            }
+
+            return key;
+        }
+    }
+    
     internal class PathResolver
     {
         private static readonly Regex IndexRegex = new Regex(@"^\[?(?<index>\d+)\]?$", RegexOptions.Compiled);
 
-        private readonly HandlebarsConfiguration _configuration;
-
-        public PathResolver(HandlebarsConfiguration configuration)
-        {
-            _configuration = configuration;
-        }
-        
-        //TODO: make path resolution logic smarter
-        public object ResolvePath(BindingContext context, string path)
+        public static PathInfo GetPathInfo(string path)
         {
             if (path == "null")
-                return null;
+                return new PathInfo();
 
-            var containsVariable = path.StartsWith("@");
-            if (containsVariable)
+            var pathInfo = new PathInfo
+            {
+                HasValue = true, 
+                Path = path, 
+                IsVariable = path.StartsWith("@")
+            };
+
+            if (pathInfo.IsVariable)
             {
                 path = path.Substring(1);
-                if (path.Contains(".."))
-                {
-                    context = context.ParentContext;
-                }
             }
-
-            var instance = context.Value;
-            var hashParameters = instance as HashParameterDictionary;
 
             foreach (var segment in path.Split('/'))
             {
                 if (segment == "..")
+                {
+                    pathInfo.Segments.Add(new PathSegment(segment, Enumerable.Empty<ChainSegment>())
+                    {
+                        IsSwitch = true
+                    });
+                    continue;
+                }
+                
+                var segmentString = pathInfo.IsVariable ? "@" + segment : segment;
+                pathInfo.Segments.Add(new PathSegment(segmentString, GetPathChain(segmentString)));
+                
+            }
+
+            return pathInfo;
+        }
+        
+        
+        //TODO: make path resolution logic smarter
+        public object ResolvePath(BindingContext context, PathInfo pathInfo)
+        {
+            if (!pathInfo.HasValue)
+                return null;
+
+            var configuration = context.Configuration;
+            var containsVariable = pathInfo.IsVariable;
+            var instance = context.Value;
+            var hashParameters = instance as HashParameterDictionary;
+
+            foreach (var segment in pathInfo.Segments)
+            {
+                if (segment.IsSwitch)
                 {
                     context = context.ParentContext;
                     if (context == null)
@@ -54,26 +131,25 @@ namespace HandlebarsDotNet.Compiler
                 }
                 else
                 {
-                    var segmentString = containsVariable ? "@" + segment : segment;
-                    foreach (var memberName in GetPathChain(segmentString))
+                    foreach (var chainSegment in segment.PathChain)
                     {
-                        instance = ResolveValue(context, instance, memberName);
+                        instance = ResolveValue(context, instance, chainSegment);
 
                         if (!(instance is UndefinedBindingResult))
                             continue;
 
-                        if (hashParameters == null || hashParameters.ContainsKey(memberName) || context.ParentContext == null)
+                        if (hashParameters == null || hashParameters.ContainsKey(chainSegment.Value) || context.ParentContext == null)
                         {
-                            if (_configuration.ThrowOnUnresolvedBindingExpression)
-                                throw new HandlebarsUndefinedBindingException(path, (instance as UndefinedBindingResult).Value);
+                            if (configuration.ThrowOnUnresolvedBindingExpression)
+                                throw new HandlebarsUndefinedBindingException(pathInfo.Path, (instance as UndefinedBindingResult).Value);
                             return instance;
                         }
 
-                        instance = ResolveValue(context.ParentContext, context.ParentContext.Value, memberName);
+                        instance = ResolveValue(context.ParentContext, context.ParentContext.Value, chainSegment);
                         if (!(instance is UndefinedBindingResult result)) continue;
                         
-                        if (_configuration.ThrowOnUnresolvedBindingExpression)
-                            throw new HandlebarsUndefinedBindingException(path, result.Value);
+                        if (configuration.ThrowOnUnresolvedBindingExpression)
+                            throw new HandlebarsUndefinedBindingException(pathInfo.Path, result.Value);
                         return result;
                     }
                 }
@@ -81,11 +157,11 @@ namespace HandlebarsDotNet.Compiler
             return instance;
         }
         
-        private static IEnumerable<string> GetPathChain(string segmentString)
+        private static IEnumerable<ChainSegment> GetPathChain(string segmentString)
         {
             var insideEscapeBlock = false;
             var pathChain = segmentString.Split('.')
-                .Aggregate(new List<string>(), (list, next) =>
+                .Aggregate(new List<ChainSegment>(), (list, next) =>
                 {
                     if (insideEscapeBlock)
                     {
@@ -94,7 +170,7 @@ namespace HandlebarsDotNet.Compiler
                             insideEscapeBlock = false;
                         }
 
-                        list[list.Count - 1] = list[list.Count - 1] + "." + next;
+                        list[list.Count - 1] = new ChainSegment($"{list[list.Count - 1].Value}.{next}");
                         return list;
                     }
 
@@ -108,32 +184,34 @@ namespace HandlebarsDotNet.Compiler
                         insideEscapeBlock = false;
                     }
 
-                    list.Add(next);
+                    list.Add(new ChainSegment(next));
                     return list;
                 });
             
             return pathChain;
         }
 
-        private object ResolveValue(BindingContext context, object instance, string segment)
+        private object ResolveValue(BindingContext context, object instance, ChainSegment chainSegment)
         {
-            var undefined = new UndefinedBindingResult(segment, _configuration);
+            var configuration = context.Configuration;
+            var segment = chainSegment.Value;
+            object undefined = new UndefinedBindingResult(segment, configuration);
             object resolvedValue = undefined;
-            if (segment.StartsWith("@"))
+            if (chainSegment.IsVariable)
             {
-                var contextValue = context.GetContextVariable(segment.Substring(1));
+                var contextValue = context.GetContextVariable(segment);
                 if (contextValue != null)
                 {
                     resolvedValue = contextValue;
                 }
             }
-            else if (segment == "this" || segment == string.Empty)
+            else if (chainSegment.IsThis)
             {
                 resolvedValue = instance;
             }
             else
             {
-                if (!TryAccessMember(instance, segment, out resolvedValue))
+                if (!TryAccessMember(instance, chainSegment, configuration, out resolvedValue))
                 {
                     resolvedValue = context.GetVariable(segment) ?? undefined;
                 }
@@ -141,16 +219,19 @@ namespace HandlebarsDotNet.Compiler
             return resolvedValue;
         }
 
-        public bool TryAccessMember(object instance, string memberName, out object value)
+        public bool TryAccessMember(object instance, ChainSegment chainSegment, HandlebarsConfiguration configuration, out object value)
         {
-            value = new UndefinedBindingResult(memberName, _configuration);
+            var memberName = chainSegment.Value;
+            value = new UndefinedBindingResult(memberName, configuration);
             if (instance == null)
                 return false;
 
             var instanceType = instance.GetType();
-            memberName = ResolveMemberName(instance, memberName);
-            memberName = TrimSquareBrackets(memberName);
-            
+            memberName = ResolveMemberName(instance, memberName, configuration);
+            memberName = ReferenceEquals(memberName, chainSegment.Value) 
+                ? chainSegment.TrimmedValue 
+                : TrimSquareBrackets(memberName);
+
             return TryAccessContextMember(instance, memberName, out value) 
                    || TryAccessStringIndexerMember(instance, memberName, instanceType, out value)
                    || TryAccessIEnumerableMember(instance, memberName, out value)
@@ -201,20 +282,15 @@ namespace HandlebarsDotNet.Compiler
         
         private static bool TryAccessMemberWithReflection(object instance, string memberName, Type instanceType, out object value)
         {
-            switch (GetMember(memberName, instanceType))
+            var typeDescriptor = TypeDescriptors.Provider.GetObjectTypeDescriptor(instanceType);
+            if(typeDescriptor.Accessors.TryGetValue(memberName, out var accessor))
             {
-                case PropertyInfo propertyInfo:
-                    value = propertyInfo.GetValue(instance, null);
-                    return true;
-                
-                case FieldInfo fieldInfo:
-                    value = fieldInfo.GetValue(instance);
-                    return true;
-                
-                default:
-                    value = null;
-                    return false;
+                value = accessor(instance);
+                return true;
             }
+
+            value = null;
+            return false;
         }
 
         private static bool TryAccessIDictionaryMember(object instance, string memberName, out object value)
@@ -333,9 +409,9 @@ namespace HandlebarsDotNet.Compiler
             return site.Target(site, target);
         }
 
-        private string ResolveMemberName(object instance, string memberName)
+        private static string ResolveMemberName(object instance, string memberName, HandlebarsConfiguration configuration)
         {
-            var resolver = _configuration.ExpressionNameResolver;
+            var resolver = configuration.ExpressionNameResolver;
             return resolver != null ? resolver.ResolveExpressionName(instance, memberName) : memberName;
         }
     }

@@ -17,23 +17,19 @@ namespace HandlebarsDotNet.Compiler
 
         protected override Expression VisitStatementExpression(StatementExpression sex)
         {
+            var context = ExpressionShortcuts.Var<BindingContext>();
+            var suppressEncoding = context.Property(o => o.SuppressEncoding);
             if (sex.IsEscaped == false)
             {
-                return Expression.Block(
-                    typeof(void),
-                    Expression.Assign(
-                        Expression.Property(CompilationContext.BindingContext, "SuppressEncoding"),
-                        Expression.Constant(true)),
-                    sex,
-                    Expression.Assign(
-                        Expression.Property(CompilationContext.BindingContext, "SuppressEncoding"),
-                        Expression.Constant(false)),
-                    Expression.Empty());
+                return ExpressionShortcuts.Block(typeof(void))
+                    .Parameter(context, CompilationContext.BindingContext)
+                    .Line(suppressEncoding.Assign(true))
+                    .Line(sex)
+                    .Line(suppressEncoding.Assign(false))
+                    .Line(Expression.Empty());
             }
-            else
-            {
-                return sex;
-            }
+
+            return sex;
         }
     }
 }

@@ -25,25 +25,25 @@ namespace HandlebarsDotNet.Compiler
 
             var fb = new FunctionBuilder(CompilationContext.Configuration);
 
-            var context = E.Arg<BindingContext>(CompilationContext.BindingContext);
+            var context = ExpressionShortcuts.Arg<BindingContext>(CompilationContext.BindingContext);
             var bindingContext = isInlinePartial 
                 ? context.Cast<object>()
                 : context.Property(o => o.Value);
 
-            var blockParamsExpression = E.New(
-                () => new BlockParamsValueProvider(context, E.Arg<BlockParam>(bhex.BlockParams))
+            var blockParamsExpression = ExpressionShortcuts.New(
+                () => new BlockParamsValueProvider(context, ExpressionShortcuts.Arg<BlockParam>(bhex.BlockParams))
             );
             
             var body = fb.Compile(((BlockExpression) bhex.Body).Expressions, context);
             var inversion = fb.Compile(((BlockExpression) bhex.Inversion).Expressions, context);
             var helper = CompilationContext.Configuration.BlockHelpers[bhex.HelperName.Replace("#", "")];
             
-            var helperOptions = E.New(
-                () => new HelperOptions(E.Arg(body), E.Arg(inversion), blockParamsExpression)
+            var helperOptions = ExpressionShortcuts.New(
+                () => new HelperOptions(ExpressionShortcuts.Arg(body), ExpressionShortcuts.Arg(inversion), blockParamsExpression)
             );
             
-            return E.Call(
-                () => helper(context.Property(o => o.TextWriter), helperOptions, bindingContext, E.Array<object>(bhex.Arguments))
+            return ExpressionShortcuts.Call(
+                () => helper(context.Property(o => o.TextWriter), helperOptions, bindingContext, ExpressionShortcuts.Array<object>(bhex.Arguments))
             );
         }
     }

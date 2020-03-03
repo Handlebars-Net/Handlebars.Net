@@ -7,10 +7,6 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class BlockHelperExpression : HelperExpression
     {
-        private readonly Expression _body;
-        private readonly Expression _inversion;
-        private readonly BlockParamsExpression _blockParams;
-
         public BlockHelperExpression(
             string helperName,
             IEnumerable<Expression> arguments,
@@ -19,8 +15,6 @@ namespace HandlebarsDotNet.Compiler
             bool isRaw = false)
             : this(helperName, arguments, BlockParamsExpression.Empty(), body, inversion, isRaw)
         {
-            _body = body;
-            _inversion = inversion;
         }
         
         public BlockHelperExpression(
@@ -32,30 +26,18 @@ namespace HandlebarsDotNet.Compiler
             bool isRaw = false)
             : base(helperName, arguments, isRaw)
         {
-            _body = body;
-            _inversion = inversion;
-            _blockParams = blockParams;
+            Body = body;
+            Inversion = inversion;
+            BlockParams = blockParams;
         }
 
-        public Expression Body
-        {
-            get { return _body; }
-        }
+        public Expression Body { get; }
 
-        public Expression Inversion
-        {
-            get { return _inversion; }
-        }
+        public Expression Inversion { get; }
 
-        public BlockParamsExpression BlockParams
-        {
-            get { return _blockParams; }
-        }
+        public BlockParamsExpression BlockParams { get; }
 
-        public override ExpressionType NodeType
-        {
-            get { return (ExpressionType)HandlebarsExpressionType.BlockExpression; }
-        }
+        public override ExpressionType NodeType => (ExpressionType) HandlebarsExpressionType.BlockExpression;
     }
 }
 

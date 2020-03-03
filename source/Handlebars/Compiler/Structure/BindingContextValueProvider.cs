@@ -11,7 +11,7 @@ namespace HandlebarsDotNet.Compiler
             _context = context;
         }
 
-        public bool ProvidesNonContextVariables { get; } = false;
+        public ValueTypes SupportedValueTypes { get; } = ValueTypes.Context;
 
         public bool TryGetValue(string memberName, out object value)
         {

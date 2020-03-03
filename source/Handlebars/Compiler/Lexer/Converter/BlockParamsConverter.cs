@@ -9,7 +9,7 @@ namespace HandlebarsDotNet.Compiler
     {
         public static IEnumerable<object> Convert(IEnumerable<object> sequence)
         {
-            return new BlockParamsConverter().ConvertTokens(sequence).ToList();
+            return new BlockParamsConverter().ConvertTokens(sequence);
         }
 
         private BlockParamsConverter()

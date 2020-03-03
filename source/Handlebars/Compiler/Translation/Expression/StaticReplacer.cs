@@ -18,14 +18,9 @@ namespace HandlebarsDotNet.Compiler
 
         protected override Expression VisitStaticExpression(StaticExpression stex)
         {
-	        var encodedTextWriter = Expression.Property(CompilationContext.BindingContext, "TextWriter");
-#if netstandard
-            var writeMethod = typeof(EncodedTextWriter).GetRuntimeMethod("Write", new [] { typeof(string), typeof(bool) });
-#else
-            var writeMethod = typeof(EncodedTextWriter).GetMethod("Write", new [] { typeof(string), typeof(bool) });
-#endif
-
-            return Expression.Call(encodedTextWriter, writeMethod, Expression.Constant(stex.Value), Expression.Constant(false));
+            var context = ExpressionShortcuts.Arg<BindingContext>(CompilationContext.BindingContext);
+            var writer = context.Property(o => o.TextWriter);
+            return writer.Call(o => o.Write(stex.Value, false));
         }
     }
 }

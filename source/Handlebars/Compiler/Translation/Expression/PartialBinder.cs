@@ -31,7 +31,7 @@ namespace HandlebarsDotNet.Compiler
 
         protected override Expression VisitPartialExpression(PartialExpression pex)
         {
-            var bindingContext = E.Arg<BindingContext>(CompilationContext.BindingContext);
+            var bindingContext = ExpressionShortcuts.Arg<BindingContext>(CompilationContext.BindingContext);
 
             var fb = new FunctionBuilder(CompilationContext.Configuration);
             var partialBlockTemplate = pex.Fallback == null ? null : fb.Compile(new[] {pex.Fallback}, null, null);
@@ -39,12 +39,12 @@ namespace HandlebarsDotNet.Compiler
             if (pex.Argument != null || partialBlockTemplate != null)
             {
                 bindingContext = bindingContext.Call(o =>
-                    o.CreateChildContext(E.Arg<object>(pex.Argument), E.Arg(partialBlockTemplate))
+                    o.CreateChildContext(ExpressionShortcuts.Arg<object>(pex.Argument), ExpressionShortcuts.Arg(partialBlockTemplate))
                 );
             }
 
-            return E.Call(() =>
-                InvokePartialWithFallback(E.Cast<string>(pex.PartialName), bindingContext, CompilationContext.Configuration)
+            return ExpressionShortcuts.Call(() =>
+                InvokePartialWithFallback(ExpressionShortcuts.Cast<string>(pex.PartialName), bindingContext, CompilationContext.Configuration)
             );
         }
 

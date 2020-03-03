@@ -23,24 +23,26 @@ namespace HandlebarsDotNet.Compiler
         
         protected override Expression VisitHelperExpression(HelperExpression hex)
         {
-            var bindingContext = E.Arg<BindingContext>(CompilationContext.BindingContext);
+            var bindingContext = ExpressionShortcuts.Arg<BindingContext>(CompilationContext.BindingContext);
             var textWriter = bindingContext.Property(o => o.TextWriter);
-            var args = E.Array<object>(hex.Arguments.Select(Visit));
+            var args = ExpressionShortcuts.Array<object>(hex.Arguments.Select(Visit));
 
             if (CompilationContext.Configuration.Helpers.TryGetValue(hex.HelperName, out var helper))
             {
-                return E.Call(() => helper(textWriter, bindingContext, args));
+                return ExpressionShortcuts.Call(() => helper(textWriter, bindingContext, args));
             }
             
             if (CompilationContext.Configuration.ReturnHelpers.TryGetValue(hex.HelperName, out var returnHelper))
             {
-                return E.Call(() => CaptureResult(textWriter, 
-                    E.Call(() => returnHelper(bindingContext, args)))
+                return ExpressionShortcuts.Call(() => 
+                    CaptureResult(textWriter, ExpressionShortcuts.Call(() => returnHelper(bindingContext, args)))
                 );
             }
 
-            return E.Call(() => CaptureResult(bindingContext.Property(o => o.TextWriter),
-                E.Call(() => LateBindHelperExpression(bindingContext, hex.HelperName, args)))
+            return ExpressionShortcuts.Call(() => 
+                CaptureResult(textWriter, ExpressionShortcuts.Call(() => 
+                    LateBindHelperExpression(bindingContext, hex.HelperName, args))
+                )
             );
         }
 
@@ -51,7 +53,7 @@ namespace HandlebarsDotNet.Compiler
         {
             if (CompilationContext.Configuration.Helpers.TryGetValue(helperName, out var helper))
             {
-                using (var write = new StringWriter())
+                using (var write = new PolledStringWriter())
                 {
                     helper(write, context.Value, arguments.ToArray());
                     return write.ToString();

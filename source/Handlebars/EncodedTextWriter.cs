@@ -1,8 +1,22 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text;
 
 namespace HandlebarsDotNet
 {
+	internal class PolledStringWriter : StringWriter
+	{
+		public PolledStringWriter() : base(StringBuilderPool.Shared.GetObject())
+		{
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			base.Dispose(disposing);
+			StringBuilderPool.Shared.PutObject(base.GetStringBuilder());
+		}
+	}
+	
 	internal class EncodedTextWriter : TextWriter
 	{
 		private readonly TextWriter _underlyingWriter;

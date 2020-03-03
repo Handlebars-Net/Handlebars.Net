@@ -9,17 +9,18 @@ namespace HandlebarsDotNet.Compiler
     {
         private readonly List<IValueProvider> _valueProviders = new List<IValueProvider>();
         
-        public BindingContext(object value, EncodedTextWriter writer, BindingContext parent, string templatePath, IDictionary<string, Action<TextWriter, object>> inlinePartialTemplates) :
-            this(value, writer, parent, templatePath, null, null, inlinePartialTemplates) { }
+        public BindingContext(HandlebarsConfiguration configuration, object value, EncodedTextWriter writer, BindingContext parent, string templatePath, IDictionary<string, Action<TextWriter, object>> inlinePartialTemplates) :
+            this(configuration, value, writer, parent, templatePath, null, null, inlinePartialTemplates) { }
 
-        public BindingContext(object value, EncodedTextWriter writer, BindingContext parent, string templatePath, Action<TextWriter, object> partialBlockTemplate, IDictionary<string, Action<TextWriter, object>> inlinePartialTemplates) :
-            this(value, writer, parent, templatePath, partialBlockTemplate, null, inlinePartialTemplates) { }
+        private BindingContext(HandlebarsConfiguration configuration, object value, EncodedTextWriter writer, BindingContext parent, string templatePath, Action<TextWriter, object> partialBlockTemplate, IDictionary<string, Action<TextWriter, object>> inlinePartialTemplates) :
+            this(configuration, value, writer, parent, templatePath, partialBlockTemplate, null, inlinePartialTemplates) { }
 
-        public BindingContext(object value, EncodedTextWriter writer, BindingContext parent, string templatePath, Action<TextWriter, object> partialBlockTemplate, BindingContext current, IDictionary<string, Action<TextWriter, object>> inlinePartialTemplates)
+        private BindingContext(HandlebarsConfiguration configuration, object value, EncodedTextWriter writer, BindingContext parent, string templatePath, Action<TextWriter, object> partialBlockTemplate, BindingContext current, IDictionary<string, Action<TextWriter, object>> inlinePartialTemplates)
         {
             RegisterValueProvider(new BindingContextValueProvider(this));
             
             TemplatePath = parent != null ? (parent.TemplatePath ?? templatePath) : templatePath;
+            Configuration = configuration;
             TextWriter = writer;
             Value = value;
             ParentContext = parent;
@@ -59,18 +60,20 @@ namespace HandlebarsDotNet.Compiler
 
         public string TemplatePath { get; }
 
+        public HandlebarsConfiguration Configuration { get; }
+        
         public EncodedTextWriter TextWriter { get; }
 
         public IDictionary<string, Action<TextWriter, object>> InlinePartialTemplates { get; }
 
         public Action<TextWriter, object> PartialBlockTemplate { get; }
-
+        
         public bool SuppressEncoding
         {
             get => TextWriter.SuppressEncoding;
             set => TextWriter.SuppressEncoding = value;
         }
-        
+
         public virtual object Value { get; }
 
         public virtual BindingContext ParentContext { get; }
@@ -101,7 +104,7 @@ namespace HandlebarsDotNet.Compiler
             for (var index = _valueProviders.Count - 1; index >= 0; index--)
             {
                 var valueProvider = _valueProviders[index];
-                if(!valueProvider.ProvidesNonContextVariables) continue;
+                if(!valueProvider.SupportedValueTypes.HasFlag(ValueTypes.All)) continue;
                 
                 if (valueProvider.TryGetValue(variableName, out var value)) return value;
             }
@@ -139,7 +142,7 @@ namespace HandlebarsDotNet.Compiler
 
         public virtual BindingContext CreateChildContext(object value, Action<TextWriter, object> partialBlockTemplate)
         {
-            return new BindingContext(value ?? Value, TextWriter, this, TemplatePath, partialBlockTemplate ?? PartialBlockTemplate, null);
+            return new BindingContext(Configuration, value ?? Value, TextWriter, this, TemplatePath, partialBlockTemplate ?? PartialBlockTemplate, null);
         }
     }
 }

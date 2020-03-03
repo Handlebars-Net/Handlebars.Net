@@ -5,7 +5,7 @@ using HandlebarsDotNet;
 
 namespace Benchmark
 {
-    [SimpleJob(RuntimeMoniker.Net461)]
+    //[SimpleJob(RuntimeMoniker.Net461)]
     [SimpleJob(RuntimeMoniker.NetCoreApp21, baseline: true)]
     public class Compilation
     {
@@ -39,18 +39,44 @@ namespace Benchmark
         }
 
         [Benchmark]
+        public Func<object, string> WithParentIndex()
+        {
+            const string template = @"
+                {{#each level1}}
+                    id={{id}}
+                    index=[{{@../../index}}:{{@../index}}:{{@index}}]
+                    first=[{{@../../first}}:{{@../first}}:{{@first}}]
+                    last=[{{@../../last}}:{{@../last}}:{{@last}}]
+                    {{#each level2}}
+                        id={{id}}
+                        index=[{{@../../index}}:{{@../index}}:{{@index}}]
+                        first=[{{@../../first}}:{{@../first}}:{{@first}}]
+                        last=[{{@../../last}}:{{@../last}}:{{@last}}]
+                        {{#each level3}}
+                            id={{id}}
+                            index=[{{@../../index}}:{{@../index}}:{{@index}}]
+                            first=[{{@../../first}}:{{@../first}}:{{@first}}]
+                            last=[{{@../../last}}:{{@../last}}:{{@last}}]
+                        {{/each}}
+                    {{/each}}    
+                {{/each}}";
+            
+            return _handlebars.Compile(template);
+        }
+
+        [Benchmark]
         public Func<object, string> Each()
         {
             const string template = "{{#each enumerateMe}}{{this}} {{/each}}";
             return _handlebars.Compile(template);
         }
         
-        [Benchmark]
-        public Func<object, string> EachBlockParams()
-        {
-            const string template = "{{#each enumerateMe as |item val|}}{{item}} {{val}} {{/each}}";
-            return _handlebars.Compile(template);
-        }
+        // [Benchmark]
+        // public Func<object, string> EachBlockParams()
+        // {
+        //     const string template = "{{#each enumerateMe as |item val|}}{{item}} {{val}} {{/each}}";
+        //     return _handlebars.Compile(template);
+        // }
         
         [Benchmark]
         public Func<object, string> Helper()

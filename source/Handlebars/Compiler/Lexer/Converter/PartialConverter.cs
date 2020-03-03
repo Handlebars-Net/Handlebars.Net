@@ -22,52 +22,46 @@ namespace HandlebarsDotNet.Compiler
             while (enumerator.MoveNext())
             {
                 var item = enumerator.Current;
-                if (item is PartialToken)
-                {
-                    var arguments = AccumulateArguments(enumerator);
-                    if (arguments.Count == 0)
-                    {
-                        throw new HandlebarsCompilerException("A partial must have a name");
-                    }
-
-                    var partialName = arguments[0];
-
-                    if (partialName is PathExpression)
-                    {
-                        partialName = Expression.Constant(((PathExpression)partialName).Path);
-                    }
-
-                    if (arguments.Count == 1)
-                    {
-                        yield return HandlebarsExpression.Partial(partialName);
-                    }
-                    else if (arguments.Count == 2)
-                    {
-                        yield return HandlebarsExpression.Partial(partialName, arguments [1]);
-                    }
-                    else
-                    {
-                        throw new HandlebarsCompilerException("A partial can only accept 0 or 1 arguments");
-                    }
-                    yield return enumerator.Current;
-                }
-                else
+                if (!(item is PartialToken))
                 {
                     yield return item;
+                    continue;
                 }
+
+                var arguments = AccumulateArguments(enumerator);
+                if (arguments.Count == 0) throw new HandlebarsCompilerException("A partial must have a name");
+
+                var partialName = arguments[0];
+
+                if (partialName is PathExpression expression)
+                {
+                    partialName = Expression.Constant(expression.Path);
+                }
+
+                switch (arguments.Count)
+                {
+                    case 1:
+                        yield return HandlebarsExpression.Partial(partialName);
+                        break;
+                    case 2:
+                        yield return HandlebarsExpression.Partial(partialName, arguments[1]);
+                        break;
+                    default:
+                        throw new HandlebarsCompilerException("A partial can only accept 0 or 1 arguments");
+                }
+
+                yield return enumerator.Current;
             }
         }
 
         private static List<Expression> AccumulateArguments(IEnumerator<object> enumerator)
         {
             var item = GetNext(enumerator);
-            List<Expression> helperArguments = new List<Expression>();
-            while ((item is EndExpressionToken) == false)
+            var helperArguments = new List<Expression>();
+            while (item is EndExpressionToken == false)
             {
-                if ((item is Expression) == false)
-                {
-                    throw new HandlebarsCompilerException(string.Format("Token '{0}' could not be converted to an expression", item));
-                }
+                if (item is Expression == false) throw new HandlebarsCompilerException($"Token '{item}' could not be converted to an expression");
+                
                 helperArguments.Add((Expression)item);
                 item = GetNext(enumerator);
             }

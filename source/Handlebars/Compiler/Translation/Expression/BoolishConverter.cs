@@ -16,7 +16,7 @@ namespace HandlebarsDotNet.Compiler
 
         protected override Expression VisitBoolishExpression(BoolishExpression bex)
         {
-            return E.Call(() => HandlebarsUtils.IsTruthyOrNonEmpty(Visit(bex.Condition)));
+            return ExpressionShortcuts.Call(() => HandlebarsUtils.IsTruthyOrNonEmpty(Visit(bex.Condition)));
         }
     }
 }

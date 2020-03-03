@@ -8,7 +8,10 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class HelperConverter : TokenConverter
     {
-        private static readonly string[] builtInHelpers = new [] { "else", "each" };
+        private static readonly HashSet<string> BuiltInHelpers = new HashSet<string>
+        {
+            "else", "each"
+        };
 
         public static IEnumerable<object> Convert(
             IEnumerable<object> sequence,
@@ -30,53 +33,43 @@ namespace HandlebarsDotNet.Compiler
             while (enumerator.MoveNext())
             {
                 var item = enumerator.Current;
-                if (item is StartExpressionToken)
+                if (!(item is StartExpressionToken token))
                 {
-                    var isRaw = ((StartExpressionToken)item).IsRaw;
                     yield return item;
-                    item = GetNext(enumerator);
-                    if (item is Expression)
-                    {
+                    continue;
+                }
+
+                var isRaw = token.IsRaw;
+                yield return token;
+                item = GetNext(enumerator);
+                switch (item)
+                {
+                    case Expression _:
                         yield return item;
                         continue;
-                    }
-                    if (item is WordExpressionToken word)
-                    {
-                        if (IsRegisteredHelperName(word.Value))
-                        {
-                            yield return HandlebarsExpression.Helper(word.Value);
-                        }
-                        else if (IsRegisteredBlockHelperName(word.Value, isRaw))
-                        {
-                            yield return HandlebarsExpression.Helper(word.Value, isRaw);
-                        }
-                        else
-                        {
-                            yield return item;
-                        }
-                    }
-                    else
-                    {
+                    case WordExpressionToken word when IsRegisteredHelperName(word.Value):
+                        yield return HandlebarsExpression.Helper(word.Value);
+                        break;
+                    case WordExpressionToken word when IsRegisteredBlockHelperName(word.Value, isRaw):
+                        yield return HandlebarsExpression.Helper(word.Value, isRaw);
+                        break;
+                    default:
                         yield return item;
-                    }
-                }
-                else
-                {
-                    yield return item;
+                        break;
                 }
             }
         }
 
         private bool IsRegisteredHelperName(string name)
         {
-            return _configuration.Helpers.ContainsKey(name) || builtInHelpers.Contains(name);
+            return _configuration.Helpers.ContainsKey(name) || BuiltInHelpers.Contains(name);
         }
 
         private bool IsRegisteredBlockHelperName(string name, bool isRaw)
         {
             if (!isRaw && name[0] != '#') return false;
             name = name.Replace("#", "");
-            return _configuration.BlockHelpers.ContainsKey(name) || builtInHelpers.Contains(name);
+            return _configuration.BlockHelpers.ContainsKey(name) || BuiltInHelpers.Contains(name);
         }
 
         private static object GetNext(IEnumerator<object> enumerator)

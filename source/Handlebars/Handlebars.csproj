@@ -4,8 +4,8 @@
     <DebugType>portable</DebugType>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <TargetFrameworks>net452;netstandard1.3;netstandard2.0</TargetFrameworks>
-    <Version>1.10.2</Version>
-    <LangVersion>7</LangVersion>
+    <Version>1.10.7</Version>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)'=='netstandard1.3'">

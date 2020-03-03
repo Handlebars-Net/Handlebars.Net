@@ -27,8 +27,7 @@ namespace HandlebarsDotNet.Compiler
                     return HandleMethodCallExpression(callExpression);
                 
                 default:
-                    var fb = new FunctionBuilder(CompilationContext.Configuration);
-                    var expression = fb.Reduce(subex.Expression, CompilationContext);
+                    var expression = FunctionBuilder.Reduce(subex.Expression, CompilationContext);
                     if (expression is MethodCallExpression lateBoundCall)
                         return HandleMethodCallExpression(lateBoundCall);
                     
@@ -41,20 +40,24 @@ namespace HandlebarsDotNet.Compiler
             if (helperCall.Type != typeof(void))
             {
                 return helperCall.Update(helperCall.Object, 
-                    E.ReplaceValuesOf<TextWriter>(helperCall.Arguments, E.Null<TextWriter>()).Select(Visit)
+                    ExpressionShortcuts.ReplaceValuesOf<TextWriter>(helperCall.Arguments, ExpressionShortcuts.Null<TextWriter>()).Select(Visit)
                 );
             }
 
-            var writer = E.Var<TextWriter>();
+            var writer = ExpressionShortcuts.Var<TextWriter>();
             helperCall = helperCall.Update(helperCall.Object, 
-                E.ReplaceValuesOf<TextWriter>(helperCall.Arguments, writer).Select(Visit)
+                ExpressionShortcuts.ReplaceValuesOf<TextWriter>(helperCall.Arguments, writer).Select(Visit)
             );
-
-            return E.Block()
+            
+            return ExpressionShortcuts.Block()
                 .Parameter(writer)
-                .Line(Expression.Assign(writer, E.New<StringWriter>()))
-                .Line(helperCall)
-                .Line(writer.Call(w => w.ToString()))
+                .Line(Expression.Assign(writer, ExpressionShortcuts.New<PolledStringWriter>()))
+                .Line(writer.Using(container =>
+                {
+                    var body = new BlockBody { helperCall };
+                    body.AddRange(container.Call(o => o.ToString()).Return());
+                    return body;
+                }))
                 .Invoke<object>();
         }
 
@@ -63,20 +66,24 @@ namespace HandlebarsDotNet.Compiler
             if (invocation.Type != typeof(void))
             {
                 return invocation.Update(invocation.Expression, 
-                    E.ReplaceValuesOf<TextWriter>(invocation.Arguments, E.Null<TextWriter>()).Select(Visit)
+                    ExpressionShortcuts.ReplaceValuesOf<TextWriter>(invocation.Arguments, ExpressionShortcuts.Null<TextWriter>()).Select(Visit)
                 );
             }
 
-            var writer = E.Var<TextWriter>();
+            var writer = ExpressionShortcuts.Var<TextWriter>();
             invocation = invocation.Update(invocation.Expression, 
-                E.ReplaceValuesOf<TextWriter>(invocation.Arguments, writer).Select(Visit)
+                ExpressionShortcuts.ReplaceValuesOf<TextWriter>(invocation.Arguments, writer).Select(Visit)
             );
             
-            return E.Block()
+            return ExpressionShortcuts.Block()
                 .Parameter(writer)
-                .Line(Expression.Assign(writer, E.New<StringWriter>()))
-                .Line(invocation)
-                .Line(writer.Call(w => w.ToString()))
+                .Line(Expression.Assign(writer, ExpressionShortcuts.New<PolledStringWriter>()))
+                .Line(writer.Using(container =>
+                {
+                    var body = new BlockBody { invocation };
+                    body.AddRange(container.Call(o => o.ToString()).Return());
+                    return body;
+                }))
                 .Invoke<object>();
         }
     }

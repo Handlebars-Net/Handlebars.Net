@@ -442,6 +442,23 @@ false
         }
         
         [Fact]
+        public void BasicListEnumerator()
+        {
+            var source = "{{#each enumerateMe}}{{this}} {{/each}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                enumerateMe = new string[]
+                {
+                    "hello",
+                    "world"
+                }
+            };
+            var result = template(data);
+            Assert.Equal("hello world ", result);
+        }
+        
+        [Fact]
         public void BasicObjectEnumeratorWithLast()
         {
             var source = "{{#each enumerateMe}}{{@last}} {{/each}}";
@@ -1541,7 +1558,7 @@ false
                     {"Nils", arguments[0].ToString()},
                     {"Yehuda", arguments[1].ToString()}
                 };
-
+        
                 return data;
             });
             var source = $"{{{{#each ({getData} 'Darmstadt' 'San Francisco')}}}}{{{{@key}}}} lives in {{{{@value}}}}. {{{{/each}}}}";
@@ -1562,7 +1579,7 @@ false
                 writer.WriteSafeString(" ");
                 writer.WriteSafeString(arguments[1]);
             });
-
+        
             var getData = $"getData{Guid.NewGuid()}";
             Handlebars.RegisterHelper(getData, (context, arguments) =>
             {
@@ -1571,7 +1588,7 @@ false
             
             var source = $"{{{{{getData} ({formatData} 'data' '42')}}}}";
             var template = Handlebars.Compile(source);
-
+        
             var result = template(new object());
             Assert.Equal("data 42", result);
         }
@@ -1597,7 +1614,7 @@ false
             var result = template(new object());
             Assert.Equal("data 42", result);
         }
-
+        
         [Fact]
         public void BasicLookup()
         {
@@ -1612,7 +1629,7 @@ false
             var result = template(data);
             Assert.Equal("Nils lives in Darmstadt Yehuda lives in San Francisco ", result);
         }
-
+        
         [Fact]
         public void LookupAsSubExpression()
         {
@@ -1650,6 +1667,19 @@ false
             
             var result = template(data);
             Assert.Equal("Nils lives in Darmstadt (Germany)Yehuda lives in San Francisco (USA)", result);
+        }
+
+        [Fact]
+        private void StringConditionTest()
+        {
+            var template = "{{#if Email}}\"correo\": \"{{Email}}\",{{else}}\"correo\": \"no hay correo\",{{/if}}";
+            var data = new
+            {
+                Email = "correo@gmail.com"
+            };
+
+            var func = Handlebars.Compile(template);
+            var s = func(data);
         }
 
         private class MockDictionary : IDictionary<string, string>

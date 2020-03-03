@@ -15,21 +15,15 @@ namespace HandlebarsDotNet.Compiler
             Inversion = inversion;
         }
 
-        public BlockExpression Body { get; private set; }
+        public BlockExpression Body { get; }
 
-        public BlockExpression Inversion { get; private set; }
+        public BlockExpression Inversion { get; }
 
-        public PathExpression Path { get; private set; }
+        public PathExpression Path { get; }
 
-        public override Type Type
-        {
-            get { return typeof(void); }
-        }
+        public override Type Type => typeof(void);
 
-        public override ExpressionType NodeType
-        {
-            get { return (ExpressionType)HandlebarsExpressionType.DeferredSection; }
-        }
+        public override ExpressionType NodeType => (ExpressionType)HandlebarsExpressionType.DeferredSection;
     }
 }
 
