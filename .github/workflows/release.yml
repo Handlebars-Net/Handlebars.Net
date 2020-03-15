@@ -1,0 +1,20 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 3.1.100
+
+      - name: publish
+        working-directory: ./source
+        run: dotnet pack Handlebars.Code.sln -c Release  /p:version=${{ github.event.release.tag_name }} && dotnet nuget push **/*.nupkg -k ${{ secrets.NUGET_TOKEN }} -s https://api.nuget.org/v3/index.json
