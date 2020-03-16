@@ -29,7 +29,7 @@ jobs:
       - name: Setup dotnet (legacy)
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 1.1.2
+          dotnet-version: 1.1.14
       - name: Test
         working-directory: ./source
         run: dotnet test ./Handlebars.Test/Handlebars.Test.csproj --logger:trx
