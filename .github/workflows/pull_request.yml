@@ -26,13 +26,9 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 3.1.102
-      - name: Setup dotnet (legacy)
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: 1.1.14
       - name: Test
         working-directory: ./source
-        run: dotnet test ./Handlebars.Test/Handlebars.Test.csproj --logger:trx
+        run: dotnet test ./Handlebars.Test/Handlebars.Test.csproj -f netcoreapp3.1 --logger:trx
   
   sonar-pr:
     runs-on: ubuntu-latest
