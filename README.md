@@ -1,6 +1,13 @@
-handlebars.csharp  [![Nuget](https://img.shields.io/nuget/v/handlebars.csharp)](https://www.nuget.org/packages/handlebars.csharp/)
+#handlebars.csharp  [![Nuget](https://img.shields.io/nuget/v/handlebars.csharp)](https://www.nuget.org/packages/handlebars.csharp/)
+
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=zjklee_handlebars.csharp&metric=alert_status)](https://sonarcloud.io/dashboard?id=zjklee_handlebars.csharp)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=zjklee_handlebars.csharp&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=zjklee_handlebars.csharp)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=zjklee_handlebars.csharp&metric=bugs)](https://sonarcloud.io/dashboard?id=zjklee_handlebars.csharp)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=zjklee_handlebars.csharp&metric=vulnerabilities)](https://sonarcloud.io/dashboard?id=zjklee_handlebars.csharp)
+ 
 ==============
-_This is a fork of [rexm/Handlebars.Net](https://github.com/rexm/Handlebars.Net) developed by @rexm. Unfortunately project had no activity for a while and I was not able to reach @rexm._ 
+
+_This is a fork of [rexm/Handlebars.Net](https://github.com/rexm/Handlebars.Net) developed by @rexm. Unfortunately project had no activity for a while. I'd be glad to back-merge all the changes back to original repo if I'd have a chance. Meanwhile I'd try to support the fork._
 
 Blistering-fast [Handlebars.js templates](http://handlebarsjs.com) in your .NET application.
 
