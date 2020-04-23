@@ -2,10 +2,12 @@
 
   <PropertyGroup>
     <DebugType>portable</DebugType>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <TargetFrameworks>net452;netstandard1.3;netstandard2.0</TargetFrameworks>
-    <Version>1.10.7</Version>
-    <LangVersion>latest</LangVersion>
+    <Version>1.0.0</Version>
+    <LangVersion>7</LangVersion>
+    <RootNamespace>HandlebarsDotNet</RootNamespace>
+    <ProjectGuid>7F6A54F4-161A-46EA-9A27-DF834B7810DB</ProjectGuid>
+    <IncludeBuildOutput>true</IncludeBuildOutput>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)'=='netstandard1.3'">
@@ -16,31 +18,44 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Authors>Rex Morgan</Authors>
-    <Copyright>Copyright © 2014-2019 Rex Morgan</Copyright>
+    <Authors>Rex Morgan, Oleh Formaniuk</Authors>
+    <Owner>Oleh Formaniuk</Owner>
+    <Copyright>Copyright © 2020 Oleh Formaniuk</Copyright>
     <Description>Blistering-fast Handlebars.js templates in your .NET application.</Description>
-    <PackageIconUrl>https://raw.githubusercontent.com/rexm/Handlebars.Net/master/hbnet-icon.png</PackageIconUrl>
-    <PackageId>Handlebars.Net</PackageId>
+    <PackageIcon>hbnet-icon.png</PackageIcon>
+    <PackageId>handlebars.csharp</PackageId>
     <PackageLicenseUrl>https://opensource.org/licenses/mit</PackageLicenseUrl>
-    <PackageProjectUrl>https://github.com/rexm/Handlebars.Net</PackageProjectUrl>
-    <PackageReleaseNotes>Added quad-stache syntax, better support for inline and partial blocks, various bug fixes</PackageReleaseNotes>
+    <PackageProjectUrl>https://github.com/zjklee/handlebars.csharp</PackageProjectUrl>
+    <PackageReleaseNotes>Improved performance; added new features</PackageReleaseNotes>
     <PackageTags>handlebars;mustache;templating;engine;compiler</PackageTags>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/rexm/Handlebars.Net</RepositoryUrl>
+    <RepositoryUrl>https://github.com/zjklee/handlebars.csharp</RepositoryUrl>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="..\..\hbnet-icon.png">
+      <Visible>false</Visible>
+      <Pack>true</Pack> 
+      <PackagePath>.</PackagePath>
+    </Content>
+  </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)'=='net452'">
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
-
+  
   <ItemGroup Condition="'$(TargetFramework)'=='netstandard1.3'">
-    <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
-    <PackageReference Include="System.Reflection.TypeExtensions " Version="4.3.0" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="System.Reflection.TypeExtensions " Version="4.7.0" />
+    <PackageReference Include="System.ComponentModel.TypeConverter" Version="4.3.0" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
-    <PackageReference Include="Microsoft.CSharp" Version="4.4.0" />
-    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.4.0" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.7.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="ExpressionShortcuts" Version="1.0.4.30" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

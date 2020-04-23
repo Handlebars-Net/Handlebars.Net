@@ -1,0 +1,73 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using HandlebarsDotNet.Collections;
+using HandlebarsDotNet.Compiler.Resolvers;
+using HandlebarsDotNet.Features;
+using HandlebarsDotNet.Helpers;
+using HandlebarsDotNet.ObjectDescriptors;
+
+namespace HandlebarsDotNet
+{
+    internal class InternalHandlebarsConfiguration : HandlebarsConfiguration
+    {
+        private readonly HandlebarsConfiguration _configuration;
+        
+        public override IExpressionNameResolver ExpressionNameResolver => _configuration.ExpressionNameResolver;
+        public override ITextEncoder TextEncoder => _configuration.TextEncoder;
+        public override IFormatProvider FormatProvider => _configuration.FormatProvider;
+        public override ViewEngineFileSystem FileSystem => _configuration.FileSystem;
+        public override string UnresolvedBindingFormatter => _configuration.UnresolvedBindingFormatter;
+        public override bool ThrowOnUnresolvedBindingExpression => _configuration.ThrowOnUnresolvedBindingExpression;
+        public override IPartialTemplateResolver PartialTemplateResolver => _configuration.PartialTemplateResolver;
+        public override IMissingPartialTemplateHandler MissingPartialTemplateHandler => _configuration.MissingPartialTemplateHandler;
+        public override Compatibility Compatibility => _configuration.Compatibility;
+        public sealed override CompileTimeConfiguration CompileTimeConfiguration { get; }
+        
+        public IObjectDescriptorProvider ObjectDescriptorProvider { get; }
+        public List<IFeature> Features { get; }
+
+        internal InternalHandlebarsConfiguration(HandlebarsConfiguration configuration)
+        {
+            _configuration = configuration;
+            
+            Helpers = new CascadeDictionary<string, HandlebarsHelper>(configuration.Helpers, StringComparer.OrdinalIgnoreCase);
+            ReturnHelpers = new CascadeDictionary<string, HandlebarsReturnHelper>(configuration.ReturnHelpers, StringComparer.OrdinalIgnoreCase);
+            BlockHelpers = new CascadeDictionary<string, HandlebarsBlockHelper>(configuration.BlockHelpers, StringComparer.OrdinalIgnoreCase);
+            RegisteredTemplates = new CascadeDictionary<string, Action<TextWriter, object>>(configuration.RegisteredTemplates, StringComparer.OrdinalIgnoreCase);
+            HelperResolvers = new CascadeCollection<IHelperResolver>(configuration.HelperResolvers);
+
+            var objectDescriptorProvider = new ObjectDescriptorProvider(this);
+            var listObjectDescriptor = new CollectionObjectDescriptor(objectDescriptorProvider);
+            var providers = new List<IObjectDescriptorProvider>(configuration.CompileTimeConfiguration.ObjectDescriptorProviders)
+            {
+                new ContextObjectDescriptor(),
+                new StringDictionaryObjectDescriptorProvider(),
+                new GenericDictionaryObjectDescriptorProvider(),
+                new DictionaryObjectDescriptor(),
+                listObjectDescriptor,
+                new EnumerableObjectDescriptor(listObjectDescriptor),
+                new KeyValuePairObjectDescriptorProvider(),
+                objectDescriptorProvider,
+                new DynamicObjectDescriptor()
+            };
+
+            ObjectDescriptorProvider = new ObjectDescriptorFactory(providers);
+
+            CompileTimeConfiguration = new CompileTimeConfiguration
+            {
+                UseAggressiveCaching = _configuration.CompileTimeConfiguration.UseAggressiveCaching,
+                ExpressionCompiler = _configuration.CompileTimeConfiguration.ExpressionCompiler,
+                ExpressionMiddleware = new List<IExpressionMiddleware>(configuration.CompileTimeConfiguration.ExpressionMiddleware),
+                Features = new List<IFeatureFactory>(configuration.CompileTimeConfiguration.Features),
+                AliasProviders = new List<IMemberAliasProvider>(configuration.CompileTimeConfiguration.AliasProviders)
+                {
+                    new CollectionMemberAliasProvider(this)
+                }
+            };
+
+            Features = CompileTimeConfiguration.Features.Select(o => o.CreateFeature()).ToList();
+        }
+    }
+}

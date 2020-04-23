@@ -3,6 +3,11 @@
   <PropertyGroup>
     <DebugType>full</DebugType>
     <TargetFrameworks>net461;netcoreapp1.1;netcoreapp2.0;netcoreapp3.1</TargetFrameworks>
+    <ProjectGuid>700AF0B4-EA70-47B7-9F9D-17351E977B00</ProjectGuid>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <NoWarn>0618;1701</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)'=='netcoreapp1.1'">
@@ -16,6 +21,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Handlebars.Extension.CompileFast\Handlebars.Extension.CompileFast.csproj" />
     <ProjectReference Include="..\Handlebars\Handlebars.csproj" />
   </ItemGroup>
 

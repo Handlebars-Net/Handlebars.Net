@@ -1,57 +1,65 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace HandlebarsDotNet.Compiler.Lexer
 {
     internal class BlockWordParser : Parser
     {
-        private const string validBlockWordStartCharacters = "#^/";
-
-        public override Token Parse(TextReader reader)
+        private static readonly HashSet<char> ValidBlockWordStartCharacters = new HashSet<char>
         {
-            WordExpressionToken token = null;
-            if (IsBlockWord(reader))
-            {
-                var buffer = AccumulateBlockWord(reader);
-                token = Token.Word(buffer);
-            }
+            '#', '^', '/'
+        };
+
+        public override Token Parse(ExtendedStringReader reader)
+        {
+            if (!IsBlockWord(reader)) return null;
+
+            var context = reader.GetContext();
+            var buffer = AccumulateBlockWord(reader);
+            var token = Token.Word(buffer, context);
             return token;
         }
 
-        private bool IsBlockWord(TextReader reader)
+        private static bool IsBlockWord(ExtendedStringReader reader)
         {
             var peek = (char)reader.Peek();
-            return validBlockWordStartCharacters.Contains(peek.ToString());
+            return ValidBlockWordStartCharacters.Contains(peek);
         }
 
-        private string AccumulateBlockWord(TextReader reader)
+        private static string AccumulateBlockWord(ExtendedStringReader reader)
         {
-            StringBuilder buffer = new StringBuilder();
-            buffer.Append((char)reader.Read());
-            while(char.IsWhiteSpace((char)reader.Peek()))
+            var buffer = StringBuilderPool.Shared.GetObject();
+            try
             {
-                reader.Read();
+                buffer.Append((char)reader.Read());
+                while(char.IsWhiteSpace((char)reader.Peek()))
+                {
+                    reader.Read();
+                }
+                
+                while(true)
+                {
+                    var peek = (char)reader.Peek();
+                    if (peek == '}' || peek == '~' || char.IsWhiteSpace(peek))
+                    {
+                        break;
+                    }
+                    var node = reader.Read();
+                    if (node == -1)
+                    {
+                        throw new HandlebarsParserException("Reached end of template before the expression was closed.", reader.GetContext());
+                    }
+                    else
+                    {
+                        buffer.Append((char)node);
+                    }
+                }
+                
+                return buffer.ToString();
             }
-            while(true)
+            finally
             {
-                var peek = (char)reader.Peek();
-                if (peek == '}' || peek == '~' || char.IsWhiteSpace(peek))
-                {
-                    break;
-                }
-                var node = reader.Read();
-                if (node == -1)
-                {
-                    throw new InvalidOperationException("Reached end of template before the expression was closed.");
-                }
-                else
-                {
-                    buffer.Append((char)node);
-                }
+                StringBuilderPool.Shared.PutObject(buffer);
             }
-            return buffer.ToString();
         }
     }
 }

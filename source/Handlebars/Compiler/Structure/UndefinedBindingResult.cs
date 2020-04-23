@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -15,7 +14,7 @@ namespace HandlebarsDotNet.Compiler
 		    _configuration = configuration;
 	    }
 
-        public override string ToString()
+	    public override string ToString()
         {
 	        var formatter = _configuration.UnresolvedBindingFormatter ?? string.Empty;
 	        return string.Format( formatter, Value );

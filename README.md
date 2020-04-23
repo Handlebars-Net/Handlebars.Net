@@ -1,6 +1,6 @@
-Handlebars.Net [![Build Status](https://travis-ci.org/rexm/Handlebars.Net.svg?branch=master)](https://travis-ci.org/rexm/Handlebars.Net) [![Nuget](https://img.shields.io/nuget/v/Handlebars.Net)](https://www.nuget.org/packages/Handlebars.Net/)
+handlebars.csharp  [![Nuget](https://img.shields.io/nuget/v/handlebars.csharp)](https://www.nuget.org/packages/handlebars.csharp/)
 ==============
-**[Call for Input on v2](https://github.com/rexm/Handlebars.Net/issues/294)**
+_This is a fork of [rexm/Handlebars.Net](https://github.com/rexm/Handlebars.Net) developed by @rexm. Unfortunately project had no activity for a while and I was not able to reach @rexm._ 
 
 Blistering-fast [Handlebars.js templates](http://handlebarsjs.com) in your .NET application.
 
@@ -8,11 +8,11 @@ Blistering-fast [Handlebars.js templates](http://handlebarsjs.com) in your .NET 
 
 Check out the [handlebars.js documentation](http://handlebarsjs.com) for how to write Handlebars templates.
 
-Handlebars.Net doesn't use a scripting engine to run a Javascript library - it **compiles Handlebars templates directly to IL bytecode**. It also mimics the JS library's API as closely as possible.
+handlebars.csharp doesn't use a scripting engine to run a Javascript library - it **compiles Handlebars templates directly to IL bytecode**. It also mimics the JS library's API as closely as possible.
 
 ## Install
 
-    dotnet add package Handlebars.Net
+    dotnet add package handlebars.csharp
 
 ## Usage
 
@@ -156,16 +156,16 @@ Compared to rendering, compiling is a fairly intensive process. While both are s
 Nearly all time spent in rendering is in the routine that resolves values against the model. Different types of objects have different performance characteristics when used as models.
 
 #### Model Types
-- The absolute fastest model is a dictionary (microseconds), because no reflection is necessary at render time.
+- The absolute fastest model is a `IDictionary<string, object>` (microseconds).
 - The next fastest is a POCO (typically a few milliseconds for an average-sized template and model), which uses traditional reflection and is fairly fast.
 - Rendering starts to get slower (into the tens of milliseconds or more) on dynamic objects.
 - The slowest (up to hundreds of milliseconds or worse) tend to be objects with custom type implementations (such as `ICustomTypeDescriptor`) that are not optimized for heavy reflection.
 
-A frequent performance issue that comes up is JSON.NET's `JObject`, which for reasons we haven't fully researched, has very slow reflection characteristics when used as a model in Handlebars.Net. A simple fix is to just use JSON.NET's built-in ability to deserialize a JSON string to an `ExpandoObject` instead of a `JObject`. This will yield nearly an order of magnitude improvement in render times on average.
+~~A frequent performance issue that comes up is JSON.NET's `JObject`, which for reasons we haven't fully researched, has very slow reflection characteristics when used as a model in Handlebars.Net. A simple fix is to just use JSON.NET's built-in ability to deserialize a JSON string to an `ExpandoObject` instead of a `JObject`. This will yield nearly an order of magnitude improvement in render times on average.~~
 
 ## Future roadmap
 
-**[Call for Input on v2](https://github.com/rexm/Handlebars.Net/issues/294)**
+TBD
 
 ## Contributing
 

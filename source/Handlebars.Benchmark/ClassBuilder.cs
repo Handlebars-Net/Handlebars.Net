@@ -48,6 +48,7 @@ namespace Benchmark
                   TypeAttributes.BeforeFieldInit |
                   TypeAttributes.AutoLayout
                 , null);
+            
             return typeBuilder;
         }
 

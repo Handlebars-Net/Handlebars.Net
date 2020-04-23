@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
+using HandlebarsDotNet.Compiler.Structure.Path;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -11,13 +12,13 @@ namespace HandlebarsDotNet.Compiler
             PathInfo = PathResolver.GetPathInfo(path);
         }
 
-        public string Path { get; }
+        public new string Path { get; }
         
         public PathInfo PathInfo { get; }
 
         public override ExpressionType NodeType => (ExpressionType)HandlebarsExpressionType.PathExpression;
 
-        public override Type Type => typeof(object);
+        public override Type Type => typeof(PathInfo);
     }
 }
 

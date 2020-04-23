@@ -23,6 +23,6 @@ namespace HandlebarsDotNet.Compiler
 
         public override ExpressionType NodeType => (ExpressionType)HandlebarsExpressionType.StatementExpression;
 
-        public override Type Type => typeof(void);
+        public override Type Type => Body.Type;
     }
 }

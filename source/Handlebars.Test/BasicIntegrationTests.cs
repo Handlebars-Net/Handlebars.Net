@@ -3,19 +3,46 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
+using System.Reflection;
 using HandlebarsDotNet.Compiler;
+using HandlebarsDotNet.Helpers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using HandlebarsDotNet.Extension.CompileFast;
+using HandlebarsDotNet.Features;
 
 namespace HandlebarsDotNet.Test
 {
+    public class HandlebarsEnvGenerator : IEnumerable<object[]>
+    {
+        private readonly List<IHandlebars> _data = new List<IHandlebars>
+        {
+            Handlebars.Create(),
+            Handlebars.Create(new HandlebarsConfiguration{ CompileTimeConfiguration = { UseAggressiveCaching = false}}),
+            Handlebars.Create(new HandlebarsConfiguration().UseCompileFast()),
+            Handlebars.Create(new HandlebarsConfiguration().UseWarmUp(types =>
+            {
+                types.Add(typeof(Dictionary<string, object>));
+                types.Add(typeof(Dictionary<int, object>));
+                types.Add(typeof(Dictionary<long, object>));
+                types.Add(typeof(Dictionary<string, string>));
+            })),
+        };
+
+        public IEnumerator<object[]> GetEnumerator() => _data.Select(o => new object[] { o }).GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+    
     public class BasicIntegrationTests
     {
-        [Fact]
-        public void BasicPath()
+        [Theory]
+        [ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicPath(IHandlebars handlebars)
         {
             var source = "Hello, {{name}}!";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var data = new
             {
                 name = "Handlebars.Net"
@@ -24,14 +51,15 @@ namespace HandlebarsDotNet.Test
             Assert.Equal("Hello, Handlebars.Net!", result);
         }
 
-        [Fact]
-        public void EmptyIf()
+        [Theory]
+        [ClassData(typeof(HandlebarsEnvGenerator))]
+        public void EmptyIf(IHandlebars handlebars)
         {
             var source =
 @"{{#if false}}
 {{else}}
 {{/if}}";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var data = new
             {
             };
@@ -39,16 +67,12 @@ namespace HandlebarsDotNet.Test
             Assert.Equal(string.Empty, result);
         }
 
-        [Fact]
-        public void BasicPathUnresolvedBindingFormatter()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicPathUnresolvedBindingFormatter(IHandlebars handlebars)
         {
             var source = "Hello, {{foo}}!";
 
-            var config = new HandlebarsConfiguration
-            {
-                UnresolvedBindingFormatter = "('{0}' is undefined)"
-            };
-            var handlebars = Handlebars.Create(config);
+            handlebars.Configuration.UnresolvedBindingFormatter = "('{0}' is undefined)";
 
             var template = handlebars.Compile(source);
             var data = new
@@ -59,35 +83,29 @@ namespace HandlebarsDotNet.Test
             Assert.Equal("Hello, ('foo' is undefined)!", result);
         }
 
-        [Fact]
-        public void BasicPathThrowOnUnresolvedBindingExpression()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicPathThrowOnUnresolvedBindingExpression(IHandlebars handlebars)
         {
             var source = "Hello, {{foo}}!";
 
-            var config = new HandlebarsConfiguration
-            {
-                ThrowOnUnresolvedBindingExpression = true
-            };
-            var handlebars = Handlebars.Create(config);
+            handlebars.Configuration.ThrowOnUnresolvedBindingExpression = true;
             var template = handlebars.Compile(source);
 
             var data = new
             {
                 name = "Handlebars.Net"
             };
+            
             Assert.Throws<HandlebarsUndefinedBindingException>(() => template(data));
         }
 
-        [Fact]
-        public void BasicPathThrowOnNestedUnresolvedBindingExpression()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicPathThrowOnNestedUnresolvedBindingExpression(IHandlebars handlebars)
         {
             var source = "Hello, {{foo.bar}}!";
 
-            var config = new HandlebarsConfiguration
-            {
-                ThrowOnUnresolvedBindingExpression = true
-            };
-            var handlebars = Handlebars.Create(config);
+            handlebars.Configuration.ThrowOnUnresolvedBindingExpression = true;
+            
             var template = handlebars.Compile(source);
 
             var data = new
@@ -95,11 +113,12 @@ namespace HandlebarsDotNet.Test
                 foo = (object)null
             };
             var ex = Assert.Throws<HandlebarsUndefinedBindingException>(() => template(data));
+            
             Assert.Equal("bar is undefined", ex.Message);
         }
 
-        [Fact]
-        public void BasicPathNoThrowOnNullExpression()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicPathNoThrowOnNullExpression(IHandlebars handlebars)
         {
             var source =
 @"{{#if foo}}
@@ -108,12 +127,7 @@ namespace HandlebarsDotNet.Test
 false
 {{/if}}
 ";
-
-            var config = new HandlebarsConfiguration
-            {
-                ThrowOnUnresolvedBindingExpression = true
-            };
-            var handlebars = Handlebars.Create(config);
+            handlebars.Configuration.ThrowOnUnresolvedBindingExpression = true;
             var template = handlebars.Compile(source);
 
             var data = new
@@ -124,16 +138,12 @@ false
             Assert.Contains("false", result);
         }
 
-        [Fact]
-        public void AssertHandlebarsUndefinedBindingException()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void AssertHandlebarsUndefinedBindingException(IHandlebars handlebars)
         {
             var source = "Hello, {{person.firstname}} {{person.lastname}}!";
 
-            var config = new HandlebarsConfiguration
-            {
-                ThrowOnUnresolvedBindingExpression = true
-            };
-            var handlebars = Handlebars.Create(config);
+            handlebars.Configuration.ThrowOnUnresolvedBindingExpression = true;
             var template = handlebars.Compile(source);
 
             var data = new
@@ -149,11 +159,11 @@ false
             Assert.Equal("lastname", exception.MissingKey);
         }
 
-        [Fact]
-        public void BasicPathWhiteSpace()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicPathWhiteSpace(IHandlebars handlebars)
         {
             var source = "Hello, {{ name }}!";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var data = new
             {
                 name = "Handlebars.Net"
@@ -162,11 +172,11 @@ false
             Assert.Equal("Hello, Handlebars.Net!", result);
         }
 
-        [Fact]
-        public void BasicCurlies()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicCurlies(IHandlebars handlebars)
         {
             var source = "Hello, {name}!";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var data = new
             {
                 name = "Handlebars.Net"
@@ -175,11 +185,11 @@ false
             Assert.Equal("Hello, {name}!", result);
         }
 
-        [Fact]
-        public void BasicCurliesWithLeadingSlash()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicCurliesWithLeadingSlash(IHandlebars handlebars)
         {
             var source = "Hello, \\{name\\}!";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var data = new
             {
                 name = "Handlebars.Net"
@@ -188,11 +198,11 @@ false
             Assert.Equal("Hello, \\{name\\}!", result);
         }
 
-        [Fact]
-        public void BasicCurliesWithEscapedLeadingSlash()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicCurliesWithEscapedLeadingSlash(IHandlebars handlebars)
         {
             var source = @"Hello, \\{{name}}!";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var data = new
             {
                 name = "Handlebars.Net"
@@ -201,11 +211,11 @@ false
             Assert.Equal(@"Hello, \Handlebars.Net!", result);
         }
 
-        [Fact]
-        public void BasicPathArray()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicPathArray(IHandlebars handlebars)
         {
             var source = "Hello, {{ names.[1] }}!";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var data = new
             {
                 names = new[] { "Foo", "Handlebars.Net" }
@@ -214,11 +224,11 @@ false
             Assert.Equal("Hello, Handlebars.Net!", result);
         }
 
-        [Fact]
-        public void BasicPathArrayChildPath()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicPathArrayChildPath(IHandlebars handlebars)
         {
             var source = "Hello, {{ names.[1].name }}!";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var data = new
             {
                 names = new[] { new { name = "Foo" }, new { name = "Handlebars.Net" } }
@@ -227,11 +237,11 @@ false
             Assert.Equal("Hello, Handlebars.Net!", result);
         }
 
-        [Fact]
-        public void BasicPathArrayNoSquareBracketsChildPath()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicPathArrayNoSquareBracketsChildPath(IHandlebars handlebars)
         {
             var source = "Hello, {{ names.1.name }}!";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var data = new
             {
                 names = new[] { new { name = "Foo" }, new { name = "Handlebars.Net" } }
@@ -239,12 +249,25 @@ false
             var result = template(data);
             Assert.Equal("Hello, Handlebars.Net!", result);
         }
+        
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicPathEnumerableNoSquareBracketsChildPath(IHandlebars handlebars)
+        {
+            var source = "Hello, {{ names.1.name }}!";
+            var template = handlebars.Compile(source);
+            var data = new
+            {
+                names = new[] { new { name = "skip" }, new { name = "Foo" }, new { name = "Handlebars.Net" } }.Skip(1)
+            };
+            var result = template(data);
+            Assert.Equal("Hello, Handlebars.Net!", result);
+        }
 
-        [Fact]
-        public void BasicPathDotBinding()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicPathDotBinding(IHandlebars handlebars)
         {
             var source = "{{#nestedObject}}{{.}}{{/nestedObject}}";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var data = new
             {
                 nestedObject = "A dot goes a long way"
@@ -253,11 +276,11 @@ false
             Assert.Equal("A dot goes a long way", result);
         }
 
-        [Fact]
-        public void BasicPathRelativeDotBinding()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicPathRelativeDotBinding(IHandlebars handlebars)
         {
             var source = "{{#nestedObject}}{{../.}}{{/nestedObject}}";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var data = new
             {
                 nestedObject = "Relative dots, yay"
@@ -266,11 +289,11 @@ false
             Assert.Equal("{ nestedObject = Relative dots, yay }", result);
         }
 
-        [Fact]
-        public void BasicPropertyOnArray()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicPropertyOnArray(IHandlebars handlebars)
         {
             var source = "Array is {{ names.Length }} item(s) long";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var data = new
             {
                 names = new[] { new { name = "Foo" }, new { name = "Handlebars.Net" } }
@@ -278,12 +301,56 @@ false
             var result = template(data);
             Assert.Equal("Array is 2 item(s) long", result);
         }
+        
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void AliasedPropertyOnArray(IHandlebars handlebars)
+        {
+            var source = "Array is {{ names.count }} item(s) long";
+            var template = handlebars.Compile(source);
+            var data = new
+            {
+                names = new[] { new { name = "Foo" }, new { name = "Handlebars.Net" } }
+            };
+            var result = template(data);
+            Assert.Equal("Array is 2 item(s) long", result);
+        }
+        
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void CustomAliasedPropertyOnArray(IHandlebars handlebars)
+        {
+            var aliasProvider = new DelegatedMemberAliasProvider()
+                .AddAlias<IList>("myCountAlias", list => list.Count);
+            
+            handlebars.Configuration.CompileTimeConfiguration.AliasProviders.Add(aliasProvider);
+            
+            var source = "Array is {{ names.myCountAlias }} item(s) long";
+            var template = handlebars.Compile(source);
+            var data = new
+            {
+                names = new[] { new { name = "Foo" }, new { name = "Handlebars.Net" } }
+            };
+            var result = template(data);
+            Assert.Equal("Array is 2 item(s) long", result);
+        }
+        
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void AliasedPropertyOnList(IHandlebars handlebars)
+        {
+            var source = "Array is {{ names.Length }} item(s) long";
+            var template = handlebars.Compile(source);
+            var data = new
+            {
+                names = new List<object> { new { name = "Foo" }, new { name = "Handlebars.Net" } }
+            };
+            var result = template(data);
+            Assert.Equal("Array is 2 item(s) long", result);
+        }
 
-        [Fact]
-        public void BasicIfElse()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicIfElse(IHandlebars handlebars)
         {
             var source = "Hello, {{#if basic_bool}}Bob{{else}}Sam{{/if}}!";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var trueData = new
             {
                 basic_bool = true
@@ -298,11 +365,11 @@ false
             Assert.Equal("Hello, Sam!", resultFalse);
         }
 
-        [Fact]
-        public void BasicIfElseIf()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicIfElseIf(IHandlebars handlebars)
         {
             var source = "{{#if isActive}}active{{else if isInactive}}inactive{{/if}}";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var activeData = new
             {
                 isActive = true
@@ -317,11 +384,11 @@ false
             Assert.Equal("inactive", resultFalse);
         }
 
-        [Fact]
-        public void BasicIfElseIfElse()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicIfElseIfElse(IHandlebars handlebars)
         {
             var source = "{{#if isActive}}active{{else if isInactive}}inactive{{else}}nada{{/if}}";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var activeData = new
             {
                 isActive = true
@@ -341,11 +408,11 @@ false
             Assert.Equal("nada", resultElse);
         }
 
-        [Fact]
-        public void BasicWith()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicWith(IHandlebars handlebars)
         {
             var source = "Hello,{{#with person}} my good friend {{name}}{{/with}}!";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var data = new
             {
                 person = new
@@ -357,11 +424,27 @@ false
             Assert.Equal("Hello, my good friend Erik!", result);
         }
         
-        [Fact]
-        public void WithWithBlockParams()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void TestSingleLoopDictionary(IHandlebars handlebars)
+        {
+            const string source = "{{#Input}}ii={{@index}} {{/Input}}";
+            var template = handlebars.Compile(source);
+            var data = new
+            {
+                Input = new List<string>
+                {
+                    "a", "b", "c"
+                }
+            };
+            var result = template(data);
+            Assert.Equal("ii=0 ii=1 ii=2 ", result);
+        }
+        
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void WithWithBlockParams(IHandlebars handlebars)
         {
             var source = "{{#with person as |person|}}{{person.name}} is {{age}} years old{{/with}}.";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var data = new
             {
                 person = new
@@ -374,22 +457,22 @@ false
             Assert.Equal("Erik is 42 years old.", result);
         }
 
-        [Fact]
-        public void BasicWithInversion()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicWithInversion(IHandlebars handlebars)
         {
             var source = "Hello, {{#with person}} my good friend{{else}}nevermind{{/with}}";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
 
             Assert.Equal("Hello, nevermind", template(new { }));
             Assert.Equal("Hello, nevermind", template(new { person = false }));
             Assert.Equal("Hello, nevermind", template(new { person = new string[] { } }));
         }
 
-        [Fact]
-        public void BasicEncoding()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicEncoding(IHandlebars handlebars)
         {
             var source = "Hello, {{name}}!";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var data = new
             {
                 name = "<b>Bob</b>"
@@ -398,11 +481,11 @@ false
             Assert.Equal("Hello, &lt;b&gt;Bob&lt;/b&gt;!", result);
         }
 
-        [Fact]
-        public void BasicComment()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicComment(IHandlebars handlebars)
         {
             var source = "Hello, {{!don't render me!}}{{name}}!";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var data = new
             {
                 name = "Carl"
@@ -411,11 +494,11 @@ false
             Assert.Equal("Hello, Carl!", result);
         }
 
-        [Fact]
-        public void BasicCommentEscaped()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicCommentEscaped(IHandlebars handlebars)
         {
             var source = "Hello, {{!--don't {{render}} me!--}}{{name}}!";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var data = new
             {
                 name = "Carl"
@@ -424,11 +507,11 @@ false
             Assert.Equal("Hello, Carl!", result);
         }
 
-        [Fact]
-        public void BasicObjectEnumerator()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicObjectEnumerator(IHandlebars handlebars)
         {
             var source = "{{#each enumerateMe}}{{this}} {{/each}}";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var data = new
             {
                 enumerateMe = new
@@ -441,11 +524,11 @@ false
             Assert.Equal("hello world ", result);
         }
         
-        [Fact]
-        public void BasicListEnumerator()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicListEnumerator(IHandlebars handlebars)
         {
             var source = "{{#each enumerateMe}}{{this}} {{/each}}";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var data = new
             {
                 enumerateMe = new string[]
@@ -458,11 +541,12 @@ false
             Assert.Equal("hello world ", result);
         }
         
-        [Fact]
-        public void BasicObjectEnumeratorWithLast()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicObjectEnumeratorWithLast(IHandlebars handlebars)
         {
             var source = "{{#each enumerateMe}}{{@last}} {{/each}}";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
+            handlebars.Configuration.Compatibility.SupportLastInObjectIterations = true;
             var data = new
             {
                 enumerateMe = new
@@ -475,11 +559,11 @@ false
             Assert.Equal("False True ", result);
         }
 
-        [Fact]
-        public void BasicObjectEnumeratorWithKey()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicObjectEnumeratorWithKey(IHandlebars handlebars)
         {
             var source = "{{#each enumerateMe}}{{@key}}: {{this}} {{/each}}";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var data = new
             {
                 enumerateMe = new
@@ -492,11 +576,11 @@ false
             Assert.Equal("foo: hello bar: world ", result);
         }
         
-        [Fact]
-        public void ObjectEnumeratorWithBlockParams()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void ObjectEnumeratorWithBlockParams(IHandlebars handlebars)
         {
             var source = "{{#each enumerateMe as |item val|}}{{@item}}: {{@val}} {{/each}}";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var data = new
             {
                 enumerateMe = new
@@ -509,11 +593,11 @@ false
             Assert.Equal("hello: foo world: bar ", result);
         }
 
-        [Fact]
-        public void BasicDictionaryEnumerator()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicDictionaryEnumerator(IHandlebars handlebars)
         {
             var source = "{{#each enumerateMe}}{{this}} {{/each}}";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var data = new
             {
                 enumerateMe = new Dictionary<string, object>
@@ -526,11 +610,11 @@ false
             Assert.Equal("hello world ", result);
         }
         
-        [Fact]
-        public void DictionaryEnumeratorWithBlockParams()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void DictionaryEnumeratorWithBlockParams(IHandlebars handlebars)
         {
             var source = "{{#each enumerateMe as |item val|}}{{item}} {{val}} {{/each}}";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var data = new
             {
                 enumerateMe = new Dictionary<string, object>
@@ -543,11 +627,12 @@ false
             Assert.Equal("hello foo world bar ", result);
         }
         
-        [Fact]
-        public void DictionaryWithLastEnumerator()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void DictionaryWithLastEnumerator(IHandlebars handlebars)
         {
             var source = "{{#each enumerateMe}}{{@last}} {{/each}}";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
+            handlebars.Configuration.Compatibility.SupportLastInObjectIterations = true;
             var data = new
             {
                 enumerateMe = new Dictionary<string, object>
@@ -561,11 +646,11 @@ false
             Assert.Equal("False False True ", result);
         }
 
-        [Fact]
-        public void BasicDictionaryEnumeratorWithIntKeys()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicDictionaryEnumeratorWithIntKeys(IHandlebars handlebars)
         {
             var source = "{{#each enumerateMe}}{{this}} {{/each}}";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var data = new
             {
                 enumerateMe = new Dictionary<int, object>
@@ -578,11 +663,11 @@ false
             Assert.Equal("hello world ", result);
         }
 
-        [Fact]
-        public void BasicDictionaryEnumeratorWithKey()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicDictionaryEnumeratorWithKey(IHandlebars handlebars)
         {
             var source = "{{#each enumerateMe}}{{@key}}: {{this}} {{/each}}";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var data = new
             {
                 enumerateMe = new Dictionary<string, object>
@@ -595,11 +680,11 @@ false
             Assert.Equal("foo: hello bar: world ", result);
         }
 
-        [Fact]
-        public void BasicDictionaryEnumeratorWithLongKey()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicDictionaryEnumeratorWithLongKey(IHandlebars handlebars)
         {
             var source = "{{#each enumerateMe}}{{@key}}: {{this}} {{/each}}";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var data = new
             {
                 enumerateMe = new Dictionary<long, object>
@@ -613,11 +698,11 @@ false
         }
 
 
-        [Fact]
-        public void BasicPathDictionaryStringKeyNoSquareBrackets()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicPathDictionaryStringKeyNoSquareBrackets(IHandlebars handlebars)
         {
             var source = "Hello, {{ names.Foo }}!";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var data = new
             {
                 names = new Dictionary<string, string>
@@ -629,11 +714,11 @@ false
             Assert.Equal("Hello, Handlebars.Net!", result);
         }
 
-        [Fact]
-        public void BasicPathDictionaryStringKey()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicPathDictionaryStringKey(IHandlebars handlebars)
         {
             var source = "Hello, {{ names.[Foo] }}!";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var data = new
             {
                 names = new Dictionary<string, string>
@@ -645,11 +730,11 @@ false
             Assert.Equal("Hello, Handlebars.Net!", result);
         }
 
-        [Fact]
-        public void BasicPathDictionaryIntKeyNoSquareBrackets()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicPathDictionaryIntKeyNoSquareBrackets(IHandlebars handlebars)
         {
             var source = "Hello, {{ names.42 }}!";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var data = new
             {
                 names = new Dictionary<int, string>
@@ -661,11 +746,11 @@ false
             Assert.Equal("Hello, Handlebars.Net!", result);
         }
 
-        [Fact]
-        public void BasicPathDictionaryLongKeyNoSquareBrackets()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicPathDictionaryLongKeyNoSquareBrackets(IHandlebars handlebars)
         {
             var source = "Hello, {{ names.42 }}!";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var data = new
             {
                 names = new Dictionary<long, string>
@@ -677,11 +762,11 @@ false
             Assert.Equal("Hello, Handlebars.Net!", result);
         }
 
-        [Fact]
-        public void BasicPathDictionaryIntKey()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicPathDictionaryIntKey(IHandlebars handlebars)
         {
             var source = "Hello, {{ names.[42] }}!";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var data = new
             {
                 names = new Dictionary<int, string>
@@ -693,11 +778,11 @@ false
             Assert.Equal("Hello, Handlebars.Net!", result);
         }
 
-        [Fact]
-        public void BasicPathDictionaryLongKey()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicPathDictionaryLongKey(IHandlebars handlebars)
         {
             var source = "Hello, {{ names.[42] }}!";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var data = new
             {
                 names = new Dictionary<long, string>
@@ -709,33 +794,33 @@ false
             Assert.Equal("Hello, Handlebars.Net!", result);
         }
 
-        [Fact]
-        public void BasicPathExpandoObjectIntKeyRoot()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicPathExpandoObjectIntKeyRoot(IHandlebars handlebars)
         {
             var source = "Hello, {{ [42].name }}!";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var data = JsonConvert.DeserializeObject<ExpandoObject>("{ 42 : { \"name\": \"Handlebars.Net\" } }");
 
             var result = template(data);
             Assert.Equal("Hello, Handlebars.Net!", result);
         }
 
-        [Fact]
-        public void BasicPathExpandoObjectIntKeyArray()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicPathExpandoObjectIntKeyArray(IHandlebars handlebars)
         {
             var source = "Hello, {{ names.[1].name }}!";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var data = JsonConvert.DeserializeObject<ExpandoObject>("{ names : [ { \"name\": \"nope!\" }, { \"name\": \"Handlebars.Net\" } ] }");
 
             var result = template(data);
             Assert.Equal("Hello, Handlebars.Net!", result);
         }
 
-        [Fact]
-        public void DynamicWithMetadataEnumerator()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void DynamicWithMetadataEnumerator(IHandlebars handlebars)
         {
             var source = "{{#each enumerateMe}}{{this}} {{/each}}";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             dynamic data = new ExpandoObject();
             data.enumerateMe = new ExpandoObject();
             data.enumerateMe.foo = "hello";
@@ -744,11 +829,11 @@ false
             Assert.Equal("hello world ", result);
         }
 
-        [Fact]
-        public void DynamicWithMetadataEnumeratorWithKey()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void DynamicWithMetadataEnumeratorWithKey(IHandlebars handlebars)
         {
             var source = "{{#each enumerateMe}}{{@key}}: {{this}} {{/each}}";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             dynamic data = new ExpandoObject();
             data.enumerateMe = new ExpandoObject();
             data.enumerateMe.foo = "hello";
@@ -757,17 +842,17 @@ false
             Assert.Equal("foo: hello bar: world ", result);
         }
 
-        [Fact]
-        public void BasicHelper()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicHelper(IHandlebars handlebars)
         {
-            Handlebars.RegisterHelper("link_to", (writer, context, parameters) =>
+            handlebars.RegisterHelper("link_to", (writer, context, parameters) =>
             {
                 writer.WriteSafeString("<a href='" + parameters[0] + "'>" + parameters[1] + "</a>");
             });
 
             string source = @"Click here: {{link_to url text}}";
 
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
 
             var data = new
             {
@@ -779,14 +864,14 @@ false
             Assert.Equal("Click here: <a href='https://github.com/rexm/handlebars.net'>Handlebars.Net</a>", result);
         }
 
-        [Fact]
-        public void BasicHelperPostRegister()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicHelperPostRegister(IHandlebars handlebars)
         {
             string source = @"Click here: {{link_to_post_reg url text}}";
 
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
 
-            Handlebars.RegisterHelper("link_to_post_reg", (writer, context, parameters) =>
+            handlebars.RegisterHelper("link_to_post_reg", (writer, context, parameters) =>
             {
                 writer.WriteSafeString("<a href='" + parameters[0] + "'>" + parameters[1] + "</a>");
             });
@@ -803,12 +888,12 @@ false
             Assert.Equal("Click here: <a href='https://github.com/rexm/handlebars.net'>Handlebars.Net</a>", result);
         }
 
-        [Fact]
-        public void BasicDeferredBlock()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicDeferredBlock(IHandlebars handlebars)
         {
             string source = "Hello, {{#person}}{{name}}{{/person}}!";
 
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
 
             var data = new
             {
@@ -822,23 +907,23 @@ false
             Assert.Equal("Hello, Bill!", result);
         }
 
-        [Fact]
-        public void BasicDeferredBlockString()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicDeferredBlockString(IHandlebars handlebars)
         {
             string source = "{{#person}} -{{this}}- {{/person}}";
 
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
 
             var result = template(new { person = "Bill" });
             Assert.Equal(" -Bill- ", result);
         }
 
-        [Fact]
-        public void BasicDeferredBlockWithWhitespace()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicDeferredBlockWithWhitespace(IHandlebars handlebars)
         {
             string source = "Hello, {{ # person }}{{ name }}{{ / person }}!";
 
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
 
             var data = new
             {
@@ -852,12 +937,12 @@ false
             Assert.Equal("Hello, Bill!", result);
         }
 
-        [Fact]
-        public void BasicDeferredBlockFalsy()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicDeferredBlockFalsy(IHandlebars handlebars)
         {
             string source = "Hello, {{#person}}{{name}}{{/person}}!";
 
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
 
             var data = new
             {
@@ -868,12 +953,12 @@ false
             Assert.Equal("Hello, !", result);
         }
 
-        [Fact]
-        public void BasicDeferredBlockNull()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicDeferredBlockNull(IHandlebars handlebars)
         {
             string source = "Hello, {{#person}}{{name}}{{/person}}!";
 
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
 
             var data = new
             {
@@ -884,12 +969,12 @@ false
             Assert.Equal("Hello, !", result);
         }
 
-        [Fact]
-        public void BasicDeferredBlockEnumerable()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicDeferredBlockEnumerable(IHandlebars handlebars)
         {
             string source = "Hello, {{#people}}{{this}} {{/people}}!";
 
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
 
             var data = new
             {
@@ -903,12 +988,12 @@ false
             Assert.Equal("Hello, Bill Mary !", result);
         }
 
-        [Fact]
-        public void BasicDeferredBlockNegated()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicDeferredBlockNegated(IHandlebars handlebars)
         {
             string source = "Hello, {{^people}}nobody{{/people}}!";
 
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
 
             var data = new
             {
@@ -920,29 +1005,29 @@ false
             Assert.Equal("Hello, nobody!", result);
         }
 
-        [Fact]
-        public void BasicDeferredBlockNegatedContext()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicDeferredBlockNegatedContext(IHandlebars handlebars)
         {
-            var template = Handlebars.Compile("Hello, {{^obj}}{{name}}{{/obj}}!");
+            var template = handlebars.Compile("Hello, {{^obj}}{{name}}{{/obj}}!");
 
             Assert.Equal("Hello, nobody!", template(new { name = "nobody" }));
             Assert.Equal("Hello, nobody!", template(new { name = "nobody", obj = new string[0] }));
         }
 
-        [Fact]
-        public void BasicDeferredBlockInversion()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicDeferredBlockInversion(IHandlebars handlebars)
         {
-            var template = Handlebars.Compile("Hello, {{#obj}}somebody{{else}}{{name}}{{/obj}}!");
+            var template = handlebars.Compile("Hello, {{#obj}}somebody{{else}}{{name}}{{/obj}}!");
 
             Assert.Equal("Hello, nobody!", template(new { name = "nobody" }));
             Assert.Equal("Hello, nobody!", template(new { name = "nobody", obj = false }));
             Assert.Equal("Hello, nobody!", template(new { name = "nobody", obj = new string[0] }));
         }
 
-        [Fact]
-        public void BasicDeferredBlockNegatedInversion()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicDeferredBlockNegatedInversion(IHandlebars handlebars)
         {
-            var template = Handlebars.Compile("Hello, {{^obj}}nobody{{else}}{{name}}{{/obj}}!");
+            var template = handlebars.Compile("Hello, {{^obj}}nobody{{else}}{{name}}{{/obj}}!");
 
             var array = new[]
             {
@@ -956,12 +1041,12 @@ false
             Assert.Equal("Hello, person!", template(new { obj = new { name = "person" } }));
         }
 
-        [Fact]
-        public void BasicPropertyMissing()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicPropertyMissing(IHandlebars handlebars)
         {
             string source = "Hello, {{first}} {{last}}!";
 
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
 
             var data = new
             {
@@ -972,12 +1057,12 @@ false
             Assert.Equal("Hello, Marc !", result);
         }
 
-        [Fact]
-        public void BasicNullOrMissingSubProperty()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicNullOrMissingSubProperty(IHandlebars handlebars)
         {
             string source = "Hello, {{name.first}}!";
 
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
 
             var data = new
             {
@@ -988,12 +1073,12 @@ false
             Assert.Equal("Hello, !", result);
         }
 
-        [Fact]
-        public void BasicNumericFalsy()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicNumericFalsy(IHandlebars handlebars)
         {
             string source = "Hello, {{#if falsy}}Truthy!{{/if}}";
 
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
 
             var data = new
             {
@@ -1004,12 +1089,12 @@ false
             Assert.Equal("Hello, ", result);
         }
 
-        [Fact]
-        public void BasicNullFalsy()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicNullFalsy(IHandlebars handlebars)
         {
             string source = "Hello, {{#if falsy}}Truthy!{{/if}}";
 
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
 
             var data = new
             {
@@ -1020,12 +1105,12 @@ false
             Assert.Equal("Hello, ", result);
         }
 
-        [Fact]
-        public void BasicNumericTruthy()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicNumericTruthy(IHandlebars handlebars)
         {
             string source = "Hello, {{#if truthy}}Truthy!{{/if}}";
 
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
 
             var data = new
             {
@@ -1036,12 +1121,12 @@ false
             Assert.Equal("Hello, Truthy!", result);
         }
 
-        [Fact]
-        public void BasicStringFalsy()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicStringFalsy(IHandlebars handlebars)
         {
             string source = "Hello, {{#if falsy}}Truthy!{{/if}}";
 
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
 
             var data = new
             {
@@ -1052,12 +1137,12 @@ false
             Assert.Equal("Hello, ", result);
         }
 
-        [Fact]
-        public void BasicEmptyArrayFalsy()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicEmptyArrayFalsy(IHandlebars handlebars)
         {
             var source = "{{#if Array}}stuff: {{#each Array}}{{this}}{{/each}}{{/if}}";
 
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
 
             var data = new
             {
@@ -1069,12 +1154,12 @@ false
             Assert.Equal("", result);
         }
 
-        [Fact]
-        public void BasicTripleStash()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicTripleStash(IHandlebars handlebars)
         {
             string source = "Hello, {{{dangerous_value}}}!";
 
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
 
             var data = new
             {
@@ -1085,12 +1170,12 @@ false
             Assert.Equal("Hello, <div>There's HTML here</div>!", result);
         }
 
-        [Fact]
-        public void BasicEscape()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicEscape(IHandlebars handlebars)
         {
             string source = @"Hello, \{{raw_value}}!";
 
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
 
             var data = new
             {
@@ -1101,15 +1186,15 @@ false
             Assert.Equal(@"Hello, {{raw_value}}!", result);
         }
 
-        [Fact]
-        public void BasicNumberLiteral()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicNumberLiteral(IHandlebars handlebars)
         {
             string source = "{{eval 2  3}}";
 
-            Handlebars.RegisterHelper("eval",
+            handlebars.RegisterHelper("eval",
                 (writer, context, args) => writer.Write("{0} {1}", args[0], args[1]));
 
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
 
             var data = new { };
 
@@ -1117,15 +1202,15 @@ false
             Assert.Equal("2 3", result);
         }
 
-        [Fact]
-        public void BasicNullLiteral()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicNullLiteral(IHandlebars handlebars)
         {
             string source = "{{eval null}}";
 
-            Handlebars.RegisterHelper("eval",
+            handlebars.RegisterHelper("eval",
                 (writer, context, args) => writer.Write(args[0] == null));
 
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
 
             var data = new { };
 
@@ -1133,15 +1218,15 @@ false
             Assert.Equal("True", result);
         }
 
-        [Fact]
-        public void BasicCurlyBracesInLiterals()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicCurlyBracesInLiterals(IHandlebars handlebars)
         {
             var source = @"{{verbatim '{{foo}}'}} something {{verbatim '{{bar}}'}}";
 
-            Handlebars.RegisterHelper("verbatim",
+            handlebars.RegisterHelper("verbatim",
                 (writer, context, args) => writer.Write(args[0]));
 
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
 
             var data = new { };
             var result = template(data);
@@ -1149,12 +1234,12 @@ false
             Assert.Equal("{{foo}} something {{bar}}", result);
         }
 
-        [Fact]
-        public void BasicRoot()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicRoot(IHandlebars handlebars)
         {
             string source = "{{#people}}- {{this}} is member of {{@root.group}}\n{{/people}}";
 
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
 
             var data = new
             {
@@ -1170,8 +1255,8 @@ false
             Assert.Equal("- Rex is member of Engineering\n- Todd is member of Engineering\n", result);
         }
 
-        [Fact]
-        public void ImplicitConditionalBlock()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void ImplicitConditionalBlock(IHandlebars handlebars)
         {
             var template =
                 "{{#home}}Welcome Home{{/home}}{{^home}}Welcome to {{newCity}}{{/home}}";
@@ -1183,35 +1268,27 @@ false
                 home = false
             };
 
-            var compiler = Handlebars.Compile(template);
+            var compiler = handlebars.Compile(template);
             var result = compiler.Invoke(data);
             Assert.Equal("Welcome to New York City", result);
         }
 
-        [Fact]
-        public void BasicDictionary()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicDictionary(IHandlebars handlebars)
         {
             var source =
                 "<div id='userInfo'>UserName: {{userInfo.userName}} Language: {{userInfo.language}}</div>"
                 + "<div id='main' style='width:{{clientSettings.width}}px; height:{{clientSettings.height}}px'>body</div>";
 
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
 
-            var embeded = new Dictionary<string, object>();
-            embeded.Add("userInfo",
-                new
-                {
-                    userName = "Ondrej",
-                    language = "Slovak"
-                });
-            embeded.Add("clientSettings",
-                new
-                {
-                    width = 120,
-                    height = 80
-                });
+            var embedded = new Dictionary<string, object>
+            {
+                {"userInfo", new {userName = "Ondrej", language = "Slovak"}},
+                {"clientSettings", new {width = 120, height = 80}}
+            };
 
-            var result = template(embeded);
+            var result = template(embedded);
             var expectedResult =
                 "<div id='userInfo'>UserName: Ondrej Language: Slovak</div>"
                 + "<div id='main' style='width:120px; height:80px'>body</div>";
@@ -1219,12 +1296,12 @@ false
             Assert.Equal(expectedResult, result);
         }
 
-        [Fact]
-        public void BasicHashtable()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicHashtable(IHandlebars handlebars)
         {
             var source = "{{dictionary.[key]}}";
 
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
 
             var result = template(new
             {
@@ -1238,12 +1315,12 @@ false
             Assert.Equal(expectedResult, result);
         }
 
-        [Fact]
-        public void BasicHashtableNoSquareBrackets()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicHashtableNoSquareBrackets(IHandlebars handlebars)
         {
             var source = "{{dictionary.key}}";
 
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
 
             var result = template(new
             {
@@ -1257,12 +1334,12 @@ false
             Assert.Equal(expectedResult, result);
         }
 
-        [Fact]
-        public void BasicMockIDictionary()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicMockIDictionary(IHandlebars handlebars)
         {
             var source = "{{dictionary.[key]}}";
 
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
 
             var result = template(new
             {
@@ -1274,12 +1351,12 @@ false
             Assert.Equal(expectedResult, result);
         }
 
-        [Fact]
-        public void DictionaryWithSpaceInKeyName()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void DictionaryWithSpaceInKeyName(IHandlebars handlebars)
         {
             var source = "{{dictionary.[my key]}}";
 
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
 
             var result = template(new
             {
@@ -1291,12 +1368,12 @@ false
             Assert.Equal(expectedResult, result);
         }
 
-        [Fact]
-        public void DictionaryWithSpaceInKeyNameAndChildProperty()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void DictionaryWithSpaceInKeyNameAndChildProperty(IHandlebars handlebars)
         {
             var source = "{{dictionary.[my key].prop1}}";
 
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
 
             var result = template(new
             {
@@ -1316,12 +1393,12 @@ false
             Assert.Equal(expectedResult, result);
         }
 
-        [Fact]
-        public void BasicMockIDictionaryNoSquareBrackets()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicMockIDictionaryNoSquareBrackets(IHandlebars handlebars)
         {
             var source = "{{dictionary.key}}";
 
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
 
             var result = template(new
             {
@@ -1333,12 +1410,12 @@ false
             Assert.Equal(expectedResult, result);
         }
 
-        [Fact]
-        public void BasicMockIDictionaryIntKey()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicMockIDictionaryIntKey(IHandlebars handlebars)
         {
             var source = "{{dictionary.[42]}}";
 
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
 
             var result = template(new
             {
@@ -1350,12 +1427,12 @@ false
             Assert.Equal(expectedResult, result);
         }
 
-        [Fact]
-        public void BasicMockIDictionaryIntKeyNoSquareBrackets()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicMockIDictionaryIntKeyNoSquareBrackets(IHandlebars handlebars)
         {
             var source = "{{dictionary.42}}";
 
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
 
             var result = template(new
             {
@@ -1367,13 +1444,13 @@ false
             Assert.Equal(expectedResult, result);
         }
 
-        [Fact]
-        public void TestNoWhitespaceBetweenExpressions()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void TestNoWhitespaceBetweenExpressions(IHandlebars handlebars)
         {
 
             var source = @"{{#is ProgramID """"}}no program{{/is}}{{#is ProgramID ""1081""}}some program text{{/is}}";
 
-            Handlebars.RegisterHelper("is", (output, options, context, args) =>
+            handlebars.RegisterHelper("is", (output, options, context, args) =>
                 {
                     if (args[0] == args[1])
                     {
@@ -1382,7 +1459,7 @@ false
                 });
 
 
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
 
             var result = template(new
             {
@@ -1395,11 +1472,11 @@ false
             Assert.Equal(expectedResult, result);
         }
 
-        [Fact]
-        public void DictionaryIteration()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void DictionaryIteration(IHandlebars handlebars)
         {
             string source = @"{{#ADictionary}}{{@key}},{{value}}{{/ADictionary}}";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var result = template(new
             {
                 ADictionary = new Dictionary<string, int>
@@ -1414,11 +1491,11 @@ false
             Assert.Equal("key5,14key6,15key7,16key8,17", result);
         }
 
-        [Fact]
-        public void ObjectEnumeration()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void ObjectEnumeration(IHandlebars handlebars)
         {
             string source = @"{{#each myObject}}{{#if this.length}}<b>{{@key}}</b>{{#each this}}<li>{{this}}</li>{{/each}}<br>{{/if}}{{/each}}";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             var result = template(new
             {
                 myObject = new
@@ -1431,12 +1508,12 @@ false
             Assert.Equal("<b>arr</b><li>hello</li><li>world</li><br>", result);
         }
 
-        [Fact]
-        public void NestedDictionaryWithSegmentLiteral()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void NestedDictionaryWithSegmentLiteral(IHandlebars handlebars)
         {
             var source = "{{dictionary.[my key].[another key]}}";
 
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
 
             var data = new
             {
@@ -1455,11 +1532,10 @@ false
             Assert.Equal(expectedResult, result);
         }
 
-        [Fact]
-        public void ImplicitIDictionaryImplementationShouldNotThrowNullref()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void ImplicitIDictionaryImplementationShouldNotThrowNullref(IHandlebars handlebars)
         {
             // Arrange
-            IHandlebars handlebars = Handlebars.Create();
             handlebars.RegisterHelper("foo", (writer, context, arguments) => { });
             var compile = handlebars.Compile(@"{{foo bar}}");
             var mock = new MockDictionaryImplicitlyImplemented(new Dictionary<string, object> { { "bar", 1 } });
@@ -1468,11 +1544,11 @@ false
             compile.Invoke(mock);
         }
         
-        [Fact] 
-        public void ShouldBeAbleToHandleFieldContainingDots() 
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void ShouldBeAbleToHandleFieldContainingDots(IHandlebars handlebars) 
         { 
             var source = "Everybody was {{ foo.bar }}-{{ [foo.bar] }} {{ foo.[bar.baz].buz }}!"; 
-            var template = Handlebars.Compile(source); 
+            var template = handlebars.Compile(source); 
             var data = new Dictionary<string, object>() 
             { 
                 {"foo.bar", "fu"}, 
@@ -1482,21 +1558,21 @@ false
             Assert.Equal("Everybody was kung-fu fighting!", result); 
         } 
  
-        [Fact] 
-        public void ShouldBeAbleToHandleListWithNumericalFields() 
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void ShouldBeAbleToHandleListWithNumericalFields(IHandlebars handlebars) 
         { 
             var source = "{{ [0] }}"; 
-            var template = Handlebars.Compile(source); 
+            var template = handlebars.Compile(source); 
             var data = new List<string> {"FOOBAR"}; 
             var result = template(data); 
             Assert.Equal("FOOBAR", result); 
         } 
  
-        [Fact] 
-        public void ShouldBeAbleToHandleDictionaryWithNumericalFields() 
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void ShouldBeAbleToHandleDictionaryWithNumericalFields(IHandlebars handlebars) 
         { 
             var source = "{{ [0] }}"; 
-            var template = Handlebars.Compile(source); 
+            var template = handlebars.Compile(source); 
             var data = new Dictionary<string,string> 
             { 
                 {"0", "FOOBAR"}, 
@@ -1505,11 +1581,11 @@ false
             Assert.Equal("FOOBAR", result); 
         } 
  
-        [Fact] 
-        public void ShouldBeAbleToHandleJObjectsWithNumericalFields() 
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void ShouldBeAbleToHandleJObjectsWithNumericalFields(IHandlebars handlebars) 
         { 
             var source = "{{ [0] }}"; 
-            var template = Handlebars.Compile(source); 
+            var template = handlebars.Compile(source); 
             var data = new JObject 
             { 
                 {"0", "FOOBAR"}, 
@@ -1518,12 +1594,12 @@ false
             Assert.Equal("FOOBAR", result); 
         } 
  
-        [Fact] 
-        public void ShouldBeAbleToHandleKeysStartingAndEndingWithSquareBrackets() 
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void ShouldBeAbleToHandleKeysStartingAndEndingWithSquareBrackets(IHandlebars handlebars) 
         { 
             var source = 
                 "{{ noBracket }} {{ [noBracket] }} {{ [[startsWithBracket] }} {{ [endsWithBracket]] }} {{ [[bothBrackets]] }}"; 
-            var template = Handlebars.Compile(source); 
+            var template = handlebars.Compile(source); 
             var data = new Dictionary<string, string> 
             { 
                 {"noBracket", "foo"}, 
@@ -1535,8 +1611,8 @@ false
             Assert.Equal("foo foo bar baz buz", result); 
         }
         
-        [Fact]
-        public void BasicReturnFromHelper()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicReturnFromHelper(IHandlebars Handlebars)
         {
             var getData = $"getData{Guid.NewGuid()}";
             Handlebars.RegisterHelper(getData, (context, arguments) => arguments[0]);
@@ -1547,11 +1623,11 @@ false
             Assert.Equal("data", result);
         }
         
-        [Fact]
-        public void CollectionReturnFromHelper()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void CollectionReturnFromHelper(IHandlebars handlebars)
         {
             var getData = $"getData{Guid.NewGuid()}";
-            Handlebars.RegisterHelper(getData, (context, arguments) =>
+            handlebars.RegisterHelper(getData, (context, arguments) =>
             {
                 var data = new Dictionary<string, string>
                 {
@@ -1562,18 +1638,18 @@ false
                 return data;
             });
             var source = $"{{{{#each ({getData} 'Darmstadt' 'San Francisco')}}}}{{{{@key}}}} lives in {{{{@value}}}}. {{{{/each}}}}";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             
             var result = template(new object());
             Assert.Equal("Nils lives in Darmstadt. Yehuda lives in San Francisco. ", result);
         }
         
         
-        [Fact]
-        public void ReturnFromHelperWithSubExpression()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void ReturnFromHelperWithSubExpression(IHandlebars handlebars)
         {
             var formatData = $"formatData{Guid.NewGuid()}";
-            Handlebars.RegisterHelper(formatData, (writer, context, arguments) =>
+            handlebars.RegisterHelper(formatData, (writer, context, arguments) =>
             {
                 writer.WriteSafeString(arguments[0]);
                 writer.WriteSafeString(" ");
@@ -1581,45 +1657,45 @@ false
             });
         
             var getData = $"getData{Guid.NewGuid()}";
-            Handlebars.RegisterHelper(getData, (context, arguments) =>
+            handlebars.RegisterHelper(getData, (context, arguments) =>
             {
                 return arguments[0];
             });
             
             var source = $"{{{{{getData} ({formatData} 'data' '42')}}}}";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
         
             var result = template(new object());
             Assert.Equal("data 42", result);
         }
         
-        [Fact]
-        public void ReturnFromHelperLateBindWithSubExpression()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void ReturnFromHelperLateBindWithSubExpression(IHandlebars handlebars)
         {
             var formatData = $"formatData{Guid.NewGuid()}";
             var getData = $"getData{Guid.NewGuid()}";
             
             var source = $"{{{{{getData} ({formatData} 'data' '42')}}}}";
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
             
-            Handlebars.RegisterHelper(formatData, (writer, context, arguments) =>
+            handlebars.RegisterHelper(formatData, (writer, context, arguments) =>
             {
                 writer.WriteSafeString(arguments[0]);
                 writer.WriteSafeString(" ");
                 writer.WriteSafeString(arguments[1]);
             });
             
-            Handlebars.RegisterHelper(getData, (context, arguments) => arguments[0]);
+            handlebars.RegisterHelper(getData, (context, arguments) => arguments[0]);
             
             var result = template(new object());
             Assert.Equal("data 42", result);
         }
         
-        [Fact]
-        public void BasicLookup()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicLookup(IHandlebars handlebars)
         {
             var source = "{{#each people}}{{.}} lives in {{lookup ../cities @index}} {{/each}}";
-            var template = Handlebars.Create().Compile(source);
+            var template = handlebars.Compile(source);
             var data = new
             {
                 people = new[]{"Nils", "Yehuda"},
@@ -1630,11 +1706,11 @@ false
             Assert.Equal("Nils lives in Darmstadt Yehuda lives in San Francisco ", result);
         }
         
-        [Fact]
-        public void LookupAsSubExpression()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void LookupAsSubExpression(IHandlebars handlebars)
         {
             var source = "{{#each persons}}{{name}} lives in {{#with (lookup ../cities [resident])~}}{{name}} ({{country}}){{/with}}{{/each}}";
-            var template = Handlebars.Create().Compile(source);
+            var template = handlebars.Compile(source);
             var data = new
             {
                 persons = new[]
@@ -1669,17 +1745,63 @@ false
             Assert.Equal("Nils lives in Darmstadt (Germany)Yehuda lives in San Francisco (USA)", result);
         }
 
-        [Fact]
-        private void StringConditionTest()
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        private void StringConditionTest(IHandlebars handlebars)
         {
-            var template = "{{#if Email}}\"correo\": \"{{Email}}\",{{else}}\"correo\": \"no hay correo\",{{/if}}";
+            var expected = "\"correo\": \"correo@gmail.com\"";
+            var template = "{{#if Email}}\"correo\": \"{{Email}}\"{{else}}\"correo\": \"no hay correo\",{{/if}}";
             var data = new
             {
                 Email = "correo@gmail.com"
             };
 
-            var func = Handlebars.Compile(template);
-            var s = func(data);
+            var func = handlebars.Compile(template);
+            var actual = func(data);
+            
+            Assert.Equal(expected, actual);
+        }
+        
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        private void CustomHelperResolverTest(IHandlebars handlebars)
+        {
+            handlebars.Configuration.HelperResolvers.Add(new StringHelperResolver());
+            var template = "{{ #toLower input }}";
+            var func = handlebars.Compile(template);
+            var data = new { input = "ABC" };
+            
+            var actual = func(data);
+            
+            Assert.Equal(data.input.ToLower(), actual);
+        }
+
+        private class StringHelperResolver : IHelperResolver
+        {
+            public bool TryResolveReturnHelper(string name, Type targetType, out HandlebarsReturnHelper helper)
+            {
+                if (targetType == typeof(string))
+                {
+                    var method = targetType.GetMethods(BindingFlags.Instance | BindingFlags.Public)
+                        .FirstOrDefault(o => string.Equals(o.Name, name, StringComparison.OrdinalIgnoreCase));
+
+                    if (method == null)
+                    {
+                        helper = null;
+                        return false;
+                    }
+
+                    helper = (context, arguments) => method.Invoke(arguments[0], arguments.Skip(1).ToArray());
+                    return true;
+                }
+                
+                helper = null;
+                return false;
+            }
+
+            public bool TryResolveBlockHelper(string name, out HandlebarsBlockHelper helper)
+            {
+                helper = null;
+                return false;
+            }
         }
 
         private class MockDictionary : IDictionary<string, string>
@@ -1705,7 +1827,7 @@ false
             {
                 get
                 {
-                    throw new NotImplementedException();
+                    return "Hello world!";
                 }
                 set
                 {

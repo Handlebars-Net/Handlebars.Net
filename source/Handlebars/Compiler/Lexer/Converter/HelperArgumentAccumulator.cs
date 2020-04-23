@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using System.Collections.Generic;
 using System.Linq;
 using HandlebarsDotNet.Compiler.Lexer;
@@ -30,6 +29,7 @@ namespace HandlebarsDotNet.Compiler
                         var helperArguments = AccumulateArguments(enumerator);
                         yield return HandlebarsExpression.Helper(
                             helper.HelperName,
+                            helper.IsBlock,
                             helperArguments,
                             helper.IsRaw);
                         yield return enumerator.Current;
@@ -42,6 +42,7 @@ namespace HandlebarsDotNet.Compiler
                         {
                             yield return HandlebarsExpression.Helper(
                                 path.Path,
+                                false,
                                 helperArguments,
                                 ((EndExpressionToken) enumerator.Current)?.IsRaw ?? false);
                             yield return enumerator.Current;

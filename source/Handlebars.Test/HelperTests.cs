@@ -1,9 +1,7 @@
 using Xunit;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using HandlebarsDotNet.Compiler;
 
 namespace HandlebarsDotNet.Test
 {
@@ -36,8 +34,10 @@ namespace HandlebarsDotNet.Test
         {
             Handlebars.RegisterHelper("myHelper", (writer, options, context, args) => {
                 var count = 0;
-                options.BlockParams((parameters, binder) => 
-                    binder(parameters.ElementAtOrDefault(0), () => ++count));
+                options.BlockParams((parameters, binder, deps) =>
+                {
+                    binder(parameters.ElementAtOrDefault(0), ctx => ++count);
+                });
                 
                 foreach(var arg in args)
                 {
@@ -52,6 +52,34 @@ namespace HandlebarsDotNet.Test
             var output = template(new { });
 
             var expected = "Here are some things: 1:foo\n2:bar\n";
+
+            Assert.Equal(expected, output);
+        }
+        
+        [Fact]
+        public void BlockHelperLateBound()
+        {
+            var source = "Here are some things: \n" +
+                         "{{#myHelper 'foo' 'bar' as |counter|}}\n" +
+                         "{{counter}}:{{this}}\n" +
+                         "{{/myHelper}}";
+
+            var template = Handlebars.Compile(source);
+
+            Handlebars.RegisterHelper("myHelper", (writer, options, context, args) => {
+                var count = 0;
+                options.BlockParams((parameters, binder, deps) => 
+                    binder(parameters.ElementAtOrDefault(0), ctx => ++count));
+                
+                foreach(var arg in args)
+                {
+                    options.Template(writer, arg);
+                }
+            });
+            
+            var output = template(new { });
+
+            var expected = "Here are some things: \n1:foo\n2:bar\n";
 
             Assert.Equal(expected, output);
         }
@@ -366,7 +394,8 @@ namespace HandlebarsDotNet.Test
         [Fact]
         public void HelperWithHashArgument()
         {
-            Handlebars.RegisterHelper("myHelper", (writer, context, args) => {
+            var h = Handlebars.Create();
+            h.RegisterHelper("myHelper", (writer, context, args) => {
                 var hash = args[2] as Dictionary<string, object>;
                 foreach(var item in hash)
                 {
@@ -376,7 +405,7 @@ namespace HandlebarsDotNet.Test
 
             var source = "Here are some things:{{myHelper 'foo' 'bar' item1='val1' item2='val2'}}";
 
-            var template = Handlebars.Compile(source);
+            var template = h.Compile(source);
 
             var output = template(new { });
 

@@ -1,54 +1,67 @@
 using System;
+using System.Linq;
+using System.Reflection;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Jobs;
 using HandlebarsDotNet;
+using HandlebarsDotNet.Extension.CompileFast;
 
 namespace Benchmark
 {
-    //[SimpleJob(RuntimeMoniker.Net461)]
-    [SimpleJob(RuntimeMoniker.NetCoreApp21, baseline: true)]
+    [SimpleJob(RuntimeMoniker.NetCoreApp31)]
     public class Compilation
     {
         private IHandlebars _handlebars;
+
+        [Params("current", "current-fast", "1.10.1")]
+        public string Version;
         
+        private Func<string, Func<object, string>> _compileMethod;
+        private object _handlebarsRef;
+
         [GlobalSetup]
         public void Setup()
         {
-            _handlebars = Handlebars.Create();
-            _handlebars.RegisterHelper("customHelper", (writer, context, parameters) =>
+            if (!Version.StartsWith("current"))
             {
-            });
+                var assembly = Assembly.LoadFile($"{Environment.CurrentDirectory}\\PreviousVersion\\{Version}.dll");
+                var type = assembly.GetTypes().FirstOrDefault(o => o.Name == nameof(Handlebars));
+                var methodInfo = type.GetMethod("Create");
+                _handlebarsRef = methodInfo.Invoke(null, new object[]{ null });
+                var objType = _handlebarsRef.GetType();
+
+                var compileMethod = objType.GetMethod("Compile", new[]{typeof(string)});
+                _compileMethod = (Func<string, Func<object, string>>) compileMethod.CreateDelegate(typeof(Func<string, Func<object, string>>), _handlebarsRef);
+            }
+            else
+            {
+                _handlebars = Handlebars.Create();
+                if (Version.Contains("fast"))
+                {
+                    _handlebars.Configuration.UseCompileFast();
+                }
+
+                _compileMethod = _handlebars.Compile;
+            }
         }
 
         [Benchmark]
-        public Func<object, string> Complex()
-        {
-            const string template = "{{#each County}}" +
-                                    "{{#if @first}}" +
-                                    "{{this}}" +
-                                    "{{else}}" +
-                                    "{{#if @last}}" +
-                                    " and {{this}}" +
-                                    "{{else}}" +
-                                    ", {{this}}" +
-                                    "{{/if}}" +
-                                    "{{/if}}" +
-                                    "{{/each}}";
-
-            return _handlebars.Compile(template);
-        }
-
-        [Benchmark]
-        public Func<object, string> WithParentIndex()
+        public Func<object, string> Template()
         {
             const string template = @"
+                childCount={{level1.Count}}
+                childCount2={{level1.Count}}
                 {{#each level1}}
                     id={{id}}
+                    childCount={{level2.Count}}
+                    childCount2={{level2.Count}}
                     index=[{{@../../index}}:{{@../index}}:{{@index}}]
                     first=[{{@../../first}}:{{@../first}}:{{@first}}]
                     last=[{{@../../last}}:{{@../last}}:{{@last}}]
                     {{#each level2}}
                         id={{id}}
+                        childCount={{level3.Count}}
+                        childCount2={{level3.Count}}
                         index=[{{@../../index}}:{{@../index}}:{{@index}}]
                         first=[{{@../../first}}:{{@../first}}:{{@first}}]
                         last=[{{@../../last}}:{{@../last}}:{{@last}}]
@@ -61,37 +74,12 @@ namespace Benchmark
                     {{/each}}    
                 {{/each}}";
             
-            return _handlebars.Compile(template);
+            return Compile(template);
         }
 
-        [Benchmark]
-        public Func<object, string> Each()
+        private Func<object, string> Compile(string template)
         {
-            const string template = "{{#each enumerateMe}}{{this}} {{/each}}";
-            return _handlebars.Compile(template);
-        }
-        
-        // [Benchmark]
-        // public Func<object, string> EachBlockParams()
-        // {
-        //     const string template = "{{#each enumerateMe as |item val|}}{{item}} {{val}} {{/each}}";
-        //     return _handlebars.Compile(template);
-        // }
-        
-        [Benchmark]
-        public Func<object, string> Helper()
-        {
-            const string source = @"{{customHelper 'value'}}";
-
-            return _handlebars.Compile(source);
-        }
-        
-        [Benchmark]
-        public Func<object, string> HelperPostRegister()
-        {
-            const string source = @"{{not_registered_helper 'value'}}";
-
-            return _handlebars.Compile(source);
+            return _compileMethod(template);
         }
     }
 }

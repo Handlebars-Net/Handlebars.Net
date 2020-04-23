@@ -1,7 +1,6 @@
 using System;
-using System.IO;
 using System.Linq.Expressions;
-using System.Reflection;
+using Expressions.Shortcuts;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -9,42 +8,35 @@ namespace HandlebarsDotNet.Compiler
     {
         private static string SpecialPartialBlockName = "@partial-block";
 
-        public static Expression Bind(Expression expr, CompilationContext context)
+        private CompilationContext CompilationContext { get; }
+        
+        public PartialBinder(CompilationContext compilationContext)
         {
-            return new PartialBinder(context).Visit(expr);
+            CompilationContext = compilationContext;
         }
+        
+        protected override Expression VisitBlockHelperExpression(BlockHelperExpression bhex) => bhex;
 
-        private PartialBinder(CompilationContext context)
-            : base(context)
-        {
-        }
-
-        protected override Expression VisitBlockHelperExpression(BlockHelperExpression bhex)
-        {
-            return bhex;
-        }
-
-        protected override Expression VisitStatementExpression(StatementExpression sex)
-        {
-            return sex.Body is PartialExpression ? Visit(sex.Body) : sex;
-        }
+        protected override Expression VisitStatementExpression(StatementExpression sex) => sex.Body is PartialExpression ? Visit(sex.Body) : sex;
 
         protected override Expression VisitPartialExpression(PartialExpression pex)
         {
             var bindingContext = ExpressionShortcuts.Arg<BindingContext>(CompilationContext.BindingContext);
-
-            var fb = new FunctionBuilder(CompilationContext.Configuration);
-            var partialBlockTemplate = pex.Fallback == null ? null : fb.Compile(new[] {pex.Fallback}, null, null);
+            var partialBlockTemplate = pex.Fallback != null 
+                ? FunctionBuilder.CompileCore(new[] { pex.Fallback }, null, CompilationContext.Configuration) 
+                : null;
 
             if (pex.Argument != null || partialBlockTemplate != null)
             {
-                bindingContext = bindingContext.Call(o =>
-                    o.CreateChildContext(ExpressionShortcuts.Arg<object>(pex.Argument), ExpressionShortcuts.Arg(partialBlockTemplate))
-                );
+                var value = ExpressionShortcuts.Arg<object>(FunctionBuilder.Reduce(pex.Argument, CompilationContext));
+                var partialTemplate = ExpressionShortcuts.Arg(partialBlockTemplate);
+                bindingContext = bindingContext.Call(o => o.CreateChildContext(value, partialTemplate));
             }
 
+            var partialName = ExpressionShortcuts.Cast<string>(pex.PartialName);
+            var configuration = ExpressionShortcuts.Arg(CompilationContext.Configuration);
             return ExpressionShortcuts.Call(() =>
-                InvokePartialWithFallback(ExpressionShortcuts.Cast<string>(pex.PartialName), bindingContext, CompilationContext.Configuration)
+                InvokePartialWithFallback(partialName, bindingContext, configuration)
             );
         }
 
@@ -56,13 +48,11 @@ namespace HandlebarsDotNet.Compiler
             if (InvokePartial(partialName, context, configuration)) return;
             if (context.PartialBlockTemplate == null)
             {
-                if (configuration.MissingPartialTemplateHandler != null)
-                {
-                    configuration.MissingPartialTemplateHandler.Handle(configuration, partialName, context.TextWriter);
-                    return;
-                }
-
-                throw new HandlebarsRuntimeException($"Referenced partial name {partialName} could not be resolved");
+                if (configuration.MissingPartialTemplateHandler == null)
+                    throw new HandlebarsRuntimeException($"Referenced partial name {partialName} could not be resolved");
+                
+                configuration.MissingPartialTemplateHandler.Handle(configuration, partialName, context.TextWriter);
+                return;
             }
 
             context.PartialBlockTemplate(context.TextWriter, context);
@@ -109,9 +99,7 @@ namespace HandlebarsDotNet.Compiler
             }
             catch (Exception exception)
             {
-                throw new HandlebarsRuntimeException(
-                    $"Runtime error while rendering partial '{partialName}', see inner exception for more information",
-                    exception);
+                throw new HandlebarsRuntimeException($"Runtime error while rendering partial '{partialName}', see inner exception for more information", exception);
             }
         }
     }

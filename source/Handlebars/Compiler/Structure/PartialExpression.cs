@@ -1,6 +1,4 @@
-﻿using System;
-using HandlebarsDotNet.Compiler;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -15,7 +13,7 @@ namespace HandlebarsDotNet.Compiler
 
         public override ExpressionType NodeType => (ExpressionType)HandlebarsExpressionType.PartialExpression;
 
-        public override Type Type => typeof(void);
+        //public override Type Type => typeof(void);
 
         public Expression PartialName { get; }
 

@@ -1,35 +1,51 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using HandlebarsDotNet.Compiler.Structure.Path;
+using HandlebarsDotNet.ValueProviders;
 
 namespace HandlebarsDotNet.Compiler
 {
-    /// <summary/>
+    /// <summary>
+    /// Configures BlockParameters for current BlockHelper
+    /// </summary>
     /// <param name="parameters">Parameters passed to BlockParams.</param>
     /// <param name="valueBinder">Function that perform binding of parameter to <see cref="BindingContext"/>.</param>
-    public delegate void ConfigureBlockParams(string[] parameters, ValueBinder valueBinder);
+    /// <param name="dependencies">Dependencies of current configuration. Used to omit closure creation.</param>
+    public delegate void ConfigureBlockParams(string[] parameters, ValueBinder valueBinder, object[] dependencies);
         
     /// <summary>
     /// Function that perform binding of parameter to <see cref="BindingContext"/>.
     /// </summary>
     /// <param name="variableName">Variable name that would be added to the <see cref="BindingContext"/>.</param>
     /// <param name="valueProvider">Variable value provider that would be invoked when <paramref name="variableName"/> is requested.</param>
-    public delegate void ValueBinder(string variableName, Func<object> valueProvider);
+    /// <param name="context">Context for the binding.</param>
+    public delegate void ValueBinder(string variableName, Func<object, object> valueProvider, object context = null);
     
     /// <summary/>
     internal class BlockParamsValueProvider : IValueProvider
     {
-        private readonly BlockParam _params;
-        private readonly Action<Action<BindingContext>> _invoker;
-        private readonly Dictionary<string, Func<object>> _accessors;
+        private static readonly string[] EmptyParameters = new string[0];
 
-        public BlockParamsValueProvider(BindingContext context, BlockParam @params)
+        private static readonly BlockParamsValueProviderPool Pool = new BlockParamsValueProviderPool();
+        
+        private readonly Dictionary<string, KeyValuePair<object, Func<object, object>>> _accessors;
+        
+        private BlockParam _params;
+        private Action<Action<BindingContext>> _invoker;
+
+        public static BlockParamsValueProvider Create(BindingContext context, object @params)
         {
-            _params = @params;
-            _invoker = action => action(context);
-            _accessors = new Dictionary<string, Func<object>>(StringComparer.OrdinalIgnoreCase);
-            
-            context.RegisterValueProvider(this);
+            var blockParamsValueProvider = Pool.GetObject();
+
+            blockParamsValueProvider._params = @params as BlockParam;
+            blockParamsValueProvider._invoker = action => action(context);
+
+            return blockParamsValueProvider;
+        }
+
+        private BlockParamsValueProvider()
+        {
+            _accessors = new Dictionary<string, KeyValuePair<object, Func<object, object>>>(StringComparer.OrdinalIgnoreCase);
         }
 
         public ValueTypes SupportedValueTypes { get; } = ValueTypes.Context | ValueTypes.All;
@@ -37,33 +53,54 @@ namespace HandlebarsDotNet.Compiler
         /// <summary>
         /// Configures behavior of BlockParams.
         /// </summary>
-        public void Configure(ConfigureBlockParams blockParamsConfiguration)
+        public void Configure(ConfigureBlockParams blockParamsConfiguration, params object[] dependencies)
         {
-            if(_params == null) return;
-            
+            var parameters = _params?.Parameters ?? EmptyParameters;
             void BlockParamsAction(BindingContext context)
             {
-                void ValueBinder(string name, Func<object> value)
+                void ValueBinder(string name, Func<object, object> value, object ctx)
                 {
-                    if (!string.IsNullOrEmpty(name)) _accessors[name] = value;
+                    if (!string.IsNullOrEmpty(name)) _accessors[name] = new KeyValuePair<object, Func<object, object>>(ctx, value);
                 }
                 
-                blockParamsConfiguration.Invoke(_params.Parameters, ValueBinder);
+                blockParamsConfiguration.Invoke(parameters, ValueBinder, dependencies);
             }
 
             _invoker(BlockParamsAction);
         }
 
-        public bool TryGetValue(string param, out object value)
+        public bool TryGetValue(ref ChainSegment segment, out object value)
         {
-            if (_accessors.TryGetValue(param, out var valueProvider))
+            if (_accessors.TryGetValue(segment.LowerInvariant, out var provider))
             {
-                value = valueProvider();
+                value = provider.Value(provider.Key);
                 return true;
             }
 
             value = null;
             return false;
+        }
+
+        public void Dispose()
+        {
+            Pool.PutObject(this);
+        }
+
+        private class BlockParamsValueProviderPool : ObjectPool<BlockParamsValueProvider>
+        {
+            protected override BlockParamsValueProvider CreateObject()
+            {
+                return new BlockParamsValueProvider();
+            }
+
+            public override void PutObject(BlockParamsValueProvider item)
+            {
+                item._accessors.Clear();
+                item._invoker = null;
+                item._params = null;
+                
+                base.PutObject(item);
+            }
         }
     }
 }

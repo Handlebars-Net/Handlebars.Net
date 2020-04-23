@@ -10,7 +10,7 @@ namespace HandlebarsDotNet.Compiler
             Condition = condition;
         }
 
-        public Expression Condition { get; }
+        public new Expression Condition { get; }
 
         public override ExpressionType NodeType => (ExpressionType)HandlebarsExpressionType.BoolishExpression;
 

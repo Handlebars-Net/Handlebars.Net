@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 
 namespace HandlebarsDotNet.Compiler
@@ -31,7 +29,7 @@ namespace HandlebarsDotNet.Compiler
 
         protected override Expression Accept(ExpressionVisitor visitor)
         {
-            return visitor.Visit(Expression.Convert(Constant(_blockParam), typeof(BlockParam)));
+            return visitor.Visit(Constant(_blockParam, typeof(BlockParam)));
         }
     }
 

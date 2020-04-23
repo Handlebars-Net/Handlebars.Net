@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using HandlebarsDotNet.Compiler.Lexer;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -80,17 +79,19 @@ namespace HandlebarsDotNet.Compiler
                 var arguments = ConvertTokens(originalArguments)
                     .Cast<Expression>()
                     .ToArray();
+                
                 if (!arguments.SequenceEqual(originalArguments))
                 {
                     return HandlebarsExpression.Helper(
                         helperExpression.HelperName,
+                        helperExpression.IsBlock,
                         arguments,
                         helperExpression.IsRaw);
                 }
             }
             if (expression is SubExpressionExpression subExpression)
             {
-                Expression childExpression = Visit(subExpression.Expression);
+                var childExpression = Visit(subExpression.Expression);
                 if (childExpression != subExpression.Expression)
                 {
                     return HandlebarsExpression.SubExpression(childExpression);

@@ -6,69 +6,54 @@ using System.Linq.Expressions;
 
 namespace HandlebarsDotNet.Compiler
 {
-    internal class FunctionBuilder
+    internal static class FunctionBuilder
     {
-        private readonly HandlebarsConfiguration _configuration;
-        private static readonly Expression<Action<TextWriter, object>> _emptyLambda =
+        private static readonly Expression<Action<TextWriter, object>> EmptyLambda =
             Expression.Lambda<Action<TextWriter, object>>(
                 Expression.Empty(),
                 Expression.Parameter(typeof(TextWriter)),
                 Expression.Parameter(typeof(object)));
+        
+        private static readonly Action<BindingContext, TextWriter, object> EmptyLambdaWithContext = (context, writer, arg3) => {};
 
-        public FunctionBuilder(HandlebarsConfiguration configuration)
+        public static Expression Reduce(Expression expression, CompilationContext context)
         {
-            _configuration = configuration;
-        }
+            expression = new CommentVisitor().Visit(expression);
+            expression = new UnencodedStatementVisitor(context).Visit(expression);
+            expression = new PartialBinder(context).Visit(expression);
+            expression = new StaticReplacer(context).Visit(expression);
+            expression = new IteratorBinder(context).Visit(expression);
+            expression = new BlockHelperFunctionBinder(context).Visit(expression);
+            expression = new HelperFunctionBinder(context).Visit(expression);
+            expression = new BoolishConverter(context).Visit(expression);
+            expression = new PathBinder(context).Visit(expression);
+            expression = new SubExpressionVisitor(context).Visit(expression);
+            expression = new HashParameterBinder().Visit(expression);
 
-        public static Expression Reduce(Expression expression, CompilationContext compilationContext)
-        {
-            expression = CommentVisitor.Visit(expression, compilationContext);
-            expression = UnencodedStatementVisitor.Visit(expression, compilationContext);
-            expression = PartialBinder.Bind(expression, compilationContext);
-            expression = StaticReplacer.Replace(expression, compilationContext);
-            expression = IteratorBinder.Bind(expression, compilationContext);
-            expression = BlockHelperFunctionBinder.Bind(expression, compilationContext);
-            expression = DeferredSectionVisitor.Bind(expression, compilationContext);
-            expression = HelperFunctionBinder.Bind(expression, compilationContext);
-            expression = BoolishConverter.Convert(expression, compilationContext);
-            expression = PathBinder.Bind(expression, compilationContext);
-            expression = SubExpressionVisitor.Visit(expression, compilationContext);
-            expression = HashParameterBinder.Bind(expression, compilationContext);
-            
             return expression;
         }
 
-        public Expression<Action<TextWriter, object>> Compile(IEnumerable<Expression> expressions, Expression parentContext, string templatePath = null)
+        public static Action<BindingContext, TextWriter, object> CompileCore(IEnumerable<Expression> expressions, InternalHandlebarsConfiguration configuration, string templatePath = null)
         {
             try
             {
                 if (expressions.Any() == false)
                 {
-                    return _emptyLambda;
+                    return EmptyLambdaWithContext;
                 }
-                if (expressions.IsOneOf<Expression, DefaultExpression>() == true)
+                if (expressions.IsOneOf<Expression, DefaultExpression>())
                 {
-                    return _emptyLambda;
+                    return EmptyLambdaWithContext;
                 }
-                var compilationContext = new CompilationContext(_configuration);
-                var expression = CreateExpressionBlock(expressions);
-                expression = Reduce(expression, compilationContext);
                 
-                return ContextBinder.Bind(expression, compilationContext, parentContext, templatePath);
-            }
-            catch (Exception ex)
-            {
-                throw new HandlebarsCompilerException("An unhandled exception occurred while trying to compile the template", ex);
-            }
-        }
+                var context = new CompilationContext(configuration);
+                {
+                    var expression = (Expression) Expression.Block(expressions);
+                    expression = Reduce(expression, context);
 
-        public Action<TextWriter, object> Compile(IEnumerable<Expression> expressions, string templatePath = null)
-        {
-            try
-            {
-
-                var expression = Compile(expressions, null, templatePath);
-                return expression.Compile();
+                    var lambda = ContextBinder.Bind(context, expression, templatePath);
+                    return configuration.CompileTimeConfiguration.ExpressionCompiler.Compile(lambda);
+                }
             }
             catch (Exception ex)
             {
@@ -76,9 +61,45 @@ namespace HandlebarsDotNet.Compiler
             }
         }
         
-        private static Expression CreateExpressionBlock(IEnumerable<Expression> expressions)
+        public static Expression<Action<TextWriter, object>> CompileCore(IEnumerable<Expression> expressions, Expression parentContext, InternalHandlebarsConfiguration configuration, string templatePath = null)
         {
-            return Expression.Block(expressions);
+            try
+            {
+                if (expressions.Any() == false)
+                {
+                    return EmptyLambda;
+                }
+                if (expressions.IsOneOf<Expression, DefaultExpression>())
+                {
+                    return EmptyLambda;
+                }
+                
+                var context = new CompilationContext(configuration);
+                {
+                    var expression = (Expression) Expression.Block(expressions);
+                    expression = Reduce(expression, context);
+
+                    return ContextBinder.Bind(context, expression, parentContext, templatePath);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new HandlebarsCompilerException("An unhandled exception occurred while trying to compile the template", ex);
+            }
+        }
+
+        public static Action<TextWriter, object> Compile(IEnumerable<Expression> expressions, InternalHandlebarsConfiguration configuration, string templatePath = null)
+        {
+            try
+            {
+                var expression = CompileCore(expressions, null, configuration,  templatePath);
+
+                return configuration.CompileTimeConfiguration.ExpressionCompiler.Compile(expression);
+            }
+            catch (Exception ex)
+            {
+                throw new HandlebarsCompilerException("An unhandled exception occurred while trying to compile the template", ex);
+            }
         }
     }
 }

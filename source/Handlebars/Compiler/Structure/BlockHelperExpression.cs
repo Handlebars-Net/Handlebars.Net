@@ -1,7 +1,5 @@
-﻿using System;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -24,18 +22,19 @@ namespace HandlebarsDotNet.Compiler
             Expression body,
             Expression inversion,
             bool isRaw = false)
-            : base(helperName, arguments, isRaw)
+            : base(helperName, true, arguments, isRaw)
         {
             Body = body;
             Inversion = inversion;
             BlockParams = blockParams;
+            IsBlock = true;
         }
 
         public Expression Body { get; }
 
         public Expression Inversion { get; }
 
-        public BlockParamsExpression BlockParams { get; }
+        public new BlockParamsExpression BlockParams { get; }
 
         public override ExpressionType NodeType => (ExpressionType) HandlebarsExpressionType.BlockExpression;
     }

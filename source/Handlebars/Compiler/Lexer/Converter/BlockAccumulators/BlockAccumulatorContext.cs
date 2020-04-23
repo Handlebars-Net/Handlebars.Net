@@ -17,18 +17,15 @@ namespace HandlebarsDotNet.Compiler
             {
                 context = new PartialBlockAccumulatorContext(item);
             }
-            else if (IsBlockHelper(item, configuration))
-            {
-                context = new BlockHelperAccumulatorContext(item);
-            }
             else if (IsIteratorBlock(item))
             {
                 context = new IteratorBlockAccumulatorContext(item);
             }
-            else if (IsDeferredBlock(item))
+            else if (IsBlockHelper(item, configuration))
             {
-                context = new DeferredBlockAccumulatorContext(item);
+                context = new BlockHelperAccumulatorContext(item);
             }
+
             return context;
         }
 
@@ -62,8 +59,8 @@ namespace HandlebarsDotNet.Compiler
             if (item is HelperExpression hitem)
             {
                 var helperName = hitem.HelperName;
-                return !configuration.Helpers.ContainsKey(helperName) &&
-                       configuration.BlockHelpers.ContainsKey(helperName.Replace("#", ""));
+                return hitem.IsBlock || !(configuration.Helpers.ContainsKey(helperName) || configuration.ReturnHelpers.ContainsKey(helperName)) &&
+                       configuration.BlockHelpers.ContainsKey(helperName.Replace("#", "").Replace("^", ""));
             }
             return false;
         }
@@ -71,13 +68,13 @@ namespace HandlebarsDotNet.Compiler
         private static bool IsIteratorBlock(Expression item)
         {
             item = UnwrapStatement(item);
-            return (item is HelperExpression) && new[] { "#each" }.Contains(((HelperExpression)item).HelperName);
+            return item is HelperExpression expression && "#each".Equals(expression.HelperName, StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool IsDeferredBlock(Expression item)
         {
             item = UnwrapStatement(item);
-            return (item is PathExpression) && (((PathExpression)item).Path.StartsWith("#") || ((PathExpression)item).Path.StartsWith("^"));
+            return item is PathExpression expression && (expression.Path.StartsWith("#") || expression.Path.StartsWith("^"));
         }
 
         private static bool IsPartialBlock (Expression item)

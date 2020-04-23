@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace HandlebarsDotNet
 {
@@ -12,21 +9,26 @@ namespace HandlebarsDotNet
         public static bool IsOneOf<TSource, TExpected>(this IEnumerable<TSource> source)
             where TExpected : TSource
         {
-            var enumerator = source.GetEnumerator();
-            enumerator.MoveNext();
-            return (enumerator.Current is TExpected) && (enumerator.MoveNext() == false);
+            using(var enumerator = source.GetEnumerator())
+            {
+                enumerator.MoveNext();
+                return enumerator.Current is TExpected && !enumerator.MoveNext();
+            }
         }
-
-        public static void AddOrUpdate<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue value)
+        
+        public static bool IsMultiple<T>(this IEnumerable<T> source)
         {
-            if (dictionary.ContainsKey(key))
+            using(var enumerator = source.GetEnumerator())
             {
-                dictionary[key] = value;
-            }
-            else
-            {
-                dictionary.Add(key, value);
+                return enumerator.MoveNext() && enumerator.MoveNext();
             }
         }
+    }
+    
+    internal static class ObjectExtensions
+    {
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T As<T>(this object source) => (T) source;
     }
 }

@@ -1,18 +1,17 @@
-using System;
-
 namespace HandlebarsDotNet.Compiler.Lexer
 {
     internal class AssignmentToken : Token
     {
-        public override TokenType Type
+        public AssignmentToken(IReaderContext context)
         {
-            get { return TokenType.Assignment; }
+            Context = context;
         }
+        
+        public IReaderContext Context { get; }
 
-        public override string Value
-        {
-            get { return "="; }
-        }
+        public override TokenType Type => TokenType.Assignment;
+
+        public override string Value => "=";
     }
 }
 

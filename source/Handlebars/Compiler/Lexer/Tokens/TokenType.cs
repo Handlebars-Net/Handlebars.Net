@@ -1,5 +1,3 @@
-using System;
-
 namespace HandlebarsDotNet.Compiler.Lexer
 {
     internal enum TokenType

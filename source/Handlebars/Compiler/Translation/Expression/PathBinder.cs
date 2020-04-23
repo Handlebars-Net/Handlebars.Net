@@ -1,34 +1,33 @@
 using System.Linq.Expressions;
+using Expressions.Shortcuts;
+using HandlebarsDotNet.Compiler.Structure.Path;
 
 namespace HandlebarsDotNet.Compiler
 {
     internal class PathBinder : HandlebarsExpressionVisitor
     {
-        public static Expression Bind(Expression expr, CompilationContext context)
-        {
-            return new PathBinder(context).Visit(expr);
-        }
+        private CompilationContext CompilationContext { get; }
 
-        private PathBinder(CompilationContext context)
-            : base(context)
+        public PathBinder(CompilationContext compilationContext)
         {
+            CompilationContext = compilationContext;
         }
-
+        
         protected override Expression VisitStatementExpression(StatementExpression sex)
         {
             if (!(sex.Body is PathExpression)) return Visit(sex.Body);
             
             var context = ExpressionShortcuts.Arg<BindingContext>(CompilationContext.BindingContext);
-
-            return context.Property(o => o.TextWriter)
-                .Call(o => o.Write(ExpressionShortcuts.Arg<object>(Visit(sex.Body))));
+            var value = ExpressionShortcuts.Arg<object>(Visit(sex.Body));
+            return context.Call(o => o.TextWriter.Write(value));
         }
 
         protected override Expression VisitPathExpression(PathExpression pex)
         {
-            var pathResolver = ExpressionShortcuts.New<PathResolver>();
             var context = ExpressionShortcuts.Arg<BindingContext>(CompilationContext.BindingContext);
-            return pathResolver.Call(o => o.ResolvePath(context, pex.PathInfo));
+            var pathInfo = pex.PathInfo;
+
+            return ExpressionShortcuts.Call(() => PathResolver.ResolvePath(context, ref pathInfo));
         }
     }
 }

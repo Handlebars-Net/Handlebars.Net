@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -14,6 +13,6 @@ namespace HandlebarsDotNet.Compiler
 
         public override ExpressionType NodeType => (ExpressionType) HandlebarsExpressionType.CommentExpression;
 
-        public override Type Type => typeof (void);
+        //public override Type Type => typeof (void);
     }
 }

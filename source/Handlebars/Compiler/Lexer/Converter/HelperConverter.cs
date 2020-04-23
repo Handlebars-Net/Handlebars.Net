@@ -48,11 +48,20 @@ namespace HandlebarsDotNet.Compiler
                         yield return item;
                         continue;
                     case WordExpressionToken word when IsRegisteredHelperName(word.Value):
-                        yield return HandlebarsExpression.Helper(word.Value);
+                        yield return HandlebarsExpression.Helper(word.Value, false, isRaw, word.Context);
                         break;
                     case WordExpressionToken word when IsRegisteredBlockHelperName(word.Value, isRaw):
-                        yield return HandlebarsExpression.Helper(word.Value, isRaw);
+                    {
+                        yield return HandlebarsExpression.Helper(word.Value, true, isRaw, word.Context);
                         break;
+                    }
+                    case WordExpressionToken word when IsUnregisteredBlockHelperName(word.Value, isRaw, sequence):
+                    {
+                        var expression = HandlebarsExpression.Helper(word.Value, true, isRaw, word.Context);
+                        expression.IsBlock = true;
+                        yield return expression;
+                        break;
+                    }
                     default:
                         yield return item;
                         break;
@@ -62,14 +71,29 @@ namespace HandlebarsDotNet.Compiler
 
         private bool IsRegisteredHelperName(string name)
         {
-            return _configuration.Helpers.ContainsKey(name) || BuiltInHelpers.Contains(name);
+            return _configuration.Helpers.ContainsKey(name) || _configuration.ReturnHelpers.ContainsKey(name) || BuiltInHelpers.Contains(name);
         }
 
         private bool IsRegisteredBlockHelperName(string name, bool isRaw)
         {
-            if (!isRaw && name[0] != '#') return false;
-            name = name.Replace("#", "");
+            if (!isRaw && !(name[0] == '#' || name[0] == '^')) return false;
+            name = name
+                .Replace("#", "")
+                .Replace("^", "");
+            
             return _configuration.BlockHelpers.ContainsKey(name) || BuiltInHelpers.Contains(name);
+        }
+        
+        private bool IsUnregisteredBlockHelperName(string name, bool isRaw, IEnumerable<object> sequence)
+        {
+            if (!isRaw && !(name[0] == '#' || name[0] == '^')) return false;
+            name = name
+                .Replace("#", "")
+                .Replace("^", "");
+
+            var expectedBlockName = $"/{name}";
+            return sequence.OfType<WordExpressionToken>().Any(o =>
+                string.Equals(o.Value, expectedBlockName, StringComparison.OrdinalIgnoreCase));
         }
 
         private static object GetNext(IEnumerator<object> enumerator)

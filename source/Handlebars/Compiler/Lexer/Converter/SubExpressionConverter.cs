@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using HandlebarsDotNet.Compiler.Lexer;
@@ -46,6 +45,7 @@ namespace HandlebarsDotNet.Compiler
             return HandlebarsExpression.SubExpression(
                 HandlebarsExpression.Helper(
                     path.Path,
+                    false,
                     helperArguments));
         }
 

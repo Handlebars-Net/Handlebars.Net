@@ -1,4 +1,3 @@
-using System;
 using System.Linq.Expressions;
 
 namespace HandlebarsDotNet.Compiler
@@ -14,7 +13,7 @@ namespace HandlebarsDotNet.Compiler
         
         public override ExpressionType NodeType => (ExpressionType)HandlebarsExpressionType.HashParameterAssignmentExpression;
 
-        public override Type Type => typeof(object);
+        //public override Type Type => typeof(object);
     }
 }
 

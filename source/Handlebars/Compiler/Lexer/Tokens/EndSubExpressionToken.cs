@@ -1,27 +1,17 @@
-﻿using System;
-
-namespace HandlebarsDotNet.Compiler.Lexer
+﻿namespace HandlebarsDotNet.Compiler.Lexer
 {
     internal class EndSubExpressionToken : ExpressionScopeToken
     {
-        public EndSubExpressionToken()
+        public IReaderContext Context { get; }
+
+        public EndSubExpressionToken(IReaderContext context)
         {
+            Context = context;
         }
 
-        public override string Value
-        {
-            get { return ")"; }
-        }
+        public override string Value { get; } =  ")";
 
-        public override TokenType Type
-        {
-            get { return TokenType.EndSubExpression; }
-        }
-
-        public override string ToString()
-        {
-            return this.Value;
-        }
+        public override TokenType Type => TokenType.EndSubExpression;
     }
 }
 

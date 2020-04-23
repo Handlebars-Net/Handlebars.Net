@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using HandlebarsDotNet.Compiler.Lexer;
 using System.Linq;
-using System.Linq.Expressions;
 
 namespace HandlebarsDotNet.Compiler
 {

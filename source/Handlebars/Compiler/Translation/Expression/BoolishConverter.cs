@@ -1,22 +1,23 @@
 using System.Linq.Expressions;
+using Expressions.Shortcuts;
 
 namespace HandlebarsDotNet.Compiler
 {
     internal class BoolishConverter : HandlebarsExpressionVisitor
     {
-        public static Expression Convert(Expression expr, CompilationContext context)
-        {
-            return new BoolishConverter(context).Visit(expr);
-        }
+        private readonly CompilationContext _compilationContext;
 
-        private BoolishConverter(CompilationContext context)
-            : base(context)
+        public BoolishConverter(CompilationContext compilationContext)
         {
+            _compilationContext = compilationContext;
         }
-
+        
         protected override Expression VisitBoolishExpression(BoolishExpression bex)
         {
-            return ExpressionShortcuts.Call(() => HandlebarsUtils.IsTruthyOrNonEmpty(Visit(bex.Condition)));
+            var condition = Visit(bex.Condition);
+            condition = FunctionBuilder.Reduce(condition, _compilationContext);
+            var @object = ExpressionShortcuts.Arg<object>(condition);
+            return ExpressionShortcuts.Call(() => HandlebarsUtils.IsTruthyOrNonEmpty(@object));
         }
     }
 }

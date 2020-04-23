@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -7,18 +6,6 @@ namespace HandlebarsDotNet.Compiler
 {
     internal abstract class HandlebarsExpressionVisitor : ExpressionVisitor
     {
-        private readonly CompilationContext _compilationContext;
-
-        protected HandlebarsExpressionVisitor(CompilationContext compilationContext)
-        {
-            _compilationContext = compilationContext;
-        }
-
-        protected virtual CompilationContext CompilationContext
-        {
-            get { return _compilationContext; }
-        }
-
         public override Expression Visit(Expression exp)
         {
             if (exp == null)
@@ -43,8 +30,6 @@ namespace HandlebarsDotNet.Compiler
                     return VisitPathExpression((PathExpression)exp);
                 case HandlebarsExpressionType.IteratorExpression:
                     return VisitIteratorExpression((IteratorExpression)exp);
-                case HandlebarsExpressionType.DeferredSection:
-                    return VisitDeferredSectionExpression((DeferredSectionExpression)exp);
                 case HandlebarsExpressionType.PartialExpression:
                     return VisitPartialExpression((PartialExpression)exp);
                 case HandlebarsExpressionType.BoolishExpression:
@@ -76,7 +61,7 @@ namespace HandlebarsDotNet.Compiler
             var arguments = VisitExpressionList(hex.Arguments);
             if (arguments != hex.Arguments)
             {
-                return HandlebarsExpression.Helper(hex.HelperName, arguments, hex.IsRaw);
+                return HandlebarsExpression.Helper(hex.HelperName, hex.IsBlock, arguments, hex.IsRaw);
             }
             return hex;
         }
@@ -108,18 +93,6 @@ namespace HandlebarsDotNet.Compiler
                 return HandlebarsExpression.Iterator(sequence, iex.BlockParams, iex.Template, iex.IfEmpty);
             }
             return iex;
-        }
-
-        protected virtual Expression VisitDeferredSectionExpression(DeferredSectionExpression dsex)
-        {
-            PathExpression path = (PathExpression)Visit(dsex.Path);
-            // Don't visit Body/Inversion - they will be compiled separately
-
-            if (path != dsex.Path)
-            {
-                return HandlebarsExpression.DeferredSection(path, dsex.Body, dsex.Inversion);
-            }
-            return dsex;
         }
 
         protected virtual Expression VisitPartialExpression(PartialExpression pex)

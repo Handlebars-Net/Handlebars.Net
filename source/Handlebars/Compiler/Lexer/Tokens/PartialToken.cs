@@ -2,20 +2,16 @@
 {
     internal class PartialToken : Token
     {
-        public override TokenType Type
+        public PartialToken(IReaderContext context = null)
         {
-            get { return TokenType.Partial; }
+            Context = context;
         }
 
-        public override string Value
-        {
-            get { return ">"; }
-        }
+        public IReaderContext Context { get; }
+        
+        public override TokenType Type => TokenType.Partial;
 
-        public override string ToString()
-        {
-            return Value;
-        }
+        public override string Value => ">";
     }
 }
 

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -106,32 +105,17 @@ namespace HandlebarsDotNet.Compiler
         private bool IsClosingNode(Expression item)
         {
             item = UnwrapStatement(item);
-            return item is PathExpression && ((PathExpression)item).Path == "/" + BlockName;
-        }
-
-        private static IEnumerable<Expression> UnwrapBlockExpression(IEnumerable<Expression> body)
-        {
-            if (body.IsOneOf<Expression, BlockExpression>())
-            {
-                body = body.OfType<BlockExpression>().First().Expressions;
-            }
-            return body;
+            return item is PathExpression expression && expression.Path == "/" + BlockName;
         }
 
         private static Expression SinglifyExpressions(IEnumerable<Expression> expressions)
         {
-            if (expressions.Count() > 1)
+            if (expressions.IsMultiple())
             {
                 return Expression.Block(expressions);
             }
-            else if(expressions.Count() == 0)
-            {
-                return Expression.Empty();
-            }
-            else
-            {
-                return expressions.Single();
-            }
+
+            return expressions.SingleOrDefault() ?? Expression.Empty();
         }
     }
 }

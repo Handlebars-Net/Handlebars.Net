@@ -1,26 +1,23 @@
-﻿using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
+﻿using System.Linq.Expressions;
+using Expressions.Shortcuts;
 
 namespace HandlebarsDotNet.Compiler
 {
     internal class StaticReplacer : HandlebarsExpressionVisitor
     {
-        public static Expression Replace(Expression expr, CompilationContext context)
-        {
-            return new StaticReplacer(context).Visit(expr);
-        }
+        private CompilationContext CompilationContext { get; }
 
-        private StaticReplacer(CompilationContext context)
-            : base(context)
+        public StaticReplacer(CompilationContext compilationContext)
         {
+            CompilationContext = compilationContext;
         }
-
+        
         protected override Expression VisitStaticExpression(StaticExpression stex)
         {
             var context = ExpressionShortcuts.Arg<BindingContext>(CompilationContext.BindingContext);
-            var writer = context.Property(o => o.TextWriter);
-            return writer.Call(o => o.Write(stex.Value, false));
+            var value = ExpressionShortcuts.Arg(stex.Value);
+            
+            return context.Call(o => o.TextWriter.Write(value, false));
         }
     }
 }

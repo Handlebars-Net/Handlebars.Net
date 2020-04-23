@@ -7,16 +7,6 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class HashParameterBinder : HandlebarsExpressionVisitor
     {
-        public static Expression Bind(Expression expr, CompilationContext context)
-        {
-            return new HashParameterBinder(context).Visit(expr);
-        }
-
-        private HashParameterBinder(CompilationContext context)
-            : base(context)
-        {
-        }
-
         protected override Expression VisitHashParametersExpression(HashParametersExpression hpex)
         {
             var addMethod = typeof(HashParameterDictionary).GetMethod("Add", new[] { typeof(string), typeof(object) });

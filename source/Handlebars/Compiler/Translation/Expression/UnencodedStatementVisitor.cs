@@ -1,28 +1,24 @@
-﻿using System;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
+using Expressions.Shortcuts;
 
 namespace HandlebarsDotNet.Compiler
 {
     internal class UnencodedStatementVisitor : HandlebarsExpressionVisitor
     {
-        public static Expression Visit(Expression expr, CompilationContext context)
-        {
-            return new UnencodedStatementVisitor(context).Visit(expr);
-        }
+        private CompilationContext CompilationContext { get; }
 
-        private UnencodedStatementVisitor(CompilationContext context)
-            : base(context)
+        public UnencodedStatementVisitor(CompilationContext compilationContext)
         {
+            CompilationContext = compilationContext;
         }
 
         protected override Expression VisitStatementExpression(StatementExpression sex)
         {
-            var context = ExpressionShortcuts.Var<BindingContext>();
+            var context = ExpressionShortcuts.Arg<BindingContext>(CompilationContext.BindingContext);
             var suppressEncoding = context.Property(o => o.SuppressEncoding);
             if (sex.IsEscaped == false)
             {
                 return ExpressionShortcuts.Block(typeof(void))
-                    .Parameter(context, CompilationContext.BindingContext)
                     .Line(suppressEncoding.Assign(true))
                     .Line(sex)
                     .Line(suppressEncoding.Assign(false))
