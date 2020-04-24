@@ -1,30 +1,46 @@
 ﻿using System;
 using System.IO;
+using HandlebarsDotNet.Compiler;
 
 namespace HandlebarsDotNet
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    public delegate void BlockParamsConfiguration(ConfigureBlockParams blockParamsConfiguration, params object[] dependencies);
+    
+    /// <summary>
+    /// Contains properties accessible withing <see cref="HandlebarsBlockHelper"/> function 
+    /// </summary>
     public sealed class HelperOptions
     {
-        private readonly Action<TextWriter, object> _template;
-        private readonly Action<TextWriter, object> _inverse;
-
         internal HelperOptions(
             Action<TextWriter, object> template,
-            Action<TextWriter, object> inverse)
+            Action<TextWriter, object> inverse,
+            BlockParamsValueProvider blockParamsValueProvider,
+            HandlebarsConfiguration configuration)
         {
-            _template = template;
-            _inverse = inverse;
+            Template = template;
+            Inverse = inverse;
+            Configuration = configuration;
+            BlockParams = blockParamsValueProvider.Configure;
         }
 
-        public Action<TextWriter, object> Template
-        {
-            get { return _template; }
-        }
+        /// <summary>
+        /// BlockHelper body
+        /// </summary>
+        public Action<TextWriter, object> Template { get; }
 
-        public Action<TextWriter, object> Inverse
-        {
-            get { return _inverse; }
-        }
+        /// <summary>
+        /// BlockHelper <c>else</c> body
+        /// </summary>
+        public Action<TextWriter, object> Inverse { get; }
+
+        /// <inheritdoc cref="ConfigureBlockParams"/>
+        public BlockParamsConfiguration BlockParams { get; }
+        
+        /// <inheritdoc cref="HandlebarsConfiguration"/>
+        internal HandlebarsConfiguration Configuration { get; }
     }
 }
 

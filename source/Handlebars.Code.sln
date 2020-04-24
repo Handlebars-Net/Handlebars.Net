@@ -8,7 +8,12 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E9AC0BCD-C060-4634-BBBB-636167C809B4}"
 	ProjectSection(SolutionItems) = preProject
 		..\README.md = ..\README.md
+		..\Performance.md = ..\Performance.md
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Handlebars.Extension.CompileFast", "Handlebars.Extension.CompileFast\Handlebars.Extension.CompileFast.csproj", "{725422F0-556E-48B1-8E3A-F26881FFACE2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Handlebars.Extension.Logger", "Handlebars.Extension.Logger\Handlebars.Extension.Logger.csproj", "{EBBB4CFE-B576-4E7F-AD04-2E1DDB7C3B3F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,6 +25,14 @@ Global
 		{A09CFF95-B671-48FE-96A8-D3CBDC110B75}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A09CFF95-B671-48FE-96A8-D3CBDC110B75}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A09CFF95-B671-48FE-96A8-D3CBDC110B75}.Release|Any CPU.Build.0 = Release|Any CPU
+		{725422F0-556E-48B1-8E3A-F26881FFACE2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{725422F0-556E-48B1-8E3A-F26881FFACE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{725422F0-556E-48B1-8E3A-F26881FFACE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{725422F0-556E-48B1-8E3A-F26881FFACE2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EBBB4CFE-B576-4E7F-AD04-2E1DDB7C3B3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EBBB4CFE-B576-4E7F-AD04-2E1DDB7C3B3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EBBB4CFE-B576-4E7F-AD04-2E1DDB7C3B3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EBBB4CFE-B576-4E7F-AD04-2E1DDB7C3B3F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

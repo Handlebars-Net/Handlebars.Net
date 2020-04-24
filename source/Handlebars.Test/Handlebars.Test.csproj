@@ -2,25 +2,40 @@
 
   <PropertyGroup>
     <DebugType>full</DebugType>
-    <TargetFrameworks>net461;netcoreapp1.1;netcoreapp2.0;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>net461;netcoreapp1.1;netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
+    <ProjectGuid>700AF0B4-EA70-47B7-9F9D-17351E977B00</ProjectGuid>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <NoWarn>0618;1701</NoWarn>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(TargetFramework)'=='net461'">
+    <DefineConstants>$(DefineConstants);netFramework</DefineConstants>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)'=='netcoreapp1.1'">
+    <DefineConstants>$(DefineConstants);compileFast</DefineConstants>
     <DefineConstants>$(DefineConstants);netstandard</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)'=='netcoreapp2.0'">
+  <PropertyGroup Condition="'$(TargetFramework)'=='netcoreapp2.1'">
+    <DefineConstants>$(DefineConstants);compileFast</DefineConstants>
     <DefineConstants>$(DefineConstants);netstandard</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)'=='netcoreapp3.1'">
+    <DefineConstants>$(DefineConstants);compileFast</DefineConstants>
     <DefineConstants>$(DefineConstants);netstandard</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Handlebars.Extension.CompileFast\Handlebars.Extension.CompileFast.csproj" />
     <ProjectReference Include="..\Handlebars\Handlebars.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
+    <PackageReference Include="coverlet.msbuild" Version="2.8.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
     <PackageReference Include="xunit" Version="2.3.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
@@ -29,22 +44,25 @@
   <ItemGroup Condition="'$(TargetFramework)'=='net461'">
     <PackageReference Include="CsQuery" Version="1.3.4" />
     <PackageReference Include="Microsoft.AspNet.WebPages" Version="3.2.3" />
-    <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)'=='netcoreapp1.1'">
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
+    <PackageReference Include="System.Collections.NonGeneric" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='netcoreapp3.1'">
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.6.1" />
     <PackageReference Include="System.Collections.NonGeneric" Version="4.3.0" />
   </ItemGroup>
   
-  <ItemGroup Condition="'$(TargetFramework)'=='netcoreapp2.0'">
+  <ItemGroup Condition="'$(TargetFramework)'=='netcoreapp2.1'">
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.6.1" />
     <PackageReference Include="System.Collections.NonGeneric" Version="4.3.0" />
   </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="OpenCover" Version="4.6.519" PrivateAssets="All" />
-    <PackageReference Include="ReportGenerator" Version="2.5.6" PrivateAssets="All" />
-  </ItemGroup>
-
+  
   <ItemGroup>
     <Content Include="ViewEngine\**\*.hbs" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

@@ -1,116 +1,101 @@
 ﻿using System;
 using System.IO;
-using System.Text;
+using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Compiler;
+
+[assembly: InternalsVisibleTo("Handlebars.Extension.CompileFast")]
+[assembly: InternalsVisibleTo("Handlebars.Test")]
 
 namespace HandlebarsDotNet
 {
-    public partial class Handlebars
+    internal class HandlebarsEnvironment : IHandlebars
     {
-        private class HandlebarsEnvironment : IHandlebars
+        public HandlebarsEnvironment(HandlebarsConfiguration configuration)
         {
-            private readonly HandlebarsConfiguration _configuration;
-            private readonly HandlebarsCompiler _compiler;
+            Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        }
 
-            public HandlebarsEnvironment(HandlebarsConfiguration configuration)
+        public Func<object, string> CompileView(string templatePath)
+        {
+            var configuration = new InternalHandlebarsConfiguration(Configuration);
+            var createdFeatures = configuration.Features;
+            for (var index = 0; index < createdFeatures.Count; index++)
             {
-                if (configuration == null)
+                createdFeatures[index].OnCompiling(configuration);
+            }
+            
+            var compiler = new HandlebarsCompiler(configuration);
+            var compiledView = compiler.CompileView(templatePath, configuration);
+            Func<object, string> action = (vm) =>
+            {
+                using (var writer = new PolledStringWriter(configuration.FormatProvider))
                 {
-                    throw new ArgumentNullException("configuration");
+                    compiledView(writer, vm);
+                    return writer.ToString();
                 }
-
-                _configuration = configuration;
-                _compiler = new HandlebarsCompiler(_configuration);
-                RegisterBuiltinHelpers();
+            };
+            
+            for (var index = 0; index < createdFeatures.Count; index++)
+            {
+                createdFeatures[index].CompilationCompleted();
             }
 
-            public Func<object, string> CompileView(string templatePath)
+            return action;
+        }
+
+        public HandlebarsConfiguration Configuration { get; }
+
+        public Action<TextWriter, object> Compile(TextReader template)
+        {
+            using (var reader = new ExtendedStringReader(template))
             {
-                var compiledView = _compiler.CompileView(templatePath);
-                return (vm) =>
+                var compiler = new HandlebarsCompiler(Configuration);
+                return compiler.Compile(reader);
+            }
+        }
+
+        public Func<object, string> Compile(string template)
+        {
+            using (var reader = new StringReader(template))
+            {
+                var compiledTemplate = Compile(reader);
+                return context =>
                 {
-                    var sb = new StringBuilder();
-                    using (var tw = new StringWriter(sb))
+                    using (var writer = new PolledStringWriter(Configuration.FormatProvider))
                     {
-                        compiledView(tw, vm);
+                        compiledTemplate(writer, context);
+                        return writer.ToString();
                     }
-                    return sb.ToString();
                 };
             }
+        }
 
-            public HandlebarsConfiguration Configuration
-            {
-                get
-                {
-                    return this._configuration;
-                }
-            }
+        public void RegisterTemplate(string templateName, Action<TextWriter, object> template)
+        {
+            Configuration.RegisteredTemplates[templateName] = template;
+        }
 
-            public Action<TextWriter, object> Compile(TextReader template)
+        public void RegisterTemplate(string templateName, string template)
+        {
+            using (var reader = new StringReader(template))
             {
-                return _compiler.Compile(template);
+                RegisterTemplate(templateName, Compile(reader));
             }
+        }
 
-            public Func<object, string> Compile(string template)
-            {
-                using (var reader = new StringReader(template))
-                {
-                    var compiledTemplate = Compile(reader);
-                    return context =>
-                    {
-                        var builder = new StringBuilder();
-                        using (var writer = new StringWriter(builder))
-                        {
-                            compiledTemplate(writer, context);
-                        }
-                        return builder.ToString();
-                    };
-                }
-            }
+        public void RegisterHelper(string helperName, HandlebarsHelper helperFunction)
+        {
+            Configuration.Helpers[helperName] = helperFunction;
+        }
+            
+        public void RegisterHelper(string helperName, HandlebarsReturnHelper helperFunction)
+        {
+            Configuration.ReturnHelpers[helperName] = helperFunction;
+        }
 
-            public void RegisterTemplate(string templateName, Action<TextWriter, object> template)
-            {
-                lock (_configuration)
-                {
-                    _configuration.RegisteredTemplates.AddOrUpdate(templateName, template);
-                }
-            }
-
-            public void RegisterTemplate(string templateName, string template)
-            {
-                using (var reader = new StringReader(template))
-                {
-                    RegisterTemplate(templateName, Compile(reader));
-                }
-            }
-
-            public void RegisterHelper(string helperName, HandlebarsHelper helperFunction)
-            {
-                lock (_configuration)
-                {
-                    _configuration.Helpers.AddOrUpdate(helperName, helperFunction);
-                }
-            }
-
-            public void RegisterHelper(string helperName, HandlebarsBlockHelper helperFunction)
-            {
-                lock (_configuration)
-                {
-                    _configuration.BlockHelpers.AddOrUpdate(helperName, helperFunction);
-                }
-            }
-
-            private void RegisterBuiltinHelpers()
-            {
-                foreach (var helperDefinition in BuiltinHelpers.Helpers)
-                {
-                    RegisterHelper(helperDefinition.Key, helperDefinition.Value);
-                }
-                foreach (var helperDefinition in BuiltinHelpers.BlockHelpers)
-                {
-                    RegisterHelper(helperDefinition.Key, helperDefinition.Value);
-                }
-            }
+        public void RegisterHelper(string helperName, HandlebarsBlockHelper helperFunction)
+        {
+            Configuration.BlockHelpers[helperName] = helperFunction;
         }
     }
 }

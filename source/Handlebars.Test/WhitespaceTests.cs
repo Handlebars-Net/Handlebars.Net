@@ -54,8 +54,7 @@ namespace HandlebarsDotNet.Test
     {{~/if~}}
   </a>
 {{~/each}}";
-            var h = Handlebars.Create();
-            var template = h.Compile(source);
+            var template = Handlebars.Create().Compile(source);
             var data = new {
                 nav = new [] {
                     new {
@@ -78,8 +77,7 @@ namespace HandlebarsDotNet.Test
         public void StandaloneEach()
         {
             var source = "Links:\n {{#each nav}}\n  <a href=\"{{url}}\">\n    {{#if test}}\n    {{title}}\n    {{else}}\n    Empty\n    {{/if}}\n  </a>\n  {{/each}}";
-            var h = Handlebars.Create();
-            var template = h.Compile(source);
+            var template = Handlebars.Create().Compile(source);
             var data = new
             {
                 nav = new[]
@@ -118,14 +116,14 @@ namespace HandlebarsDotNet.Test
         [Fact]
         public void StandaloneInvertedSection()
         {
-            var source = "  {{^some}}\n{{none}}\n{{else}}\n{{none}}\n{{/some}}  ";
+            var source = "  {{^some}}{{none}}{{else}}{{none}}{{/some}}  ";
 
             var template = Handlebars.Compile(source);
 
             var data = new {none = "No people"};
             var result = template(data);
 
-            Assert.Equal("No people\n", result);
+            Assert.Equal("  No people  ", result);
         }
 
         [Fact]
@@ -195,15 +193,16 @@ namespace HandlebarsDotNet.Test
         {
             string source = "Here are:\n  {{>person}} \n {{>person}}  ";
 
-            var template = Handlebars.Compile(source);
+            var handlebars = Handlebars.Create();
+            var template = handlebars.Compile(source);
 
             var data = new {name = "Marc"};
             var partialSource = "{{name}}";
 
             using(var reader = new StringReader(partialSource))
             {
-                var partialTemplate = Handlebars.Compile(reader);
-                Handlebars.RegisterTemplate("person", partialTemplate);
+                var partialTemplate = handlebars.Compile(reader);
+                handlebars.RegisterTemplate("person", partialTemplate);
             }
 
             var result = template(data);

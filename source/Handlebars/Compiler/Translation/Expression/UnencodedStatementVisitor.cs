@@ -1,39 +1,31 @@
-﻿using System;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
+using Expressions.Shortcuts;
 
 namespace HandlebarsDotNet.Compiler
 {
     internal class UnencodedStatementVisitor : HandlebarsExpressionVisitor
     {
-        public static Expression Visit(Expression expr, CompilationContext context)
-        {
-            return new UnencodedStatementVisitor(context).Visit(expr);
-        }
+        private CompilationContext CompilationContext { get; }
 
-        private UnencodedStatementVisitor(CompilationContext context)
-            : base(context)
+        public UnencodedStatementVisitor(CompilationContext compilationContext)
         {
+            CompilationContext = compilationContext;
         }
 
         protected override Expression VisitStatementExpression(StatementExpression sex)
         {
-            if (sex.IsEscaped == false)
+            var context = ExpressionShortcuts.Arg<BindingContext>(CompilationContext.BindingContext);
+            var suppressEncoding = context.Property(o => o.SuppressEncoding);
+            if (!sex.IsEscaped)
             {
-                return Expression.Block(
-                    typeof(void),
-                    Expression.Assign(
-                        Expression.Property(CompilationContext.BindingContext, "SuppressEncoding"),
-                        Expression.Constant(true)),
-                    sex,
-                    Expression.Assign(
-                        Expression.Property(CompilationContext.BindingContext, "SuppressEncoding"),
-                        Expression.Constant(false)),
-                    Expression.Empty());
+                return ExpressionShortcuts.Block(typeof(void))
+                    .Line(suppressEncoding.Assign(true))
+                    .Line(sex)
+                    .Line(suppressEncoding.Assign(false))
+                    .Line(Expression.Empty());
             }
-            else
-            {
-                return sex;
-            }
+
+            return sex;
         }
     }
 }

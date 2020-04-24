@@ -1,25 +1,17 @@
-﻿using System;
-
-namespace HandlebarsDotNet.Compiler.Lexer
+﻿namespace HandlebarsDotNet.Compiler.Lexer
 {
     internal class WordExpressionToken : ExpressionToken
     {
-        private readonly string _word;
-
-        public WordExpressionToken(string word)
+        public WordExpressionToken(string word, IReaderContext context = null)
         {
-            _word = word;
+            Value = word;
+            Context = context;
         }
 
-        public override TokenType Type
-        {
-            get { return TokenType.Word; }
-        }
+        public override TokenType Type => TokenType.Word;
 
-        public override string Value
-        {
-            get { return _word; }
-        }
+        public override string Value { get; }
+        public IReaderContext Context { get; }
     }
 }
 

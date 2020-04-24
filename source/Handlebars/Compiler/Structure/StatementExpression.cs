@@ -13,22 +13,16 @@ namespace HandlebarsDotNet.Compiler
             TrimAfter = trimAfter;
         }
 
-        public Expression Body { get; private set; }
+        public Expression Body { get; }
 
-        public bool IsEscaped { get; private set; }
+        public bool IsEscaped { get; }
 
-        public bool TrimBefore { get; private set; }
+        public bool TrimBefore { get; }
 
-        public bool TrimAfter { get; private set; }
+        public bool TrimAfter { get; }
 
-        public override ExpressionType NodeType
-        {
-            get { return (ExpressionType)HandlebarsExpressionType.StatementExpression; }
-        }
+        public override ExpressionType NodeType => (ExpressionType)HandlebarsExpressionType.StatementExpression;
 
-        public override Type Type
-        {
-            get { return typeof(void); }
-        }
+        public override Type Type => Body.Type;
     }
 }

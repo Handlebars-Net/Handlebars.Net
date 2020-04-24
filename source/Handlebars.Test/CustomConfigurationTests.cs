@@ -18,12 +18,11 @@ namespace HandlebarsDotNet.Test
         public CustomConfigurationTests()
         {
             var configuration = new HandlebarsConfiguration
-                                    {
-                                        ExpressionNameResolver =
-                                            new UpperCamelCaseExpressionNameResolver()
-                                    };
-                        
-            this.HandlebarsInstance = Handlebars.Create(configuration);
+            {
+                ExpressionNameResolver = new UpperCamelCaseExpressionNameResolver()
+            };
+
+            HandlebarsInstance = Handlebars.Create(configuration);
         }
 
         #region UpperCamelCaseExpressionNameResolver Tests

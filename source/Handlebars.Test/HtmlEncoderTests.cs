@@ -1,5 +1,4 @@
 ﻿using HandlebarsDotNet;
-using System;
 using Xunit;
 
 namespace Handlebars.Test

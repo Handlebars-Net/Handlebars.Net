@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
+﻿using System.Collections.Generic;
 
 namespace HandlebarsDotNet
 {
@@ -12,20 +7,20 @@ namespace HandlebarsDotNet
         public static bool IsOneOf<TSource, TExpected>(this IEnumerable<TSource> source)
             where TExpected : TSource
         {
-            var enumerator = source.GetEnumerator();
-            enumerator.MoveNext();
-            return (enumerator.Current is TExpected) && (enumerator.MoveNext() == false);
-        }
-
-        public static void AddOrUpdate<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue value)
-        {
-            if (dictionary.ContainsKey(key))
+            using(var enumerator = source.GetEnumerator())
             {
-                dictionary[key] = value;
+                enumerator.MoveNext();
+                return enumerator.Current is TExpected && !enumerator.MoveNext();
             }
-            else
+        }
+        
+        public static bool IsMultiple<T>(this IEnumerable<T> source)
+        {
+            using(var enumerator = source.GetEnumerator())
             {
-                dictionary.Add(key, value);
+                var hasNext = enumerator.MoveNext();
+                hasNext = hasNext && enumerator.MoveNext();
+                return hasNext;
             }
         }
     }

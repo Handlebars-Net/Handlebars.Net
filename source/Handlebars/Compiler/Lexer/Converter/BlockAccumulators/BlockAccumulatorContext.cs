@@ -17,18 +17,15 @@ namespace HandlebarsDotNet.Compiler
             {
                 context = new PartialBlockAccumulatorContext(item);
             }
-            else if (IsBlockHelper(item, configuration))
-            {
-                context = new BlockHelperAccumulatorContext(item);
-            }
             else if (IsIteratorBlock(item))
             {
                 context = new IteratorBlockAccumulatorContext(item);
             }
-            else if (IsDeferredBlock(item))
+            else if (IsBlockHelper(item, configuration))
             {
-                context = new DeferredBlockAccumulatorContext(item);
+                context = new BlockHelperAccumulatorContext(item);
             }
+
             return context;
         }
 
@@ -62,8 +59,8 @@ namespace HandlebarsDotNet.Compiler
             if (item is HelperExpression hitem)
             {
                 var helperName = hitem.HelperName;
-                return !configuration.Helpers.ContainsKey(helperName) &&
-                       configuration.BlockHelpers.ContainsKey(helperName.Replace("#", ""));
+                return hitem.IsBlock || !(configuration.Helpers.ContainsKey(helperName) || configuration.ReturnHelpers.ContainsKey(helperName)) &&
+                       configuration.BlockHelpers.ContainsKey(helperName.Replace("#", "").Replace("^", ""));
             }
             return false;
         }
@@ -71,42 +68,33 @@ namespace HandlebarsDotNet.Compiler
         private static bool IsIteratorBlock(Expression item)
         {
             item = UnwrapStatement(item);
-            return (item is HelperExpression) && new[] { "#each" }.Contains(((HelperExpression)item).HelperName);
-        }
-
-        private static bool IsDeferredBlock(Expression item)
-        {
-            item = UnwrapStatement(item);
-            return (item is PathExpression) && (((PathExpression)item).Path.StartsWith("#") || ((PathExpression)item).Path.StartsWith("^"));
+            return item is HelperExpression expression && "#each".Equals(expression.HelperName, StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool IsPartialBlock (Expression item)
         {
             item = UnwrapStatement (item);
-            if (item is PathExpression)
+            switch (item)
             {
-                return ((PathExpression)item).Path.StartsWith("#>");
-            }
-            else if (item is HelperExpression)
-            {
-                return ((HelperExpression)item).HelperName.StartsWith("#>");
-            }
-            else
-            {
-                return false;
+                case PathExpression expression:
+                    return expression.Path.StartsWith("#>");
+                
+                case HelperExpression helperExpression:
+                    return helperExpression.HelperName.StartsWith("#>");
+                
+                default:
+                    return false;
             }
         }
 
         protected static Expression UnwrapStatement(Expression item)
         {
-            if (item is StatementExpression)
+            if (item is StatementExpression expression)
             {
-                return ((StatementExpression)item).Body;
+                return expression.Body;
             }
-            else
-            {
-                return item;
-            }
+
+            return item;
         }
 
         protected BlockAccumulatorContext(Expression startingNode)

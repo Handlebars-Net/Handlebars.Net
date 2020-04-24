@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using HandlebarsDotNet.Compiler.Lexer;
 using System.Linq.Expressions;
 using System.Linq;
@@ -21,27 +20,22 @@ namespace HandlebarsDotNet.Compiler
         {
             foreach (var item in sequence)
             {
-                bool boolValue;
-                int intValue;
-
-                object result = item;
-
-                if (item is LiteralExpressionToken literalExpression)
+                var result = item;
+                switch (item)
                 {
-                    result = Expression.Convert(Expression.Constant(literalExpression.Value), typeof(object));
-
-                    if (!literalExpression.IsDelimitedLiteral)
+                    case LiteralExpressionToken literalExpression:
                     {
-                        if (int.TryParse(literalExpression.Value, out intValue))
+                        result = Expression.Convert(Expression.Constant(literalExpression.Value), typeof(object));
+                        if (!literalExpression.IsDelimitedLiteral && int.TryParse(literalExpression.Value, out var intValue))
                         {
                             result = Expression.Convert(Expression.Constant(intValue), typeof(object));
                         }
+
+                        break;
                     }
-                }
-                else if (item is WordExpressionToken wordExpression
-                    && bool.TryParse(wordExpression.Value, out boolValue))
-                {
-                    result = Expression.Convert(Expression.Constant(boolValue), typeof(object));
+                    case WordExpressionToken wordExpression when bool.TryParse(wordExpression.Value, out var boolValue):
+                        result = Expression.Convert(Expression.Constant(boolValue), typeof(object));
+                        break;
                 }
 
                 yield return result;

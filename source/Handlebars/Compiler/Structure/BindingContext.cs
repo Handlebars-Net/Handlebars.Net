@@ -2,167 +2,234 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using HandlebarsDotNet.Compiler.Structure.Path;
+using HandlebarsDotNet.ValueProviders;
+using Microsoft.Extensions.ObjectPool;
 
 namespace HandlebarsDotNet.Compiler
 {
-    internal class BindingContext
+    internal sealed class BindingContext : IDisposable
     {
-        private readonly object _value;
-        private readonly BindingContext _parent;
+        private static readonly BindingContextPool Pool = new BindingContextPool();
+        
+        private readonly HashedCollection<IValueProvider> _valueProviders = new HashedCollection<IValueProvider>();
 
-        public string TemplatePath { get; private set; }
-
-        public EncodedTextWriter TextWriter { get; private set; }
-
-        public IDictionary<string, Action<TextWriter, object>> InlinePartialTemplates { get; private set; }
-
-        public Action<TextWriter, object> PartialBlockTemplate { get; private set; }
-
-        public bool SuppressEncoding
+        public static BindingContext Create(InternalHandlebarsConfiguration configuration, object value,
+            EncodedTextWriter writer, BindingContext parent, string templatePath,
+            IDictionary<string, Action<TextWriter, object>> inlinePartialTemplates)
         {
-            get { return TextWriter.SuppressEncoding; }
-            set { TextWriter.SuppressEncoding = value; }
+            return Pool.CreateContext(configuration, value, writer, parent, templatePath, null, inlinePartialTemplates);
+        } 
+        
+        public static BindingContext Create(InternalHandlebarsConfiguration configuration, object value,
+            EncodedTextWriter writer, BindingContext parent, string templatePath,
+            Action<TextWriter, object> partialBlockTemplate,
+            IDictionary<string, Action<TextWriter, object>> inlinePartialTemplates)
+        {
+            return Pool.CreateContext(configuration, value, writer, parent, templatePath, partialBlockTemplate, inlinePartialTemplates);
         }
 
-        public BindingContext(object value, EncodedTextWriter writer, BindingContext parent, string templatePath, IDictionary<string, Action<TextWriter, object>> inlinePartialTemplates) :
-            this(value, writer, parent, templatePath, null, null, inlinePartialTemplates) { }
-
-        public BindingContext(object value, EncodedTextWriter writer, BindingContext parent, string templatePath, Action<TextWriter, object> partialBlockTemplate, IDictionary<string, Action<TextWriter, object>> inlinePartialTemplates) :
-            this(value, writer, parent, templatePath, partialBlockTemplate, null, inlinePartialTemplates) { }
-
-        public BindingContext(object value, EncodedTextWriter writer, BindingContext parent, string templatePath, Action<TextWriter, object> partialBlockTemplate, BindingContext current, IDictionary<string, Action<TextWriter, object>> inlinePartialTemplates)
+        private BindingContext(InternalHandlebarsConfiguration configuration, object value, EncodedTextWriter writer, BindingContext parent)
         {
-            TemplatePath = parent != null ? (parent.TemplatePath ?? templatePath) : templatePath;
+            Configuration = configuration;
             TextWriter = writer;
-            _value = value;
-            _parent = parent;
+            Value = value;
+            ParentContext = parent;
 
+            RegisterValueProvider(new BindingContextValueProvider(this));
+        }
+
+        private void Initialize()
+        {
+            Root = ParentContext?.Root ?? this;
+            TemplatePath = (ParentContext != null ? ParentContext.TemplatePath : TemplatePath) ?? TemplatePath;
+            
             //Inline partials cannot use the Handlebars.RegisteredTemplate method
             //because it pollutes the static dictionary and creates collisions
             //where the same partial name might exist in multiple templates.
             //To avoid collisions, pass around a dictionary of compiled partials
             //in the context
-            if (parent != null)
+            if (ParentContext != null)
             {
-                InlinePartialTemplates = parent.InlinePartialTemplates;
+                InlinePartialTemplates = ParentContext.InlinePartialTemplates;
 
-                if (value is HashParameterDictionary dictionary) {
+                if (Value is HashParameterDictionary dictionary) {
                     // Populate value with parent context
-                    foreach (var item in GetContextDictionary(parent.Value)) {
+                    foreach (var item in GetContextDictionary(ParentContext.Value)) {
                         if (!dictionary.ContainsKey(item.Key))
                             dictionary[item.Key] = item.Value;
                     }
                 }
             }
-            else if (current != null)
-            {
-                InlinePartialTemplates = current.InlinePartialTemplates;
-            }
-            else if (inlinePartialTemplates != null)
-            {
-                InlinePartialTemplates = inlinePartialTemplates;
-            }
             else
             {
                 InlinePartialTemplates = new Dictionary<string, Action<TextWriter, object>>(StringComparer.OrdinalIgnoreCase);
             }
-
-            PartialBlockTemplate = partialBlockTemplate;
         }
 
-        public virtual object Value
+        public string TemplatePath { get; private set; }
+
+        public InternalHandlebarsConfiguration Configuration { get; private set; }
+        
+        public EncodedTextWriter TextWriter { get; private set; }
+
+        public IDictionary<string, Action<TextWriter, object>> InlinePartialTemplates { get; private set; }
+
+        public Action<TextWriter, object> PartialBlockTemplate { get; private set; }
+        
+        public bool SuppressEncoding
         {
-            get { return _value; }
+            get => TextWriter.SuppressEncoding;
+            set => TextWriter.SuppressEncoding = value;
         }
 
-        public virtual BindingContext ParentContext
+        public object Value { get; private set; }
+
+        public BindingContext ParentContext { get; private set; }
+
+        public object Root { get; private set; }
+
+        public void RegisterValueProvider(IValueProvider valueProvider)
         {
-            get { return _parent; }
+            if(valueProvider == null) throw new ArgumentNullException(nameof(valueProvider));
+            
+            _valueProviders.Add(valueProvider);
+        }
+        
+        public void UnregisterValueProvider(IValueProvider valueProvider)
+        {
+            _valueProviders.Remove(valueProvider);
         }
 
-        public virtual object Root
+        public bool TryGetContextVariable(ref ChainSegment segment, out object value)
         {
-            get
+            // accessing value providers in reverse order as it gives more probability of hit
+            for (var index = _valueProviders.Count - 1; index >= 0; index--)
             {
-                var currentContext = this;
-                while (currentContext.ParentContext != null)
-                {
-                    currentContext = currentContext.ParentContext;
-                }
-                return currentContext.Value;
+                if (_valueProviders[index].TryGetValue(ref segment, out value)) return true;
             }
+
+            value = null;
+            return false;
         }
-
-        public virtual object GetContextVariable(string variableName)
+        
+        public bool TryGetVariable(ref ChainSegment segment, out object value, bool searchContext = false)
         {
-            var target = this;
-
-            return GetContextVariable(variableName, target)
-                   ?? GetContextVariable(variableName, target.Value);
-        }
-
-        private object GetContextVariable(string variableName, object target)
-        {
-            object returnValue;
-            variableName = variableName.TrimStart('@');
-            var member = target.GetType().GetMember(variableName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-            if (member.Length > 0)
+            // accessing value providers in reverse order as it gives more probability of hit
+            for (var index = _valueProviders.Count - 1; index >= 0; index--)
             {
-                if (member[0] is PropertyInfo)
-                {
-                    returnValue = ((PropertyInfo)member[0]).GetValue(target, null);
-                }
-                else if (member[0] is FieldInfo)
-                {
-                    returnValue = ((FieldInfo)member[0]).GetValue(target);
-                }
-                else
-                {
-                    throw new HandlebarsRuntimeException("Context variable references a member that is not a field or property");
-                }
+                var valueProvider = _valueProviders[index];
+                if(!valueProvider.SupportedValueTypes.HasFlag(ValueTypes.All) && !searchContext) continue;
+                
+                if (valueProvider.TryGetValue(ref segment, out value)) return true;
             }
-            else if (_parent != null)
-            {
-                returnValue = _parent.GetContextVariable(variableName);
-            }
-            else
-            {
-                returnValue = null;
-            }
-            return returnValue;
+
+            value = null;
+            return ParentContext?.TryGetVariable(ref segment, out value, searchContext) ?? false;
         }
 
-        private IDictionary<string, object> GetContextDictionary(object target)
+        private static IDictionary<string, object> GetContextDictionary(object target)
         {
-            var dict = new Dictionary<string, object>();
+            var contextDictionary = new Dictionary<string, object>();
 
-            if (target == null)
-                return dict;
+            switch (target)
+            {
+                case null:
+                    return contextDictionary;
+                
+                case IDictionary<string, object> dictionary:
+                {
+                    foreach (var item in dictionary)
+                    {
+                        contextDictionary[item.Key] = item.Value;
+                    }
 
-            if (target is IDictionary<string, object> dictionary) {
-                foreach (var item in dictionary)
-                    dict[item.Key] = item.Value;
-            } else {
-                var type = target.GetType();
-
-                var fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
-                foreach (var field in fields) {
-                    dict[field.Name] = field.GetValue(target);
+                    break;
                 }
+                default:
+                {
+                    var type = target.GetType();
 
-                var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-                foreach (var property in properties) {
-                    if (property.GetIndexParameters().Length == 0)
-                        dict[property.Name] = property.GetValue(target);
+                    var fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
+                    foreach (var field in fields) 
+                    {
+                        contextDictionary[field.Name] = field.GetValue(target);
+                    }
+
+                    var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+                    foreach (var property in properties) 
+                    {
+                        if (property.GetIndexParameters().Length == 0)
+                        {
+                            contextDictionary[property.Name] = property.GetValue(target);
+                        }
+                    }
+
+                    break;
                 }
             }
 
-            return dict;
+            return contextDictionary;
         }
 
-        public virtual BindingContext CreateChildContext(object value, Action<TextWriter, object> partialBlockTemplate)
+        public BindingContext CreateChildContext(object value, Action<TextWriter, object> partialBlockTemplate = null)
         {
-            return new BindingContext(value ?? Value, TextWriter, this, TemplatePath, partialBlockTemplate ?? PartialBlockTemplate, null);
+            return Create(Configuration, value ?? Value, TextWriter, this, TemplatePath, partialBlockTemplate ?? PartialBlockTemplate, null);
+        }
+        
+        public void Dispose()
+        {
+            Pool.Return(this);
+        }
+        
+        private class BindingContextPool : DefaultObjectPool<BindingContext>
+        {
+            public BindingContextPool() : base(new BindingContextPolicy())
+            {
+            }
+            
+            public BindingContext CreateContext(InternalHandlebarsConfiguration configuration, object value, EncodedTextWriter writer, BindingContext parent, string templatePath, Action<TextWriter, object> partialBlockTemplate, IDictionary<string, Action<TextWriter, object>> inlinePartialTemplates)
+            {
+                var context = Get();
+                context.Configuration = configuration;
+                context.Value = value;
+                context.TextWriter = writer;
+                context.ParentContext = parent;
+                context.TemplatePath = templatePath;
+                context.InlinePartialTemplates = inlinePartialTemplates;
+                context.PartialBlockTemplate = partialBlockTemplate;
+
+                context.Initialize();
+
+                return context;
+            }
+        
+            private class BindingContextPolicy : IPooledObjectPolicy<BindingContext>
+            {
+                public BindingContext Create()
+                {
+                    return new BindingContext((InternalHandlebarsConfiguration) null, (object) null, (EncodedTextWriter) null, (BindingContext) null);
+                }
+
+                public bool Return(BindingContext item)
+                {
+                    item.Root = null;
+                    item.Value = null;
+                    item.ParentContext = null;
+                    item.TemplatePath = null;
+                    item.TextWriter = null;
+                    item.InlinePartialTemplates = null;
+                    item.PartialBlockTemplate = null;
+
+                    var valueProviders = item._valueProviders;
+                    for (var index = valueProviders.Count - 1; index >= 1; index--)
+                    {
+                        valueProviders.Remove(valueProviders[index]);
+                    }
+
+                    return true;
+                }
+            }
         }
     }
 }

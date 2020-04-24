@@ -6,27 +6,16 @@ namespace HandlebarsDotNet
 {
     internal class SubExpressionExpression : HandlebarsExpression
     {
-        private readonly Expression _expression;
-
         public SubExpressionExpression(Expression expression)
         {
-            _expression = expression;
+            Expression = expression;
         }
 
-        public override Type Type
-        {
-            get { return typeof(object); }
-        }
+        public override Type Type => typeof(object);
 
-        public Expression Expression
-        {
-            get { return _expression; }
-        }
+        public Expression Expression { get; }
 
-        public override ExpressionType NodeType
-        {
-            get { return (ExpressionType)HandlebarsExpressionType.SubExpression; }
-        }
+        public override ExpressionType NodeType => (ExpressionType)HandlebarsExpressionType.SubExpression;
     }
 }
 

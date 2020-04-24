@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using HandlebarsDotNet.Compiler.Lexer;
 using System.Linq.Expressions;
@@ -34,11 +33,10 @@ namespace HandlebarsDotNet.Compiler
                 var possibleBody = GetNext(enumerator);
                 if (!(possibleBody is Expression))
                 {
-                    throw new HandlebarsCompilerException(String.Format("Token '{0}' could not be converted to an expression", possibleBody));
+                    throw new HandlebarsCompilerException($"Token '{possibleBody}' could not be converted to an expression");
                 }
 
-                var endExpression = GetNext(enumerator) as EndExpressionToken;
-                if (endExpression == null)
+                if (!(GetNext(enumerator) is EndExpressionToken endExpression))
                 {
                     throw new HandlebarsCompilerException("Handlebars statement was not reduced to a single expression");
                 }

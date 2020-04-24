@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,9 +6,12 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class ConditionalBlockAccumulatorContext : BlockAccumulatorContext
     {
+        private static readonly HashSet<string> ValidHelperNames = new HashSet<string> { "if", "unless" };
+        
         private readonly List<ConditionalExpression> _conditionalBlock = new List<ConditionalExpression>();
         private Expression _currentCondition;
         private List<Expression> _bodyBuffer = new List<Expression>();
+        
         public string BlockName { get; }
 
         public ConditionalBlockAccumulatorContext(Expression startingNode)
@@ -17,7 +19,7 @@ namespace HandlebarsDotNet.Compiler
         {
             startingNode = UnwrapStatement(startingNode);
             BlockName = ((HelperExpression)startingNode).HelperName.Replace("#", "");
-            if (new [] { "if", "unless" }.Contains(BlockName) == false)
+            if (!ValidHelperNames.Contains(BlockName))
             {
                 throw new HandlebarsCompilerException(string.Format(
                         "Tried to convert {0} expression to conditional block", BlockName));
@@ -106,32 +108,17 @@ namespace HandlebarsDotNet.Compiler
         private bool IsClosingNode(Expression item)
         {
             item = UnwrapStatement(item);
-            return item is PathExpression && ((PathExpression)item).Path == "/" + BlockName;
-        }
-
-        private static IEnumerable<Expression> UnwrapBlockExpression(IEnumerable<Expression> body)
-        {
-            if (body.IsOneOf<Expression, BlockExpression>())
-            {
-                body = body.OfType<BlockExpression>().First().Expressions;
-            }
-            return body;
+            return item is PathExpression expression && expression.Path == "/" + BlockName;
         }
 
         private static Expression SinglifyExpressions(IEnumerable<Expression> expressions)
         {
-            if (expressions.Count() > 1)
+            if (expressions.IsMultiple())
             {
                 return Expression.Block(expressions);
             }
-            else if(expressions.Count() == 0)
-            {
-                return Expression.Empty();
-            }
-            else
-            {
-                return expressions.Single();
-            }
+
+            return expressions.SingleOrDefault() ?? Expression.Empty();
         }
     }
 }

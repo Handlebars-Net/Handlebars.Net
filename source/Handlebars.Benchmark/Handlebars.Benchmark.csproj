@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFrameworks>netcoreapp2.1;netcoreapp2.1</TargetFrameworks>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="BenchmarkDotNet" Version="0.12.0" />
+      <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Handlebars.Extension.Logger\Handlebars.Extension.Logger.csproj" />
+      <ProjectReference Include="..\Handlebars.Extension.CompileFast\Handlebars.Extension.CompileFast.csproj" />
+      <ProjectReference Include="..\Handlebars\Handlebars.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="PreviousVersion\1.10.1.dll">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+</Project>

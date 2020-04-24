@@ -1,51 +1,39 @@
 ﻿using System;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace HandlebarsDotNet.Compiler
 {
-    internal class IteratorExpression : HandlebarsExpression
+    internal class IteratorExpression : BlockHelperExpression
     {
-        private readonly Expression _sequence;
-        private readonly Expression _template;
-        private readonly Expression _ifEmpty;
-
-
         public IteratorExpression(Expression sequence, Expression template)
-            : this(sequence, template, Expression.Empty())
+            : this(sequence, template, Empty())
         {
         }
 
         public IteratorExpression(Expression sequence, Expression template, Expression ifEmpty)
+            :this(sequence, BlockParamsExpression.Empty(),  template, ifEmpty)
         {
-            _sequence = sequence;
-            _template = template;
-            _ifEmpty = ifEmpty;
+            
+        }
+        
+        public IteratorExpression(Expression sequence, BlockParamsExpression blockParams, Expression template, Expression ifEmpty)
+            :base("each", Enumerable.Empty<Expression>(), blockParams, template, ifEmpty, false)
+        {
+            Sequence = sequence;
+            Template = template;
+            IfEmpty = ifEmpty;
         }
 
-        public Expression Sequence
-        {
-            get { return _sequence; }
-        }
+        public Expression Sequence { get; }
 
-        public Expression Template
-        {
-            get { return _template; }
-        }
+        public Expression Template { get; }
 
-        public Expression IfEmpty
-        {
-            get { return _ifEmpty; }
-        }
+        public Expression IfEmpty { get; }
 
-        public override Type Type
-        {
-            get { return typeof(void); }
-        }
+        public override Type Type => typeof(void);
 
-        public override ExpressionType NodeType
-        {
-            get { return (ExpressionType)HandlebarsExpressionType.IteratorExpression; }
-        }
+        public override ExpressionType NodeType => (ExpressionType)HandlebarsExpressionType.IteratorExpression;
     }
 }
 

@@ -9,7 +9,7 @@ namespace HandlebarsDotNet.Test
         public void BasicIterator()
         {
             var source = "Hello,{{#each people}}\n- {{name}}{{/each}}";
-            var template = Handlebars.Compile(source);
+            var template = Handlebars.Create().Compile(source);
             var data = new {
                 people = new []{
                     new { 
@@ -86,7 +86,7 @@ namespace HandlebarsDotNet.Test
                         {{/each}}
                     {{/each}}    
                 {{/each}}";
-            var template = Handlebars.Compile( source );
+            var template = Handlebars.Create().Compile( source );
             var data = new
                 {
                     level1 = new[]{

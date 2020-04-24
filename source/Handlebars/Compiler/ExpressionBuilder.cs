@@ -21,6 +21,7 @@ namespace HandlebarsDotNet.Compiler
             tokens = LiteralConverter.Convert(tokens);
             tokens = HashParameterConverter.Convert(tokens);
             tokens = PathConverter.Convert(tokens);
+            tokens = BlockParamsConverter.Convert(tokens);
             tokens = SubExpressionConverter.Convert(tokens);
             tokens = HashParametersAccumulator.Accumulate(tokens);
             tokens = PartialConverter.Convert(tokens);

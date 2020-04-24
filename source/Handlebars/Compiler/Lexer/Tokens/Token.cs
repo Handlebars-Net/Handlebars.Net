@@ -1,5 +1,3 @@
-using System;
-
 namespace HandlebarsDotNet.Compiler.Lexer
 {
     internal abstract class Token
@@ -8,29 +6,34 @@ namespace HandlebarsDotNet.Compiler.Lexer
 
         public abstract string Value { get; }
 
-        public static StaticToken Static(string value)
+        public sealed override string ToString()
         {
-            return new StaticToken(value);
+            return Value;
         }
 
-        public static LiteralExpressionToken Literal(string value, string delimiter = null)
+        public static StaticToken Static(string value, IReaderContext context = null)
         {
-            return new LiteralExpressionToken(value, delimiter);
+            return new StaticToken(value, context);
         }
 
-        public static WordExpressionToken Word(string word)
+        public static LiteralExpressionToken Literal(string value, string delimiter = null, IReaderContext context = null)
         {
-            return new WordExpressionToken(word);
+            return new LiteralExpressionToken(value, delimiter, context);
         }
 
-        public static StartExpressionToken StartExpression(bool isEscaped, bool trimWhitespace, bool isRaw)
+        public static WordExpressionToken Word(string word, IReaderContext context = null)
         {
-            return new StartExpressionToken(isEscaped, trimWhitespace, isRaw);
+            return new WordExpressionToken(word, context);
         }
 
-        public static EndExpressionToken EndExpression(bool isEscaped, bool trimWhitespace, bool isRaw)
+        public static StartExpressionToken StartExpression(bool isEscaped, bool trimWhitespace, bool isRaw, IReaderContext context = null)
         {
-            return new EndExpressionToken(isEscaped, trimWhitespace, isRaw);
+            return new StartExpressionToken(isEscaped, trimWhitespace, isRaw, context);
+        }
+
+        public static EndExpressionToken EndExpression(bool isEscaped, bool trimWhitespace, bool isRaw, IReaderContext context = null)
+        {
+            return new EndExpressionToken(isEscaped, trimWhitespace, isRaw, context);
         }
 
         public static CommentToken Comment(string comment)
@@ -38,9 +41,9 @@ namespace HandlebarsDotNet.Compiler.Lexer
             return new CommentToken(comment);
         }
 
-        public static PartialToken Partial()
+        public static PartialToken Partial(IReaderContext context = null)
         {
-            return new PartialToken();
+            return new PartialToken(context);
         }
 
         public static LayoutToken Layout(string layout)
@@ -53,14 +56,19 @@ namespace HandlebarsDotNet.Compiler.Lexer
             return new StartSubExpressionToken();
         }
 
-        public static EndSubExpressionToken EndSubExpression()
+        public static EndSubExpressionToken EndSubExpression(IReaderContext context)
         {
-            return new EndSubExpressionToken();
+            return new EndSubExpressionToken(context);
         }
 
-        public static AssignmentToken Assignment()
+        public static AssignmentToken Assignment(IReaderContext context)
         {
-            return new AssignmentToken();
+            return new AssignmentToken(context);
+        }
+        
+        public static BlockParameterToken BlockParams(string blockParams, IReaderContext context)
+        {
+            return new BlockParameterToken(blockParams, context);
         }
     }
 }

@@ -1,31 +1,20 @@
-﻿using System;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 
 namespace HandlebarsDotNet.Compiler
 {
     internal class StaticExpression : HandlebarsExpression
     {
-        private readonly string _value;
-
         public StaticExpression(string value)
         {
-            _value = value;
+            Value = value;
         }
 
-        public override ExpressionType NodeType
-        {
-            get { return (ExpressionType)HandlebarsExpressionType.StaticExpression; }
-        }
+        public override ExpressionType NodeType => (ExpressionType)HandlebarsExpressionType.StaticExpression;
 
-        public override Type Type
-        {
-            get { return typeof(void); }
-        }
+        //public override Type Type => typeof(void);
 
-        public string Value
-        {
-            get { return _value; }
-        }
+        public string Value { get; }
+        
     }
 }
 
