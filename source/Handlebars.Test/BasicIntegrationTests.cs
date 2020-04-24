@@ -9,7 +9,6 @@ using HandlebarsDotNet.Compiler;
 using HandlebarsDotNet.Helpers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using HandlebarsDotNet.Extension.CompileFast;
 using HandlebarsDotNet.Features;
 
 namespace HandlebarsDotNet.Test

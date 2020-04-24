@@ -16,7 +16,7 @@ namespace HandlebarsDotNet.Compiler
         {
             var context = ExpressionShortcuts.Arg<BindingContext>(CompilationContext.BindingContext);
             var suppressEncoding = context.Property(o => o.SuppressEncoding);
-            if (sex.IsEscaped == false)
+            if (!sex.IsEscaped)
             {
                 return ExpressionShortcuts.Block(typeof(void))
                     .Line(suppressEncoding.Assign(true))

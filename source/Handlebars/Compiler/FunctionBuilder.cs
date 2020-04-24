@@ -37,7 +37,7 @@ namespace HandlebarsDotNet.Compiler
         {
             try
             {
-                if (expressions.Any() == false)
+                if (!expressions.Any())
                 {
                     return EmptyLambdaWithContext;
                 }
@@ -47,13 +47,11 @@ namespace HandlebarsDotNet.Compiler
                 }
                 
                 var context = new CompilationContext(configuration);
-                {
-                    var expression = (Expression) Expression.Block(expressions);
-                    expression = Reduce(expression, context);
+                var expression = (Expression) Expression.Block(expressions);
+                expression = Reduce(expression, context);
 
-                    var lambda = ContextBinder.Bind(context, expression, templatePath);
-                    return configuration.CompileTimeConfiguration.ExpressionCompiler.Compile(lambda);
-                }
+                var lambda = ContextBinder.Bind(context, expression, templatePath);
+                return configuration.CompileTimeConfiguration.ExpressionCompiler.Compile(lambda);
             }
             catch (Exception ex)
             {
@@ -65,7 +63,7 @@ namespace HandlebarsDotNet.Compiler
         {
             try
             {
-                if (expressions.Any() == false)
+                if (!expressions.Any())
                 {
                     return EmptyLambda;
                 }
@@ -75,12 +73,10 @@ namespace HandlebarsDotNet.Compiler
                 }
                 
                 var context = new CompilationContext(configuration);
-                {
-                    var expression = (Expression) Expression.Block(expressions);
-                    expression = Reduce(expression, context);
+                var expression = (Expression) Expression.Block(expressions);
+                expression = Reduce(expression, context);
 
-                    return ContextBinder.Bind(context, expression, parentContext, templatePath);
-                }
+                return ContextBinder.Bind(context, expression, parentContext, templatePath);
             }
             catch (Exception ex)
             {

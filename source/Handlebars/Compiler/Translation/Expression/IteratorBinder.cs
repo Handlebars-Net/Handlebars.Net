@@ -172,7 +172,6 @@ namespace HandlebarsDotNet.Compiler
                     iterator.Value = accessor.TryGetValue(target, targetType, iterator.Key, out var value) ? value : null;
                     iterator.First = iterator.Index == 0;
                     iterator.Last = iterator.Index == count - 1;
-                    iterator.Index = iterator.Index;
 
                     using (var innerContext = context.CreateChildContext(iterator.Value))
                     {
@@ -241,7 +240,6 @@ namespace HandlebarsDotNet.Compiler
                     iterator.Value = enumerableValue.Value;
                     iterator.First = enumerableValue.IsFirst;
                     iterator.Last = enumerableValue.IsLast;
-                    iterator.Index = enumerableValue.Index;
 
                     using(var innerContext = context.CreateChildContext(iterator.Value))
                     {

@@ -35,6 +35,7 @@ namespace HandlebarsDotNet.Features
         /// <inheritdoc cref="IFeature.CompilationCompleted"/>
         public void CompilationCompleted()
         {
+            // noting to do here
         }
     }
 

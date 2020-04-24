@@ -67,7 +67,7 @@ namespace HandlebarsDotNet
                 return true;
             }
 
-            return value is IEnumerable enumerable && enumerable.OfType<object>().Any() == false;
+            return value is IEnumerable enumerable && !enumerable.OfType<object>().Any();
         }
 
         private static bool IsNumber(object value)

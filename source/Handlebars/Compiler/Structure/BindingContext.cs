@@ -27,15 +27,9 @@ namespace HandlebarsDotNet.Compiler
             IDictionary<string, Action<TextWriter, object>> inlinePartialTemplates)
         {
             return Pool.CreateContext(configuration, value, writer, parent, templatePath, partialBlockTemplate, inlinePartialTemplates);
-        } 
-        
-        private BindingContext(InternalHandlebarsConfiguration configuration, object value, EncodedTextWriter writer, BindingContext parent, string templatePath, IDictionary<string, Action<TextWriter, object>> inlinePartialTemplates) :
-            this(configuration, value, writer, parent, templatePath, null, null, inlinePartialTemplates) { }
+        }
 
-        private BindingContext(InternalHandlebarsConfiguration configuration, object value, EncodedTextWriter writer, BindingContext parent, string templatePath, Action<TextWriter, object> partialBlockTemplate, IDictionary<string, Action<TextWriter, object>> inlinePartialTemplates) :
-            this(configuration, value, writer, parent, templatePath, partialBlockTemplate, null, inlinePartialTemplates) { }
-
-        private BindingContext(InternalHandlebarsConfiguration configuration, object value, EncodedTextWriter writer, BindingContext parent, string templatePath, Action<TextWriter, object> partialBlockTemplate, BindingContext current, IDictionary<string, Action<TextWriter, object>> inlinePartialTemplates)
+        private BindingContext(InternalHandlebarsConfiguration configuration, object value, EncodedTextWriter writer, BindingContext parent)
         {
             Configuration = configuration;
             TextWriter = writer;
@@ -214,7 +208,7 @@ namespace HandlebarsDotNet.Compiler
             {
                 public BindingContext Create()
                 {
-                    return new BindingContext(null, null, null, null, null, null);
+                    return new BindingContext((InternalHandlebarsConfiguration) null, (object) null, (EncodedTextWriter) null, (BindingContext) null);
                 }
 
                 public bool Return(BindingContext item)

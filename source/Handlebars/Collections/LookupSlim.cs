@@ -29,7 +29,10 @@ namespace HandlebarsDotNet.Collections
 
         private TValue Write(TKey key, TValue value)
         {
-            var copy = new Dictionary<TKey, TValue>(_inner, _comparer);
+            var copy = new Dictionary<TKey, TValue>(_inner, _comparer)
+            {
+                [key] = value
+            };
             
             Interlocked.CompareExchange(ref _inner, copy, _inner);
 

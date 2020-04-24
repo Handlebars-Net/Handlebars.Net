@@ -25,6 +25,7 @@ namespace HandlebarsDotNet.Features
 
         public void CompilationCompleted()
         {
+            // noting to do here
         }
 
         private class DefaultExpressionCompiler : IExpressionCompiler

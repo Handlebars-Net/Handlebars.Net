@@ -58,9 +58,9 @@ namespace HandlebarsDotNet.Compiler
         {
             var item = GetNext(enumerator);
             var helperArguments = new List<Expression>();
-            while (item is EndExpressionToken == false)
+            while (!(item is EndExpressionToken))
             {
-                if (item is Expression == false) throw new HandlebarsCompilerException($"Token '{item}' could not be converted to an expression");
+                if (!(item is Expression)) throw new HandlebarsCompilerException($"Token '{item}' could not be converted to an expression");
                 
                 helperArguments.Add((Expression)item);
                 item = GetNext(enumerator);

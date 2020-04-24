@@ -82,10 +82,10 @@ namespace HandlebarsDotNet.Compiler
             }
             
             // Partial is not found, so call the resolver and attempt to load it.
-            if (configuration.RegisteredTemplates.ContainsKey(partialName) == false)
+            if (!configuration.RegisteredTemplates.ContainsKey(partialName))
             {
                 if (configuration.PartialTemplateResolver == null 
-                    || configuration.PartialTemplateResolver.TryRegisterPartial(Handlebars.Create(configuration), partialName, context.TemplatePath) == false)
+                    || !configuration.PartialTemplateResolver.TryRegisterPartial(Handlebars.Create(configuration), partialName, context.TemplatePath))
                 {
                     // Template not found.
                     return false;

@@ -66,12 +66,12 @@ namespace HandlebarsDotNet.Compiler
         private static List<Expression> AccumulateArguments(IEnumerator<object> enumerator)
         {
             var item = GetNext(enumerator);
-            List<Expression> helperArguments = new List<Expression>();
-            while ((item is EndExpressionToken) == false)
+            var helperArguments = new List<Expression>();
+            while (!(item is EndExpressionToken))
             {
-                if ((item is Expression) == false)
+                if (!(item is Expression))
                 {
-                    throw new HandlebarsCompilerException(string.Format("Token '{0}' could not be converted to an expression", item));
+                    throw new HandlebarsCompilerException($"Token '{item}' could not be converted to an expression");
                 }
                 helperArguments.Add((Expression)item);
                 item = GetNext(enumerator);

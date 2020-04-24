@@ -59,7 +59,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
 
         private static bool IsClosed(ExtendedStringReader reader, StringBuilder buffer, bool isEscaped)
         {
-            return isEscaped && CheckIfEscaped(reader, buffer) && CheckIfStatementClosed(reader) || isEscaped == false && CheckIfStatementClosed(reader);
+            return isEscaped && CheckIfEscaped(reader, buffer) && CheckIfStatementClosed(reader) || !isEscaped && CheckIfStatementClosed(reader);
         }
 
         private static bool CheckIfStatementClosed(ExtendedStringReader reader)

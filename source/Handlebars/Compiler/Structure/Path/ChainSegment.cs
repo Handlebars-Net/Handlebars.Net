@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics;
-using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.Polyfills;
 
 namespace HandlebarsDotNet.Compiler.Structure.Path

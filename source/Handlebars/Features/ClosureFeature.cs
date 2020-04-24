@@ -45,6 +45,7 @@ namespace HandlebarsDotNet.Features
         /// <inheritdoc />
         public void OnCompiling(HandlebarsConfiguration configuration)
         {
+            // noting to do here
         }
 
         /// <inheritdoc />

@@ -1,5 +1,6 @@
 #handlebars.csharp  [![Nuget](https://img.shields.io/nuget/v/handlebars.csharp)](https://www.nuget.org/packages/handlebars.csharp/)
 
+![Build](https://github.com/zjklee/Handlebars.CSharp/workflows/CI/badge.svg)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=zjklee_handlebars.csharp&metric=alert_status)](https://sonarcloud.io/dashboard?id=zjklee_handlebars.csharp)
 [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=zjklee_handlebars.csharp&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=zjklee_handlebars.csharp)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=zjklee_handlebars.csharp&metric=bugs)](https://sonarcloud.io/dashboard?id=zjklee_handlebars.csharp)

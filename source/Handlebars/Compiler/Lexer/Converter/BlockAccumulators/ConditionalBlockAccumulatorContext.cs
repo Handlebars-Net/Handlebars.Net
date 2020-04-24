@@ -6,9 +6,12 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class ConditionalBlockAccumulatorContext : BlockAccumulatorContext
     {
+        private static readonly HashSet<string> ValidHelperNames = new HashSet<string> { "if", "unless" };
+        
         private readonly List<ConditionalExpression> _conditionalBlock = new List<ConditionalExpression>();
         private Expression _currentCondition;
         private List<Expression> _bodyBuffer = new List<Expression>();
+        
         public string BlockName { get; }
 
         public ConditionalBlockAccumulatorContext(Expression startingNode)
@@ -16,7 +19,7 @@ namespace HandlebarsDotNet.Compiler
         {
             startingNode = UnwrapStatement(startingNode);
             BlockName = ((HelperExpression)startingNode).HelperName.Replace("#", "");
-            if (new [] { "if", "unless" }.Contains(BlockName) == false)
+            if (!ValidHelperNames.Contains(BlockName))
             {
                 throw new HandlebarsCompilerException(string.Format(
                         "Tried to convert {0} expression to conditional block", BlockName));

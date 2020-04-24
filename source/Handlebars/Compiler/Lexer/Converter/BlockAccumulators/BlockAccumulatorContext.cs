@@ -71,39 +71,30 @@ namespace HandlebarsDotNet.Compiler
             return item is HelperExpression expression && "#each".Equals(expression.HelperName, StringComparison.OrdinalIgnoreCase);
         }
 
-        private static bool IsDeferredBlock(Expression item)
-        {
-            item = UnwrapStatement(item);
-            return item is PathExpression expression && (expression.Path.StartsWith("#") || expression.Path.StartsWith("^"));
-        }
-
         private static bool IsPartialBlock (Expression item)
         {
             item = UnwrapStatement (item);
-            if (item is PathExpression)
+            switch (item)
             {
-                return ((PathExpression)item).Path.StartsWith("#>");
-            }
-            else if (item is HelperExpression)
-            {
-                return ((HelperExpression)item).HelperName.StartsWith("#>");
-            }
-            else
-            {
-                return false;
+                case PathExpression expression:
+                    return expression.Path.StartsWith("#>");
+                
+                case HelperExpression helperExpression:
+                    return helperExpression.HelperName.StartsWith("#>");
+                
+                default:
+                    return false;
             }
         }
 
         protected static Expression UnwrapStatement(Expression item)
         {
-            if (item is StatementExpression)
+            if (item is StatementExpression expression)
             {
-                return ((StatementExpression)item).Body;
+                return expression.Body;
             }
-            else
-            {
-                return item;
-            }
+
+            return item;
         }
 
         protected BlockAccumulatorContext(Expression startingNode)

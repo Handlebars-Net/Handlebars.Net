@@ -18,7 +18,9 @@ namespace HandlebarsDotNet
         {
             using(var enumerator = source.GetEnumerator())
             {
-                return enumerator.MoveNext() && enumerator.MoveNext();
+                var hasNext = enumerator.MoveNext();
+                hasNext = hasNext && enumerator.MoveNext();
+                return hasNext;
             }
         }
     }

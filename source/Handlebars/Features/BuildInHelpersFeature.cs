@@ -34,6 +34,7 @@ namespace HandlebarsDotNet.Features
 
         public void CompilationCompleted()
         {
+            // noting to do here
         }
 
         private static void With(TextWriter output, HelperOptions options, dynamic context, params object[] arguments)

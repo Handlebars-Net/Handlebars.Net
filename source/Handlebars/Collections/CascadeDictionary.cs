@@ -91,19 +91,7 @@ namespace HandlebarsDotNet.Collections
         {
             get
             {
-                int count = 0;
-                foreach (var value in _outer)
-                {
-                    if (_inner.TryGetValue(value.Key, out var innerValue))
-                    {
-                        count++;
-                    }
-                    else
-                    {
-                        count++;
-                    }
-                }
-            
+                var count = _outer.Count;
                 foreach (var value in _inner)
                 {
                     if (_outer.ContainsKey(value.Key)) continue;
