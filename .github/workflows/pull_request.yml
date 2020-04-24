@@ -57,8 +57,8 @@ jobs:
         run: dotnet test ./Handlebars.Test/Handlebars.Test.csproj -f netcoreapp3.1 --logger:trx
   
   sonar-pr:
-    runs-on: ubuntu-latest
-    
+    runs-on: windows-latest
+    needs: [build]
     steps:
     - uses: actions/checkout@v2
     - name: Sonarscanner for dotnet
@@ -71,9 +71,9 @@ jobs:
         sonarOrganisation: zjklee
         beginArguments: >
             /d:sonar.verbose="true"
-            /d:sonar.cs.opencover.reportsPaths='"**/*.opencover.xml"'
-            /d:sonar.cs.vstest.reportsPaths='**/*.trx'
-            /d:sonar.coverage.exclusions='"**/*.cs","**/*.md"'
+            /d:sonar.cs.opencover.reportsPaths="**/*.opencover.xml"
+            /d:sonar.cs.vstest.reportsPaths="**/*.trx"
+            /d:sonar.coverage.exclusions="**/*.cs","**/*.md"
             /d:sonar.pullrequest.key=${{ github.event.number }}
             /d:sonar.pullrequest.branch=${{ github.event.pull_request.head.ref }}
             /d:sonar.pullrequest.base=${{ github.event.pull_request.base.ref }}
