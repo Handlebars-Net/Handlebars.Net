@@ -69,7 +69,7 @@
   <ItemGroup Condition="'$(TargetFramework)'=='netstandard1.3'">
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="System.Reflection.TypeExtensions " Version="4.7.0" />
-    <PackageReference Include="System.ComponentModel.TypeConverter" Version="4.3.0" PrivateAssets="All" />
+    <PackageReference Include="System.ComponentModel.TypeConverter" Version="4.3.0" />
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="1.1.1" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
@@ -94,7 +94,6 @@
     </ItemGroup>
     <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3'">
       <InputAssemblies Include="$(NuGetPackageRoot)microsoft.extensions.objectpool\1.1.1\lib\netstandard1.3\Microsoft.Extensions.ObjectPool.dll" />
-      <InputAssemblies Include="$(NuGetPackageRoot)System.ComponentModel.TypeConverter\4.3.0\lib\netstandard1.0\System.ComponentModel.TypeConverter.dll" />
     </ItemGroup>
     <ItemGroup Condition=" '$(TargetFramework)' == 'net452'">
       <InputAssemblies Include="$(NuGetPackageRoot)microsoft.extensions.objectpool\1.1.1\lib\net451\Microsoft.Extensions.ObjectPool.dll" />
