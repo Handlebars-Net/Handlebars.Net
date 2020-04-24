@@ -43,14 +43,15 @@ jobs:
       uses: Secbyte/dotnet-sonarscanner@v2.2
       with:
         buildCommand: dotnet build source/Handlebars.Code.sln -f netstandard2.0
-        testCommand: dotnet test source/Handlebars.Test/Handlebars.Test.csproj -f netcoreapp3.1 --logger:trx
+        testCommand: dotnet test source/Handlebars.Test/Handlebars.Test.csproj -f netcoreapp3.1 --logger:trx --collect "code coverage" /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
         projectKey: zjklee_handlebars.csharp
         projectName: handlebars.csharp
         sonarOrganisation: zjklee
         beginArguments: >
             /d:sonar.verbose="true"
-            /d:sonar.cs.opencover.reportsPaths='"*.opencover.xml"'
+            /d:sonar.cs.opencover.reportsPaths='"**/*.opencover.xml"'
             /d:sonar.coverage.exclusions='"**/*.cs","**/*.md"'
+            /d:sonar.cs.vstest.reportsPaths='**/*.trx'
             
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

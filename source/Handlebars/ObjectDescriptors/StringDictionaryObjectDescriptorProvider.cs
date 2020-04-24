@@ -9,8 +9,9 @@ namespace HandlebarsDotNet.ObjectDescriptors
 {
     internal sealed class StringDictionaryObjectDescriptorProvider : IObjectDescriptorProvider
     {
-        private readonly RefLookup<Type, DeferredValue<Type>> _typeCache = new RefLookup<Type, DeferredValue<Type>>();
         private static readonly object[] EmptyArray = new object[0];
+        
+        private readonly RefLookup<Type, DeferredValue<Type>> _typeCache = new RefLookup<Type, DeferredValue<Type>>();
 
         public bool CanHandleType(Type type)
         {

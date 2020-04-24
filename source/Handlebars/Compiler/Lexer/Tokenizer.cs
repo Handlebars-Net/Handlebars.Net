@@ -29,9 +29,10 @@ namespace HandlebarsDotNet.Compiler.Lexer
         {
             bool inExpression = false;
             bool trimWhitespace = false;
-            var buffer = StringBuilderPool.Shared.GetObject();
-            try
+            using(var container = StringBuilderPool.Shared.Use())
             {
+                var buffer = container.Value;
+                
                 var node = source.Read();
                 while (true)
                 {
@@ -174,10 +175,6 @@ namespace HandlebarsDotNet.Compiler.Lexer
                         }
                     }
                 }
-            }
-            finally
-            {
-                StringBuilderPool.Shared.PutObject(buffer);
             }
         }
     }

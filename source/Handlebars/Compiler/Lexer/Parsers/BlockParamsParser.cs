@@ -13,10 +13,10 @@ namespace HandlebarsDotNet.Compiler.Lexer
         
         private static string AccumulateWord(ExtendedStringReader reader)
         {
-            var buffer = StringBuilderPool.Shared.GetObject();
-
-            try
+            using(var container = StringBuilderPool.Shared.Use())
             {
+                var buffer = container.Value;
+                
                 if (reader.Peek() != '|') return null;
                 
                 reader.Read();
@@ -32,10 +32,6 @@ namespace HandlebarsDotNet.Compiler.Lexer
                 if(string.IsNullOrEmpty(accumulateWord)) throw new HandlebarsParserException($"BlockParams expression is not valid", reader.GetContext());
             
                 return accumulateWord;
-            }
-            finally
-            {
-                StringBuilderPool.Shared.PutObject(buffer);
             }
         }
     }

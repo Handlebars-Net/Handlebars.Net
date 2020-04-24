@@ -8,7 +8,8 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
     [DebuggerDisplay("{Value}")]
     internal struct ChainSegment
     {
-        private static readonly RefLookup<string, ChainSegment> ChainSegments = new RefLookup<string, ChainSegment>();
+        private static readonly RefLookup<string, ChainSegment> ChainSegments = 
+            new RefLookup<string, ChainSegment>(new RefDictionarySafe<string, ChainSegment>());
         
         public static ref ChainSegment Create(string value)
         {

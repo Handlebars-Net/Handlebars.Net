@@ -1,33 +1,12 @@
-using System.Collections.Concurrent;
+using Microsoft.Extensions.ObjectPool;
 
 namespace HandlebarsDotNet
 {
-    internal abstract class ObjectPool<T>
+    internal static class ObjectPoolExtensions
     {
-        private readonly ConcurrentQueue<T> _objects;
-
-        protected ObjectPool()
+        public static DisposableContainer<T> Use<T>(this ObjectPool<T> objectPool) where T : class
         {
-            _objects = new ConcurrentQueue<T>();
+            return new DisposableContainer<T>(objectPool.Get(), objectPool.Return);
         }
-
-        public T GetObject()
-        {
-            return !_objects.TryDequeue(out var item)
-                ? CreateObject()
-                : item;
-        }
-
-        public DisposableContainer<T> Use()
-        {
-            return new DisposableContainer<T>(GetObject(), PutObject);
-        }
-
-        public virtual void PutObject(T item)
-        {
-            _objects.Enqueue(item);
-        }
-
-        protected abstract T CreateObject();
     }
 }

@@ -1,4 +1,5 @@
 using HandlebarsDotNet.Compiler.Structure.Path;
+using Microsoft.Extensions.ObjectPool;
 
 namespace HandlebarsDotNet.ValueProviders
 {
@@ -8,7 +9,7 @@ namespace HandlebarsDotNet.ValueProviders
 
         public static IteratorValueProvider Create()
         {
-            return Pool.GetObject();
+            return Pool.Get();
         }
         
         public object Value { get; set; }
@@ -44,27 +45,34 @@ namespace HandlebarsDotNet.ValueProviders
             }
         }
         
-        private class IteratorValueProviderPool : ObjectPool<IteratorValueProvider>
+        public virtual void Dispose()
         {
-            protected override IteratorValueProvider CreateObject()
-            {
-                return new IteratorValueProvider();
-            }
-
-            public override void PutObject(IteratorValueProvider item)
-            {
-                item.First = false;
-                item.Last = false;
-                item.Index = 0;
-                item.Value = null;
-
-                base.PutObject(item);
-            }
+            Pool.Return(this);
         }
-
-        public void Dispose()
+        
+        private class IteratorValueProviderPool : DefaultObjectPool<IteratorValueProvider>
         {
-            Pool.PutObject(this);
+            public IteratorValueProviderPool() : base(new IteratorValueProviderPolicy())
+            {
+            }
+            
+            private class IteratorValueProviderPolicy : IPooledObjectPolicy<IteratorValueProvider>
+            {
+                IteratorValueProvider IPooledObjectPolicy<IteratorValueProvider>.Create()
+                {
+                    return new IteratorValueProvider();
+                }
+
+                bool IPooledObjectPolicy<IteratorValueProvider>.Return(IteratorValueProvider item)
+                {
+                    item.First = true;
+                    item.Last = false;
+                    item.Index = 0;
+                    item.Value = null;
+
+                    return true;
+                }
+            }
         }
     }
 }

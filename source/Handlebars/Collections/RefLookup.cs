@@ -5,13 +5,18 @@ namespace HandlebarsDotNet.Collections
     internal sealed class RefLookup<TKey, TValue> 
         where TValue: struct
     {
-        private readonly RefDictionary<TKey, TValue> _inner;
+        private readonly IRefDictionary<TKey, TValue> _inner;
 
         public delegate ref TValue ValueFactory(TKey key, ref TValue value);
         
         public RefLookup(int capacity = 16, IEqualityComparer<TKey> comparer = null)
         {
             _inner = new RefDictionary<TKey, TValue>(capacity, comparer);
+        }
+        
+        public RefLookup(IRefDictionary<TKey, TValue> inner)
+        {
+            _inner = inner;
         }
 
         public bool ContainsKey(TKey key)

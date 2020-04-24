@@ -170,6 +170,9 @@ Nearly all time spent in rendering is in the routine that resolves values agains
 
 ~~A frequent performance issue that comes up is JSON.NET's `JObject`, which for reasons we haven't fully researched, has very slow reflection characteristics when used as a model in Handlebars.Net. A simple fix is to just use JSON.NET's built-in ability to deserialize a JSON string to an `ExpandoObject` instead of a `JObject`. This will yield nearly an order of magnitude improvement in render times on average.~~
 
+### More
+For mo retails see [Performance measurements](Performance.md)
+
 ## Future roadmap
 
 TBD

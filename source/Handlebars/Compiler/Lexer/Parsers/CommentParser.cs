@@ -29,9 +29,9 @@ namespace HandlebarsDotNet.Compiler.Lexer
         {
             reader.Read();
             bool? escaped = null;
-            var buffer = StringBuilderPool.Shared.GetObject();
-            try
+            using(var container = StringBuilderPool.Shared.Use())
             {
+                var buffer = container.Value;
                 while (true)
                 {
                     if (escaped == null)
@@ -54,10 +54,6 @@ namespace HandlebarsDotNet.Compiler.Lexer
                 }
                 
                 return buffer.ToString();
-            }
-            finally
-            {
-                StringBuilderPool.Shared.PutObject(buffer);
             }
         }
 

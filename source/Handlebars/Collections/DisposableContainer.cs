@@ -2,10 +2,10 @@ using System;
 
 namespace HandlebarsDotNet
 {
-    internal class DisposableContainer<T> : IDisposable
+    internal struct DisposableContainer<T> : IDisposable
     {
         private readonly Action<T> _onDispose;
-        public T Value { get; }
+        public readonly T Value;
 
         public DisposableContainer(T value, Action<T> onDispose)
         {

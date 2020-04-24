@@ -27,9 +27,9 @@ namespace HandlebarsDotNet.Compiler.Lexer
 
         private static string AccumulateBlockWord(ExtendedStringReader reader)
         {
-            var buffer = StringBuilderPool.Shared.GetObject();
-            try
+            using(var container = StringBuilderPool.Shared.Use())
             {
+                var buffer = container.Value;
                 buffer.Append((char)reader.Read());
                 while(char.IsWhiteSpace((char)reader.Peek()))
                 {
@@ -55,10 +55,6 @@ namespace HandlebarsDotNet.Compiler.Lexer
                 }
                 
                 return buffer.ToString();
-            }
-            finally
-            {
-                StringBuilderPool.Shared.PutObject(buffer);
             }
         }
     }

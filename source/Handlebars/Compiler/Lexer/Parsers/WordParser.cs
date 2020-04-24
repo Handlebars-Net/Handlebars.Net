@@ -36,10 +36,10 @@ namespace HandlebarsDotNet.Compiler.Lexer
 
         private static string AccumulateWord(ExtendedStringReader reader)
         {
-            var buffer = StringBuilderPool.Shared.GetObject();
-
-            try
+            using(var container = StringBuilderPool.Shared.Use())
             {
+                var buffer = container.Value;
+                
                 var inString = false;
 
                 while (true)
@@ -70,10 +70,6 @@ namespace HandlebarsDotNet.Compiler.Lexer
                 }
                 
                 return buffer.ToString().Trim();
-            }
-            finally
-            {
-                StringBuilderPool.Shared.PutObject(buffer);
             }
         }
 

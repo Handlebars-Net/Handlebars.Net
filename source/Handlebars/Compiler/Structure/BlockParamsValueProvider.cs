@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.ValueProviders;
+using Microsoft.Extensions.ObjectPool;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -35,7 +36,7 @@ namespace HandlebarsDotNet.Compiler
 
         public static BlockParamsValueProvider Create(BindingContext context, object @params)
         {
-            var blockParamsValueProvider = Pool.GetObject();
+            var blockParamsValueProvider = Pool.Get();
 
             blockParamsValueProvider._params = @params as BlockParam;
             blockParamsValueProvider._invoker = action => action(context);
@@ -83,23 +84,30 @@ namespace HandlebarsDotNet.Compiler
 
         public void Dispose()
         {
-            Pool.PutObject(this);
+            Pool.Return(this);
         }
 
-        private class BlockParamsValueProviderPool : ObjectPool<BlockParamsValueProvider>
+        private class BlockParamsValueProviderPool : DefaultObjectPool<BlockParamsValueProvider>
         {
-            protected override BlockParamsValueProvider CreateObject()
+            public BlockParamsValueProviderPool() : base(new BlockParamsValueProviderPolicy())
             {
-                return new BlockParamsValueProvider();
             }
-
-            public override void PutObject(BlockParamsValueProvider item)
+            
+            private class BlockParamsValueProviderPolicy : IPooledObjectPolicy<BlockParamsValueProvider>
             {
-                item._accessors.Clear();
-                item._invoker = null;
-                item._params = null;
-                
-                base.PutObject(item);
+                public BlockParamsValueProvider Create()
+                {
+                    return new BlockParamsValueProvider();
+                }
+
+                public bool Return(BlockParamsValueProvider item)
+                {
+                    item._accessors.Clear();
+                    item._invoker = null;
+                    item._params = null;
+
+                    return true;
+                }
             }
         }
     }

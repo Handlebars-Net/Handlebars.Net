@@ -1,4 +1,5 @@
 using HandlebarsDotNet.Compiler.Structure.Path;
+using Microsoft.Extensions.ObjectPool;
 
 namespace HandlebarsDotNet.ValueProviders
 {
@@ -10,7 +11,7 @@ namespace HandlebarsDotNet.ValueProviders
 
         public static ObjectEnumeratorValueProvider Create(HandlebarsConfiguration configuration)
         {
-            var provider = Pool.GetObject();
+            var provider = Pool.Get();
             provider._configuration = configuration;
             return provider;
         }
@@ -34,23 +35,35 @@ namespace HandlebarsDotNet.ValueProviders
             }
         }
         
-        private class ObjectEnumeratorValueProviderPool : ObjectPool<ObjectEnumeratorValueProvider>
+        public override void Dispose()
         {
-            protected override ObjectEnumeratorValueProvider CreateObject()
+            Pool.Return(this);
+        }
+        
+        private class ObjectEnumeratorValueProviderPool : DefaultObjectPool<ObjectEnumeratorValueProvider>
+        {
+            public ObjectEnumeratorValueProviderPool() : base(new ObjectEnumeratorValueProviderPolicy())
             {
-                return new ObjectEnumeratorValueProvider();
             }
-
-            public override void PutObject(ObjectEnumeratorValueProvider item)
+            
+            private class ObjectEnumeratorValueProviderPolicy : IPooledObjectPolicy<ObjectEnumeratorValueProvider>
             {
-                item.First = false;
-                item.Last = false;
-                item.Index = 0;
-                item.Value = null;
-                item.Key = null;
-                item._configuration = null;
+                ObjectEnumeratorValueProvider IPooledObjectPolicy<ObjectEnumeratorValueProvider>.Create()
+                {
+                    return new ObjectEnumeratorValueProvider();
+                }
 
-                base.PutObject(item);
+                bool IPooledObjectPolicy<ObjectEnumeratorValueProvider>.Return(ObjectEnumeratorValueProvider item)
+                {
+                    item.First = true;
+                    item.Last = false;
+                    item.Index = 0;
+                    item.Value = null;
+                    item.Key = null;
+                    item._configuration = null;
+
+                    return true;
+                }
             }
         }
     }

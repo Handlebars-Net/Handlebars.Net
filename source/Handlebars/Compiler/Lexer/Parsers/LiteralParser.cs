@@ -37,9 +37,9 @@ namespace HandlebarsDotNet.Compiler.Lexer
 
         private static string AccumulateLiteral(ExtendedStringReader reader, bool captureDelimiter, params char[] delimiters)
         {
-            var buffer = StringBuilderPool.Shared.GetObject();
-            try
+            using(var container = StringBuilderPool.Shared.Use())
             {
+                var buffer = container.Value;
                 while (true)
                 {
                     var node = reader.Peek();
@@ -47,31 +47,25 @@ namespace HandlebarsDotNet.Compiler.Lexer
                     {
                         throw new HandlebarsParserException("Reached end of template before the expression was closed.", reader.GetContext());
                     }
-                    else
+
+                    if (delimiters.Contains((char)node))
                     {
-                        if (delimiters.Contains((char)node))
+                        if (captureDelimiter)
                         {
-                            if (captureDelimiter)
-                            {
-                                reader.Read();
-                            }
-                            break;
+                            reader.Read();
                         }
-
-                        if (!captureDelimiter && (char)node == '}')
-                        {
-                            break;
-                        }
-
-                        buffer.Append((char)reader.Read());
+                        break;
                     }
+
+                    if (!captureDelimiter && (char)node == '}')
+                    {
+                        break;
+                    }
+
+                    buffer.Append((char)reader.Read());
                 }
                 
                 return buffer.ToString();
-            }
-            finally
-            {
-                StringBuilderPool.Shared.PutObject(buffer);
             }
         }
     }

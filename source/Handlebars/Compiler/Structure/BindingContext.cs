@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.ValueProviders;
+using Microsoft.Extensions.ObjectPool;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -184,14 +185,18 @@ namespace HandlebarsDotNet.Compiler
         
         public void Dispose()
         {
-            Pool.PutObject(this);
+            Pool.Return(this);
         }
         
-        private class BindingContextPool : ObjectPool<BindingContext>
+        private class BindingContextPool : DefaultObjectPool<BindingContext>
         {
+            public BindingContextPool() : base(new BindingContextPolicy())
+            {
+            }
+            
             public BindingContext CreateContext(InternalHandlebarsConfiguration configuration, object value, EncodedTextWriter writer, BindingContext parent, string templatePath, Action<TextWriter, object> partialBlockTemplate, IDictionary<string, Action<TextWriter, object>> inlinePartialTemplates)
             {
-                var context = GetObject();
+                var context = Get();
                 context.Configuration = configuration;
                 context.Value = value;
                 context.TextWriter = writer;
@@ -205,28 +210,31 @@ namespace HandlebarsDotNet.Compiler
                 return context;
             }
         
-            protected override BindingContext CreateObject()
+            private class BindingContextPolicy : IPooledObjectPolicy<BindingContext>
             {
-                return new BindingContext(null, null, null, null, null, null);
-            }
-
-            public override void PutObject(BindingContext item)
-            {
-                item.Root = null;
-                item.Value = null;
-                item.ParentContext = null;
-                item.TemplatePath = null;
-                item.TextWriter = null;
-                item.InlinePartialTemplates = null;
-                item.PartialBlockTemplate = null;
-
-                var valueProviders = item._valueProviders;
-                for (var index = valueProviders.Count - 1; index >= 1; index--)
+                public BindingContext Create()
                 {
-                    valueProviders.Remove(valueProviders[index]);
+                    return new BindingContext(null, null, null, null, null, null);
                 }
-                
-                base.PutObject(item);
+
+                public bool Return(BindingContext item)
+                {
+                    item.Root = null;
+                    item.Value = null;
+                    item.ParentContext = null;
+                    item.TemplatePath = null;
+                    item.TextWriter = null;
+                    item.InlinePartialTemplates = null;
+                    item.PartialBlockTemplate = null;
+
+                    var valueProviders = item._valueProviders;
+                    for (var index = valueProviders.Count - 1; index >= 1; index--)
+                    {
+                        valueProviders.Remove(valueProviders[index]);
+                    }
+
+                    return true;
+                }
             }
         }
     }

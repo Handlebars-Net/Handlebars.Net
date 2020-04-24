@@ -14,7 +14,7 @@
         <Copyright>Copyright © 2020 Oleh Formaniuk</Copyright>
         <Description>Microsoft.Extensions.Logging adapter for handlebars.csharp</Description>
         <PackageIcon>hbnet-extension-icon.png</PackageIcon>
-        <PackageId>handlebars.extension.logging</PackageId>
+        <PackageId>Handlebars.Extension.Logging</PackageId>
         <PackageLicenseUrl>https://opensource.org/licenses/mit</PackageLicenseUrl>
         <PackageProjectUrl>https://github.com/zjklee/handlebars.csharp</PackageProjectUrl>
         <PackageTags>handlebars;mustache;templating;engine;compiler</PackageTags>

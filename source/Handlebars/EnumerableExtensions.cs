@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
 
 namespace HandlebarsDotNet
 {
@@ -23,12 +21,5 @@ namespace HandlebarsDotNet
                 return enumerator.MoveNext() && enumerator.MoveNext();
             }
         }
-    }
-    
-    internal static class ObjectExtensions
-    {
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T As<T>(this object source) => (T) source;
     }
 }

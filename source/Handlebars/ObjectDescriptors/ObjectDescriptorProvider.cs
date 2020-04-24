@@ -9,8 +9,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
 {
     internal class ObjectDescriptorProvider : IObjectDescriptorProvider
     {
-        private static readonly Type DynamicMetaObjectProviderType = typeof(IDynamicMetaObjectProvider);
-        
+        private readonly Type _dynamicMetaObjectProviderType = typeof(IDynamicMetaObjectProvider);
         private readonly InternalHandlebarsConfiguration _configuration;
         private readonly RefLookup<Type, DeferredValue<string[]>> _membersCache = new RefLookup<Type, DeferredValue<string[]>>();
 
@@ -21,7 +20,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
         
         public bool CanHandleType(Type type)
         {
-            return !DynamicMetaObjectProviderType.IsAssignableFrom(type) 
+            return !_dynamicMetaObjectProviderType.IsAssignableFrom(type) 
                    && type != typeof(string);
         }
 
