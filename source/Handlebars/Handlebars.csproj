@@ -47,15 +47,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="bin\$(Configuration)\netstandard2.0\publish\Handlebars.*" Exclude="**\*.json">
+    <Content Include="bin\$(Configuration)\netstandard2.0\Handlebars.*" Exclude="**\*.json">
       <PackagePath>lib\netstandard2.0\</PackagePath>
       <Visible>false</Visible>
     </Content>
-    <Content Include="bin\$(Configuration)\netstandard1.3\publish\Handlebars.*" Exclude="**\*.json">
+    <Content Include="bin\$(Configuration)\netstandard1.3\Handlebars.*" Exclude="**\*.json">
       <PackagePath>lib\netstandard1.3\</PackagePath>
       <Visible>false</Visible>
     </Content>
-    <Content Include="bin\$(Configuration)\net452\publish\Handlebars.*" Exclude="**\*.json">
+    <Content Include="bin\$(Configuration)\net452\Handlebars.*" Exclude="**\*.json">
       <PackagePath>lib\net452\</PackagePath>
       <Visible>false</Visible>
     </Content>
