@@ -8,26 +8,19 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
     [DebuggerDisplay("{Value}")]
     internal struct ChainSegment
     {
-        private static readonly RefLookup<string, ChainSegment> ChainSegments = 
-            new RefLookup<string, ChainSegment>(new RefDictionarySafe<string, ChainSegment>());
-        
-        public static ref ChainSegment Create(string value)
+        public static ChainSegment Create(string value)
         {
-            if (ChainSegments.ContainsKey(value))
-            {
-                return ref ChainSegments.GetValueOrDefault(value);
-            }
-            
-            return ref ChainSegments.GetOrAdd(value, (string key, ref ChainSegment segment) =>
-            {
-                segment.IsThis = string.IsNullOrEmpty(value) || string.Equals(value, "this", StringComparison.OrdinalIgnoreCase);
-                segment.Value = string.IsNullOrEmpty(value) ? "this" : value.TrimStart('@').Intern();
-                segment.IsVariable = !string.IsNullOrEmpty(value) && value.StartsWith("@");
-                segment.TrimmedValue = TrimSquareBrackets(segment.Value).Intern();
-                segment.LowerInvariant = segment.TrimmedValue.ToLowerInvariant().Intern();
+            var segmentValue = string.IsNullOrEmpty(value) ? "this" : value.TrimStart('@').Intern();
+            var segmentTrimmedValue = TrimSquareBrackets(segmentValue).Intern();
 
-                return ref segment;
-            });
+            return new ChainSegment
+            {
+                IsThis = string.IsNullOrEmpty(value) || string.Equals(value, "this", StringComparison.OrdinalIgnoreCase),
+                Value = segmentValue,
+                IsVariable = !string.IsNullOrEmpty(value) && value.StartsWith("@"),
+                TrimmedValue = segmentTrimmedValue,
+                LowerInvariant = segmentTrimmedValue.ToLowerInvariant().Intern()
+            };
         }
 
         public string Value { get; private set; }

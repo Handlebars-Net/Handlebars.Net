@@ -17,7 +17,7 @@ namespace HandlebarsDotNet
         
         public bool TryGetMemberByAlias(object instance, Type targetType, string memberAlias, out object value)
         {
-            ref var segment = ref ChainSegment.Create(memberAlias);
+            var segment = ChainSegment.Create(memberAlias);
             switch (instance)
             {
                 case Array array:

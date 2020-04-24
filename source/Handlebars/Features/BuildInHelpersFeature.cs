@@ -63,7 +63,7 @@ namespace HandlebarsDotNet.Features
             }
             
             var memberName = arguments[1].ToString();
-            ref var segment = ref ChainSegment.Create(memberName);
+            var segment = ChainSegment.Create(memberName);
             return !PathResolver.TryAccessMember(arguments[0], ref segment, _configuration, out var value) 
                 ? new UndefinedBindingResult(memberName, _configuration)
                 : value;
