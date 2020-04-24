@@ -122,4 +122,4 @@ jobs:
         
       - name: publish
         working-directory: ./source
-        run: dotnet pack Handlebars.Code.sln --no-build -c Release  /p:version=${{ env.VERSION }}.${{ github.run_number }}-beta && dotnet nuget push **/*.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
+        run: dotnet pack Handlebars.Code.sln --no-build -c Release  /p:version=${{ env.VERSION }}.${{ github.run_number }}-beta && dotnet nuget push **/*.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json -n true

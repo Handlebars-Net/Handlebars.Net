@@ -27,4 +27,4 @@ jobs:
 
       - name: publish
         working-directory: ./source
-        run: dotnet pack Handlebars.Code.sln --no-build -c Release  /p:version=${{ github.event.release.tag_name }} && dotnet nuget push **/*.nupkg -k ${{ secrets.NUGET_TOKEN }} -s https://api.nuget.org/v3/index.json
+        run: dotnet pack Handlebars.Code.sln --no-build -c Release  /p:version=${{ github.event.release.tag_name }} && dotnet nuget push **/*.nupkg -k ${{ secrets.NUGET_TOKEN }} -s https://api.nuget.org/v3/index.json -n true
