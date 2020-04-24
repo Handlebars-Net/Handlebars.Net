@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>netstandard1.3;netstandard2.0</TargetFrameworks>
+        <TargetFrameworks>net452;netstandard1.3;netstandard2.0</TargetFrameworks>
         <RootNamespace>HandlebarsDotNet.Extension.CompileFast</RootNamespace>
         <LangVersion>7</LangVersion>
         <Version>1.0.0</Version>
@@ -20,6 +20,10 @@
         <RepositoryType>git</RepositoryType>
         <RepositoryUrl>https://github.com/zjklee/handlebars.csharp</RepositoryUrl>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(TargetFramework)'=='net452'">
+        <DefineConstants>$(DefineConstants);netFramework</DefineConstants>
     </PropertyGroup>
     
     <ItemGroup>

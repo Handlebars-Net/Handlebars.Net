@@ -13,10 +13,16 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 3.1.102
-      - name: Build Main
+      - name: Build netstandard2.0
         working-directory: ./source
-        run: dotnet build Handlebars.sln -c Release
-
+        run: dotnet build Handlebars.Code.sln -c Release -f netstandard2.0
+      - name: Build netstandard1.3
+        working-directory: ./source
+        run: dotnet build Handlebars.Code.sln -c Release -f netstandard1.3
+      - name: Build net452
+        working-directory: ./source
+        run: dotnet build Handlebars.Code.sln -c Release -f net452
+        
 
   test-windows:
     runs-on: windows-latest
@@ -103,6 +109,17 @@ jobs:
         run: git fetch --depth 500
       - name: Determine version
         run: echo "::set-env name=VERSION::$(git describe --tags --abbrev=0)"
+        
+      - name: Build netstandard2.0
+        working-directory: ./source
+        run: dotnet build Handlebars.Code.sln -c Release -f netstandard2.0
+      - name: Build netstandard1.3
+        working-directory: ./source
+        run: dotnet build Handlebars.Code.sln -c Release -f netstandard1.3
+      - name: Build net452
+        working-directory: ./source
+        run: dotnet build Handlebars.Code.sln -c Release -f net452
+        
       - name: publish
         working-directory: ./source
-        run: dotnet pack Handlebars.Code.sln -c Release  /p:version=${{ env.VERSION }}.${{ github.run_number }}-beta && dotnet nuget push **/*.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
+        run: dotnet pack Handlebars.Code.sln --no-build -c Release  /p:version=${{ env.VERSION }}.${{ github.run_number }}-beta && dotnet nuget push **/*.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
