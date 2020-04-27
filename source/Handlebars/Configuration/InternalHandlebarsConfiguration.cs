@@ -10,7 +10,7 @@ using HandlebarsDotNet.ObjectDescriptors;
 
 namespace HandlebarsDotNet
 {
-    internal class InternalHandlebarsConfiguration : HandlebarsConfiguration
+    internal class InternalHandlebarsConfiguration : HandlebarsConfiguration, ICompiledHandlebarsConfiguration
     {
         private readonly HandlebarsConfiguration _configuration;
         
@@ -25,8 +25,23 @@ namespace HandlebarsDotNet
         public override Compatibility Compatibility => _configuration.Compatibility;
         public sealed override CompileTimeConfiguration CompileTimeConfiguration { get; }
         
-        public IObjectDescriptorProvider ObjectDescriptorProvider { get; }
         public List<IFeature> Features { get; }
+        public IObjectDescriptorProvider ObjectDescriptorProvider { get; }
+
+        public ICollection<IExpressionMiddleware> ExpressionMiddleware => CompileTimeConfiguration.ExpressionMiddleware;
+        public ICollection<IMemberAliasProvider> AliasProviders => CompileTimeConfiguration.AliasProviders;
+        public IExpressionCompiler ExpressionCompiler
+        {
+            get => CompileTimeConfiguration.ExpressionCompiler;
+            set => CompileTimeConfiguration.ExpressionCompiler = value;
+        }
+        
+        public bool UseAggressiveCaching
+        {
+            get => CompileTimeConfiguration.UseAggressiveCaching;
+            set => CompileTimeConfiguration.UseAggressiveCaching = value;
+        }
+        IReadOnlyList<IFeature> ICompiledHandlebarsConfiguration.Features => Features;
 
         internal InternalHandlebarsConfiguration(HandlebarsConfiguration configuration)
         {

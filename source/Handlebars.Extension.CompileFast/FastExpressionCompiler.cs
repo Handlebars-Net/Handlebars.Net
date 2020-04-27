@@ -13,15 +13,15 @@ namespace HandlebarsDotNet.Extension.CompileFast
     {
         private readonly ClosureFeature _closureFeature;
         private readonly TemplateClosure _templateClosure;
-        private readonly ExpressionContainer<object[]> _closure;
+        private readonly ParameterExpression _closure;
         private readonly ICollection<IExpressionMiddleware> _expressionMiddleware;
 
-        public FastExpressionCompiler(HandlebarsConfiguration configuration, ClosureFeature closureFeature)
+        public FastExpressionCompiler(ICompiledHandlebarsConfiguration configuration, ClosureFeature closureFeature)
         {
             _closureFeature = closureFeature;
             _templateClosure = closureFeature?.TemplateClosure;
             _closure = closureFeature?.Closure;
-            _expressionMiddleware = configuration.CompileTimeConfiguration.ExpressionMiddleware;
+            _expressionMiddleware = configuration.ExpressionMiddleware;
         }
         
         public T Compile<T>(Expression<T> expression) where T: class
@@ -35,7 +35,7 @@ namespace HandlebarsDotNet.Extension.CompileFast
             
             expression = (Expression<T>) _closureFeature.ExpressionMiddleware.Invoke(expression);
 
-            var parameters = new[] { (ParameterExpression) _closure }.Concat(expression.Parameters).ToArray();
+            var parameters = new[] { _closure }.Concat(expression.Parameters).ToArray();
             var lambda = Expression.Lambda(expression.Body, parameters);
             var compiledDelegateType = Expression.GetDelegateType(parameters.Select(o => o.Type).Concat(new[] {lambda.ReturnType}).ToArray());
             

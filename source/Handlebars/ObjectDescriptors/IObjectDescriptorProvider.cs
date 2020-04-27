@@ -3,7 +3,7 @@ using System;
 namespace HandlebarsDotNet.ObjectDescriptors
 {
     /// <summary>
-    /// Factory for <see cref="ObjectDescriptor"/>
+    /// Facade for <see cref="ObjectDescriptor"/>
     /// </summary>
     public interface IObjectDescriptorProvider
     {
