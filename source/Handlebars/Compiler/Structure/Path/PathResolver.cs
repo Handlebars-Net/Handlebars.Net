@@ -155,7 +155,7 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
             return new UndefinedBindingResult(chainSegment.Value, configuration);
         }
 
-        public static bool TryAccessMember(object instance, ref ChainSegment chainSegment, InternalHandlebarsConfiguration configuration, out object value)
+        public static bool TryAccessMember(object instance, ref ChainSegment chainSegment, ICompiledHandlebarsConfiguration configuration, out object value)
         {
             var memberName = chainSegment.Value;
             if (instance == null)
@@ -197,7 +197,7 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
             return key;
         }
 
-        private static string ResolveMemberName(object instance, string memberName, HandlebarsConfiguration configuration)
+        private static string ResolveMemberName(object instance, string memberName, ICompiledHandlebarsConfiguration configuration)
         {
             var resolver = configuration.ExpressionNameResolver;
             return resolver != null ? resolver.ResolveExpressionName(instance, memberName) : memberName;

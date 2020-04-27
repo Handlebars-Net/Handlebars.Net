@@ -20,11 +20,9 @@ namespace HandlebarsDotNet.Features
         }
 
         /// <inheritdoc cref="IFeature.OnCompiling"/>
-        public void OnCompiling(HandlebarsConfiguration configuration)
+        public void OnCompiling(ICompiledHandlebarsConfiguration configuration)
         {
-            var internalConfiguration = (InternalHandlebarsConfiguration) configuration;
-            
-            var descriptorProvider = internalConfiguration.ObjectDescriptorProvider;
+            var descriptorProvider = configuration.ObjectDescriptorProvider;
             foreach (var type in _types)
             {
                 if(!descriptorProvider.CanHandleType(type)) continue;

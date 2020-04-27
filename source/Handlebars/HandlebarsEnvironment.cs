@@ -3,9 +3,6 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Compiler;
 
-[assembly: InternalsVisibleTo("Handlebars.Extension.CompileFast")]
-[assembly: InternalsVisibleTo("Handlebars.Test")]
-
 namespace HandlebarsDotNet
 {
     internal class HandlebarsEnvironment : IHandlebars

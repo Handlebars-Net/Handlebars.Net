@@ -9,7 +9,7 @@ namespace HandlebarsDotNet.Features
         /// Executes before any template parsing/compiling activity
         /// </summary>
         /// <param name="configuration"></param>
-        void OnCompiling(HandlebarsConfiguration configuration);
+        void OnCompiling(ICompiledHandlebarsConfiguration configuration);
 
         /// <summary>
         /// Executes after template is compiled

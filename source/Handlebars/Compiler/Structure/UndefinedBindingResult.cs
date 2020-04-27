@@ -6,9 +6,9 @@ namespace HandlebarsDotNet.Compiler
     internal class UndefinedBindingResult
     {
 	    public readonly string Value;
-	    private readonly HandlebarsConfiguration _configuration;
+	    private readonly ICompiledHandlebarsConfiguration _configuration;
 
-	    public UndefinedBindingResult(string value, HandlebarsConfiguration configuration)
+	    public UndefinedBindingResult(string value, ICompiledHandlebarsConfiguration configuration)
 	    {
 		    Value = value;
 		    _configuration = configuration;

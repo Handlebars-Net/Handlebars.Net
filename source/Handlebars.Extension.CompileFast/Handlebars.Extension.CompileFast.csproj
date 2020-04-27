@@ -35,6 +35,7 @@
     </ItemGroup>
     
     <ItemGroup>
+        <PackageReference Include="ExpressionShortcuts" Version="1.0.4.30" PrivateAssets="All" />
         <PackageReference Include="FastExpressionCompiler" Version="2.0.0" />
     </ItemGroup>
 

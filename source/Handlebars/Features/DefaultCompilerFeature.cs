@@ -15,12 +15,12 @@ namespace HandlebarsDotNet.Features
 
     internal class DefaultCompilerFeature : IFeature
     {
-        public void OnCompiling(HandlebarsConfiguration configuration)
+        public void OnCompiling(ICompiledHandlebarsConfiguration configuration)
         {
             var templateFeature = ((InternalHandlebarsConfiguration) configuration).Features
                 .OfType<ClosureFeature>().SingleOrDefault();
             
-            configuration.CompileTimeConfiguration.ExpressionCompiler = new DefaultExpressionCompiler(configuration, templateFeature);
+            configuration.ExpressionCompiler = new DefaultExpressionCompiler(configuration, templateFeature);
         }
 
         public void CompilationCompleted()
@@ -35,12 +35,12 @@ namespace HandlebarsDotNet.Features
             private readonly ExpressionContainer<object[]> _closure;
             private readonly ICollection<IExpressionMiddleware> _expressionMiddleware;
 
-            public DefaultExpressionCompiler(HandlebarsConfiguration configuration, ClosureFeature closureFeature)
+            public DefaultExpressionCompiler(ICompiledHandlebarsConfiguration configuration, ClosureFeature closureFeature)
             {
                 _closureFeature = closureFeature;
                 _templateClosure = closureFeature?.TemplateClosure;
-                _closure = closureFeature?.Closure;
-                _expressionMiddleware = configuration.CompileTimeConfiguration.ExpressionMiddleware;
+                _closure = closureFeature?.ClosureInternal;
+                _expressionMiddleware = configuration.ExpressionMiddleware;
             }
 
             public T Compile<T>(Expression<T> expression) where T: class

@@ -15,16 +15,16 @@ namespace HandlebarsDotNet.Features
 
     internal class BuildInHelpersFeature : IFeature
     {
-        private InternalHandlebarsConfiguration _configuration;
+        private ICompiledHandlebarsConfiguration _configuration;
 
         private static readonly ConfigureBlockParams WithBlockParamsConfiguration = (parameters, binder, deps) =>
         {
             binder(parameters.ElementAtOrDefault(0), ctx => ctx, deps[0]);
         };
 
-        public void OnCompiling(HandlebarsConfiguration configuration)
+        public void OnCompiling(ICompiledHandlebarsConfiguration configuration)
         {
-            _configuration = (InternalHandlebarsConfiguration) configuration;
+            _configuration = configuration;
 
             configuration.BlockHelpers["with"] = With;
             configuration.BlockHelpers["*inline"] = Inline;

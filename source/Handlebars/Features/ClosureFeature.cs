@@ -22,8 +22,13 @@ namespace HandlebarsDotNet.Features
         /// <summary>
         /// Parameter of actual closure
         /// </summary>
-        internal ExpressionContainer<object[]> Closure { get; } = ExpressionShortcuts.Var<object[]>("closure");
-        
+        internal ExpressionContainer<object[]> ClosureInternal { get; } = ExpressionShortcuts.Var<object[]>("closure");
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public ParameterExpression Closure => (ParameterExpression) ClosureInternal.Expression;
+
         /// <summary>
         /// Build-time closure store
         /// </summary>
@@ -39,11 +44,11 @@ namespace HandlebarsDotNet.Features
         /// </summary>
         public ClosureFeature()
         {
-            ExpressionMiddleware = new ClosureExpressionMiddleware(TemplateClosure, Closure);
+            ExpressionMiddleware = new ClosureExpressionMiddleware(TemplateClosure, ClosureInternal);
         }
         
         /// <inheritdoc />
-        public void OnCompiling(HandlebarsConfiguration configuration)
+        public void OnCompiling(ICompiledHandlebarsConfiguration configuration)
         {
             // noting to do here
         }
