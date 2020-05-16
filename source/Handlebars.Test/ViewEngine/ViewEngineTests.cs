@@ -21,19 +21,15 @@ namespace HandlebarsDotNet.Test.ViewEngine
             };
 
             //When a viewengine renders that view
-            var handleBars = Handlebars.Create(new HandlebarsConfiguration() {FileSystem = files});
-            var renderView = handleBars.CompileWriterView("views\\someview.hbs");
-            var sb = new StringBuilder();
-            var writer = new StringWriter(sb);
-            renderView(writer, null);
-            var output = sb.ToString();
+            var handleBars = Handlebars.Create(new HandlebarsConfiguration() { FileSystem = files });
+            var renderView = handleBars.CompileView ("views\\someview.hbs");
+            var output = renderView(null);
 
             //Then the correct output should be rendered
             Assert.Equal("layout start\r\nThis is the body\r\nlayout end", output);
         }
-
         [Fact]
-        public void CanLoadAViewWithALayoutAndStreamWriting()
+        public void CanLoadAWriterViewWithALayout()
         {
             //Given a layout in a subfolder
             var files = new FakeFileSystem()
@@ -45,13 +41,15 @@ namespace HandlebarsDotNet.Test.ViewEngine
 
             //When a viewengine renders that view
             var handleBars = Handlebars.Create(new HandlebarsConfiguration() { FileSystem = files });
-            var renderView = handleBars.CompileView ("views\\someview.hbs");
-            var output = renderView(null);
+            var renderView = handleBars.CompileWriterView("views\\someview.hbs");
+            var sb = new StringBuilder();
+            var writer = new StringWriter(sb);
+            renderView(writer, null);
+            var output = sb.ToString();
 
             //Then the correct output should be rendered
             Assert.Equal("layout start\r\nThis is the body\r\nlayout end", output);
         }
-
         [Fact]
         public void CanLoadAViewWithALayoutInTheRoot()
         {
