@@ -12,7 +12,24 @@ namespace HandlebarsDotNet
             Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
 
-        public Func<object, string> CompileView(string templatePath)
+        public Action<TextWriter, object> CompileWriterView(string templatePath)
+        {
+            return CompileViewInternal(templatePath);
+        }
+        public Func<object,string> CompileView(string templatePath)
+        {
+            var view = CompileViewInternal(templatePath);
+            return (vm) =>
+            {
+                using (var writer = new PolledStringWriter(Configuration.FormatProvider))
+                {
+                    view(writer, vm);
+                    return writer.ToString();
+                }
+            };
+        }
+
+        private Action<TextWriter, object> CompileViewInternal(string templatePath)
         {
             var configuration = new InternalHandlebarsConfiguration(Configuration);
             var createdFeatures = configuration.Features;
@@ -23,21 +40,13 @@ namespace HandlebarsDotNet
             
             var compiler = new HandlebarsCompiler(configuration);
             var compiledView = compiler.CompileView(templatePath, configuration);
-            Func<object, string> action = (vm) =>
-            {
-                using (var writer = new PolledStringWriter(configuration.FormatProvider))
-                {
-                    compiledView(writer, vm);
-                    return writer.ToString();
-                }
-            };
             
             for (var index = 0; index < createdFeatures.Count; index++)
             {
                 createdFeatures[index].CompilationCompleted();
             }
 
-            return action;
+            return compiledView;
         }
 
         public HandlebarsConfiguration Configuration { get; }

@@ -32,6 +32,13 @@ namespace HandlebarsDotNet
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="templatePath"></param>
+        /// <returns></returns>
+        Action<TextWriter, object> CompileWriterView(string templatePath);
+
+        /// <summary>
+        /// 
+        /// </summary>
         HandlebarsConfiguration Configuration { get; }
 
         /// <summary>
