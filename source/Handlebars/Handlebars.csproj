@@ -31,7 +31,6 @@
     <PackageId>Handlebars.CSharp</PackageId>
     <PackageLicenseUrl>https://opensource.org/licenses/mit</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/zjklee/handlebars.csharp</PackageProjectUrl>
-    <PackageReleaseNotes>Improved performance; added new features</PackageReleaseNotes>
     <PackageTags>handlebars;mustache;templating;engine;compiler</PackageTags>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/zjklee/handlebars.csharp</RepositoryUrl>
