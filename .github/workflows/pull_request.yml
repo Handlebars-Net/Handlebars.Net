@@ -84,5 +84,5 @@ jobs:
             /d:sonar.pullrequest.branch=${{ github.event.pull_request.head.ref }}
             /d:sonar.pullrequest.base=${{ github.event.pull_request.base.ref }}
       env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_TOKEN: 0a2d91d681b618b29a293e3d1e7e1e9ea82710a2
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
