@@ -26,10 +26,6 @@ namespace HandlebarsDotNet.ValueProviders
                     value = _context.ParentContext;
                     return true;
                 
-                case "value":
-                    value = _context.Value;
-                    return true;
-                
                 default:
                     return TryGetContextVariable(_context.Value, ref segment, out value);
             }

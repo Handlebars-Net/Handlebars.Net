@@ -7,7 +7,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
     internal class ContextObjectDescriptor : IObjectDescriptorProvider
     {
         private static readonly Type BindingContextType = typeof(BindingContext);
-        private static readonly string[] Properties = { "root", "parent", "value" };
+        private static readonly string[] Properties = { "root", "parent" };
 
         private static readonly ObjectDescriptor Descriptor = new ObjectDescriptor(BindingContextType)
         {
