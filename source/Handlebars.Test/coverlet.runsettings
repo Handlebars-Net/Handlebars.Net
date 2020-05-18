@@ -2,10 +2,11 @@
 <RunSettings>
     <DataCollectionRunSettings>
         <DataCollectors>
-            <DataCollector friendlyName="XPlat code coverage">
+            <DataCollector friendlyName="XPlat Code Coverage">
                 <Configuration>
                     <Format>opencover</Format>
-                    <Exclude>[Expressions.Shortcuts]*,[Expressions.Shortcuts.*]*</Exclude> <!-- [Assembly-Filter]Type-Filter -->
+                    <Include>[Handlebars*]HandlebarsDotNet,[Handlebars*]HandlebarsDotNet.*</Include> <!-- [Assembly-Filter]Type-Filter -->
+                    <IncludeTestAssembly>true</IncludeTestAssembly>
                 </Configuration>
             </DataCollector>
         </DataCollectors>

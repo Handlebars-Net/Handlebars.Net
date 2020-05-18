@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <AssemblyName>Handlebars</AssemblyName>
@@ -62,44 +62,23 @@
 
   <ItemGroup Condition="'$(TargetFramework)'=='net452'">
     <Reference Include="Microsoft.CSharp" />
-    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="1.1.1" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="1.1.1" />
   </ItemGroup>
   
   <ItemGroup Condition="'$(TargetFramework)'=='netstandard1.3'">
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="System.Reflection.TypeExtensions " Version="4.7.0" />
     <PackageReference Include="System.ComponentModel.TypeConverter" Version="4.3.0" />
-    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="1.1.1" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="1.1.1" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.7.0" />
-    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="3.1.3" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="3.1.3" />
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="ExpressionShortcuts" Version="1.0.4.30" PrivateAssets="All" />
-    <PackageReference Include="ILRepack.MSBuild.Task" Version="2.0.13" PrivateAssets="All" />
+    <PackageReference Include="ExpressionShortcuts" Version="1.0.4.32" PrivateAssets="All" />
   </ItemGroup>
-  
-  <Target Name="ILRepack" AfterTargets="Build">
-
-    <PropertyGroup>
-      <WorkingDirectory>$(MSBuildThisFileDirectory)bin\$(Configuration)\$(TargetFramework)</WorkingDirectory>
-    </PropertyGroup>
-
-    <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0'">
-      <InputAssemblies Include="$(NuGetPackageRoot)microsoft.extensions.objectpool\3.1.3\lib\netstandard2.0\Microsoft.Extensions.ObjectPool.dll" />
-    </ItemGroup>
-    <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3'">
-      <InputAssemblies Include="$(NuGetPackageRoot)microsoft.extensions.objectpool\1.1.1\lib\netstandard1.3\Microsoft.Extensions.ObjectPool.dll" />
-    </ItemGroup>
-    <ItemGroup Condition=" '$(TargetFramework)' == 'net452'">
-      <InputAssemblies Include="$(NuGetPackageRoot)microsoft.extensions.objectpool\1.1.1\lib\net451\Microsoft.Extensions.ObjectPool.dll" />
-    </ItemGroup>
-    
-    <ILRepack OutputType="$(OutputType)" MainAssembly="$(AssemblyName).dll" OutputAssembly="$(AssemblyName).dll" InputAssemblies="@(InputAssemblies)" InternalizeExcludeAssemblies="@(InternalizeExcludeAssemblies)" WorkingDirectory="$(WorkingDirectory)" />
-    
-  </Target>
   
 </Project>
