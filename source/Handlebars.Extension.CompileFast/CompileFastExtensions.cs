@@ -14,12 +14,6 @@ namespace HandlebarsDotNet.Extension.CompileFast
         /// <returns></returns>
         public static HandlebarsConfiguration UseCompileFast(this HandlebarsConfiguration configuration)
         {
-            if (!OperatingSystem.IsWindows())
-            {
-                Debug.WriteLine("[WARNING] Only Windows OS is supported at the moment. Skipping feature.");
-                return configuration;
-            }
-            
             var compileTimeConfiguration = configuration.CompileTimeConfiguration;
             
             compileTimeConfiguration.Features.Add(new FastCompilerFeatureFactory());

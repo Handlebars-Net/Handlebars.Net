@@ -6,17 +6,6 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class IteratorExpression : BlockHelperExpression
     {
-        public IteratorExpression(Expression sequence, Expression template)
-            : this(sequence, template, Empty())
-        {
-        }
-
-        public IteratorExpression(Expression sequence, Expression template, Expression ifEmpty)
-            :this(sequence, BlockParamsExpression.Empty(),  template, ifEmpty)
-        {
-            
-        }
-        
         public IteratorExpression(Expression sequence, BlockParamsExpression blockParams, Expression template, Expression ifEmpty)
             :base("each", Enumerable.Empty<Expression>(), blockParams, template, ifEmpty, false)
         {
