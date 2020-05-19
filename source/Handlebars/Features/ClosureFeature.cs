@@ -106,7 +106,7 @@ namespace HandlebarsDotNet.Features
                             return node;
 
                         default:
-                            if (node.Type.GetTypeInfo().IsValueType) return node;
+                            if (node.Type.GetTypeInfo().IsPrimitive) return node;
                             break;
                     }
 
