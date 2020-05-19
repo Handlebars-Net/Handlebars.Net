@@ -1,5 +1,3 @@
-using System.Diagnostics;
-
 namespace HandlebarsDotNet.Extension.CompileFast
 {
     /// <summary>
