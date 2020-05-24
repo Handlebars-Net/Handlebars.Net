@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AssemblyName>Handlebars</AssemblyName>
     <DebugType>portable</DebugType>
-    <TargetFrameworks>net452;netstandard1.3;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netstandard1.3;netstandard2.0</TargetFrameworks>
     <Version>1.0.2</Version>
     <LangVersion>7</LangVersion>
     <RootNamespace>HandlebarsDotNet</RootNamespace>
@@ -63,6 +63,7 @@
   <ItemGroup Condition="'$(TargetFramework)'=='net452'">
     <Reference Include="Microsoft.CSharp" />
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="1.1.1" />
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
   
   <ItemGroup Condition="'$(TargetFramework)'=='netstandard1.3'">
@@ -70,6 +71,7 @@
     <PackageReference Include="System.Reflection.TypeExtensions " Version="4.7.0" />
     <PackageReference Include="System.ComponentModel.TypeConverter" Version="4.3.0" />
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="1.1.1" />
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />

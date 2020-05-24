@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net452;netstandard1.3;netstandard2.0</TargetFrameworks>
+        <TargetFrameworks>netstandard1.3;netstandard2.0</TargetFrameworks>
         <RootNamespace>HandlebarsDotNet.Extension.Logging</RootNamespace>
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>

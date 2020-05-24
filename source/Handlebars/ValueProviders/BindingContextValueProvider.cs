@@ -37,12 +37,14 @@ namespace HandlebarsDotNet.ValueProviders
             if (instance == null) return false;
 
             var instanceType = instance.GetType();
-            if(_context.Configuration.ObjectDescriptorProvider.TryGetDescriptor(instanceType, out var descriptor))
+            var descriptorProvider = _context.Configuration.ObjectDescriptorProvider;
+            if(
+                descriptorProvider.CanHandleType(instanceType) && 
+                descriptorProvider.TryGetDescriptor(instanceType, out var descriptor) &&
+                descriptor.MemberAccessor.TryGetValue(instance, instanceType, segment.Value, out value)
+            )
             {
-                if (descriptor.MemberAccessor.TryGetValue(instance, instanceType, segment.Value, out value))
-                {
-                    return true;
-                }
+                return true;
             }
 
             return _context.ParentContext?.TryGetContextVariable(ref segment, out value) ?? false;

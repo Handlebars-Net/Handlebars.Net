@@ -40,13 +40,9 @@ namespace HandlebarsDotNet.Compiler
                 .Line(blockParamsProviderVar.Using((self, builder) =>
                 {
                     builder
-                        .Line(context.Call(o => o.RegisterValueProvider((IValueProvider) self)))
-                        .Line(ExpressionShortcuts.Try()
-                            .Body(ExpressionShortcuts.Call(() =>
-                                Iterator.Iterate(context, self, sequence, template, ifEmpty)
-                            ))
-                            .Finally(context.Call(o => o.UnregisterValueProvider((IValueProvider) self)))
-                        );
+                        .Line(ExpressionShortcuts.Call(() =>
+                            Iterator.Iterate(context, self, sequence, template, ifEmpty)
+                        ));
                 }));
         }
     }
@@ -87,7 +83,7 @@ namespace HandlebarsDotNet.Compiler
 
             if (!descriptor.ShouldEnumerate)
             {
-                var properties = descriptor.GetProperties(target);
+                var properties = descriptor.GetProperties(descriptor, target);
                 if (properties is IList propertiesList)
                 {
                     IterateObjectWithStaticProperties(context, descriptor, blockParamsValueProvider, target, propertiesList, targetType, template, ifEmpty);
@@ -137,9 +133,9 @@ namespace HandlebarsDotNet.Compiler
 
                     using(var innerContext = context.CreateChildContext(iterator.Value))
                     {
+                        innerContext.RegisterValueProvider(blockParamsValueProvider);
                         innerContext.RegisterValueProvider(iterator);
                         template(context, context.TextWriter, innerContext);
-                        innerContext.UnregisterValueProvider(iterator);
                     }
                 }
 
@@ -161,7 +157,7 @@ namespace HandlebarsDotNet.Compiler
         {
             using(var iterator = ObjectEnumeratorValueProvider.Create(context.Configuration))
             {
-                blockParamsValueProvider?.Configure(BlockParamsObjectEnumeratorConfiguration, iterator);
+                blockParamsValueProvider.Configure(BlockParamsObjectEnumeratorConfiguration, iterator);
                 
                 var accessor = descriptor.MemberAccessor;
 
@@ -175,9 +171,9 @@ namespace HandlebarsDotNet.Compiler
 
                     using (var innerContext = context.CreateChildContext(iterator.Value))
                     {
+                        innerContext.RegisterValueProvider(blockParamsValueProvider);
                         innerContext.RegisterValueProvider(iterator);
                         template(context, context.TextWriter, innerContext);
-                        innerContext.UnregisterValueProvider(iterator);
                     }
                 }
 
@@ -207,9 +203,9 @@ namespace HandlebarsDotNet.Compiler
 
                     using(var innerContext = context.CreateChildContext(iterator.Value))
                     {
+                        innerContext.RegisterValueProvider(blockParamsValueProvider);
                         innerContext.RegisterValueProvider(iterator);
                         template(context, context.TextWriter, innerContext);
-                        innerContext.UnregisterValueProvider(iterator);
                     }   
                 }
 
@@ -243,9 +239,9 @@ namespace HandlebarsDotNet.Compiler
 
                     using(var innerContext = context.CreateChildContext(iterator.Value))
                     {
+                        innerContext.RegisterValueProvider(blockParamsValueProvider);
                         innerContext.RegisterValueProvider(iterator);
                         template(context, context.TextWriter, innerContext);
-                        innerContext.UnregisterValueProvider(iterator);
                     }
                 }
 

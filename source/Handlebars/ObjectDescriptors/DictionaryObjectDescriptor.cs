@@ -8,6 +8,18 @@ namespace HandlebarsDotNet.ObjectDescriptors
 {
     internal class DictionaryObjectDescriptor : IObjectDescriptorProvider
     {
+        private static readonly DictionaryMemberAccessor DictionaryMemberAccessor = new DictionaryMemberAccessor();
+
+        private static readonly Func<ObjectDescriptor, object, IEnumerable<object>> GetProperties = (descriptor, arg) =>
+        {
+            return Enumerate((IDictionary) arg);
+            
+            IEnumerable<object> Enumerate(IDictionary dictionary)
+            {
+                foreach (var key in dictionary.Keys) yield return key;
+            }
+        };
+
         public bool CanHandleType(Type type)
         {
             return typeof(IDictionary).IsAssignableFrom(type);
@@ -15,22 +27,9 @@ namespace HandlebarsDotNet.ObjectDescriptors
 
         public bool TryGetDescriptor(Type type, out ObjectDescriptor value)
         {
-            value = new ObjectDescriptor(type)
-            {
-                GetProperties = GetProperties,
-                MemberAccessor = new DictionaryMemberAccessor()
-            };
+            value = new ObjectDescriptor(type, DictionaryMemberAccessor, GetProperties);
 
             return true;
-        }
-
-        private static IEnumerable<object> GetProperties(object arg)
-        {
-            var dictionary = (IDictionary) arg;
-            foreach (var key in dictionary.Keys)
-            {
-                yield return key;
-            }
         }
     }
 }

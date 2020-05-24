@@ -29,7 +29,8 @@ namespace HandlebarsDotNet.MemberAccessors
             var aliasProviders = _configuration.CompileTimeConfiguration.AliasProviders;
             for (var index = 0; index < aliasProviders.Count; index++)
             {
-                if (aliasProviders[index].TryGetMemberByAlias(instance, instanceType, memberName, out value)) return true;
+                if (aliasProviders[index].TryGetMemberByAlias(instance, instanceType, memberName, out value))
+                    return true;
             }
 
             value = null;
@@ -38,156 +39,161 @@ namespace HandlebarsDotNet.MemberAccessors
 
         private class PlainReflectionMemberAccessor : IMemberAccessor
         {
-            private readonly RefLookup<Type, DeferredValue<ObjectTypeDescriptor>> _descriptors =
-                new RefLookup<Type, DeferredValue<ObjectTypeDescriptor>>();
+            private readonly LookupSlim<Type, DeferredValue<Type, RawObjectTypeDescriptor>> _descriptors =
+                new LookupSlim<Type, DeferredValue<Type, RawObjectTypeDescriptor>>();
+
+            private static readonly Func<Type, DeferredValue<Type, RawObjectTypeDescriptor>> ValueFactory = 
+                key => new DeferredValue<Type, RawObjectTypeDescriptor>(key, type => new RawObjectTypeDescriptor(type));
 
             public bool TryGetValue(object instance, Type instanceType, string memberName, out object value)
             {
-                ObjectTypeDescriptor descriptor;
-                if (_descriptors.ContainsKey(instanceType))
+                if (!_descriptors.TryGetValue(instanceType, out var deferredValue))
                 {
-                    ref var deferredValue = ref _descriptors.GetValueOrDefault(instanceType);
-                    descriptor = deferredValue.Value;
-                }else
-                {
-                    ref var deferredValue = ref _descriptors.GetOrAdd(instanceType, ValueFactory);
-                    descriptor = deferredValue.Value;
+                    deferredValue = _descriptors.GetOrAdd(instanceType, ValueFactory);
                 }
 
-                var accessor = descriptor.GetOrCreateAccessor(memberName);
+                var accessor = deferredValue.Value.GetOrCreateAccessor(memberName);
                 value = accessor?.Invoke(instance);
                 return accessor != null;
             }
 
-            private static ref DeferredValue<ObjectTypeDescriptor> ValueFactory(Type type, ref DeferredValue<ObjectTypeDescriptor> deferredValue)
+            private class RawObjectTypeDescriptor
             {
-                deferredValue.Factory = () => new RawObjectTypeDescriptor(type);
-                return ref deferredValue;
+                private readonly Type _type;
+
+                private static readonly MethodInfo CreateGetDelegateMethodInfo = typeof(RawObjectTypeDescriptor)
+                    .GetMethod(nameof(CreateGetDelegate), BindingFlags.Static | BindingFlags.NonPublic);
+
+                private static readonly Func<(string key, Type type), Func<object, object>> ValueGetterFactory =
+                    o => GetValueGetter(o.key, o.type);
+
+                private readonly LookupSlim<string, DeferredValue<(string key, Type type), Func<object, object>>>
+                    _accessors = new LookupSlim<string, DeferredValue<(string key, Type type), Func<object, object>>>();
+
+                private static readonly Func<string, Type, DeferredValue<(string key, Type type), Func<object, object>>> ValueFactory =
+                    (key, state) => new DeferredValue<(string key, Type type), Func<object, object>>((key, state), ValueGetterFactory);
+
+                public RawObjectTypeDescriptor(Type type)
+                {
+                    _type = type;
+                }
+
+                public Func<object, object> GetOrCreateAccessor(string name)
+                {
+                    return _accessors.TryGetValue(name, out var deferredValue)
+                        ? deferredValue.Value
+                        : _accessors.GetOrAdd(name, ValueFactory, _type).Value;
+                }
+
+                private static Func<object, object> GetValueGetter(string name, Type type)
+                {
+                    var property = type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                        .FirstOrDefault(o =>
+                            o.GetIndexParameters().Length == 0 &&
+                            string.Equals(o.Name, name, StringComparison.OrdinalIgnoreCase));
+                    ;
+
+                    if (property != null)
+                    {
+                        return (Func<object, object>) CreateGetDelegateMethodInfo.MakeGenericMethod(type, property.PropertyType)
+                            .Invoke(null, new[] {property});
+                    }
+
+                    var field = type.GetFields(BindingFlags.Instance | BindingFlags.Public)
+                        .FirstOrDefault(o => string.Equals(o.Name, name, StringComparison.OrdinalIgnoreCase));
+                    if (field != null)
+                    {
+                        return o => field.GetValue(o);
+                    }
+
+                    return null;
+                }
+
+                private static Func<object, object> CreateGetDelegate<T, TValue>(PropertyInfo property)
+                {
+                    var @delegate = (Func<T, TValue>) property.GetMethod.CreateDelegate(typeof(Func<T, TValue>));
+                    return o => (object) @delegate((T) o);
+                }
             }
         }
 
         private class CompiledReflectionMemberAccessor : IMemberAccessor
         {
-            private readonly RefLookup<Type, DeferredValue<ObjectTypeDescriptor>> _descriptors =
-                new RefLookup<Type, DeferredValue<ObjectTypeDescriptor>>();
+            private readonly LookupSlim<Type, DeferredValue<Type, CompiledObjectTypeDescriptor>> _descriptors =
+                new LookupSlim<Type, DeferredValue<Type, CompiledObjectTypeDescriptor>>();
+
+            private static readonly Func<Type, DeferredValue<Type, CompiledObjectTypeDescriptor>> ValueFactory =
+                    key => new DeferredValue<Type, CompiledObjectTypeDescriptor>(key, type => new CompiledObjectTypeDescriptor(type));
 
             public bool TryGetValue(object instance, Type instanceType, string memberName, out object value)
             {
-                ObjectTypeDescriptor descriptor;
-                if (_descriptors.ContainsKey(instanceType))
+                if (!_descriptors.TryGetValue(instanceType, out var deferredValue))
                 {
-                    ref var deferredValue = ref _descriptors.GetValueOrDefault(instanceType);
-                    descriptor = deferredValue.Value;
-                }
-                else
-                {
-                    ref var deferredValue = ref _descriptors.GetOrAdd(instanceType, ValueFactory);
-                    descriptor = deferredValue.Value;   
+                    deferredValue = _descriptors.GetOrAdd(instanceType, ValueFactory);
                 }
 
-                var accessor = descriptor.GetOrCreateAccessor(memberName);
+                var accessor = deferredValue.Value.GetOrCreateAccessor(memberName);
                 value = accessor?.Invoke(instance);
                 return accessor != null;
             }
 
-            private static ref DeferredValue<ObjectTypeDescriptor> ValueFactory(Type type, ref DeferredValue<ObjectTypeDescriptor> deferredValue)
+            private class CompiledObjectTypeDescriptor
             {
-                deferredValue.Factory = () => new CompiledObjectTypeDescriptor(type);
-                return ref deferredValue;
-            }
-        }
+                private readonly Type _type;
 
-        private class CompiledObjectTypeDescriptor : ObjectTypeDescriptor
-        {
-            public CompiledObjectTypeDescriptor(Type type) : base(type)
-            {
-            }
+                private static readonly Func<(string key, Type type), Func<object, object>> ValueGetterFactory =
+                    o => GetValueGetter(o.key, o.type);
 
-            protected override Func<object, object> GetValueGetter(string name, Type type)
-            {
-                var property = type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                    .FirstOrDefault(o => o.GetIndexParameters().Length == 0 && string.Equals(o.Name, name, StringComparison.OrdinalIgnoreCase));
-                if (property != null)
+                private readonly LookupSlim<string, DeferredValue<(string key, Type type), Func<object, object>>>
+                    _accessors =
+                        new LookupSlim<string, DeferredValue<(string key, Type type), Func<object, object>>>();
+
+                private static readonly Func<string, Type, DeferredValue<(string key, Type type), Func<object, object>>> ValueFactory =
+                    (key, state) => new DeferredValue<(string key, Type type), Func<object, object>>((key, state), ValueGetterFactory);
+
+                public CompiledObjectTypeDescriptor(Type type)
                 {
-                    var instance = Expression.Parameter(typeof(object), "i");
-                    var memberExpression = Expression.Property(Expression.Convert(instance, type), name);
-                    var convert = Expression.TypeAs(memberExpression, typeof(object));
-
-                    return (Func<object, object>) Expression.Lambda(convert, instance).Compile();
+                    _type = type;
                 }
 
-                var field = type.GetFields(BindingFlags.Instance | BindingFlags.Public)
-                    .FirstOrDefault(o => string.Equals(o.Name, name, StringComparison.OrdinalIgnoreCase));
-                if (field != null)
+                public Func<object, object> GetOrCreateAccessor(string name)
                 {
-                    var instance = Expression.Parameter(typeof(object), "i");
-                    var memberExpression = Expression.Field(Expression.Convert(instance, type), name);
-                    var convert = Expression.TypeAs(memberExpression, typeof(object));
-                    
-                    return (Func<object, object>) Expression.Lambda(convert, instance).Compile();
+                    return _accessors.TryGetValue(name, out var deferredValue)
+                        ? deferredValue.Value
+                        : _accessors.GetOrAdd(name, ValueFactory, _type).Value;
                 }
 
-                return null;
-            }
-        }
-
-        private class RawObjectTypeDescriptor : ObjectTypeDescriptor
-        {
-            public RawObjectTypeDescriptor(Type type) : base(type)
-            {
-            }
-
-            protected override Func<object, object> GetValueGetter(string name, Type type)
-            {
-                var property = type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                    .FirstOrDefault(o => o.GetIndexParameters().Length == 0 && string.Equals(o.Name, name, StringComparison.OrdinalIgnoreCase));;
-                if (property != null)
+                private static Func<object, object> GetValueGetter(string name, Type type)
                 {
-                    return o => property.GetValue(o);
+                    var property = type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                        .FirstOrDefault(o =>
+                            o.GetIndexParameters().Length == 0 &&
+                            string.Equals(o.Name, name, StringComparison.OrdinalIgnoreCase));
+
+                    if (property != null)
+                    {
+                        var instance = Expression.Parameter(typeof(object), "i");
+                        var memberExpression = Expression.Property(Expression.Convert(instance, type), name);
+                        var convert = Expression.TypeAs(memberExpression, typeof(object));
+
+                        return (Func<object, object>) Expression.Lambda(convert, instance).Compile();
+                    }
+
+                    var field = type.GetFields(BindingFlags.Instance | BindingFlags.Public)
+                        .FirstOrDefault(o => string.Equals(o.Name, name, StringComparison.OrdinalIgnoreCase));
+
+                    if (field != null)
+                    {
+                        var instance = Expression.Parameter(typeof(object), "i");
+                        var memberExpression = Expression.Field(Expression.Convert(instance, type), name);
+                        var convert = Expression.TypeAs(memberExpression, typeof(object));
+
+                        return (Func<object, object>) Expression.Lambda(convert, instance).Compile();
+                    }
+
+                    return null;
                 }
-
-                var field = type.GetFields(BindingFlags.Instance | BindingFlags.Public)
-                    .FirstOrDefault(o => string.Equals(o.Name, name, StringComparison.OrdinalIgnoreCase));
-                if (field != null)
-                {
-                    return o => field.GetValue(o);
-                }
-
-                return null;
             }
-        }
-
-        private abstract class ObjectTypeDescriptor
-        {
-            private readonly Type _type;
-
-            private readonly RefLookup<string, DeferredValue<Func<object, object>>> _accessors =
-                new RefLookup<string, DeferredValue<Func<object, object>>>();
-
-            protected ObjectTypeDescriptor(Type type)
-            {
-                _type = type;
-            }
-
-            public Func<object, object> GetOrCreateAccessor(string name)
-            {
-                if (_accessors.ContainsKey(name))
-                {
-                    ref var existing = ref _accessors.GetValueOrDefault(name);
-                    return existing.Value;
-                }
-                
-                ref var deferredValue = ref _accessors.GetOrAdd(name, ValueFactory);
-                return deferredValue.Value;
-            }
-
-            private ref DeferredValue<Func<object, object>> ValueFactory(string name, ref DeferredValue<Func<object, object>> deferredValue)
-            {
-                deferredValue.Factory = () => GetValueGetter(name, _type);
-                return ref deferredValue;
-            }
-
-            protected abstract Func<object, object> GetValueGetter(string name, Type type);
         }
     }
 }

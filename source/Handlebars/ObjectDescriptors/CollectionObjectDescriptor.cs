@@ -23,9 +23,14 @@ namespace HandlebarsDotNet.ObjectDescriptors
         {
             if (!_objectDescriptorProvider.TryGetDescriptor(type, out value)) return false;
             
-            value.ShouldEnumerate = true;
-            value.MemberAccessor = new MergedMemberAccessor(new EnumerableMemberAccessor(), value.MemberAccessor);
-                
+            var mergedMemberAccessor = new MergedMemberAccessor(new EnumerableMemberAccessor(), value.MemberAccessor);
+            value = new ObjectDescriptor(
+                value.DescribedType, 
+                mergedMemberAccessor,
+                value.GetProperties,
+                true
+            );
+            
             return true;
 
         }

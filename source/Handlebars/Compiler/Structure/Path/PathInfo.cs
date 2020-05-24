@@ -1,28 +1,30 @@
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+using System;
 
 namespace HandlebarsDotNet.Compiler.Structure.Path
 {
-    [DebuggerDisplay("{Path}")]
-    internal struct PathInfo
+    internal delegate object ProcessSegment(ref PathInfo pathInfo, ref BindingContext context, object instance, HashParameterDictionary hashParameters);
+    
+    internal struct PathInfo : IEquatable<PathInfo>
     {
-        public PathInfo(bool hasValue, string path, IEnumerable<PathSegment> segments)
+        public PathInfo(bool hasValue, string path, PathSegment[] segments, ProcessSegment processSegment)
         {
             HasValue = hasValue;
             Path = path;
             IsVariable = path.StartsWith("@");
             IsInversion = path.StartsWith("^");
             IsHelper = path.StartsWith("#");
-            Segments = segments?.ToArray();
+            Segments = segments;
+            ProcessSegment = processSegment;
         }
 
-        public bool IsHelper { get; }
-        public bool IsInversion { get; }
-        public bool HasValue { get; }
-        public string Path { get; }
-        public bool IsVariable { get; }
-        public PathSegment[] Segments { get; }
+        public readonly bool IsHelper;
+        public readonly bool IsInversion;
+        public readonly bool HasValue;
+        public readonly string Path;
+        public readonly bool IsVariable;
+        public readonly PathSegment[] Segments;
+
+        public readonly ProcessSegment ProcessSegment;
 
         public bool Equals(PathInfo other)
         {
@@ -40,6 +42,11 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
         public override int GetHashCode()
         {
             return Path.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return Path;
         }
 
         public static implicit operator string(PathInfo pathInfo)

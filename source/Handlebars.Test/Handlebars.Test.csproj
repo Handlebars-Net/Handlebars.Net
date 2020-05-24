@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <DebugType>full</DebugType>
-    <TargetFrameworks>net461;netcoreapp1.1;netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
     <ProjectGuid>700AF0B4-EA70-47B7-9F9D-17351E977B00</ProjectGuid>
   </PropertyGroup>
   

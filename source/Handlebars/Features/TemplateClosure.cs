@@ -10,17 +10,18 @@ namespace HandlebarsDotNet.Features
     {
         private Dictionary<object, int> _objectSet = new Dictionary<object, int>();
         private List<object> _inner = new List<object>();
-        private object[] _store = new object[0];
+        
+        /// <summary>
+        /// Actual closure storage
+        /// </summary>
+        public object[] Store = new object[0];
 
         /// <summary>
         /// Index for the next item reference
         /// </summary>
         public int CurrentIndex => _inner?.Count ?? -1;
-
-        /// <summary>
-        /// Actual closure storage
-        /// </summary>
-        public object[] Store => _store;
+        
+        //public object[] Store => _store;
         
         /// <summary>
         /// Adds value to store
@@ -54,8 +55,8 @@ namespace HandlebarsDotNet.Features
         {
             if(_inner == null) return;
             
-            Array.Resize(ref _store, _inner.Count);
-            _inner.CopyTo(_store, 0);
+            Array.Resize(ref Store, _inner.Count);
+            _inner.CopyTo(Store, 0);
             
             _inner.Clear();
             _inner = null;

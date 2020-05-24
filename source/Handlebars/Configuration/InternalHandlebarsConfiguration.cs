@@ -52,7 +52,19 @@ namespace HandlebarsDotNet
             BlockHelpers = new CascadeDictionary<string, HandlebarsBlockHelper>(configuration.BlockHelpers, StringComparer.OrdinalIgnoreCase);
             RegisteredTemplates = new CascadeDictionary<string, Action<TextWriter, object>>(configuration.RegisteredTemplates, StringComparer.OrdinalIgnoreCase);
             HelperResolvers = new CascadeCollection<IHelperResolver>(configuration.HelperResolvers);
-
+            
+            CompileTimeConfiguration = new CompileTimeConfiguration
+            {
+                UseAggressiveCaching = _configuration.CompileTimeConfiguration.UseAggressiveCaching,
+                ExpressionCompiler = _configuration.CompileTimeConfiguration.ExpressionCompiler,
+                ExpressionMiddleware = new List<IExpressionMiddleware>(configuration.CompileTimeConfiguration.ExpressionMiddleware),
+                Features = new List<IFeatureFactory>(configuration.CompileTimeConfiguration.Features),
+                AliasProviders = new List<IMemberAliasProvider>(configuration.CompileTimeConfiguration.AliasProviders)
+                {
+                    new CollectionMemberAliasProvider(this)
+                }
+            };
+            
             var objectDescriptorProvider = new ObjectDescriptorProvider(this);
             var listObjectDescriptor = new CollectionObjectDescriptor(objectDescriptorProvider);
             var providers = new List<IObjectDescriptorProvider>(configuration.CompileTimeConfiguration.ObjectDescriptorProviders)
@@ -69,18 +81,6 @@ namespace HandlebarsDotNet
             };
 
             ObjectDescriptorProvider = new ObjectDescriptorFactory(providers);
-
-            CompileTimeConfiguration = new CompileTimeConfiguration
-            {
-                UseAggressiveCaching = _configuration.CompileTimeConfiguration.UseAggressiveCaching,
-                ExpressionCompiler = _configuration.CompileTimeConfiguration.ExpressionCompiler,
-                ExpressionMiddleware = new List<IExpressionMiddleware>(configuration.CompileTimeConfiguration.ExpressionMiddleware),
-                Features = new List<IFeatureFactory>(configuration.CompileTimeConfiguration.Features),
-                AliasProviders = new List<IMemberAliasProvider>(configuration.CompileTimeConfiguration.AliasProviders)
-                {
-                    new CollectionMemberAliasProvider(this)
-                }
-            };
 
             Features = CompileTimeConfiguration.Features.Select(o => o.CreateFeature()).ToList();
         }

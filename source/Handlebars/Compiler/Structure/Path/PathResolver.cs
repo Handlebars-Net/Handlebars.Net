@@ -1,15 +1,17 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using HandlebarsDotNet.ObjectDescriptors;
 using HandlebarsDotNet.Polyfills;
 
 namespace HandlebarsDotNet.Compiler.Structure.Path
 {
-    internal static class PathResolver
+    internal static partial class PathResolver
     {
         public static PathInfo GetPathInfo(string path)
         {
             if (path == "null")
-                return new PathInfo(false, path, null);
+                return new PathInfo(false, path, null, null);
 
             var originalPath = path;
             
@@ -26,16 +28,39 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
             {
                 if (segment == "..")
                 {
-                    segments.Add(new PathSegment(segment, Enumerable.Empty<ChainSegment>(), true));
+                    segments.Add(new PathSegment(segment, Array.Empty<ChainSegment>(), true, null));
                     continue;
                 }
                 
                 var segmentString = isVariable ? "@" + segment : segment;
-                segments.Add(new PathSegment(segmentString, GetPathChain(segmentString), false));
+                var chainSegments = GetPathChain(segmentString).ToArray();
+                ProcessPathChain chainDelegate;
+                switch (chainSegments.Length)
+                {
+                    case 1: chainDelegate = ProcessPathChain_1; break;
+                    case 2: chainDelegate = ProcessPathChain_2; break;
+                    case 3: chainDelegate = ProcessPathChain_3; break;
+                    case 4: chainDelegate = ProcessPathChain_4; break;
+                    case 5: chainDelegate = ProcessPathChain_5; break;
+                    default: chainDelegate = ProcessPathChain_Generic; break;
+                        
+                }
+                segments.Add(new PathSegment(segmentString, chainSegments, false, chainDelegate));
                 
             }
 
-            return new PathInfo(true, originalPath, segments);
+            ProcessSegment @delegate;
+            switch (segments.Count)
+            {
+                case 1: @delegate = ProcessSegment_1; break;
+                case 2: @delegate = ProcessSegment_2; break;
+                case 3: @delegate = ProcessSegment_3; break;
+                case 4: @delegate = ProcessSegment_4; break;
+                case 5: @delegate = ProcessSegment_5; break;
+                default: @delegate = ProcessSegment_Generic; break;
+            }
+            
+            return new PathInfo(true, originalPath, segments.ToArray(), @delegate);
         }
         
         
@@ -44,56 +69,77 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
         {
             if (!pathInfo.HasValue)
                 return null;
-
-            var configuration = context.Configuration;
-            var containsVariable = pathInfo.IsVariable;
+            
             var instance = context.Value;
             var hashParameters = instance as HashParameterDictionary;
 
-            for (var segmentIndex = 0; segmentIndex < pathInfo.Segments.Length; segmentIndex++)
+            return pathInfo.ProcessSegment(ref pathInfo, ref context, instance, hashParameters);
+        }
+
+        private static bool TryProcessSegment(
+            ref PathInfo pathInfo, 
+            ref PathSegment segment, 
+            ref BindingContext context, 
+            ref object instance,
+            HashParameterDictionary hashParameters
+            )
+        {
+            if (segment.IsJumpUp) return TryProcessJumpSegment(ref pathInfo, ref instance, ref context);
+
+            instance = segment.ProcessPathChain(context, hashParameters, ref pathInfo, ref segment, instance);
+            return !(instance is UndefinedBindingResult);
+        }
+
+        private static bool TryProcessJumpSegment(
+            ref PathInfo pathInfo,
+            ref object instance,
+            ref BindingContext context
+        )
+        {
+            context = context.ParentContext;
+            if (context == null)
             {
-                ref var segment = ref pathInfo.Segments[segmentIndex];
-                if (segment.IsJumpUp)
+                if (pathInfo.IsVariable)
                 {
-                    context = context.ParentContext;
-                    if (context == null)
-                    {
-                        if (containsVariable) return string.Empty;
-
-                        throw new HandlebarsCompilerException("Path expression tried to reference parent of root");
-                    }
-
-                    instance = context.Value;
-                    continue;
+                    instance = string.Empty;
+                    return false;
                 }
 
-                for (var pathChainIndex = 0; pathChainIndex < segment.PathChain.Length; pathChainIndex++)
-                {
-                    ref var chainSegment = ref segment.PathChain[pathChainIndex];
-                    instance = ResolveValue(context, instance, ref chainSegment);
-
-                    if (!(instance is UndefinedBindingResult))
-                        continue;
-
-                    if (hashParameters == null || hashParameters.ContainsKey(chainSegment.Value) ||
-                        context.ParentContext == null)
-                    {
-                        if (configuration.ThrowOnUnresolvedBindingExpression)
-                            throw new HandlebarsUndefinedBindingException(pathInfo.Path,
-                                (instance as UndefinedBindingResult).Value);
-                        return instance;
-                    }
-
-                    instance = ResolveValue(context.ParentContext, context.ParentContext.Value, ref chainSegment);
-                    if (!(instance is UndefinedBindingResult result)) continue;
-
-                    if (configuration.ThrowOnUnresolvedBindingExpression)
-                        throw new HandlebarsUndefinedBindingException(pathInfo.Path, result.Value);
-                    return result;
-                }
+                throw new HandlebarsCompilerException("Path expression tried to reference parent of root");
             }
 
-            return instance;
+            instance = context.Value;
+            return true;
+        }
+
+        private static object ProcessChainSegment(
+            BindingContext context, 
+            HashParameterDictionary hashParameters, 
+            ref PathInfo pathInfo,
+            ref ChainSegment chainSegment, 
+            object instance
+        )
+        {
+            instance = ResolveValue(context, instance, ref chainSegment);
+
+            if (!(instance is UndefinedBindingResult))
+                return instance;
+
+            if (hashParameters == null || hashParameters.ContainsKey(chainSegment.Value) ||
+                context.ParentContext == null)
+            {
+                if (context.Configuration.ThrowOnUnresolvedBindingExpression)
+                    throw new HandlebarsUndefinedBindingException(pathInfo.Path,
+                        (instance as UndefinedBindingResult).Value);
+                return instance;
+            }
+
+            instance = ResolveValue(context.ParentContext, context.ParentContext.Value, ref chainSegment);
+            if (!(instance is UndefinedBindingResult result)) return instance;
+
+            if (context.Configuration.ThrowOnUnresolvedBindingExpression)
+                throw new HandlebarsUndefinedBindingException(pathInfo.Path, result.Value);
+            return result;
         }
         
         private static IEnumerable<ChainSegment> GetPathChain(string segmentString)
@@ -109,7 +155,7 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
                             insideEscapeBlock = false;
                         }
 
-                        list[list.Count - 1] = ChainSegment.Create($"{list[list.Count - 1].Value}.{next}");
+                        list[list.Count - 1] = new ChainSegment($"{list[list.Count - 1].Value}.{next}");
                         return list;
                     }
 
@@ -123,7 +169,7 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
                         insideEscapeBlock = false;
                     }
 
-                    list.Add(ChainSegment.Create(next));
+                    list.Add(new ChainSegment(next));
                     return list;
                 });
             
@@ -132,16 +178,17 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
 
         private static object ResolveValue(BindingContext context, object instance, ref ChainSegment chainSegment)
         {
-            var configuration = context.Configuration;
             object resolvedValue;
             if (chainSegment.IsVariable)
             {
-                return context.TryGetContextVariable(ref chainSegment, out resolvedValue) ? resolvedValue : new UndefinedBindingResult(chainSegment.Value, configuration);
+                return !context.TryGetContextVariable(ref chainSegment, out resolvedValue) 
+                    ? new UndefinedBindingResult(chainSegment.Value, context.Configuration) 
+                    : resolvedValue;
             }
 
             if (chainSegment.IsThis) return instance;
 
-            if (TryAccessMember(instance, ref chainSegment, configuration, out resolvedValue) 
+            if (TryAccessMember(instance, ref chainSegment, context.Configuration, out resolvedValue) 
                 || context.TryGetVariable(ref chainSegment, out resolvedValue))
             {
                 return resolvedValue;
@@ -152,32 +199,30 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
                 return resolvedValue;
             }
 
-            return new UndefinedBindingResult(chainSegment.Value, configuration);
+            return new UndefinedBindingResult(chainSegment.Value, context.Configuration);
         }
 
         public static bool TryAccessMember(object instance, ref ChainSegment chainSegment, ICompiledHandlebarsConfiguration configuration, out object value)
         {
-            var memberName = chainSegment.Value;
             if (instance == null)
             {
-                value = new UndefinedBindingResult(memberName, configuration);
+                value = new UndefinedBindingResult(chainSegment, configuration);
                 return false;
             }
-
+            
+            var memberName = chainSegment.Value;
             var instanceType = instance.GetType();
-            memberName = ResolveMemberName(instance, memberName, configuration);
-            memberName = ReferenceEquals(memberName, chainSegment.Value) 
-                ? chainSegment.TrimmedValue 
-                : TrimSquareBrackets(memberName).Intern();
+            memberName = TryResolveMemberName(instance, memberName, configuration, out var result) 
+                ? TrimSquareBrackets(result).Intern() 
+                : chainSegment.TrimmedValue;
 
-            var descriptorProvider = configuration.ObjectDescriptorProvider;
-            if (!descriptorProvider.CanHandleType(instanceType))
+            if (!configuration.ObjectDescriptorProvider.CanHandleType(instanceType))
             {
                 value = new UndefinedBindingResult(memberName, configuration);
                 return false;
             }
 
-            if (!descriptorProvider.TryGetDescriptor(instanceType, out var descriptor))
+            if (!configuration.ObjectDescriptorProvider.TryGetDescriptor(instanceType, out var descriptor))
             {
                 value = new UndefinedBindingResult(memberName, configuration);
                 return false;
@@ -197,10 +242,190 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
             return key;
         }
 
-        private static string ResolveMemberName(object instance, string memberName, ICompiledHandlebarsConfiguration configuration)
+        private static bool TryResolveMemberName(object instance, string memberName, ICompiledHandlebarsConfiguration configuration, out string value)
         {
             var resolver = configuration.ExpressionNameResolver;
-            return resolver != null ? resolver.ResolveExpressionName(instance, memberName) : memberName;
+            if (resolver == null)
+            {
+                value = null;
+                return false;
+            }
+
+            value = resolver.ResolveExpressionName(instance, memberName);
+            return true;
+        }
+    }
+    
+    internal static partial class PathResolver
+    {
+        private static object ProcessSegment_1(
+            ref PathInfo pathInfo,
+            ref BindingContext context,
+            object instance,
+            HashParameterDictionary hashParameters
+        )
+        {
+            TryProcessSegment(ref pathInfo, ref pathInfo.Segments[0], ref context, ref instance, hashParameters);
+            return instance;
+        }
+        
+        private static object ProcessSegment_2(
+            ref PathInfo pathInfo,
+            ref BindingContext context,
+            object instance,
+            HashParameterDictionary hashParameters
+        )
+        {
+            _ = TryProcessSegment(ref pathInfo, ref pathInfo.Segments[0], ref context, ref instance, hashParameters) &&
+                TryProcessSegment(ref pathInfo, ref pathInfo.Segments[1], ref context, ref instance, hashParameters);
+            return instance;
+        }
+        
+        private static object ProcessSegment_3(
+            ref PathInfo pathInfo,
+            ref BindingContext context,
+            object instance,
+            HashParameterDictionary hashParameters
+        )
+        {
+            _ = TryProcessSegment(ref pathInfo, ref pathInfo.Segments[0], ref context, ref instance, hashParameters) &&
+                TryProcessSegment(ref pathInfo, ref pathInfo.Segments[1], ref context, ref instance, hashParameters) &&
+                TryProcessSegment(ref pathInfo, ref pathInfo.Segments[2], ref context, ref instance, hashParameters);
+            return instance;
+        }
+        
+        private static object ProcessSegment_4(
+            ref PathInfo pathInfo,
+            ref BindingContext context,
+            object instance,
+            HashParameterDictionary hashParameters
+        )
+        {
+            _ = TryProcessSegment(ref pathInfo, ref pathInfo.Segments[0], ref context, ref instance, hashParameters) &&
+                TryProcessSegment(ref pathInfo, ref pathInfo.Segments[1], ref context, ref instance, hashParameters) &&
+                TryProcessSegment(ref pathInfo, ref pathInfo.Segments[2], ref context, ref instance, hashParameters) &&
+                TryProcessSegment(ref pathInfo, ref pathInfo.Segments[3], ref context, ref instance, hashParameters);
+            return instance;
+        }
+        
+        private static object ProcessSegment_5(
+            ref PathInfo pathInfo,
+            ref BindingContext context,
+            object instance,
+            HashParameterDictionary hashParameters
+        )
+        {
+            _ = TryProcessSegment(ref pathInfo, ref pathInfo.Segments[0], ref context, ref instance, hashParameters) &&
+                TryProcessSegment(ref pathInfo, ref pathInfo.Segments[1], ref context, ref instance, hashParameters) &&
+                TryProcessSegment(ref pathInfo, ref pathInfo.Segments[2], ref context, ref instance, hashParameters) &&
+                TryProcessSegment(ref pathInfo, ref pathInfo.Segments[3], ref context, ref instance, hashParameters) &&
+                TryProcessSegment(ref pathInfo, ref pathInfo.Segments[4], ref context, ref instance, hashParameters);
+            return instance;
+        }
+        
+        private static object ProcessSegment_Generic(
+            ref PathInfo pathInfo,
+            ref BindingContext context,
+            object instance,
+            HashParameterDictionary hashParameters
+        )
+        {
+            for (var segmentIndex = 0; segmentIndex < pathInfo.Segments.Length; segmentIndex++)
+            {
+                if (!TryProcessSegment(
+                    ref pathInfo,
+                    ref pathInfo.Segments[segmentIndex],
+                    ref context,
+                    ref instance,
+                    hashParameters)
+                )
+                {
+                    return instance;
+                }
+            }
+
+            return instance;
+        }
+        
+        private static object ProcessPathChain_1(
+            BindingContext context, 
+            HashParameterDictionary hashParameters, 
+            ref PathInfo pathInfo,
+            ref PathSegment segment, 
+            object instance
+        )
+        {
+            return ProcessChainSegment(context, hashParameters, ref pathInfo, ref segment.PathChain[0], instance);
+        }
+        private static object ProcessPathChain_2(
+            BindingContext context, 
+            HashParameterDictionary hashParameters, 
+            ref PathInfo pathInfo,
+            ref PathSegment segment, 
+            object instance
+        )
+        {
+            instance = ProcessChainSegment(context, hashParameters, ref pathInfo, ref segment.PathChain[0], instance);
+            return ProcessChainSegment(context, hashParameters, ref pathInfo, ref segment.PathChain[1], instance);
+        }
+        
+        private static object ProcessPathChain_3(
+            BindingContext context, 
+            HashParameterDictionary hashParameters, 
+            ref PathInfo pathInfo,
+            ref PathSegment segment, 
+            object instance
+        )
+        {
+            instance = ProcessChainSegment(context, hashParameters, ref pathInfo, ref segment.PathChain[0], instance);
+            instance = ProcessChainSegment(context, hashParameters, ref pathInfo, ref segment.PathChain[1], instance);
+            return ProcessChainSegment(context, hashParameters, ref pathInfo, ref segment.PathChain[2], instance);
+        }
+        
+        private static object ProcessPathChain_4(
+            BindingContext context, 
+            HashParameterDictionary hashParameters, 
+            ref PathInfo pathInfo,
+            ref PathSegment segment, 
+            object instance
+        )
+        {
+            instance = ProcessChainSegment(context, hashParameters, ref pathInfo, ref segment.PathChain[0], instance);
+            instance = ProcessChainSegment(context, hashParameters, ref pathInfo, ref segment.PathChain[1], instance);
+            instance = ProcessChainSegment(context, hashParameters, ref pathInfo, ref segment.PathChain[2], instance);
+            return ProcessChainSegment(context, hashParameters, ref pathInfo, ref segment.PathChain[3], instance);
+        }
+        
+        private static object ProcessPathChain_5(
+            BindingContext context, 
+            HashParameterDictionary hashParameters, 
+            ref PathInfo pathInfo,
+            ref PathSegment segment, 
+            object instance
+        )
+        {
+            instance = ProcessChainSegment(context, hashParameters, ref pathInfo, ref segment.PathChain[0], instance);
+            instance = ProcessChainSegment(context, hashParameters, ref pathInfo, ref segment.PathChain[1], instance);
+            instance = ProcessChainSegment(context, hashParameters, ref pathInfo, ref segment.PathChain[2], instance);
+            instance = ProcessChainSegment(context, hashParameters, ref pathInfo, ref segment.PathChain[3], instance);
+            return ProcessChainSegment(context, hashParameters, ref pathInfo, ref segment.PathChain[4], instance);
+        }
+        
+        private static object ProcessPathChain_Generic(
+            BindingContext context, 
+            HashParameterDictionary hashParameters, 
+            ref PathInfo pathInfo,
+            ref PathSegment segment, 
+            object instance
+        )
+        {
+            for (var pathChainIndex = 0; pathChainIndex < segment.PathChain.Length; pathChainIndex++)
+            {
+                ref var chainSegment = ref segment.PathChain[pathChainIndex];
+                instance = ProcessChainSegment(context, hashParameters, ref pathInfo, ref chainSegment, instance);
+            }
+
+            return instance;
         }
     }
 }
