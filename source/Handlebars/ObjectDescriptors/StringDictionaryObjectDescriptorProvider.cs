@@ -4,12 +4,13 @@ using System.Linq;
 using System.Reflection;
 using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.MemberAccessors;
+using HandlebarsDotNet.Polyfills;
 
 namespace HandlebarsDotNet.ObjectDescriptors
 {
     internal sealed class StringDictionaryObjectDescriptorProvider : IObjectDescriptorProvider
     {
-        private static readonly object[] EmptyArray = Array.Empty<object>();
+        private static readonly object[] EmptyArray = ArrayEx.Empty<object>();
         private static readonly MethodInfo CreateDescriptorMethodInfo = typeof(StringDictionaryObjectDescriptorProvider).GetMethod(nameof(CreateDescriptor), BindingFlags.NonPublic | BindingFlags.Static);
         
         private readonly LookupSlim<Type, DeferredValue<Type, Type>> _typeCache = new LookupSlim<Type, DeferredValue<Type, Type>>();

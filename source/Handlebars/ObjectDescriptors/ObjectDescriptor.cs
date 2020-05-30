@@ -48,6 +48,9 @@ namespace HandlebarsDotNet.ObjectDescriptors
         /// </summary>
         public readonly bool ShouldEnumerate;
 
+        /// <summary>
+        /// Contains dependencies for <see cref="GetProperties"/> delegate
+        /// </summary>
         public readonly object[] Dependencies;
 
         /// <summary>

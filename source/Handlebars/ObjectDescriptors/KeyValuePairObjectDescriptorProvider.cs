@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using HandlebarsDotNet.MemberAccessors;
+using HandlebarsDotNet.Polyfills;
 
 namespace HandlebarsDotNet.ObjectDescriptors
 {
@@ -22,7 +23,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
             var descriptorCreator = CreateDescriptorMethodInfo
                 .MakeGenericMethod(genericArguments[0], genericArguments[1]);
 
-            value = (ObjectDescriptor) descriptorCreator.Invoke(null, Array.Empty<object>());
+            value = (ObjectDescriptor) descriptorCreator.Invoke(null, ArrayEx.Empty<object>());
             return true;
         }
         

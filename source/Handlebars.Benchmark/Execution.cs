@@ -7,16 +7,15 @@ using BenchmarkDotNet.Attributes;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Extension.CompileFast;
 using Newtonsoft.Json.Linq;
-using BenchmarkDotNet.Jobs;
 
 namespace Benchmark
 {
     public class Execution
     {
-        [Params(2)]
+        [Params(2, 5, 10)]
         public int N;
 
-        [Params("current", "current-cache"/*, "current-fast", "current-fast-cache", "1.10.1"*/)]
+        [Params("current", "current-cache", "current-fast", "current-fast-cache", "1.10.1")]
         public string Version;
 
         [Params("object", "dictionary")]
@@ -237,7 +236,7 @@ namespace Benchmark
                 return level;
             }
         }
-
+        
         [Benchmark]
         public void Render()
         {

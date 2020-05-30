@@ -28,7 +28,7 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
             {
                 if (segment == "..")
                 {
-                    segments.Add(new PathSegment(segment, Array.Empty<ChainSegment>(), true, null));
+                    segments.Add(new PathSegment(segment, ArrayEx.Empty<ChainSegment>(), true, null));
                     continue;
                 }
                 

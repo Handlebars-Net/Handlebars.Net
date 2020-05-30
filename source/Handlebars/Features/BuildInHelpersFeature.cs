@@ -30,6 +30,7 @@ namespace HandlebarsDotNet.Features
             configuration.BlockHelpers["*inline"] = Inline;
 
             configuration.ReturnHelpers["lookup"] = Lookup;
+            configuration.ReturnHelpers["log"] = (context, arguments) => string.Empty;
         }
 
         public void CompilationCompleted()

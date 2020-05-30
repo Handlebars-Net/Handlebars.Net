@@ -7,11 +7,11 @@ namespace Benchmark
 {
     class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
             var manualConfig = DefaultConfig.Instance.WithArtifactsPath(
                 $"./Benchmark-{FileVersionInfo.GetVersionInfo(typeof(Handlebars).Assembly.Location).FileVersion}"
-            ).With(BenchmarkLogicalGroupRule.ByMethod);
+            ).AddLogicalGroupRules(BenchmarkLogicalGroupRule.ByMethod);
 
             BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args, manualConfig);
         }
