@@ -6,13 +6,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="BenchmarkDotNet" Version="0.12.1" />
-      <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+        <PackageReference Include="BenchmarkDotNet" Version="0.12.1" />
+        <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Handlebars.Extension.Logger\Handlebars.Extension.Logger.csproj" />
-      <ProjectReference Include="..\Handlebars.Extension.CompileFast\Handlebars.Extension.CompileFast.csproj" />
       <ProjectReference Include="..\Handlebars\Handlebars.csproj" />
     </ItemGroup>
 

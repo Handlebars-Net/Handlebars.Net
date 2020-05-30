@@ -10,8 +10,6 @@ using HandlebarsDotNet.Helpers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using HandlebarsDotNet.Features;
-using HandlebarsDotNet.Extension.CompileFast;
-using HandlebarsDotNet.Extension.Logger;
 using Xunit.Abstractions;
 
 namespace HandlebarsDotNet.Test
@@ -22,9 +20,6 @@ namespace HandlebarsDotNet.Test
         {
             Handlebars.Create(),
             Handlebars.Create(new HandlebarsConfiguration{ CompileTimeConfiguration = { UseAggressiveCaching = false}}),
-#if compileFast
-            Handlebars.Create(new HandlebarsConfiguration().UseCompileFast()),
-#endif
             Handlebars.Create(new HandlebarsConfiguration().UseWarmUp(types =>
             {
                 types.Add(typeof(Dictionary<string, object>));
@@ -1783,86 +1778,6 @@ false
             var actual = func(data);
             
             Assert.Equal(data.input.ToLower(), actual);
-        }
-        
-        [Fact]
-        public void BasicLog()
-        {
-            var logs = new List<string>();
-            var handlebars = Handlebars.Create();
-            handlebars.Configuration
-                .UseLogger((arguments, level, format) => logs.Add(format(arguments)));
-            
-            var source = "{{log name}}";
-            var template = handlebars.Compile(source);
-            var data = new
-            {
-                name = "Handlebars.Net"
-            };
-            _ = template(data);
-            var log = Assert.Single(logs);
-            Assert.Equal("Handlebars.Net", log);
-        }
-        
-        [Fact]
-        public void BasicLogWithLevel()
-        {
-            var logs = new List<string>();
-            var handlebars = Handlebars.Create();
-            handlebars.Configuration
-                .UseLogger((arguments, level, format) => logs.Add($"Level: {level} -> {format(arguments)}"));
-            
-            var source = $"{{{{log name level='{LoggingLevel.Warn}'}}}}";
-            var template = handlebars.Compile(source);
-            var data = new
-            {
-                name = "Handlebars.Net"
-            };
-            _ = template(data);
-            var log = Assert.Single(logs);
-            Assert.Equal("Level: Warn -> Handlebars.Net", log);
-        }
-        
-        [Fact]
-        public void BasicLogWithFormat()
-        {
-            var logs = new List<string>();
-            var handlebars = Handlebars.Create();
-            handlebars.Configuration
-                .UseLogger((arguments, level, format) => logs.Add(format(arguments)));
-            
-            var source = "{{log foo bar format='[0], [1]'}}";
-            var template = handlebars.Compile(source);
-            var data = new
-            {
-                foo = "foo",
-                bar = "bar"
-            };
-            _ = template(data);
-            
-            var log = Assert.Single(logs);
-            Assert.Equal("foo, bar", log);
-        }
-        
-        [Fact]
-        public void LogWithMultipleArguments()
-        {
-            var logs = new List<string>();
-            var handlebars = Handlebars.Create();
-            handlebars.Configuration
-                .UseLogger((arguments, level, format) => logs.Add(format(arguments)));
-            
-            var source = "{{log foo bar}}";
-            var template = handlebars.Compile(source);
-            var data = new
-            {
-                foo = "foo",
-                bar = "bar"
-            };
-            _ = template(data);
-            
-            var log = Assert.Single(logs);
-            Assert.Equal("foo; bar", log);
         }
 
         private class StringHelperResolver : IHelperResolver

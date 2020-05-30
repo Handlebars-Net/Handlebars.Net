@@ -4,7 +4,6 @@ using System.Reflection;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Jobs;
 using HandlebarsDotNet;
-using HandlebarsDotNet.Extension.CompileFast;
 
 namespace Benchmark
 {
@@ -13,7 +12,7 @@ namespace Benchmark
     {
         private IHandlebars _handlebars;
 
-        [Params("current", "current-fast", "1.10.1")]
+        [Params("current", "1.10.1")]
         public string Version;
         
         private Func<string, Func<object, string>> _compileMethod;
@@ -36,10 +35,6 @@ namespace Benchmark
             else
             {
                 _handlebars = Handlebars.Create();
-                if (Version.Contains("fast"))
-                {
-                    _handlebars.Configuration.UseCompileFast();
-                }
 
                 _compileMethod = _handlebars.Compile;
             }

@@ -5,7 +5,6 @@ using System.Linq;
 using System.Reflection;
 using BenchmarkDotNet.Attributes;
 using HandlebarsDotNet;
-using HandlebarsDotNet.Extension.CompileFast;
 using Newtonsoft.Json.Linq;
 
 namespace Benchmark
@@ -15,7 +14,7 @@ namespace Benchmark
         [Params(2, 5, 10)]
         public int N;
 
-        [Params("current", "current-cache", "current-fast", "current-fast-cache", "1.10.1")]
+        [Params("current", "current-cache", "1.10.1")]
         public string Version;
 
         [Params("object", "dictionary")]
@@ -89,12 +88,7 @@ namespace Benchmark
             else
             {
                 Handlebars.Configuration.CompileTimeConfiguration.UseAggressiveCaching = Version.Contains("cache");
-                
-                if (Version.Contains("fast"))
-                {
-                    Handlebars.Configuration.UseCompileFast();
-                }
-                
+
                 using (var reader = new StringReader(template))
                 {
                     _templates = new[]
