@@ -41,7 +41,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
 
             //When a viewengine renders that view
             var handleBars = Handlebars.Create(new HandlebarsConfiguration() { FileSystem = files });
-            var renderView = handleBars.CompileWriterView("views\\someview.hbs");
+            var renderView = handleBars.CompileView("views\\someview.hbs", null);
             var sb = new StringBuilder();
             var writer = new StringWriter(sb);
             renderView(writer, null);
@@ -50,6 +50,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
             //Then the correct output should be rendered
             Assert.Equal("layout start\r\nThis is the body\r\nlayout end", output);
         }
+        
         [Fact]
         public void CanLoadAViewWithALayoutInTheRoot()
         {

@@ -81,6 +81,17 @@ namespace HandlebarsDotNet
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="templatePath"></param>
+        /// <param name="readerFactoryFactory"></param>
+        /// <returns></returns>
+        public static Action<TextWriter, object> CompileView(string templatePath, ViewReaderFactory readerFactoryFactory)
+        {
+            return Instance.CompileView(templatePath, readerFactoryFactory);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="templateName"></param>
         /// <param name="template"></param>
         public static void RegisterTemplate(string templateName, Action<TextWriter, object> template)

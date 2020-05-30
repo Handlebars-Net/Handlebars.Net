@@ -5,20 +5,41 @@ using HandlebarsDotNet.Compiler;
 
 namespace HandlebarsDotNet
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="configuration"></param>
+    /// <param name="templatePath"></param>
+    public delegate TextReader ViewReaderFactory(ICompiledHandlebarsConfiguration configuration, string templatePath);
+    
     internal class HandlebarsEnvironment : IHandlebars
     {
+        private static readonly ViewReaderFactory ViewReaderFactory = (configuration, path) =>
+        {
+            var fs = configuration.FileSystem;
+            if (fs == null)
+                throw new InvalidOperationException("Cannot compile view when configuration.FileSystem is not set");
+            var template = fs.GetFileContent(path);
+            if (template == null)
+                throw new InvalidOperationException("Cannot find template at '" + path + "'");
+                
+            return new StringReader(template);
+        };
+        
         public HandlebarsEnvironment(HandlebarsConfiguration configuration)
         {
             Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
 
-        public Action<TextWriter, object> CompileWriterView(string templatePath)
+        public Action<TextWriter, object> CompileView(string templatePath, ViewReaderFactory readerFactoryFactory)
         {
-            return CompileViewInternal(templatePath);
+            readerFactoryFactory = readerFactoryFactory ?? ViewReaderFactory;
+            return CompileViewInternal(templatePath, readerFactoryFactory);
         }
+
         public Func<object,string> CompileView(string templatePath)
         {
-            var view = CompileViewInternal(templatePath);
+            var view = CompileViewInternal(templatePath, ViewReaderFactory);
             return (vm) =>
             {
                 using (var writer = new PolledStringWriter(Configuration.FormatProvider))
@@ -29,7 +50,7 @@ namespace HandlebarsDotNet
             };
         }
 
-        private Action<TextWriter, object> CompileViewInternal(string templatePath)
+        private Action<TextWriter, object> CompileViewInternal(string templatePath, ViewReaderFactory readerFactoryFactory)
         {
             var configuration = new InternalHandlebarsConfiguration(Configuration);
             var createdFeatures = configuration.Features;
@@ -37,10 +58,10 @@ namespace HandlebarsDotNet
             {
                 createdFeatures[index].OnCompiling(configuration);
             }
-            
+
             var compiler = new HandlebarsCompiler(configuration);
-            var compiledView = compiler.CompileView(templatePath, configuration);
-            
+            var compiledView = compiler.CompileView(readerFactoryFactory, templatePath, configuration);
+    
             for (var index = 0; index < createdFeatures.Count; index++)
             {
                 createdFeatures[index].CompilationCompleted();

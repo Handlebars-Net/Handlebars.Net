@@ -28,14 +28,15 @@ namespace HandlebarsDotNet
         /// <param name="templatePath"></param>
         /// <returns></returns>
         Func<object, string> CompileView(string templatePath);
-
+        
         /// <summary>
         /// 
         /// </summary>
         /// <param name="templatePath"></param>
+        /// <param name="readerFactoryFactory">Can be null</param>
         /// <returns></returns>
-        Action<TextWriter, object> CompileWriterView(string templatePath);
-
+        Action<TextWriter, object> CompileView(string templatePath, ViewReaderFactory readerFactoryFactory);
+        
         /// <summary>
         /// 
         /// </summary>
