@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using HandlebarsDotNet.Compiler.Structure.Path;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -11,6 +12,12 @@ namespace HandlebarsDotNet.Compiler
 	    public UndefinedBindingResult(string value, ICompiledHandlebarsConfiguration configuration)
 	    {
 		    Value = value;
+		    _configuration = configuration;
+	    }
+	    
+	    public UndefinedBindingResult(ChainSegment value, ICompiledHandlebarsConfiguration configuration)
+	    {
+		    Value = value.Value;
 		    _configuration = configuration;
 	    }
 

@@ -5,30 +5,57 @@ using HandlebarsDotNet.Polyfills;
 namespace HandlebarsDotNet.Compiler.Structure.Path
 {
     [DebuggerDisplay("{Value}")]
-    internal struct ChainSegment
+    internal struct ChainSegment : IEquatable<ChainSegment>
     {
-        public static ChainSegment Create(string value)
+        public ChainSegment(string value)
         {
             var segmentValue = string.IsNullOrEmpty(value) ? "this" : value.TrimStart('@').Intern();
             var segmentTrimmedValue = TrimSquareBrackets(segmentValue).Intern();
 
-            return new ChainSegment
-            {
-                IsThis = string.IsNullOrEmpty(value) || string.Equals(value, "this", StringComparison.OrdinalIgnoreCase),
-                Value = segmentValue,
-                IsVariable = !string.IsNullOrEmpty(value) && value.StartsWith("@"),
-                TrimmedValue = segmentTrimmedValue,
-                LowerInvariant = segmentTrimmedValue.ToLowerInvariant().Intern()
-            };
+            IsThis = string.IsNullOrEmpty(value) || string.Equals(value, "this", StringComparison.OrdinalIgnoreCase);
+            Value = segmentValue;
+            IsVariable = !string.IsNullOrEmpty(value) && value.StartsWith("@");
+            TrimmedValue = segmentTrimmedValue;
+            LowerInvariant = segmentTrimmedValue.ToLowerInvariant().Intern();
         }
 
-        public string Value { get; private set; }
-        public string LowerInvariant { get; private set; }
-        public string TrimmedValue { get; private set; }
-        public bool IsVariable { get; private set; }
-        public bool IsThis { get; private set; }
+        public readonly string Value;
+        public readonly string LowerInvariant;
+        public readonly string TrimmedValue;
+        public readonly bool IsVariable;
+        public readonly bool IsThis;
 
-        private static string TrimSquareBrackets(string key)
+        public override string ToString()
+        {
+            return Value;
+        }
+
+        public bool Equals(ChainSegment other)
+        {
+            return Value == other.Value;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is ChainSegment other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return Value != null ? Value.GetHashCode() : 0;
+        }
+
+        public static bool operator ==(ChainSegment a, ChainSegment b)
+        {
+            return a.Equals(b);
+        }
+        
+        public static bool operator !=(ChainSegment a, ChainSegment b)
+        {
+            return !a.Equals(b);
+        }
+
+        public static string TrimSquareBrackets(string key)
         {
             //Only trim a single layer of brackets.
             if (key.StartsWith("[") && key.EndsWith("]"))

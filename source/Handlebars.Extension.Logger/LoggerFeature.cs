@@ -37,9 +37,11 @@ namespace HandlebarsDotNet.Extension.Logger
         {
             var logLevel = LoggingLevel.Info;
             var formatter = _defaultFormatter;
-            
+
+            var logArguments = arguments;
             if (arguments.Last() is IDictionary<string, object> hash)
             {
+                logArguments = arguments.Take(arguments.Length - 1).ToArray();
                 if(hash.TryGetValue("level", out var level))
                 {
                     if(Enum.TryParse<LoggingLevel>(level.ToString(), true, out var hbLevel))
@@ -50,11 +52,15 @@ namespace HandlebarsDotNet.Extension.Logger
 
                 if (hash.TryGetValue("format", out var format))
                 {
-                    formatter = objects => string.Format(format.ToString(), arguments);
+                    var formatString = format.ToString()
+                        .Replace("[", "{")
+                        .Replace("]", "}");
+                    
+                    formatter = objects => string.Format(formatString, objects);
                 }
             }
 
-            _logger(arguments, logLevel, formatter);
+            _logger(logArguments, logLevel, formatter);
             
             return string.Empty;
         }

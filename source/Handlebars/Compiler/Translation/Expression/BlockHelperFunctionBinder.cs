@@ -152,7 +152,7 @@ namespace HandlebarsDotNet.Compiler
                     return;
                 }
 
-                var segment = ChainSegment.Create(helperName);
+                var segment = new ChainSegment(helperName);
                 bindingContext.TryGetContextVariable(ref segment, out var value);
                 DeferredSectionBlockHelper.Helper(bindingContext, helperPrefix, value, body, inverse, blockParamsValueProvider);
             }

@@ -29,13 +29,8 @@ namespace HandlebarsDotNet.Compiler
             return Pool.CreateContext(configuration, value, writer, parent, templatePath, partialBlockTemplate, inlinePartialTemplates);
         }
 
-        private BindingContext(InternalHandlebarsConfiguration configuration, object value, EncodedTextWriter writer, BindingContext parent)
+        private BindingContext()
         {
-            Configuration = configuration;
-            TextWriter = writer;
-            Value = value;
-            ParentContext = parent;
-
             RegisterValueProvider(new BindingContextValueProvider(this));
         }
 
@@ -208,7 +203,7 @@ namespace HandlebarsDotNet.Compiler
             {
                 public BindingContext Create()
                 {
-                    return new BindingContext((InternalHandlebarsConfiguration) null, (object) null, (EncodedTextWriter) null, (BindingContext) null);
+                    return new BindingContext();
                 }
 
                 public bool Return(BindingContext item)

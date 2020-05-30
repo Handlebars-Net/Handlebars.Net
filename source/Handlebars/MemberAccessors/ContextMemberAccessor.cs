@@ -9,7 +9,7 @@ namespace HandlebarsDotNet.MemberAccessors
         public bool TryGetValue(object instance, Type instanceType, string memberName, out object value)
         {
             var bindingContext = (BindingContext) instance;
-            var segment = ChainSegment.Create(memberName);
+            var segment = new ChainSegment(memberName);
             return bindingContext.TryGetContextVariable(ref segment, out value);
         }
     }

@@ -16,7 +16,7 @@ namespace HandlebarsDotNet
         
         public bool TryGetMemberByAlias(object instance, Type targetType, string memberAlias, out object value)
         {
-            var segment = ChainSegment.Create(memberAlias);
+            var segment = new ChainSegment(memberAlias);
             switch (instance)
             {
                 case Array array:
@@ -50,7 +50,7 @@ namespace HandlebarsDotNet
                         return false;
                     }
 
-                    var properties = descriptor.GetProperties(enumerable);
+                    var properties = descriptor.GetProperties(descriptor, enumerable);
                     var property = properties.FirstOrDefault(o =>
                     {
                         var name = o.ToString().ToLowerInvariant();

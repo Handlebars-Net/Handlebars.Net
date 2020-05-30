@@ -5,56 +5,62 @@ using System.Linq;
 using System.Reflection;
 using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.MemberAccessors;
+using HandlebarsDotNet.Polyfills;
 
 namespace HandlebarsDotNet.ObjectDescriptors
 {
     internal sealed class GenericDictionaryObjectDescriptorProvider : IObjectDescriptorProvider
     {
-        private static readonly object[] EmptyArray = new object[0];
+        private static readonly MethodInfo CreateDescriptorMethodInfo = typeof(GenericDictionaryObjectDescriptorProvider)
+            .GetMethod(nameof(CreateDescriptor), BindingFlags.NonPublic | BindingFlags.Static);
         
-        private readonly RefLookup<Type, DeferredValue<Type>> _typeCache = new RefLookup<Type, DeferredValue<Type>>();
+        private readonly LookupSlim<Type, DeferredValue<Type, Type>> _typeCache = new LookupSlim<Type, DeferredValue<Type, Type>>();
 
         public bool CanHandleType(Type type)
         {
-            ref var deferredValue = ref _typeCache.GetOrAdd(type, InterfaceTypeValueFactory);
+            var deferredValue = _typeCache.GetOrAdd(type, InterfaceTypeValueFactory);
             return deferredValue.Value != null;
         }
 
         public bool TryGetDescriptor(Type type, out ObjectDescriptor value)
         {
-            value = null;
             var interfaceType = _typeCache.GetOrAdd(type, InterfaceTypeValueFactory).Value;
-            if (interfaceType == null) return false;
-            
-            var descriptorCreator = GetType().GetMethod(nameof(CreateDescriptor), BindingFlags.NonPublic | BindingFlags.Static)
-                ?.MakeGenericMethod(interfaceType.GetGenericArguments());
+            if (interfaceType == null)
+            {
+                value = ObjectDescriptor.Empty;
+                return false;
+            }
 
-            value = (ObjectDescriptor) descriptorCreator?.Invoke(null, EmptyArray);
-            return value != null;
+            var descriptorCreator = CreateDescriptorMethodInfo
+                .MakeGenericMethod(interfaceType.GetGenericArguments());
+                    
+            value = (ObjectDescriptor) descriptorCreator.Invoke(null, ArrayEx.Empty<object>());
+            return true;
         }
-        
-        private static ref DeferredValue<Type> InterfaceTypeValueFactory(Type type, ref DeferredValue<Type> deferredValue)
-        {
-            deferredValue.Factory = () =>
+
+        private static readonly Func<Type, DeferredValue<Type, Type>> InterfaceTypeValueFactory =
+            key => new DeferredValue<Type, Type>(key, type =>
             {
                 return type.GetInterfaces()
                     .Where(i => i.GetTypeInfo().IsGenericType)
                     .Where(i => i.GetGenericTypeDefinition() == typeof(IDictionary<,>))
-                    .FirstOrDefault(i => 
+                    .FirstOrDefault(i =>
                         TypeDescriptor.GetConverter(i.GetGenericArguments()[0]).CanConvertFrom(typeof(string))
                     );
-            };
-            
-            return ref deferredValue;
-        }
+            });
 
         private static ObjectDescriptor CreateDescriptor<T, TV>()
         {
-            return new ObjectDescriptor(typeof(IDictionary<T, TV>))
+            IEnumerable<object> Enumerate(IDictionary<T, TV> o)
             {
-                GetProperties = o => ((IDictionary<T, TV>) o).Keys.Cast<object>(),
-                MemberAccessor = new DictionaryAccessor<T, TV>()
-            };
+                foreach (var key in o.Keys) yield return key;
+            }
+            
+            return new ObjectDescriptor(
+                typeof(IDictionary<T, TV>), 
+                new DictionaryAccessor<T, TV>(),
+                (descriptor, o) => Enumerate((IDictionary<T, TV>) o)
+            );
         }
         
         private class DictionaryAccessor<T, TV> : IMemberAccessor

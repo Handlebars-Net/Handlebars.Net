@@ -10,45 +10,40 @@ namespace HandlebarsDotNet.ObjectDescriptors
     internal class ObjectDescriptorProvider : IObjectDescriptorProvider
     {
         private readonly Type _dynamicMetaObjectProviderType = typeof(IDynamicMetaObjectProvider);
-        private readonly InternalHandlebarsConfiguration _configuration;
-        private readonly RefLookup<Type, DeferredValue<string[]>> _membersCache = new RefLookup<Type, DeferredValue<string[]>>();
+        private readonly LookupSlim<Type, DeferredValue<Type, string[]>> _membersCache = new LookupSlim<Type, DeferredValue<Type, string[]>>();
+        private readonly ReflectionMemberAccessor _reflectionMemberAccessor;
 
         public ObjectDescriptorProvider(InternalHandlebarsConfiguration configuration)
         {
-            _configuration = configuration;
+            _reflectionMemberAccessor = new ReflectionMemberAccessor(configuration);
         }
         
         public bool CanHandleType(Type type)
         {
-            return !_dynamicMetaObjectProviderType.IsAssignableFrom(type) 
-                   && type != typeof(string);
+            return !_dynamicMetaObjectProviderType.IsAssignableFrom(type) && type != typeof(string);
         }
 
         public bool TryGetDescriptor(Type type, out ObjectDescriptor value)
         {
-            ref var members = ref _membersCache.GetOrAdd(type, DescriptorValueFactory);
-            var membersValue = members.Value;
-            
-            value = new ObjectDescriptor(type)
+            value = new ObjectDescriptor(type, _reflectionMemberAccessor, (descriptor, o) =>
             {
-                GetProperties = o => membersValue,
-                MemberAccessor = new ReflectionMemberAccessor(_configuration)
-            };
+                var cache = (LookupSlim<Type, DeferredValue<Type, string[]>>) descriptor.Dependencies[0];
+                return cache.GetOrAdd(descriptor.DescribedType, DescriptorValueFactory).Value;
+            }, dependencies: _membersCache);
 
             return true;
         }
-
-        private static ref DeferredValue<string[]> DescriptorValueFactory(Type type, ref DeferredValue<string[]> deferredValue)
-        {
-            deferredValue.Factory = () =>
+        
+        private static readonly Func<Type, DeferredValue<Type, string[]>> DescriptorValueFactory =
+            key =>
             {
-                var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                    .Where(o => o.CanRead && o.GetIndexParameters().Length == 0);
-                var fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
-                return properties.Cast<MemberInfo>().Concat(fields).Select(o => o.Name).ToArray();
+                return new DeferredValue<Type, string[]>(key, type =>
+                {
+                    var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                        .Where(o => o.CanRead && o.GetIndexParameters().Length == 0);
+                    var fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
+                    return properties.Cast<MemberInfo>().Concat(fields).Select(o => o.Name).ToArray();
+                });
             };
-
-            return ref deferredValue;
-        }
     }
 }

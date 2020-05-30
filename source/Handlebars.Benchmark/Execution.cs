@@ -1,16 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using BenchmarkDotNet.Attributes;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Extension.CompileFast;
 using Newtonsoft.Json.Linq;
-using BenchmarkDotNet.Jobs;
 
 namespace Benchmark
 {
-    [SimpleJob(RuntimeMoniker.NetCoreApp31)]
     public class Execution
     {
         [Params(2, 5, 10)]
@@ -22,7 +21,7 @@ namespace Benchmark
         [Params("object", "dictionary")]
         public string DataType;
         
-        private Func<object, string>[] _templates;
+        private Action<TextWriter, object>[] _templates;
         
         private object _data;
 
@@ -78,11 +77,14 @@ namespace Benchmark
                 var handlebars = methodInfo.Invoke(null, new object[]{ null });
                 var objType = handlebars.GetType();
 
-                var compileMethod = objType.GetMethod("Compile", new[]{typeof(string)});
-                _templates = new[]
+                using (var reader = new StringReader(template))
                 {
-                    (Func<object, string>) compileMethod.Invoke(handlebars, new []{template}),
-                };
+                    var compileMethod = objType.GetMethod("Compile", new[] {typeof(TextReader)});
+                    _templates = new[]
+                    {
+                        (Action<TextWriter, object>) compileMethod.Invoke(handlebars, new[] {reader}),
+                    };
+                }
             }
             else
             {
@@ -93,10 +95,13 @@ namespace Benchmark
                     Handlebars.Configuration.UseCompileFast();
                 }
                 
-                _templates = new[]
+                using (var reader = new StringReader(template))
                 {
-                    Handlebars.Compile(template)
-                };
+                    _templates = new[]
+                    {
+                        Handlebars.Compile(reader)
+                    };
+                }
             }
             
             List<object> ObjectLevel1Generator()
@@ -231,11 +236,11 @@ namespace Benchmark
                 return level;
             }
         }
-
+        
         [Benchmark]
-        public string WithParentIndex()
+        public void Render()
         {
-            return _templates[0].Invoke(_data);
+            _templates[0].Invoke(TextWriter.Null, _data);
         }
     }
 }
