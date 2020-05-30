@@ -39,17 +39,10 @@ namespace HandlebarsDotNet.Compiler
             return action;
         }
 
-        internal Action<TextWriter, object> CompileView(string templatePath,
-            InternalHandlebarsConfiguration configuration)
+        internal Action<TextWriter, object> CompileView(ViewReaderFactory readerFactoryFactory, string templatePath, InternalHandlebarsConfiguration configuration)
         {
-            var fs = _configuration.FileSystem;
-            if (fs == null)
-                throw new InvalidOperationException("Cannot compile view when configuration.FileSystem is not set");
-            var template = fs.GetFileContent(templatePath);
-            if (template == null)
-                throw new InvalidOperationException("Cannot find template at '" + templatePath + "'");
             IEnumerable<object> tokens;
-            using (var sr = new StringReader(template))
+            using (var sr = readerFactoryFactory(configuration, templatePath))
             {
                 using (var reader = new ExtendedStringReader(sr))
                 {
@@ -64,12 +57,13 @@ namespace HandlebarsDotNet.Compiler
             var compiledView = FunctionBuilder.Compile(expressions, configuration, templatePath);
             if (layoutToken == null) return compiledView;
 
+            var fs = configuration.FileSystem;
             var layoutPath = fs.Closest(templatePath, layoutToken.Value + ".hbs");
             if (layoutPath == null)
                 throw new InvalidOperationException("Cannot find layout '" + layoutPath + "' for template '" +
                                                     templatePath + "'");
 
-            var compiledLayout = CompileView(layoutPath, configuration);
+            var compiledLayout = CompileView(readerFactoryFactory, layoutPath, configuration);
 
             return (tw, vm) =>
             {
