@@ -146,6 +146,12 @@ The animal, Fido, is a dog.
 The animal, Chewy, is not a dog.
 */
 ```
+## Extensions
+| Package           | Description | Version |
+|-------------------|---|---|
+| Handlebars.Extension.CompileFast | Uses [FastExpressionCompiler](https://github.com/dadhi/FastExpressionCompiler) to compile templates | [![Nuget](https://img.shields.io/nuget/v/Handlebars.Extension.CompileFast)](https://www.nuget.org/packages/Handlebars.Extension.CompileFast/) |
+| Handlebars.Extension.Logging | Adds logging infrastructure integration via `log` helper | [![Nuget](https://img.shields.io/nuget/v/Handlebars.Extension.Logging)](https://www.nuget.org/packages/Handlebars.Extension.Logging/) |
+
 ## Performance
 
 ### Compilation
