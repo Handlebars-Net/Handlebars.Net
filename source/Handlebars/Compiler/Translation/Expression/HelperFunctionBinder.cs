@@ -23,6 +23,7 @@ namespace HandlebarsDotNet.Compiler
         {
             var helperName = hex.HelperName;
             var bindingContext = ExpressionShortcuts.Arg<BindingContext>(CompilationContext.BindingContext);
+            var contextValue = bindingContext.Property(o => o.Value);
             var textWriter = bindingContext.Property(o => o.TextWriter);
             var arguments = hex.Arguments.Select(o => FunctionBuilder.Reduce(o, CompilationContext));
             var args = ExpressionShortcuts.Array<object>(arguments);
@@ -30,13 +31,13 @@ namespace HandlebarsDotNet.Compiler
             var configuration = CompilationContext.Configuration;
             if (configuration.Helpers.TryGetValue(helperName, out var helper))
             {
-                return ExpressionShortcuts.Call(() => helper(textWriter, bindingContext, args));
+                return ExpressionShortcuts.Call(() => helper(textWriter, contextValue, args));
             }
             
             if (configuration.ReturnHelpers.TryGetValue(helperName, out var returnHelper))
             {
                 return ExpressionShortcuts.Call(() =>
-                    CaptureResult(textWriter, ExpressionShortcuts.Call(() => returnHelper(bindingContext, args)))
+                    CaptureResult(textWriter, ExpressionShortcuts.Call(() => returnHelper(contextValue, args)))
                 );
             }
 
@@ -46,7 +47,7 @@ namespace HandlebarsDotNet.Compiler
                 if (resolver.TryResolveReturnHelper(pureHelperName, typeof(object), out var resolvedHelper))
                 {
                     return ExpressionShortcuts.Call(() =>
-                        CaptureResult(textWriter, ExpressionShortcuts.Call(() => resolvedHelper(bindingContext, args)))
+                        CaptureResult(textWriter, ExpressionShortcuts.Call(() => resolvedHelper(contextValue, args)))
                     );
                 }
             }
