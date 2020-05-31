@@ -12,16 +12,16 @@ jobs:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 3.1.102
+          dotnet-version: 2.1.806
       - name: Build netstandard2.0
         working-directory: ./source
-        run: dotnet build Handlebars.Code.sln -c Release -f netstandard2.0
+        run: dotnet build Handlebars/Handlebars.csproj -c Release -f netstandard2.0
       - name: Build netstandard1.3
         working-directory: ./source
-        run: dotnet build Handlebars.Code.sln -c Release -f netstandard1.3
+        run: dotnet build Handlebars/Handlebars.csproj -c Release -f netstandard1.3
       - name: Build net452
         working-directory: ./source
-        run: dotnet build Handlebars.Code.sln -c Release -f net452
+        run: dotnet build Handlebars/Handlebars.csproj -c Release -f net452
         
 
   test-windows:
@@ -32,10 +32,10 @@ jobs:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 3.1.102
+          dotnet-version: 2.1.806
       - name: Test
         working-directory: ./source
-        run: dotnet test ./Handlebars.Test/Handlebars.Test.csproj -f netcoreapp3.1 --logger:trx
+        run: dotnet test ./Handlebars.Test/Handlebars.Test.csproj -f netcoreapp2.1 --logger:trx
 
 
   test-linux:
@@ -46,10 +46,10 @@ jobs:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 3.1.102
+          dotnet-version: 2.1.806
       - name: Test
         working-directory: ./source
-        run: dotnet test ./Handlebars.Test/Handlebars.Test.csproj -f netcoreapp3.1 --logger:trx
+        run: dotnet test ./Handlebars.Test/Handlebars.Test.csproj -f netcoreapp2.1 --logger:trx
 
 
   test-macos:
@@ -60,10 +60,10 @@ jobs:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 3.1.102
+          dotnet-version: 2.1.806
       - name: Test
         working-directory: ./source
-        run: dotnet test ./Handlebars.Test/Handlebars.Test.csproj -f netcoreapp3.1 --logger:trx
+        run: dotnet test ./Handlebars.Test/Handlebars.Test.csproj -f netcoreapp2.1 --logger:trx
   
   
   sonar-ci:
@@ -74,12 +74,12 @@ jobs:
     - name: Setup dotnet
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 3.1.102
+        dotnet-version: 2.1.806
     - name: Sonarscanner for dotnet
       uses: Secbyte/dotnet-sonarscanner@v2.2
       with:
-        buildCommand: dotnet build source/Handlebars.Code.sln -f netstandard2.0
-        testCommand: dotnet test source/Handlebars.Test/Handlebars.Test.csproj -f netcoreapp3.1 --logger:trx --collect:"XPlat Code Coverage" --settings source/Handlebars.Test/coverlet.runsettings
+        buildCommand: dotnet build source/Handlebars/Handlebars.csproj -f netstandard2.0
+        testCommand: dotnet test source/Handlebars.Test/Handlebars.Test.csproj -f netcoreapp2.1 --logger:trx --collect:"XPlat Code Coverage" --settings source/Handlebars.Test/coverlet.runsettings
         projectKey: zjklee_handlebars.csharp
         projectName: handlebars.csharp
         sonarOrganisation: zjklee
@@ -90,36 +90,5 @@ jobs:
             /d:sonar.cs.vstest.reportsPaths="**/*.trx"
             
       env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_TOKEN: 0a2d91d681b618b29a293e3d1e7e1e9ea82710a2
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        
-        
-  publish:
-    needs: [build,test-windows,test-linux,test-macos,sonar-ci]
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Setup dotnet
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: 3.1.100
-      - name: Fetch
-        run: git fetch --depth 500
-      - name: Determine version
-        run: echo "::set-env name=VERSION::$(git describe --tags --abbrev=0)"
-        
-      - name: Build netstandard2.0
-        working-directory: ./source
-        run: dotnet build Handlebars.Code.sln -c Release -f netstandard2.0
-      - name: Build netstandard1.3
-        working-directory: ./source
-        run: dotnet build Handlebars.Code.sln -c Release -f netstandard1.3
-      - name: Build net452
-        working-directory: ./source
-        run: dotnet build Handlebars.Code.sln -c Release -f net452
-        
-      - name: publish
-        working-directory: ./source
-        run: dotnet pack Handlebars.Code.sln --no-build -c Release  /p:version=${{ env.VERSION }}.${{ github.run_number }}-beta && dotnet nuget push **/*.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json -n true

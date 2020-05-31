@@ -1,5 +1,7 @@
-Handlebars.Net [![Build Status](https://travis-ci.org/rexm/Handlebars.Net.svg?branch=master)](https://travis-ci.org/rexm/Handlebars.Net) [![Nuget](https://img.shields.io/nuget/v/Handlebars.Net)](https://www.nuget.org/packages/Handlebars.Net/)
-==============
+##Handlebars.Net [![Build Status](https://travis-ci.org/rexm/Handlebars.Net.svg?branch=master)](https://travis-ci.org/rexm/Handlebars.Net) [![Nuget](https://img.shields.io/nuget/v/Handlebars.Net)](https://www.nuget.org/packages/Handlebars.Net/) 
+
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=zjklee_handlebars.csharp&metric=alert_status)](https://sonarcloud.io/dashboard?id=zjklee_handlebars.csharp) [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=zjklee_handlebars.csharp&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=zjklee_handlebars.csharp) [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=zjklee_handlebars.csharp&metric=bugs)](https://sonarcloud.io/dashboard?id=zjklee_handlebars.csharp) [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=zjklee_handlebars.csharp&metric=vulnerabilities)](https://sonarcloud.io/dashboard?id=zjklee_handlebars.csharp)
+ ==============
 **[Call for Input on v2](https://github.com/rexm/Handlebars.Net/issues/294)**
 
 Blistering-fast [Handlebars.js templates](http://handlebarsjs.com) in your .NET application.

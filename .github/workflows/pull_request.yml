@@ -12,16 +12,16 @@ jobs:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 3.1.102
+          dotnet-version: 2.1.806
       - name: Build netstandard2.0
         working-directory: ./source
-        run: dotnet build Handlebars.Code.sln -c Release -f netstandard2.0
+        run: dotnet build Handlebars/Handlebars.csproj -c Release -f netstandard2.0
       - name: Build netstandard1.3
         working-directory: ./source
-        run: dotnet build Handlebars.Code.sln -c Release -f netstandard1.3
+        run: dotnet build Handlebars/Handlebars.csproj -c Release -f netstandard1.3
       - name: Build net452
         working-directory: ./source
-        run: dotnet build Handlebars.Code.sln -c Release -f net452
+        run: dotnet build Handlebars/Handlebars.csproj -c Release -f net452
   
   test-windows:
     runs-on: windows-latest
@@ -31,10 +31,10 @@ jobs:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 3.1.102
+          dotnet-version: 2.1.806
       - name: Test
         working-directory: ./source
-        run: dotnet test ./Handlebars.Test/Handlebars.Test.csproj -f netcoreapp3.1 --logger:trx
+        run: dotnet test ./Handlebars.Test/Handlebars.Test.csproj -f netcoreapp2.1 --logger:trx
 
   test-linux:
     runs-on: ubuntu-latest
@@ -44,10 +44,10 @@ jobs:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 3.1.102
+          dotnet-version: 2.1.806
       - name: Test
         working-directory: ./source
-        run: dotnet test ./Handlebars.Test/Handlebars.Test.csproj -f netcoreapp3.1 --logger:trx
+        run: dotnet test ./Handlebars.Test/Handlebars.Test.csproj -f netcoreapp2.1 --logger:trx
         
   test-macos:
     runs-on: macos-latest
@@ -57,10 +57,10 @@ jobs:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 3.1.102
+          dotnet-version: 2.1.806
       - name: Test
         working-directory: ./source
-        run: dotnet test ./Handlebars.Test/Handlebars.Test.csproj -f netcoreapp3.1 --logger:trx
+        run: dotnet test ./Handlebars.Test/Handlebars.Test.csproj -f netcoreapp2.1 --logger:trx
   
   sonar-pr:
     runs-on: ubuntu-latest
@@ -70,8 +70,8 @@ jobs:
     - name: Sonarscanner for dotnet
       uses: Secbyte/dotnet-sonarscanner@v2.2
       with:
-        buildCommand: dotnet build source/Handlebars.Code.sln -f netstandard2.0 -c Release
-        testCommand: dotnet test source/Handlebars.Test/Handlebars.Test.csproj -f netcoreapp3.1 --logger:trx --collect:"XPlat Code Coverage" --settings source/Handlebars.Test/coverlet.runsettings
+        buildCommand: dotnet build source/Handlebars/Handlebars.csproj -f netstandard2.0
+        testCommand: dotnet test source/Handlebars.Test/Handlebars.Test.csproj -f netcoreapp2.1 --logger:trx --collect:"XPlat Code Coverage" --settings source/Handlebars.Test/coverlet.runsettings
         projectKey: zjklee_handlebars.csharp
         projectName: handlebars.csharp
         sonarOrganisation: zjklee
