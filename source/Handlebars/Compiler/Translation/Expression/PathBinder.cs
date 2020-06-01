@@ -27,21 +27,32 @@ namespace HandlebarsDotNet.Compiler
         {
             if (sex.Body is PathExpression)
             {
-#if netstandard
-                var writeMethod = typeof(TextWriter).GetRuntimeMethod("Write", new [] { typeof(object) });
-#else
-                var writeMethod = typeof(TextWriter).GetMethod("Write", new[] { typeof(object) });
-#endif
                 return Expression.Call(
-                    Expression.Property(
-                        CompilationContext.BindingContext,
-                        "TextWriter"),
-                    writeMethod, Visit(sex.Body));
+                    Expression.Constant(this),
+#if netstandard
+                    new Action<BindingContext, string>(WriteLateBoundHelperResultOrResolvedPath).GetMethodInfo(),
+#else
+                    new Action<BindingContext, string>(WriteLateBoundHelperResultOrResolvedPath).Method,
+#endif
+                    CompilationContext.BindingContext,
+                    Expression.Constant(((PathExpression) sex.Body).Path));
             }
             else
             {
                 return Visit(sex.Body);
             }
+        }
+
+        private void WriteLateBoundHelperResultOrResolvedPath(BindingContext bindingContext, string path)
+        {
+            var writer = bindingContext.TextWriter;
+
+            if (HelperFunctionBinder.TryInvokeLateBoundHelper(CompilationContext, writer, bindingContext, path, new object[] { }))
+            {
+                return;
+            }
+
+            writer.Write(ResolvePath(bindingContext, path));
         }
 
         protected override Expression VisitPathExpression(PathExpression pex)
@@ -103,25 +114,19 @@ namespace HandlebarsDotNet.Compiler
                             }
 
                             list[list.Count - 1] = list[list.Count - 1] + "." + next;
-                            return list;
                         }
                         else
                         {
-                            if (next.StartsWith("["))
+                            if (next.StartsWith("[") && !next.EndsWith("]"))
                             {
                                 insideEscapeBlock = true;
                             }
 
-                            if (next.EndsWith("]"))
-                            {
-                                insideEscapeBlock = false;
-                            }
-                            
                             list.Add(next);
-                            return list;
                         }
+                        return list;
                     });
-                    
+
                     foreach (var memberName in pathChain)
                     {
                         instance = ResolveValue(context, instance, memberName);
@@ -172,12 +177,12 @@ namespace HandlebarsDotNet.Compiler
         }
 
         private static readonly Regex IndexRegex = new Regex(@"^\[?(?<index>\d+)\]?$", RegexOptions.None);
-        
+
         private object AccessMember(object instance, string memberName)
         {
             if (instance == null)
                 return new UndefinedBindingResult(memberName, CompilationContext.Configuration);
-            
+
             var resolvedMemberName = ResolveMemberName(instance, memberName);
             var instanceType = instance.GetType();
 

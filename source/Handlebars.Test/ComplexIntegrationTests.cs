@@ -90,6 +90,36 @@ namespace HandlebarsDotNet.Test
             Assert.Equal("<a href='http://google.com/'>Google</a><a href='http://yahoo.com/'>Yahoo!</a>", result);
         }
 
+        // the helper has priority
+        // https://handlebarsjs.com/guide/expressions.html#disambiguating-helpers-calls-and-property-lookup
+        [Fact]
+        public void HelperWithSameNameVariable()
+        {
+            Handlebars.RegisterHelper("foo", (writer, context, arguments) =>
+            {
+                writer.Write("Helper");
+            });
+
+            var template = Handlebars.Compile("{{foo}}");
+            var result = template(new { foo = "Variable" });
+            Assert.Equal("Helper", result);
+        }
+
+        [Fact]
+        public void LateBoundHelperWithSameNameVariable()
+        {
+            var template = Handlebars.Compile("{{amoeba}}");
+
+            Assert.Equal("Variable", template(new { amoeba = "Variable" }));
+
+            Handlebars.RegisterHelper("amoeba", (writer, context, arguments) =>
+            {
+                writer.Write("Helper");
+            });
+
+            Assert.Equal("Helper", template(new { amoeba = "Variable" }));
+        }
+
         [Fact]
         public void BlockHelperWithSameNameVariable()
         {

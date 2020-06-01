@@ -6,6 +6,9 @@ namespace HandlebarsDotNet
     public delegate void HandlebarsHelper(TextWriter output, dynamic context, params object[] arguments);
     public delegate void HandlebarsBlockHelper(TextWriter output, HelperOptions options, dynamic context, params object[] arguments);
 
+    // a HandlebarsHelper that also stores the name of the helper for later use
+    internal delegate void HandlebarsHelperWithName(TextWriter output, dynamic context, string name, params object[] arguments);
+
     public sealed partial class Handlebars
     {
         // Lazy-load Handlebars environment to ensure thread safety.  See Jon Skeet's excellent article on this for more info. http://csharpindepth.com/Articles/General/Singleton.aspx
