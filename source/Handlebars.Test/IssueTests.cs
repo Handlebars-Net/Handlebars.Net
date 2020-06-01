@@ -1,4 +1,7 @@
+using System;
 using System.Dynamic;
+using HandlebarsDotNet.Features;
+using HandlebarsDotNet.Helpers;
 using Xunit;
 
 namespace HandlebarsDotNet.Test
@@ -30,6 +33,32 @@ namespace HandlebarsDotNet.Test
 
             var actual = render(data);
             Assert.Equal("It's null", actual);
+        }
+
+        // Issue https://github.com/rexm/Handlebars.Net/issues/350
+        // the helper has priority
+        // https://handlebarsjs.com/guide/expressions.html#disambiguating-helpers-calls-and-property-lookup
+        [Fact]
+        public void HelperWithSameNameVariable()
+        {
+            Handlebars.RegisterHelper("foo", (writer, context, arguments) => { writer.Write("Helper"); });
+
+            var template = Handlebars.Compile("{{foo}}");
+            var result = template(new {foo = "Variable"});
+            Assert.Equal("Helper", result);
+        }
+
+        // Issue https://github.com/rexm/Handlebars.Net/issues/350
+        [Fact]
+        public void LateBoundHelperWithSameNameVariable()
+        {
+            var template = Handlebars.Compile("{{amoeba}}");
+
+            Assert.Equal("Variable", template(new {amoeba = "Variable"}));
+
+            Handlebars.RegisterHelper("amoeba", (writer, context, arguments) => { writer.Write("Helper"); });
+
+            Assert.Equal("Helper", template(new {amoeba = "Variable"}));
         }
     }
 }

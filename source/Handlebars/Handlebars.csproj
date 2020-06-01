@@ -80,7 +80,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="ExpressionShortcuts" Version="1.0.4.32" PrivateAssets="All" />
+    <PackageReference Include="ExpressionShortcuts" Version="1.0.4.35" PrivateAssets="All" />
   </ItemGroup>
   
 </Project>

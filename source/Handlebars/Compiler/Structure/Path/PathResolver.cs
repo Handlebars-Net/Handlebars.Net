@@ -11,20 +11,24 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
         public static PathInfo GetPathInfo(string path)
         {
             if (path == "null")
-                return new PathInfo(false, path, null, null);
+                return new PathInfo(false, path, false, null, null);
 
             var originalPath = path;
-            
+
+            var isValidHelperLiteral = true;
             var isVariable = path.StartsWith("@");
             var isInversion = path.StartsWith("^");
-            var isHelper = path.StartsWith("#");
-            if (isVariable || isHelper || isInversion)
+            var isBlockHelper = path.StartsWith("#");
+            if (isVariable || isBlockHelper || isInversion)
             {
+                isValidHelperLiteral = false;
                 path = path.Substring(1);
             }
 
             var segments = new List<PathSegment>();
-            foreach (var segment in path.Split('/'))
+            var pathParts = path.Split('/');
+            if (pathParts.Length > 1) isValidHelperLiteral = false;
+            foreach (var segment in pathParts)
             {
                 if (segment == "..")
                 {
@@ -34,6 +38,7 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
                 
                 var segmentString = isVariable ? "@" + segment : segment;
                 var chainSegments = GetPathChain(segmentString).ToArray();
+                if (chainSegments.Length > 1) isValidHelperLiteral = false;
                 ProcessPathChain chainDelegate;
                 switch (chainSegments.Length)
                 {
@@ -45,8 +50,8 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
                     default: chainDelegate = ProcessPathChain_Generic; break;
                         
                 }
-                segments.Add(new PathSegment(segmentString, chainSegments, false, chainDelegate));
                 
+                segments.Add(new PathSegment(segmentString, chainSegments, false, chainDelegate));
             }
 
             ProcessSegment @delegate;
@@ -60,7 +65,7 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
                 default: @delegate = ProcessSegment_Generic; break;
             }
             
-            return new PathInfo(true, originalPath, segments.ToArray(), @delegate);
+            return new PathInfo(true, originalPath, isValidHelperLiteral, segments.ToArray(), @delegate);
         }
         
         

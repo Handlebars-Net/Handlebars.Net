@@ -6,18 +6,26 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
     
     internal struct PathInfo : IEquatable<PathInfo>
     {
-        public PathInfo(bool hasValue, string path, PathSegment[] segments, ProcessSegment processSegment)
+        public PathInfo(
+            bool hasValue, 
+            string path, 
+            bool isValidHelperLiteral, 
+            PathSegment[] segments,
+            ProcessSegment processSegment
+        )
         {
+            IsValidHelperLiteral = isValidHelperLiteral;
             HasValue = hasValue;
             Path = path;
             IsVariable = path.StartsWith("@");
             IsInversion = path.StartsWith("^");
-            IsHelper = path.StartsWith("#");
+            IsBlockHelper = path.StartsWith("#");
             Segments = segments;
             ProcessSegment = processSegment;
         }
 
-        public readonly bool IsHelper;
+        public readonly bool IsBlockHelper;
+        public bool IsValidHelperLiteral;
         public readonly bool IsInversion;
         public readonly bool HasValue;
         public readonly string Path;
@@ -28,7 +36,7 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
 
         public bool Equals(PathInfo other)
         {
-            return IsHelper == other.IsHelper && 
+            return IsBlockHelper == other.IsBlockHelper && 
                    IsInversion == other.IsInversion && 
                    HasValue == other.HasValue && IsVariable == other.IsVariable && 
                    Path == other.Path;
