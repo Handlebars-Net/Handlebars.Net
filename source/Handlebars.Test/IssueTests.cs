@@ -1,7 +1,4 @@
-using System;
 using System.Dynamic;
-using HandlebarsDotNet.Features;
-using HandlebarsDotNet.Helpers;
 using Xunit;
 
 namespace HandlebarsDotNet.Test
@@ -41,24 +38,46 @@ namespace HandlebarsDotNet.Test
         [Fact]
         public void HelperWithSameNameVariable()
         {
-            Handlebars.RegisterHelper("foo", (writer, context, arguments) => { writer.Write("Helper"); });
+            var handlebars = Handlebars.Create();
+            var expected = "Helper";
+            handlebars.RegisterHelper("foo", (context, arguments) => expected);
 
-            var template = Handlebars.Compile("{{foo}}");
-            var result = template(new {foo = "Variable"});
-            Assert.Equal("Helper", result);
+            var template = handlebars.Compile("{{foo}}");
+            var data = new {foo = "Variable"};
+            var actual = template(data);
+            Assert.Equal(expected, actual);
         }
 
         // Issue https://github.com/rexm/Handlebars.Net/issues/350
         [Fact]
         public void LateBoundHelperWithSameNameVariable()
         {
-            var template = Handlebars.Compile("{{amoeba}}");
+            var handlebars = Handlebars.Create();
+            var template = handlebars.Compile("{{amoeba}}");
 
             Assert.Equal("Variable", template(new {amoeba = "Variable"}));
 
-            Handlebars.RegisterHelper("amoeba", (writer, context, arguments) => { writer.Write("Helper"); });
+            handlebars.RegisterHelper("amoeba", (writer, context, arguments) => { writer.Write("Helper"); });
 
             Assert.Equal("Helper", template(new {amoeba = "Variable"}));
+        }
+        
+        // Issue https://github.com/rexm/Handlebars.Net/issues/350
+        [Fact]
+        public void LateBoundHelperWithSameNameVariablePath()
+        {
+            var handlebars = Handlebars.Create();
+            var expected = "Variable";
+            var template = handlebars.Compile("{{amoeba.a}}");
+            var data = new {amoeba = new {a = expected}};
+            
+            var actual = template(data);
+            Assert.Equal(expected, actual);
+
+            handlebars.RegisterHelper("amoeba", (context, arguments) => "Helper");
+            
+            actual = template(data);
+            Assert.Equal(expected, actual);
         }
     }
 }
