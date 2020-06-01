@@ -2,6 +2,7 @@ using Xunit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using HandlebarsDotNet.Features;
 
 namespace HandlebarsDotNet.Test
 {
@@ -143,6 +144,207 @@ namespace HandlebarsDotNet.Test
             var output = template(null);
 
             Assert.Equal(string.Empty, output);
+        }
+        
+        [Theory]
+        [InlineData("missing")]
+        [InlineData("[missing]")]
+        [InlineData("[$missing]")]
+        [InlineData("[m.i.s.s.i.n.g]")]
+        public void MissingHelperHook(string helperName)
+        {
+            var handlebars = Handlebars.Create();
+            var format = "Missing helper: {0}";
+            handlebars.Configuration
+                .RegisterMissingHelperHook(
+                    (context, arguments) =>
+                    {
+                        var name = arguments.Last().ToString();
+                        return string.Format(format, name.Trim('[', ']'));
+                    });
+
+            var source = "{{"+ helperName +"}}";
+
+            var template = handlebars.Compile(source);
+            
+            var output = template(null);
+
+            var expected = string.Format(format, helperName.Trim('[', ']'));
+            Assert.Equal(expected, output);
+        }
+        
+        [Fact]
+        public void MissingHelperHookViaFeatureAndMethod()
+        {
+            var expected = "Hook";
+            var handlebars = Handlebars.Create();
+            handlebars.Configuration
+                .RegisterMissingHelperHook(
+                    (context, arguments) => expected
+                );
+
+            handlebars.RegisterHelper("helperMissing", 
+                (context, arguments) => "Should be ignored"
+            );
+            
+            var source = "{{missing}}";
+            var template = handlebars.Compile(source);
+            
+            var output = template(null);
+            
+            Assert.Equal(expected, output);
+        }
+        
+        [Theory]
+        [InlineData("missing")]
+        [InlineData("[missing]")]
+        [InlineData("[$missing]")]
+        [InlineData("[m.i.s.s.i.n.g]")]
+        public void MissingHelperHookLog(string helperName)
+        {
+            var logs = new List<string>();
+            var handlebars = Handlebars.Create();
+            var format = "Missing helper: {0}";
+            handlebars.Configuration
+                .RegisterMissingHelperHook(
+                    log: (_, arguments) =>
+                    {
+                        var name = arguments.Last().ToString();
+                        logs.Add(string.Format(format, name.Trim('[', ']')));
+                    });
+
+            var source = "{{"+ helperName +"}}";
+
+            var template = handlebars.Compile(source);
+            
+            template(null);
+
+            var expected = string.Format(format, helperName.Trim('[', ']'));
+            Assert.Equal(expected, Assert.Single(logs));
+        }
+        
+        [Theory]
+        [InlineData("missing")]
+        [InlineData("[missing]")]
+        [InlineData("[$missing]")]
+        [InlineData("[m.i.s.s.i.n.g]")]
+        public void MissingHelperHookLogViaHelper(string helperName)
+        {
+            var logs = new List<string>();
+            var handlebars = Handlebars.Create();
+            var format = "Missing helper: {0}";
+            handlebars.RegisterHelper("log", (context, arguments) =>
+            {
+                var name = arguments[0].ToString();
+                logs.Add(string.Format(format, name.Trim('[', ']')));
+                return string.Empty;
+            });
+
+            var source = "{{"+ helperName +"}}";
+
+            var template = handlebars.Compile(source);
+            
+            template(null);
+
+            var expected  = string.Format(format, helperName.Trim('[', ']'));
+            Assert.Equal(expected, Assert.Single(logs));
+        }
+        
+        [Theory]
+        [InlineData("missing")]
+        [InlineData("[missing]")]
+        [InlineData("[$missing]")]
+        [InlineData("[m.i.s.s.i.n.g]")]
+        public void MissingHelperHookViaHelperRegistration(string helperName)
+        {
+            var handlebars = Handlebars.Create();
+            var format = "Missing helper: {0}";
+            handlebars.RegisterHelper("helperMissing", (context, arguments) =>
+            {
+                var name = arguments.Last().ToString();
+                return string.Format(format, name.Trim('[', ']'));
+            });
+
+            var source = "{{"+ helperName +"}}";
+
+            var template = handlebars.Compile(source);
+            
+            var output = template(null);
+
+            var expected = string.Format(format, helperName.Trim('[', ']'));
+            Assert.Equal(expected, output);
+        }
+        
+        [Theory]
+        [InlineData("missing")]
+        [InlineData("[missing]")]
+        [InlineData("[$missing]")]
+        [InlineData("[m.i.s.s.i.n.g]")]
+        public void MissingBlockHelperHook(string helperName)
+        {
+            var handlebars = Handlebars.Create();
+            var format = "Missing block helper: {0}";
+            handlebars.Configuration
+                .RegisterMissingHelperHook(
+                    (context, arguments) =>
+                    {
+                        var name = arguments.Last().ToString();
+                        return string.Format(format, name.Trim('[', ']'));
+                    });
+
+            var source = "{{#"+ helperName +"}}should not appear{{/" + helperName + "}}";
+
+            var template = handlebars.Compile(source);
+            
+            var output = template(null);
+
+            var expected = string.Format(format, helperName.Trim('[', ']'));
+            Assert.Equal(expected, output);
+        }
+        
+        [Theory]
+        [InlineData("missing")]
+        [InlineData("[missing]")]
+        [InlineData("[$missing]")]
+        [InlineData("[m.i.s.s.i.n.g]")]
+        public void MissingBlockHelperHookViaHelperRegistration(string helperName)
+        {
+            var handlebars = Handlebars.Create();
+            var format = "Missing block helper: {0}";
+            handlebars.RegisterHelper("helperMissing", (context, arguments) =>
+            {
+                var name = arguments.Last().ToString();
+                return string.Format(format, name.Trim('[', ']'));
+            });
+
+            var source = "{{#"+ helperName +"}}should not appear{{/" + helperName + "}}";
+
+            var template = handlebars.Compile(source);
+            
+            var output = template(null);
+
+            var expected = string.Format(format, helperName.Trim('[', ']'));
+            Assert.Equal(expected, output);
+        }
+        
+        [Fact]
+        public void MissingHelperHookWhenVariableExists()
+        {
+            var handlebars = Handlebars.Create();
+            var expected = "Variable";
+            
+            handlebars.Configuration
+                .RegisterMissingHelperHook(
+                    (context, arguments) => "Hook"
+                );
+
+            var source = "{{missing}}";
+
+            var template = Handlebars.Compile(source);
+            
+            var output = template(new { missing = "Variable" });
+            
+            Assert.Equal(expected, output);
         }
 
         [Fact]
