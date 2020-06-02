@@ -83,6 +83,67 @@ namespace HandlebarsDotNet.Test
 
             Assert.Equal(expected, output);
         }
+        
+        [Fact]
+        public void HelperLateBound()
+        {
+            var source = "{{lateHelper}}";
+
+            var template = Handlebars.Compile(source);
+
+            var expected = "late";
+            Handlebars.RegisterHelper("lateHelper", (writer, context, arguments) =>
+            {
+                writer.WriteSafeString(expected);
+            });
+            
+            var output = template(null);
+
+            Assert.Equal(expected, output);
+        }
+        
+        [Theory]
+        [InlineData("[$lateHelper]")]
+        [InlineData("[late.Helper]")]
+        [InlineData("[@lateHelper]")]
+        public void HelperEscapedLateBound(string helperName)
+        {
+            var handlebars = Handlebars.Create();
+
+            var source = "{{" + helperName + "}}";
+
+            var template = handlebars.Compile(source);
+
+            var expected = "late";
+            handlebars.RegisterHelper(helperName.Trim('[', ']'), (writer, context, arguments) =>
+            {
+                writer.WriteSafeString(expected);
+            });
+            
+            var output = template(null);
+
+            Assert.Equal(expected, output);
+        }
+        
+        [Theory]
+        [InlineData("{{lateHelper.a}}")]
+        [InlineData("{{[lateHelper].a}}")]
+        [InlineData("{{[lateHelper.a]}}")]
+        public void WrongHelperLiteralLateBound(string source)
+        {
+            var handlebars = Handlebars.Create();
+
+            var template = handlebars.Compile(source);
+            
+            handlebars.RegisterHelper("lateHelper", (writer, context, arguments) =>
+            {
+                writer.WriteSafeString("should not appear");
+            });
+            
+            var output = template(null);
+
+            Assert.Equal(string.Empty, output);
+        }
 
         [Fact]
         public void HelperWithLiteralArgumentsWithQuotes()

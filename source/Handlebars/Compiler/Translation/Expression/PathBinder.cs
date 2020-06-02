@@ -1,6 +1,8 @@
 using System.Linq.Expressions;
 using Expressions.Shortcuts;
 using HandlebarsDotNet.Compiler.Structure.Path;
+using HandlebarsDotNet.Polyfills;
+using static Expressions.Shortcuts.ExpressionShortcuts;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -17,17 +19,32 @@ namespace HandlebarsDotNet.Compiler
         {
             if (!(sex.Body is PathExpression)) return Visit(sex.Body);
             
-            var context = ExpressionShortcuts.Arg<BindingContext>(CompilationContext.BindingContext);
-            var value = ExpressionShortcuts.Arg<object>(Visit(sex.Body));
+            var context = Arg<BindingContext>(CompilationContext.BindingContext);
+            var value = Arg<object>(Visit(sex.Body));
             return context.Call(o => o.TextWriter.Write(value));
         }
 
         protected override Expression VisitPathExpression(PathExpression pex)
         {
-            var context = ExpressionShortcuts.Arg<BindingContext>(CompilationContext.BindingContext);
-            var pathInfo = pex.PathInfo;
+            var context = Arg<BindingContext>(CompilationContext.BindingContext);
+            var pathInfo = CompilationContext.Configuration.Paths.GetOrAdd(pex.Path);
 
-            return ExpressionShortcuts.Call(() => PathResolver.ResolvePath(context, ref pathInfo));
+            var resolvePath = Call(() => PathResolver.ResolvePath(context, ref pathInfo));
+
+            if (!pathInfo.IsValidHelperLiteral) return resolvePath;
+            
+            var helperName = pathInfo.Segments[0].PathChain[0].TrimmedValue;
+            var tryBoundHelper = Call(() =>
+                HelperFunctionBinder.TryLateBindHelperExpression(context, helperName, ArrayEx.Empty<object>())
+            );
+                
+            return Block()
+                .Parameter<ResultHolder>(out var result, tryBoundHelper)
+                .Line(Condition()
+                    .If(result.Member(o => o.Success))
+                    .Then(result.Member(o => o.Value))
+                    .Else(resolvePath)
+                );
         }
     }
 }

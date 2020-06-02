@@ -31,5 +31,53 @@ namespace HandlebarsDotNet.Test
             var actual = render(data);
             Assert.Equal("It's null", actual);
         }
+
+        // Issue https://github.com/rexm/Handlebars.Net/issues/350
+        // the helper has priority
+        // https://handlebarsjs.com/guide/expressions.html#disambiguating-helpers-calls-and-property-lookup
+        [Fact]
+        public void HelperWithSameNameVariable()
+        {
+            var handlebars = Handlebars.Create();
+            var expected = "Helper";
+            handlebars.RegisterHelper("foo", (context, arguments) => expected);
+
+            var template = handlebars.Compile("{{foo}}");
+            var data = new {foo = "Variable"};
+            var actual = template(data);
+            Assert.Equal(expected, actual);
+        }
+
+        // Issue https://github.com/rexm/Handlebars.Net/issues/350
+        [Fact]
+        public void LateBoundHelperWithSameNameVariable()
+        {
+            var handlebars = Handlebars.Create();
+            var template = handlebars.Compile("{{amoeba}}");
+
+            Assert.Equal("Variable", template(new {amoeba = "Variable"}));
+
+            handlebars.RegisterHelper("amoeba", (writer, context, arguments) => { writer.Write("Helper"); });
+
+            Assert.Equal("Helper", template(new {amoeba = "Variable"}));
+        }
+        
+        // Issue https://github.com/rexm/Handlebars.Net/issues/350
+        [Fact]
+        public void LateBoundHelperWithSameNameVariablePath()
+        {
+            var handlebars = Handlebars.Create();
+            var expected = "Variable";
+            var template = handlebars.Compile("{{amoeba.a}}");
+            var data = new {amoeba = new {a = expected}};
+            
+            var actual = template(data);
+            Assert.Equal(expected, actual);
+
+            handlebars.RegisterHelper("amoeba", (context, arguments) => "Helper");
+            
+            actual = template(data);
+            Assert.Equal(expected, actual);
+        }
     }
 }

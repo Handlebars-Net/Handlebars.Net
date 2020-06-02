@@ -2,6 +2,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.IO;
 using Expressions.Shortcuts;
+using static Expressions.Shortcuts.ExpressionShortcuts;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -21,45 +22,47 @@ namespace HandlebarsDotNet.Compiler
         
         protected override Expression VisitHelperExpression(HelperExpression hex)
         {
-            var helperName = hex.HelperName;
-            var bindingContext = ExpressionShortcuts.Arg<BindingContext>(CompilationContext.BindingContext);
+            var pathInfo = CompilationContext.Configuration.Paths.GetOrAdd(hex.HelperName);
+            if(!pathInfo.IsValidHelperLiteral) return Expression.Empty();
+            
+            var helperName = pathInfo.Segments[0].PathChain[0].TrimmedValue;
+            var bindingContext = Arg<BindingContext>(CompilationContext.BindingContext);
             var contextValue = bindingContext.Property(o => o.Value);
             var textWriter = bindingContext.Property(o => o.TextWriter);
             var arguments = hex.Arguments.Select(o => FunctionBuilder.Reduce(o, CompilationContext));
-            var args = ExpressionShortcuts.Array<object>(arguments);
+            var args = Array<object>(arguments);
 
             var configuration = CompilationContext.Configuration;
             if (configuration.Helpers.TryGetValue(helperName, out var helper))
             {
-                return ExpressionShortcuts.Call(() => helper(textWriter, contextValue, args));
+                return Call(() => helper(textWriter, contextValue, args));
             }
             
             if (configuration.ReturnHelpers.TryGetValue(helperName, out var returnHelper))
             {
-                return ExpressionShortcuts.Call(() =>
-                    CaptureResult(textWriter, ExpressionShortcuts.Call(() => returnHelper(contextValue, args)))
+                return Call(() =>
+                    CaptureResult(textWriter, Call(() => returnHelper(contextValue, args)))
                 );
             }
-
-            var pureHelperName = helperName.Substring(1);
+            
             foreach (var resolver in configuration.HelperResolvers)
             {
-                if (resolver.TryResolveReturnHelper(pureHelperName, typeof(object), out var resolvedHelper))
+                if (resolver.TryResolveReturnHelper(helperName, typeof(object), out var resolvedHelper))
                 {
-                    return ExpressionShortcuts.Call(() =>
-                        CaptureResult(textWriter, ExpressionShortcuts.Call(() => resolvedHelper(contextValue, args)))
+                    return Call(() =>
+                        CaptureResult(textWriter, Call(() => resolvedHelper(contextValue, args)))
                     );
                 }
             }
 
-            return ExpressionShortcuts.Call(() => 
-                CaptureResult(textWriter, ExpressionShortcuts.Call(() => 
+            return Call(() => 
+                CaptureResult(textWriter, Call(() => 
                     LateBindHelperExpression(bindingContext, helperName, args)
                 ))
             );
         }
 
-        private static object LateBindHelperExpression(BindingContext context, string helperName, object[] arguments)
+        public static ResultHolder TryLateBindHelperExpression(BindingContext context, string helperName, object[] arguments)
         {
             var configuration = context.Configuration;
             if (configuration.Helpers.TryGetValue(helperName, out var helper))
@@ -67,27 +70,40 @@ namespace HandlebarsDotNet.Compiler
                 using (var write = new PolledStringWriter(configuration.FormatProvider))
                 {
                     helper(write, context.Value, arguments);
-                    return write.ToString();
+                    var result = write.ToString();
+                    return new ResultHolder(true, result);
                 }
             }
             
             if (configuration.ReturnHelpers.TryGetValue(helperName, out var returnHelper))
             {
-                return returnHelper(context.Value, arguments);
+                var result = returnHelper(context.Value, arguments);
+                return new ResultHolder(true, result);
             }
-
-            var pureHelperName = helperName.Substring(1);
+            
+            var targetType = arguments.FirstOrDefault()?.GetType();
             foreach (var resolver in configuration.HelperResolvers)
             {
-                if (resolver.TryResolveReturnHelper(pureHelperName, arguments.FirstOrDefault()?.GetType(), out returnHelper))
-                {
-                    return returnHelper(context.Value, arguments);
-                }
+                if (!resolver.TryResolveReturnHelper(helperName, targetType, out returnHelper)) continue;
+                
+                var result = returnHelper(context.Value, arguments);
+                return new ResultHolder(true, result);
+            }
+            
+            return new ResultHolder(false, null);
+        }
+        
+        private static object LateBindHelperExpression(BindingContext context, string helperName, object[] arguments)
+        {
+            var result = TryLateBindHelperExpression(context, helperName, arguments);
+            if (result.Success)
+            {
+                return result.Value;
             }
 
             throw new HandlebarsRuntimeException($"Template references a helper that is not registered. Could not find helper '{helperName}'");
         }
-        
+
         private static object CaptureResult(TextWriter writer, object result)
         {
             writer?.WriteSafeString(result);

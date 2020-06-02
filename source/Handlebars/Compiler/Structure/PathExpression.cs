@@ -9,12 +9,10 @@ namespace HandlebarsDotNet.Compiler
         public PathExpression(string path)
         {
             Path = path;
-            PathInfo = PathResolver.GetPathInfo(path);
         }
 
         public new string Path { get; }
         
-        public PathInfo PathInfo { get; }
 
         public override ExpressionType NodeType => (ExpressionType)HandlebarsExpressionType.PathExpression;
 

@@ -1776,7 +1776,7 @@ false
         private void CustomHelperResolverTest(IHandlebars handlebars)
         {
             handlebars.Configuration.HelperResolvers.Add(new StringHelperResolver());
-            var template = "{{ #toLower input }}";
+            var template = "{{ toLower input }}";
             var func = handlebars.Compile(template);
             var data = new { input = "ABC" };
             
