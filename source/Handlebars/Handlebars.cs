@@ -114,7 +114,6 @@ namespace HandlebarsDotNet
         /// </summary>
         /// <param name="helperName"></param>
         /// <param name="helperFunction"></param>
-        [Obsolete("Consider switching to HandlebarsReturnHelper")]
         public static void RegisterHelper(string helperName, HandlebarsHelper helperFunction)
         {
             Instance.RegisterHelper(helperName, helperFunction);

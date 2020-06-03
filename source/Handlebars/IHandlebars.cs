@@ -61,7 +61,6 @@ namespace HandlebarsDotNet
         /// </summary>
         /// <param name="helperName"></param>
         /// <param name="helperFunction"></param>
-        [Obsolete("Consider switching to HandlebarsReturnHelper")]
         void RegisterHelper(string helperName, HandlebarsHelper helperFunction);
         
         /// <summary>
