@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace HandlebarsDotNet
 {
@@ -22,6 +23,27 @@ namespace HandlebarsDotNet
                 hasNext = hasNext && enumerator.MoveNext();
                 return hasNext;
             }
+        }
+
+        public static IEnumerable<T> Apply<T>(this IEnumerable<T> source, Action<T> mutator)
+            where T: class
+        {
+            foreach (var item in source)
+            {
+                mutator(item);
+                yield return item;
+            }   
+        }
+        
+        public static IEnumerable<T> ApplyOn<T, TV>(this IEnumerable<T> source, Action<TV> mutator)
+            where T: class
+            where TV : T
+        {
+            foreach (var item in source)
+            {
+                if(item is TV typed) mutator(typed);
+                yield return item;
+            }   
         }
     }
 }

@@ -29,7 +29,10 @@ namespace HandlebarsDotNet.Compiler
             var bindingContext = Arg<BindingContext>(CompilationContext.BindingContext);
             var contextValue = bindingContext.Property(o => o.Value);
             var textWriter = bindingContext.Property(o => o.TextWriter);
-            var arguments = hex.Arguments.Select(o => FunctionBuilder.Reduce(o, CompilationContext));
+            var arguments = hex.Arguments
+                .ApplyOn<Expression, PathExpression>(path => path.Context = PathExpression.ResolutionContext.Parameter)
+                .Select(o => FunctionBuilder.Reduce(o, CompilationContext));
+            
             var args = Array<object>(arguments);
 
             var configuration = CompilationContext.Configuration;
