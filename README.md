@@ -1,14 +1,11 @@
-| Package           | Version |
-|-------------------|---|
-| Handlebars.CSharp | [![Nuget](https://img.shields.io/nuget/v/handlebars.csharp)](https://www.nuget.org/packages/handlebars.csharp/) |
-| Handlebars.Extension.CompileFast | [![Nuget](https://img.shields.io/nuget/v/Handlebars.Extension.CompileFast)](https://www.nuget.org/packages/Handlebars.Extension.CompileFast/) |
-| Handlebars.Extension.Logging | [![Nuget](https://img.shields.io/nuget/v/Handlebars.Extension.Logging)](https://www.nuget.org/packages/Handlebars.Extension.Logging/) |
+## Handlebars.CSharp [![Build](https://github.com/zjklee/Handlebars.CSharp/workflows/CI/badge.svg)](https://github.com/zjklee/Handlebars.CSharp/actions?query=workflow%3ACI) [![Nuget](https://img.shields.io/nuget/v/handlebars.csharp)](https://www.nuget.org/packages/handlebars.csharp/)
 
-![Build](https://github.com/zjklee/Handlebars.CSharp/workflows/CI/badge.svg)
+#### SonarCloud
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=zjklee_handlebars.csharp&metric=alert_status)](https://sonarcloud.io/dashboard?id=zjklee_handlebars.csharp)
 [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=zjklee_handlebars.csharp&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=zjklee_handlebars.csharp)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=zjklee_handlebars.csharp&metric=bugs)](https://sonarcloud.io/dashboard?id=zjklee_handlebars.csharp)
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=zjklee_handlebars.csharp&metric=vulnerabilities)](https://sonarcloud.io/dashboard?id=zjklee_handlebars.csharp)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=zjklee_handlebars.csharp&metric=coverage)](https://sonarcloud.io/dashboard?id=zjklee_handlebars.csharp)
 ##
  
 _This is a fork of [rexm/Handlebars.Net](https://github.com/rexm/Handlebars.Net) developed by @rexm. Unfortunately project had no activity for a while. I'd be glad to back-merge all the changes back to original repo if I'd have a chance. Meanwhile I'd try to support the fork._
@@ -25,13 +22,16 @@ handlebars.csharp doesn't use a scripting engine to run a Javascript library - i
 ```cmd
 dotnet add package Handlebars.CSharp
 ```
-### Extensions
-```cmd
-dotnet add package Handlebars.Extension.CompileFast
-```
-```cmd
-dotnet add package Handlebars.Extension.Logging
-```
+## Extensions
+| Package           | Version |
+|-------------------|---|
+| Handlebars.Extension.CompileFast | [![Nuget](https://img.shields.io/nuget/v/Handlebars.Extension.CompileFast)](https://www.nuget.org/packages/Handlebars.Extension.CompileFast/) |
+| Handlebars.Extension.Logging | [![Nuget](https://img.shields.io/nuget/v/Handlebars.Extension.Logging)](https://www.nuget.org/packages/Handlebars.Extension.Logging/) |
+
+#### See also
+| GitHub | NuGet |
+|---|---|
+| [![GitHub](https://img.shields.io/badge/StefH-Handlebars.Net.Helpers-blue?logo=github&style=flat-square)](https://www.nuget.org/packages/Handlebars.CSharp.Helpers/) | [![Nuget](https://img.shields.io/nuget/v/Handlebars.CSharp.Helpers)](https://www.nuget.org/packages/Handlebars.CSharp.Helpers/) |
 
 ## Usage
 
