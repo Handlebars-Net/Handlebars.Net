@@ -37,7 +37,12 @@ namespace HandlebarsDotNet.Compiler
             var tryBoundHelper = Call(() =>
                 HelperFunctionBinder.TryLateBindHelperExpression(context, helperName, ArrayEx.Empty<object>())
             );
-                
+
+            if (pex.Context == PathExpression.ResolutionContext.Parameter)
+            {
+                return resolvePath;
+            }
+            
             return Block()
                 .Parameter<ResultHolder>(out var result, tryBoundHelper)
                 .Line(Condition()
