@@ -31,7 +31,7 @@ dotnet add package Handlebars.CSharp
 #### See also
 | GitHub | NuGet |
 |---|---|
-| [![GitHub](https://img.shields.io/badge/StefH-Handlebars.Net.Helpers-blue?logo=github&style=flat-square)](https://www.nuget.org/packages/Handlebars.CSharp.Helpers/) | [![Nuget](https://img.shields.io/nuget/v/Handlebars.CSharp.Helpers)](https://www.nuget.org/packages/Handlebars.CSharp.Helpers/) |
+| [![GitHub](https://img.shields.io/badge/StefH-Handlebars.Net.Helpers-blue?logo=github&style=flat-square)](https://github.com/StefH/Handlebars.Net.Helpers) | [![Nuget](https://img.shields.io/nuget/v/Handlebars.CSharp.Helpers)](https://www.nuget.org/packages/Handlebars.CSharp.Helpers/) |
 
 ## Usage
 
