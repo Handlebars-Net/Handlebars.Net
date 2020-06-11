@@ -58,6 +58,10 @@
       <PackagePath>lib\net452\</PackagePath>
       <Visible>false</Visible>
     </Content>
+    <Content Include="bin\$(Configuration)\net451\Handlebars.*" Exclude="**\*.json">
+      <PackagePath>lib\net451\</PackagePath>
+      <Visible>false</Visible>
+    </Content>
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)'=='net451' or '$(TargetFramework)'=='net452'">
