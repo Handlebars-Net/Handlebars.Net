@@ -27,7 +27,7 @@ namespace HandlebarsDotNet.Compiler
         protected override Expression VisitPathExpression(PathExpression pex)
         {
             var context = Arg<BindingContext>(CompilationContext.BindingContext);
-            var pathInfo = CompilationContext.Configuration.Paths.GetOrAdd(pex.Path);
+            var pathInfo = CompilationContext.Configuration.PathInfoStore.GetOrAdd(pex.Path);
 
             var resolvePath = Call(() => PathResolver.ResolvePath(context, ref pathInfo));
 

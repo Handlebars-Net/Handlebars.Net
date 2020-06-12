@@ -43,7 +43,9 @@ namespace HandlebarsDotNet
         }
         IReadOnlyList<IFeature> ICompiledHandlebarsConfiguration.Features => Features;
 
-        public PathStore Paths { get; }
+        public PathInfoStore PathInfoStore { get; }
+
+        IReadOnlyPathInfoStore ICompiledHandlebarsConfiguration.PathInfoStore => PathInfoStore;
 
         internal InternalHandlebarsConfiguration(HandlebarsConfiguration configuration)
         {
@@ -54,7 +56,7 @@ namespace HandlebarsDotNet
             BlockHelpers = new CascadeDictionary<string, HandlebarsBlockHelper>(configuration.BlockHelpers, StringComparer.OrdinalIgnoreCase);
             RegisteredTemplates = new CascadeDictionary<string, Action<TextWriter, object>>(configuration.RegisteredTemplates, StringComparer.OrdinalIgnoreCase);
             HelperResolvers = new CascadeCollection<IHelperResolver>(configuration.HelperResolvers);
-            Paths = new PathStore();
+            PathInfoStore = new PathInfoStore();
             
             CompileTimeConfiguration = new CompileTimeConfiguration
             {

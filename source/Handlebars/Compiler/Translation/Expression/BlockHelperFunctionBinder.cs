@@ -195,7 +195,7 @@ namespace HandlebarsDotNet.Compiler
 
                 if(arguments.Length > 0) throw new HandlebarsRuntimeException($"Template references a helper that cannot be resolved. BlockHelper '{helperName}'", readerContext);
                 
-                var pathInfo = bindingContext.Configuration.Paths.GetOrAdd(helperName);
+                var pathInfo = bindingContext.Configuration.PathInfoStore.GetOrAdd(helperName);
                 var value = PathResolver.ResolvePath(bindingContext, ref pathInfo);
                 DeferredSectionBlockHelper.Helper(bindingContext, helperPrefix, value, body, inverse, blockParamsValueProvider);
             }

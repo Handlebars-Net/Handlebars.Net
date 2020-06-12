@@ -22,7 +22,7 @@ namespace HandlebarsDotNet.Compiler
         
         protected override Expression VisitHelperExpression(HelperExpression hex)
         {
-            var pathInfo = CompilationContext.Configuration.Paths.GetOrAdd(hex.HelperName);
+            var pathInfo = CompilationContext.Configuration.PathInfoStore.GetOrAdd(hex.HelperName);
             if(!pathInfo.IsValidHelperLiteral) return Expression.Empty();
 
             var readerContext = Arg(hex.Context);
