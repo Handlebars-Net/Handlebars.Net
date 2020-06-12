@@ -13,7 +13,7 @@ namespace HandlebarsDotNet.Adapters
                 using (var writer = new PolledStringWriter())
                 {
                     _helper(writer, context, arguments);
-                    return writer;
+                    return writer.ToString();
                 }
             };
         }
