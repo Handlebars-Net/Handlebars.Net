@@ -22,9 +22,7 @@ namespace HandlebarsDotNet.Test
         {
             Handlebars.Create(),
             Handlebars.Create(new HandlebarsConfiguration{ CompileTimeConfiguration = { UseAggressiveCaching = false}}),
-#if compileFast
             Handlebars.Create(new HandlebarsConfiguration().UseCompileFast()),
-#endif
             Handlebars.Create(new HandlebarsConfiguration().UseWarmUp(types =>
             {
                 types.Add(typeof(Dictionary<string, object>));

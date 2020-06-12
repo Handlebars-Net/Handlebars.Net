@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net452;netstandard1.3;netstandard2.0</TargetFrameworks>
+        <TargetFrameworks>netstandard1.3;netstandard2.0</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">$(TargetFrameworks);net451;net452;</TargetFrameworks>
         <RootNamespace>HandlebarsDotNet.Extension.Logging</RootNamespace>
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
@@ -10,17 +11,13 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <Authors>Oleh Formaniuk</Authors>
-        <Copyright>Copyright © 2020 Oleh Formaniuk</Copyright>
         <Description>Microsoft.Extensions.Logging adapter for handlebars.csharp</Description>
         <PackageIcon>hbnet-extension-icon.png</PackageIcon>
         <PackageId>Handlebars.Extension.Logging</PackageId>
-        <PackageLicenseUrl>https://opensource.org/licenses/mit</PackageLicenseUrl>
         <PackageProjectUrl>https://github.com/zjklee/handlebars.csharp</PackageProjectUrl>
-        <PackageTags>handlebars;mustache;templating;engine;compiler</PackageTags>
+        <PackageTags>handlebars;mustache;templating;engine;compiler;logging</PackageTags>
         <RepositoryType>git</RepositoryType>
         <RepositoryUrl>https://github.com/zjklee/handlebars.csharp</RepositoryUrl>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>

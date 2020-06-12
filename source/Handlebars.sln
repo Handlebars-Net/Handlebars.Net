@@ -11,6 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		..\README.md = ..\README.md
 		..\Performance.md = ..\Performance.md
+		Directory.Build.props = Directory.Build.props
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Handlebars.Benchmark", "Handlebars.Benchmark\Handlebars.Benchmark.csproj", "{E880C14C-96EE-4A1E-98BD-6348AB529090}"

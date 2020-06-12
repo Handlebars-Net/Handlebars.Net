@@ -3,6 +3,10 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>netcoreapp2.1</TargetFramework>
+        <IsPackable>false</IsPackable>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+        <SignAssembly>false</SignAssembly>
+        <RootNamespace>HandlebarsNet.Benchmark</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -14,12 +18,6 @@
       <ProjectReference Include="..\Handlebars.Extension.Logger\Handlebars.Extension.Logger.csproj" />
       <ProjectReference Include="..\Handlebars.Extension.CompileFast\Handlebars.Extension.CompileFast.csproj" />
       <ProjectReference Include="..\Handlebars\Handlebars.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <None Update="PreviousVersion\1.10.1.dll">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
     </ItemGroup>
 
 </Project>

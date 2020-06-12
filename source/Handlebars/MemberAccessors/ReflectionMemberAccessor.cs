@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -39,8 +40,8 @@ namespace HandlebarsDotNet.MemberAccessors
 
         private abstract class ObjectTypeDescriptor
         {
-            protected readonly LookupSlim<string, DeferredValue<(string key, Type type), Func<object, object>>>
-                Accessors = new LookupSlim<string, DeferredValue<(string key, Type type), Func<object, object>>>();
+            protected readonly LookupSlim<string, DeferredValue<KeyValuePair<string, Type>, Func<object, object>>>
+                Accessors = new LookupSlim<string, DeferredValue<KeyValuePair<string, Type>, Func<object, object>>>();
             
             protected Type Type { get; }
 
@@ -79,10 +80,10 @@ namespace HandlebarsDotNet.MemberAccessors
             private static readonly MethodInfo CreateGetDelegateMethodInfo = typeof(RawObjectTypeDescriptor)
                 .GetMethod(nameof(CreateGetDelegate), BindingFlags.Static | BindingFlags.NonPublic);
 
-            private static readonly Func<(string key, Type type), Func<object, object>> ValueGetterFactory = o => GetValueGetter(o.key, o.type);
+            private static readonly Func<KeyValuePair<string, Type>, Func<object, object>> ValueGetterFactory = o => GetValueGetter(o.Key, o.Value);
 
-            private static readonly Func<string, Type, DeferredValue<(string key, Type type), Func<object, object>>>
-                ValueFactory = (key, state) => new DeferredValue<(string key, Type type), Func<object, object>>((key, state), ValueGetterFactory);
+            private static readonly Func<string, Type, DeferredValue<KeyValuePair<string, Type>, Func<object, object>>>
+                ValueFactory = (key, state) => new DeferredValue<KeyValuePair<string, Type>, Func<object, object>>(new KeyValuePair<string, Type>(key, state), ValueGetterFactory);
 
             public RawObjectTypeDescriptor(Type type) : base(type)
             {
@@ -128,11 +129,11 @@ namespace HandlebarsDotNet.MemberAccessors
 
         private sealed class CompiledObjectTypeDescriptor : ObjectTypeDescriptor
         {
-            private static readonly Func<(string key, Type type), Func<object, object>> ValueGetterFactory =
-                o => GetValueGetter(o.key, o.type);
+            private static readonly Func<KeyValuePair<string, Type>, Func<object, object>> ValueGetterFactory =
+                o => GetValueGetter(o.Key, o.Value);
 
-            private static readonly Func<string, Type, DeferredValue<(string key, Type type), Func<object, object>>>
-                ValueFactory = (key, state) => new DeferredValue<(string key, Type type), Func<object, object>>((key, state), ValueGetterFactory);
+            private static readonly Func<string, Type, DeferredValue<KeyValuePair<string, Type>, Func<object, object>>>
+                ValueFactory = (key, state) => new DeferredValue<KeyValuePair<string, Type>, Func<object, object>>(new KeyValuePair<string, Type>(key, state), ValueGetterFactory);
 
             public CompiledObjectTypeDescriptor(Type type) : base(type)
             {

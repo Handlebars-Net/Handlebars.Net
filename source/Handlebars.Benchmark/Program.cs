@@ -3,7 +3,7 @@ using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Running;
 using HandlebarsDotNet;
 
-namespace Benchmark
+namespace HandlebarsNet.Benchmark
 {
     class Program
     {
