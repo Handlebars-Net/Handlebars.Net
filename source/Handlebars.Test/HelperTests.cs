@@ -30,6 +30,7 @@ namespace HandlebarsDotNet.Test
             Assert.Equal(expected, output);
         }
         
+        
         [Fact]
         public void BlockHelperWithBlockParams()
         {
@@ -81,6 +82,44 @@ namespace HandlebarsDotNet.Test
             var output = template(new { });
 
             var expected = "Here are some things: \n1:foo\n2:bar\n";
+
+            Assert.Equal(expected, output);
+        }
+        
+        [Fact]
+        public void BlockHelperLateBoundConflictsWithValue()
+        {
+            var source = "{{#late}}late{{/late}}";
+
+            var handlebars = Handlebars.Create();
+            var template = handlebars.Compile(source);
+
+            handlebars.RegisterHelper("late", (writer, options, context, args) =>
+            {
+                options.Template(writer, context);
+            });
+            
+            var output = template(new { late = "should be ignored" });
+
+            var expected = "late";
+
+            Assert.Equal(expected, output);
+        }
+        
+        [Fact]
+        public void BlockHelperLateBoundMissingHelperFallbackToDeferredSection()
+        {
+            var source = "{{#late}}late{{/late}}";
+
+            var handlebars = Handlebars.Create();
+            handlebars.Configuration.RegisterMissingHelperHook(
+                (context, arguments) => "Hook"
+            );
+            var template = handlebars.Compile(source);
+            
+            var output = template(new { late = "late" });
+
+            var expected = "late";
 
             Assert.Equal(expected, output);
         }
@@ -200,61 +239,6 @@ namespace HandlebarsDotNet.Test
         [InlineData("[missing]")]
         [InlineData("[$missing]")]
         [InlineData("[m.i.s.s.i.n.g]")]
-        public void MissingHelperHookLog(string helperName)
-        {
-            var logs = new List<string>();
-            var handlebars = Handlebars.Create();
-            var format = "Missing helper: {0}";
-            handlebars.Configuration
-                .RegisterMissingHelperHook(
-                    log: (_, arguments) =>
-                    {
-                        var name = arguments.Last().ToString();
-                        logs.Add(string.Format(format, name.Trim('[', ']')));
-                    });
-
-            var source = "{{"+ helperName +"}}";
-
-            var template = handlebars.Compile(source);
-            
-            template(null);
-
-            var expected = string.Format(format, helperName.Trim('[', ']'));
-            Assert.Equal(expected, Assert.Single(logs));
-        }
-        
-        [Theory]
-        [InlineData("missing")]
-        [InlineData("[missing]")]
-        [InlineData("[$missing]")]
-        [InlineData("[m.i.s.s.i.n.g]")]
-        public void MissingHelperHookLogViaHelper(string helperName)
-        {
-            var logs = new List<string>();
-            var handlebars = Handlebars.Create();
-            var format = "Missing helper: {0}";
-            handlebars.RegisterHelper("log", (context, arguments) =>
-            {
-                var name = arguments[0].ToString();
-                logs.Add(string.Format(format, name.Trim('[', ']')));
-                return string.Empty;
-            });
-
-            var source = "{{"+ helperName +"}}";
-
-            var template = handlebars.Compile(source);
-            
-            template(null);
-
-            var expected  = string.Format(format, helperName.Trim('[', ']'));
-            Assert.Equal(expected, Assert.Single(logs));
-        }
-        
-        [Theory]
-        [InlineData("missing")]
-        [InlineData("[missing]")]
-        [InlineData("[$missing]")]
-        [InlineData("[m.i.s.s.i.n.g]")]
         public void MissingHelperHookViaHelperRegistration(string helperName)
         {
             var handlebars = Handlebars.Create();
@@ -286,10 +270,10 @@ namespace HandlebarsDotNet.Test
             var format = "Missing block helper: {0}";
             handlebars.Configuration
                 .RegisterMissingHelperHook(
-                    (context, arguments) =>
+                    blockHelperMissing: (writer, options, context, arguments) =>
                     {
-                        var name = arguments.Last().ToString();
-                        return string.Format(format, name.Trim('[', ']'));
+                        var name = options.GetValue<string>("name");
+                        writer.WriteSafeString(string.Format(format, name.Trim('[', ']')));
                     });
 
             var source = "{{#"+ helperName +"}}should not appear{{/" + helperName + "}}";
@@ -311,10 +295,10 @@ namespace HandlebarsDotNet.Test
         {
             var handlebars = Handlebars.Create();
             var format = "Missing block helper: {0}";
-            handlebars.RegisterHelper("helperMissing", (context, arguments) =>
+            handlebars.RegisterHelper("blockHelperMissing", (writer, options, context, arguments) =>
             {
-                var name = arguments.Last().ToString();
-                return string.Format(format, name.Trim('[', ']'));
+                var name = options.GetValue<string>("name");
+                writer.WriteSafeString(string.Format(format, name.Trim('[', ']')));
             });
 
             var source = "{{#"+ helperName +"}}should not appear{{/" + helperName + "}}";

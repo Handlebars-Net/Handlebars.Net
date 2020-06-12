@@ -31,7 +31,7 @@ namespace HandlebarsDotNet.Compiler
 
             var resolvePath = Call(() => PathResolver.ResolvePath(context, ref pathInfo));
 
-            if (!pathInfo.IsValidHelperLiteral) return resolvePath;
+            if (!pathInfo.IsValidHelperLiteral || pathInfo.IsThis) return resolvePath;
             
             var helperName = pathInfo.Segments[0].PathChain[0].TrimmedValue;
             var tryBoundHelper = Call(() =>

@@ -4,9 +4,19 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
 {
     internal delegate object ProcessSegment(ref PathInfo pathInfo, ref BindingContext context, object instance, HashParameterDictionary hashParameters);
     
-    internal struct PathInfo : IEquatable<PathInfo>
+    /// <summary>
+    /// Represents path expression
+    /// </summary>
+    public struct PathInfo : IEquatable<PathInfo>
     {
-        public PathInfo(
+        private readonly string _path;
+        
+        internal readonly ProcessSegment ProcessSegment;
+        internal readonly bool IsValidHelperLiteral;
+        internal readonly bool HasValue;
+        internal readonly bool IsThis;
+        
+        internal PathInfo(
             bool hasValue, 
             string path, 
             bool isValidHelperLiteral, 
@@ -16,50 +26,41 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
         {
             IsValidHelperLiteral = isValidHelperLiteral;
             HasValue = hasValue;
-            Path = path;
+            _path = path;
             IsVariable = path.StartsWith("@");
-            IsInversion = path.StartsWith("^");
-            IsBlockHelper = path.StartsWith("#");
             Segments = segments;
             ProcessSegment = processSegment;
+            IsThis = string.Equals(path, "this", StringComparison.OrdinalIgnoreCase) || path == ".";
         }
 
-        public readonly bool IsBlockHelper;
-        public bool IsValidHelperLiteral;
-        public readonly bool IsInversion;
-        public readonly bool HasValue;
-        public readonly string Path;
+        /// <summary>
+        /// Indicates whether <see cref="PathInfo"/> is part of <c>@</c> variable
+        /// </summary>
         public readonly bool IsVariable;
+        
+        /// <inheritdoc cref="PathSegment"/>
         public readonly PathSegment[] Segments;
 
-        public readonly ProcessSegment ProcessSegment;
-
+        /// <inheritdoc />
         public bool Equals(PathInfo other)
         {
-            return IsBlockHelper == other.IsBlockHelper && 
-                   IsInversion == other.IsInversion && 
-                   HasValue == other.HasValue && IsVariable == other.IsVariable && 
-                   Path == other.Path;
+            return HasValue == other.HasValue 
+                   && IsVariable == other.IsVariable 
+                   && _path == other._path;
         }
 
-        public override bool Equals(object obj)
-        {
-            return obj is PathInfo other && Equals(other);
-        }
+        /// <inheritdoc />
+        public override bool Equals(object obj) => obj is PathInfo other && Equals(other);
 
-        public override int GetHashCode()
-        {
-            return Path.GetHashCode();
-        }
+        /// <inheritdoc />
+        public override int GetHashCode() => _path.GetHashCode();
 
-        public override string ToString()
-        {
-            return Path;
-        }
+        /// <summary>
+        /// Returns string representation of current <see cref="PathInfo"/>
+        /// </summary>
+        public override string ToString() => _path;
 
-        public static implicit operator string(PathInfo pathInfo)
-        {
-            return pathInfo.Path;
-        }
+        /// <inheritdoc cref="ToString"/>
+        public static implicit operator string(PathInfo pathInfo) => pathInfo._path;
     }
 }

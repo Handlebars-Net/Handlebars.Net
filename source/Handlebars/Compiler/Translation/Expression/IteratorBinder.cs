@@ -9,6 +9,7 @@ using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.ObjectDescriptors;
 using HandlebarsDotNet.Polyfills;
 using HandlebarsDotNet.ValueProviders;
+using static Expressions.Shortcuts.ExpressionShortcuts;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -23,24 +24,29 @@ namespace HandlebarsDotNet.Compiler
         
         protected override Expression VisitIteratorExpression(IteratorExpression iex)
         {
-            var context = ExpressionShortcuts.Arg<BindingContext>(CompilationContext.BindingContext);
-            var sequence = ExpressionShortcuts.Var<object>("sequence");
+            var context = Arg<BindingContext>(CompilationContext.BindingContext);
+            var sequence = Var<object>("sequence");
             
             var template = FunctionBuilder.CompileCore(new[] {iex.Template}, CompilationContext.Configuration);
             var ifEmpty = FunctionBuilder.CompileCore(new[] {iex.IfEmpty}, CompilationContext.Configuration);
-            
-            var compiledSequence = ExpressionShortcuts.Arg<object>(FunctionBuilder.Reduce(iex.Sequence, CompilationContext));
-            var blockParams = ExpressionShortcuts.Arg<BlockParam>(iex.BlockParams);
-            var blockParamsProvider = ExpressionShortcuts.Call(() => BlockParamsValueProvider.Create(context, blockParams));
-            var blockParamsProviderVar = ExpressionShortcuts.Var<BlockParamsValueProvider>();
 
-            return ExpressionShortcuts.Block()
+            if (iex.Sequence is PathExpression pathExpression)
+            {
+                pathExpression.Context = PathExpression.ResolutionContext.Parameter;
+            }
+            
+            var compiledSequence = Arg<object>(FunctionBuilder.Reduce(iex.Sequence, CompilationContext));
+            var blockParams = Arg<BlockParam>(iex.BlockParams);
+            var blockParamsProvider = Call(() => BlockParamsValueProvider.Create(context, blockParams));
+            var blockParamsProviderVar = Var<BlockParamsValueProvider>();
+
+            return Block()
                 .Parameter(sequence, compiledSequence)
                 .Parameter(blockParamsProviderVar, blockParamsProvider)
                 .Line(blockParamsProviderVar.Using((self, builder) =>
                 {
                     builder
-                        .Line(ExpressionShortcuts.Call(() =>
+                        .Line(Call(() =>
                             Iterator.Iterate(context, self, sequence, template, ifEmpty)
                         ));
                 }));
@@ -114,7 +120,7 @@ namespace HandlebarsDotNet.Compiler
         {
             using(var iterator = ObjectEnumeratorValueProvider.Create(context.Configuration))
             {
-                blockParamsValueProvider?.Configure(BlockParamsObjectEnumeratorConfiguration, iterator);
+                blockParamsValueProvider.Configure(BlockParamsObjectEnumeratorConfiguration, iterator);
 
                 iterator.Index = 0;
                 var accessor = descriptor.MemberAccessor;
@@ -192,7 +198,7 @@ namespace HandlebarsDotNet.Compiler
         {
             using (var iterator = IteratorValueProvider.Create())
             {
-                blockParamsValueProvider?.Configure(BlockParamsEnumerableConfiguration, iterator);
+                blockParamsValueProvider.Configure(BlockParamsEnumerableConfiguration, iterator);
 
                 var count = target.Count;
                 for (iterator.Index = 0; iterator.Index < count; iterator.Index++)
@@ -224,7 +230,7 @@ namespace HandlebarsDotNet.Compiler
         {
             using (var iterator = IteratorValueProvider.Create())
             {
-                blockParamsValueProvider?.Configure(BlockParamsEnumerableConfiguration, iterator);
+                blockParamsValueProvider.Configure(BlockParamsEnumerableConfiguration, iterator);
 
                 iterator.Index = 0;
                 var enumerable = new ExtendedEnumerable<object>(target);

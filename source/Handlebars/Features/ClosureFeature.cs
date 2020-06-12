@@ -17,6 +17,7 @@ namespace HandlebarsDotNet.Features
     /// <summary>
     /// Extracts all <see cref="Expression.Constant(object)"/> items into precompiled closure allowing to compile static delegates
     /// </summary>
+    [FeatureOrder(0)]
     public class ClosureFeature : IFeature
     {
         /// <summary>

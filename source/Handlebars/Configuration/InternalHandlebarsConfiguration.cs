@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.Compiler.Resolvers;
 using HandlebarsDotNet.Features;
@@ -10,7 +11,7 @@ using HandlebarsDotNet.ObjectDescriptors;
 
 namespace HandlebarsDotNet
 {
-    internal class InternalHandlebarsConfiguration : HandlebarsConfiguration, ICompiledHandlebarsConfiguration
+    internal sealed class InternalHandlebarsConfiguration : HandlebarsConfiguration, ICompiledHandlebarsConfiguration
     {
         private readonly HandlebarsConfiguration _configuration;
         
@@ -23,11 +24,10 @@ namespace HandlebarsDotNet
         public override IPartialTemplateResolver PartialTemplateResolver => _configuration.PartialTemplateResolver;
         public override IMissingPartialTemplateHandler MissingPartialTemplateHandler => _configuration.MissingPartialTemplateHandler;
         public override Compatibility Compatibility => _configuration.Compatibility;
-        public sealed override CompileTimeConfiguration CompileTimeConfiguration { get; }
+        public override CompileTimeConfiguration CompileTimeConfiguration { get; }
         
         public List<IFeature> Features { get; }
         public IObjectDescriptorProvider ObjectDescriptorProvider { get; }
-
         public ICollection<IExpressionMiddleware> ExpressionMiddleware => CompileTimeConfiguration.ExpressionMiddleware;
         public ICollection<IMemberAliasProvider> AliasProviders => CompileTimeConfiguration.AliasProviders;
         public IExpressionCompiler ExpressionCompiler
@@ -44,7 +44,7 @@ namespace HandlebarsDotNet
         IReadOnlyList<IFeature> ICompiledHandlebarsConfiguration.Features => Features;
 
         public PathStore Paths { get; }
-        
+
         internal InternalHandlebarsConfiguration(HandlebarsConfiguration configuration)
         {
             _configuration = configuration;
@@ -85,7 +85,10 @@ namespace HandlebarsDotNet
 
             ObjectDescriptorProvider = new ObjectDescriptorFactory(providers);
 
-            Features = CompileTimeConfiguration.Features.Select(o => o.CreateFeature()).ToList();
+            Features = CompileTimeConfiguration
+                .Features.Select(o => o.CreateFeature())
+                .OrderBy(o => o.GetType().GetTypeInfo().GetCustomAttribute<FeatureOrderAttribute>()?.Order ?? 100)
+                .ToList();
         }
     }
 }

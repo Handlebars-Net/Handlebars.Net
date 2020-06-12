@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using Expressions.Shortcuts;
+using static Expressions.Shortcuts.ExpressionShortcuts;
 
 namespace HandlebarsDotNet.Features
 {
@@ -13,6 +14,7 @@ namespace HandlebarsDotNet.Features
         }
     }
 
+    [FeatureOrder(1)]
     internal class DefaultCompilerFeature : IFeature
     {
         public void OnCompiling(ICompiledHandlebarsConfiguration configuration)
@@ -59,11 +61,10 @@ namespace HandlebarsDotNet.Features
                 var compiledLambda = lambda.Compile();
                 
                 var outerParameters = expression.Parameters.Select(o => Expression.Parameter(o.Type, o.Name)).ToArray();
-                
-                var store = (Expression) Expression.Field(Expression.Constant(_templateClosure), nameof(TemplateClosure.Store));
-                var outerLambda = Expression.Lambda<T>(
-                    Expression.Invoke(Expression.Constant(compiledLambda), new[] {store}.Concat(outerParameters)),
-                    outerParameters);
+                var store = Arg(_templateClosure).Member(o => o.Store);
+                var parameterExpressions = new[] { store.Expression }.Concat(outerParameters);
+                var invocationExpression = Expression.Invoke(Expression.Constant(compiledLambda), parameterExpressions);
+                var outerLambda = Expression.Lambda<T>(invocationExpression, outerParameters);
 
                 return outerLambda.Compile();
             }

@@ -4,52 +4,46 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
 {
     internal delegate object ProcessPathChain(BindingContext context, HashParameterDictionary hashParameters, ref PathInfo pathInfo, ref PathSegment segment, object instance);
     
-    internal struct PathSegment : IEquatable<PathSegment>
+    /// <summary>
+    /// Represents parts of single <see cref="PathInfo"/> separated with '/'.
+    /// </summary>
+    public struct PathSegment : IEquatable<PathSegment>
     {
-        public PathSegment(string segment, ChainSegment[] chain, bool isJumpUp, ProcessPathChain processPathChain)
+        private readonly string _segment;
+        
+        internal readonly ProcessPathChain ProcessPathChain;
+        internal readonly bool IsJumpUp;
+        
+        internal PathSegment(string segment, ChainSegment[] chain, bool isJumpUp, ProcessPathChain processPathChain)
         {
-            Segment = segment;
+            _segment = segment;
             IsJumpUp = isJumpUp;
             PathChain = chain;
             ProcessPathChain = processPathChain;
         }
 
-        public readonly string Segment;
-
-        public readonly bool IsJumpUp;
-
+        /// <inheritdoc cref="ChainSegment"/>
         public readonly ChainSegment[] PathChain;
 
-        public readonly ProcessPathChain ProcessPathChain;
+        /// <summary>
+        /// Returns string representation of current <see cref="PathSegment"/>
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString() => _segment;
 
-        public override string ToString()
-        {
-            return Segment;
-        }
+        /// <inheritdoc />
+        public bool Equals(PathSegment other) => _segment == other._segment;
 
-        public bool Equals(PathSegment other)
-        {
-            return Segment == other.Segment;
-        }
+        /// <inheritdoc />
+        public override bool Equals(object obj) => obj is PathSegment other && Equals(other);
 
-        public override bool Equals(object obj)
-        {
-            return obj is PathSegment other && Equals(other);
-        }
+        /// <inheritdoc />
+        public override int GetHashCode() => _segment != null ? _segment.GetHashCode() : 0;
 
-        public override int GetHashCode()
-        {
-            return Segment != null ? Segment.GetHashCode() : 0;
-        }
+        /// <inheritdoc cref="Equals(HandlebarsDotNet.Compiler.Structure.Path.PathSegment)"/>
+        public static bool operator ==(PathSegment a, PathSegment b) => a.Equals(b);
 
-        public static bool operator ==(PathSegment a, PathSegment b)
-        {
-            return a.Equals(b);
-        }
-        
-        public static bool operator !=(PathSegment a, PathSegment b)
-        {
-            return !a.Equals(b);
-        }
+        /// <inheritdoc cref="Equals(HandlebarsDotNet.Compiler.Structure.Path.PathSegment)"/>
+        public static bool operator !=(PathSegment a, PathSegment b) => !a.Equals(b);
     }
 }

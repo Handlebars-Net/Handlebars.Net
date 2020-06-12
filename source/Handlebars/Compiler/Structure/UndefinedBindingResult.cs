@@ -17,7 +17,7 @@ namespace HandlebarsDotNet.Compiler
 	    
 	    public UndefinedBindingResult(ChainSegment value, ICompiledHandlebarsConfiguration configuration)
 	    {
-		    Value = value.Value;
+		    Value = value;
 		    _configuration = configuration;
 	    }
 

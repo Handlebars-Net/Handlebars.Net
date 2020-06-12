@@ -1,61 +1,71 @@
 using System;
-using System.Diagnostics;
 using HandlebarsDotNet.Polyfills;
 
 namespace HandlebarsDotNet.Compiler.Structure.Path
 {
-    [DebuggerDisplay("{Value}")]
-    internal struct ChainSegment : IEquatable<ChainSegment>
+    /// <summary>
+    /// Represents parts of single <see cref="PathSegment"/> separated with dots.
+    /// </summary>
+    public struct ChainSegment : IEquatable<ChainSegment>
     {
+        private readonly string _value;
+        
+        internal readonly string LowerInvariant;
+        
+        /// <summary>
+        ///  
+        /// </summary>
         public ChainSegment(string value)
         {
             var segmentValue = string.IsNullOrEmpty(value) ? "this" : value.TrimStart('@').Intern();
             var segmentTrimmedValue = TrimSquareBrackets(segmentValue).Intern();
 
             IsThis = string.IsNullOrEmpty(value) || string.Equals(value, "this", StringComparison.OrdinalIgnoreCase);
-            Value = segmentValue;
+            _value = segmentValue;
             IsVariable = !string.IsNullOrEmpty(value) && value.StartsWith("@");
             TrimmedValue = segmentTrimmedValue;
             LowerInvariant = segmentTrimmedValue.ToLowerInvariant().Intern();
         }
 
-        public readonly string Value;
-        public readonly string LowerInvariant;
+        /// <summary>
+        /// Value with trimmed '[' and ']'
+        /// </summary>
         public readonly string TrimmedValue;
+        
+        /// <summary>
+        /// Indicates whether <see cref="ChainSegment"/> is part of <c>@</c> variable
+        /// </summary>
         public readonly bool IsVariable;
+        
+        /// <summary>
+        /// Indicates whether <see cref="ChainSegment"/> is <c>this</c> or <c>.</c>
+        /// </summary>
         public readonly bool IsThis;
 
-        public override string ToString()
-        {
-            return Value;
-        }
+        /// <summary>
+        /// Returns string representation of current <see cref="ChainSegment"/>
+        /// </summary>
+        public override string ToString() => _value;
 
-        public bool Equals(ChainSegment other)
-        {
-            return Value == other.Value;
-        }
+        /// <inheritdoc />
+        public bool Equals(ChainSegment other) => _value == other._value;
 
-        public override bool Equals(object obj)
-        {
-            return obj is ChainSegment other && Equals(other);
-        }
+        /// <inheritdoc />
+        public override bool Equals(object obj) => obj is ChainSegment other && Equals(other);
 
-        public override int GetHashCode()
-        {
-            return Value != null ? Value.GetHashCode() : 0;
-        }
+        /// <inheritdoc />
+        public override int GetHashCode() => _value != null ? _value.GetHashCode() : 0;
 
-        public static bool operator ==(ChainSegment a, ChainSegment b)
-        {
-            return a.Equals(b);
-        }
-        
-        public static bool operator !=(ChainSegment a, ChainSegment b)
-        {
-            return !a.Equals(b);
-        }
+        /// <inheritdoc cref="Equals(HandlebarsDotNet.Compiler.Structure.Path.ChainSegment)"/>
+        public static bool operator ==(ChainSegment a, ChainSegment b) => a.Equals(b);
 
-        public static string TrimSquareBrackets(string key)
+        /// <inheritdoc cref="Equals(HandlebarsDotNet.Compiler.Structure.Path.ChainSegment)"/>
+        public static bool operator !=(ChainSegment a, ChainSegment b) => !a.Equals(b);
+
+        /// <inheritdoc cref="ToString"/>
+        public static implicit operator string(ChainSegment segment) => segment._value;
+
+        internal static string TrimSquareBrackets(string key)
         {
             //Only trim a single layer of brackets.
             if (key.StartsWith("[") && key.EndsWith("]"))

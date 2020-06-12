@@ -13,6 +13,7 @@ namespace HandlebarsDotNet.Features
         }
     }
 
+    [FeatureOrder(int.MinValue)]
     internal class BuildInHelpersFeature : IFeature
     {
         private ICompiledHandlebarsConfiguration _configuration;
