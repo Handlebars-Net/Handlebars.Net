@@ -1,29 +1,26 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 using BenchmarkDotNet.Attributes;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Extension.CompileFast;
 using Newtonsoft.Json.Linq;
 
-namespace Benchmark
+namespace HandlebarsNet.Benchmark
 {
     public class Execution
     {
-        [Params(2, 5, 10)]
-        public int N;
-
-        [Params("current", "current-cache", "current-fast", "current-fast-cache", "1.10.1")]
-        public string Version;
-
-        [Params("object", "dictionary")]
-        public string DataType;
-        
-        private Action<TextWriter, object>[] _templates;
-        
         private object _data;
+        private Action<TextWriter, object> _template;
+
+        [Params(2, 5, 10)]
+        public int N { get; }
+
+        [Params("current", "current-cache", "current-fast", "current-fast-cache")]
+        public string Version { get; }
+
+        [Params("object", "dictionary", "json")]
+        public string DataType { get; }
 
         [GlobalSetup]
         public void Setup()
@@ -61,49 +58,27 @@ namespace Benchmark
                     break;
                 
                 case "dictionary":
-                    _data = new Dictionary<string, object>(){ ["level1"] = DictionaryLevel1Generator()};
+                    _data = new Dictionary<string, object>{["level1"] = DictionaryLevel1Generator()};
                     break;
                 
                 case "json":
                     _data = new JObject {["level1"] = JsonLevel1Generator()};
                     break;
             }
-            
-            if (!Version.StartsWith("current"))
-            {
-                var assembly = Assembly.LoadFile($"{Environment.CurrentDirectory}\\PreviousVersion\\{Version}.dll");
-                var type = assembly.GetTypes().FirstOrDefault(o => o.Name == nameof(Handlebars));
-                var methodInfo = type.GetMethod("Create");
-                var handlebars = methodInfo.Invoke(null, new object[]{ null });
-                var objType = handlebars.GetType();
 
-                using (var reader = new StringReader(template))
-                {
-                    var compileMethod = objType.GetMethod("Compile", new[] {typeof(TextReader)});
-                    _templates = new[]
-                    {
-                        (Action<TextWriter, object>) compileMethod.Invoke(handlebars, new[] {reader}),
-                    };
-                }
-            }
-            else
+            var handlebars = Handlebars.Create();
+            handlebars.Configuration.CompileTimeConfiguration.UseAggressiveCaching = Version.Contains("cache");
+
+            if (Version.Contains("fast"))
             {
-                Handlebars.Configuration.CompileTimeConfiguration.UseAggressiveCaching = Version.Contains("cache");
-                
-                if (Version.Contains("fast"))
-                {
-                    Handlebars.Configuration.UseCompileFast();
-                }
-                
-                using (var reader = new StringReader(template))
-                {
-                    _templates = new[]
-                    {
-                        Handlebars.Compile(reader)
-                    };
-                }
+                handlebars.Configuration.UseCompileFast();
             }
-            
+
+            using (var reader = new StringReader(template))
+            {
+                _template = handlebars.Compile(reader);
+            }
+
             List<object> ObjectLevel1Generator()
             {
                 var level = new List<object>();
@@ -240,7 +215,7 @@ namespace Benchmark
         [Benchmark]
         public void Render()
         {
-            _templates[0].Invoke(TextWriter.Null, _data);
+            _template(TextWriter.Null, _data);
         }
     }
 }

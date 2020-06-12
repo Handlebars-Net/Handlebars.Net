@@ -6,42 +6,22 @@ using BenchmarkDotNet.Jobs;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Extension.CompileFast;
 
-namespace Benchmark
+namespace HandlebarsNet.Benchmark
 {
-    [SimpleJob(RuntimeMoniker.NetCoreApp31)]
     public class Compilation
     {
         private IHandlebars _handlebars;
 
-        [Params("current", "current-fast", "1.10.1")]
-        public string Version;
+        [Params("current", "current-fast")]
+        public string Version { get; }
         
-        private Func<string, Func<object, string>> _compileMethod;
-        private object _handlebarsRef;
-
         [GlobalSetup]
         public void Setup()
         {
-            if (!Version.StartsWith("current"))
+            _handlebars = Handlebars.Create();
+            if (Version.Contains("fast"))
             {
-                var assembly = Assembly.LoadFile($"{Environment.CurrentDirectory}\\PreviousVersion\\{Version}.dll");
-                var type = assembly.GetTypes().FirstOrDefault(o => o.Name == nameof(Handlebars));
-                var methodInfo = type.GetMethod("Create");
-                _handlebarsRef = methodInfo.Invoke(null, new object[]{ null });
-                var objType = _handlebarsRef.GetType();
-
-                var compileMethod = objType.GetMethod("Compile", new[]{typeof(string)});
-                _compileMethod = (Func<string, Func<object, string>>) compileMethod.CreateDelegate(typeof(Func<string, Func<object, string>>), _handlebarsRef);
-            }
-            else
-            {
-                _handlebars = Handlebars.Create();
-                if (Version.Contains("fast"))
-                {
-                    _handlebars.Configuration.UseCompileFast();
-                }
-
-                _compileMethod = _handlebars.Compile;
+                _handlebars.Configuration.UseCompileFast();
             }
         }
 
@@ -74,12 +54,7 @@ namespace Benchmark
                     {{/each}}    
                 {{/each}}";
             
-            return Compile(template);
-        }
-
-        private Func<object, string> Compile(string template)
-        {
-            return _compileMethod(template);
+            return _handlebars.Compile(template);
         }
     }
 }

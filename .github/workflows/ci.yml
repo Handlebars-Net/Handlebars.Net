@@ -34,9 +34,12 @@ jobs:
 
 
   test-linux:
-    name: Tests on Linux
     runs-on: ubuntu-latest
     needs: [build]
+    strategy:
+      matrix:
+        dotnet: [ '2.1.807', '3.1.102' ]
+    name: Tests on Linux (${{ matrix.dotnet }})
     steps:
       - uses: actions/checkout@master
       - name: Setup dotnet
@@ -47,17 +50,19 @@ jobs:
         working-directory: ./source
         run: dotnet test Handlebars.sln --logger:trx
 
-
   test-macos:
-    name: Tests on MacOS
     runs-on: macos-latest
     needs: [build]
+    strategy:
+      matrix:
+        dotnet: [ '2.1.807', '3.1.102' ]
+    name: Tests on MacOS (${{ matrix.dotnet }})
     steps:
       - uses: actions/checkout@master
       - name: Setup dotnet
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 3.1.102
+          dotnet-version: ${{ matrix.dotnet }}
       - name: Test
         working-directory: ./source
         run: dotnet test Handlebars.sln --logger:trx
@@ -84,7 +89,7 @@ jobs:
         beginArguments: >
             /d:sonar.verbose="true"
             /d:sonar.cs.opencover.reportsPaths="**/*.opencover.xml"
-            /d:sonar.coverage.exclusions="**/*.md"
+            /d:sonar.coverage.exclusions="**/*.md;source/Handlebars.Benchmark/**"
             /d:sonar.cs.vstest.reportsPaths="**/*.trx"
             
       env:
