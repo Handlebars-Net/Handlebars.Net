@@ -22,7 +22,8 @@ namespace HandlebarsDotNet
         {
             new BuildInHelpersFeatureFactory(),
             new ClosureFeatureFactory(),
-            new DefaultCompilerFeatureFactory()
+            new DefaultCompilerFeatureFactory(),
+            new MissingHelperFeatureFactory()
         };
         
         /// <inheritdoc cref="IMemberAliasProvider"/>

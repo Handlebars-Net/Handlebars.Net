@@ -100,5 +100,8 @@ namespace HandlebarsDotNet
         /// List of associated <see cref="IFeature"/>s
         /// </summary>
         IReadOnlyList<IFeature> Features { get; }
+        
+        /// <inheritdoc cref="IReadOnlyPathInfoStore"/>
+        IReadOnlyPathInfoStore PathInfoStore { get; }
     }
 }

@@ -10,24 +10,15 @@ namespace HandlebarsDotNet.Features
     {
         private Dictionary<object, int> _objectSet = new Dictionary<object, int>();
         private List<object> _inner = new List<object>();
-        
+
         /// <summary>
         /// Actual closure storage
         /// </summary>
-        public object[] Store = new object[0];
+        public object[] Store { get; private set; }
 
-        /// <summary>
-        /// Index for the next item reference
-        /// </summary>
-        public int CurrentIndex => _inner?.Count ?? -1;
+        internal int CurrentIndex => _inner?.Count ?? -1;
         
-        //public object[] Store => _store;
-        
-        /// <summary>
-        /// Adds value to store
-        /// </summary>
-        /// <param name="key"></param>
-        public object this[int key]
+        internal object this[int key]
         {
             set
             {
@@ -36,14 +27,8 @@ namespace HandlebarsDotNet.Features
                 _objectSet?.Add(value, key);
             }
         }
-
-        /// <summary>
-        /// Uses reverse index to lookup for object key in storage using it's value
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public bool TryGetKeyByValue(object obj, out int key)
+        
+        internal bool TryGetKeyByValue(object obj, out int key)
         {
             key = -1;
             if (obj != null) return _objectSet?.TryGetValue(obj, out key) ?? false;
@@ -55,7 +40,7 @@ namespace HandlebarsDotNet.Features
         {
             if(_inner == null) return;
             
-            Array.Resize(ref Store, _inner.Count);
+            Store = new object[_inner.Count];
             _inner.CopyTo(Store, 0);
             
             _inner.Clear();

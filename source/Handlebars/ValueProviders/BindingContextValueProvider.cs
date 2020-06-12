@@ -41,7 +41,7 @@ namespace HandlebarsDotNet.ValueProviders
             if(
                 descriptorProvider.CanHandleType(instanceType) && 
                 descriptorProvider.TryGetDescriptor(instanceType, out var descriptor) &&
-                descriptor.MemberAccessor.TryGetValue(instance, instanceType, segment.Value, out value)
+                descriptor.MemberAccessor.TryGetValue(instance, instanceType, segment, out value)
             )
             {
                 return true;

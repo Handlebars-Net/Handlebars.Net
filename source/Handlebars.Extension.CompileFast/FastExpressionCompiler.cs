@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Expressions.Shortcuts;
 using FastExpressionCompiler;
 using HandlebarsDotNet.Features;
+using static Expressions.Shortcuts.ExpressionShortcuts;
 
 namespace HandlebarsDotNet.Extension.CompileFast
 {
@@ -46,11 +46,10 @@ namespace HandlebarsDotNet.Extension.CompileFast
             var compiledLambda = method?.Invoke(null, new object[] { lambda }) ?? throw new InvalidOperationException("lambda cannot be compiled");
 
             var outerParameters = expression.Parameters.Select(o => Expression.Parameter(o.Type, o.Name)).ToArray();
-
-            var store = (Expression) Expression.Field(Expression.Constant(_templateClosure), nameof(TemplateClosure.Store));
-            var outerLambda = Expression.Lambda<T>(
-                Expression.Invoke(Expression.Constant(compiledLambda), new[] {store}.Concat(outerParameters)),
-                outerParameters);
+            var store = Arg(_templateClosure).Member(o => o.Store);
+            var parameterExpressions = new[] { store.Expression }.Concat(outerParameters);
+            var invocationExpression = Expression.Invoke(Expression.Constant(compiledLambda), parameterExpressions);
+            var outerLambda = Expression.Lambda<T>(invocationExpression, outerParameters);
             
             return outerLambda.CompileFast();
         }

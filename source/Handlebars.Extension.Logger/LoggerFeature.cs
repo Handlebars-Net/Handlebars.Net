@@ -26,7 +26,18 @@ namespace HandlebarsDotNet.Extension.Logger
         
         public void OnCompiling(ICompiledHandlebarsConfiguration configuration)
         {
-            configuration.ReturnHelpers["log"] = LogHelper;
+            if (configuration.ReturnHelpers.TryGetValue("log", out var logger))
+            {
+                configuration.ReturnHelpers["log"] = (context, arguments) =>
+                {
+                    logger(context, arguments);
+                    return LogHelper(context, arguments);
+                };
+            }
+            else
+            {
+                configuration.ReturnHelpers["log"] = LogHelper;   
+            }
         }
 
         public void CompilationCompleted()

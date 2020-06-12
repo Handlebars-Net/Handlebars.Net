@@ -22,9 +22,10 @@ namespace HandlebarsDotNet.Compiler
         
         protected override Expression VisitHelperExpression(HelperExpression hex)
         {
-            var pathInfo = CompilationContext.Configuration.Paths.GetOrAdd(hex.HelperName);
+            var pathInfo = CompilationContext.Configuration.PathInfoStore.GetOrAdd(hex.HelperName);
             if(!pathInfo.IsValidHelperLiteral) return Expression.Empty();
-            
+
+            var readerContext = Arg(hex.Context);
             var helperName = pathInfo.Segments[0].PathChain[0].TrimmedValue;
             var bindingContext = Arg<BindingContext>(CompilationContext.BindingContext);
             var contextValue = bindingContext.Property(o => o.Value);
@@ -60,7 +61,7 @@ namespace HandlebarsDotNet.Compiler
 
             return Call(() => 
                 CaptureResult(textWriter, Call(() => 
-                    LateBindHelperExpression(bindingContext, helperName, args)
+                    LateBindHelperExpression(bindingContext, helperName, args, (IReaderContext) readerContext)
                 ))
             );
         }
@@ -96,7 +97,8 @@ namespace HandlebarsDotNet.Compiler
             return new ResultHolder(false, null);
         }
         
-        private static object LateBindHelperExpression(BindingContext context, string helperName, object[] arguments)
+        private static object LateBindHelperExpression(BindingContext context, string helperName, object[] arguments,
+            IReaderContext readerContext)
         {
             var result = TryLateBindHelperExpression(context, helperName, arguments);
             if (result.Success)
@@ -104,7 +106,7 @@ namespace HandlebarsDotNet.Compiler
                 return result.Value;
             }
 
-            throw new HandlebarsRuntimeException($"Template references a helper that is not registered. Could not find helper '{helperName}'");
+            throw new HandlebarsRuntimeException($"Template references a helper that cannot be resolved. Helper '{helperName}'", readerContext);
         }
 
         private static object CaptureResult(TextWriter writer, object result)

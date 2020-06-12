@@ -79,5 +79,31 @@ namespace HandlebarsDotNet.Test
             actual = template(data);
             Assert.Equal(expected, actual);
         }
+        
+        // Issue https://github.com/rexm/Handlebars.Net/issues/354
+        [Fact]
+        public void BlockHelperWithInversion()
+        {
+            string source = "{{^test input}}empty{{else}}not empty{{/test}}";
+
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterHelper("test", (output, options, context, arguments) =>
+            {
+                if (HandlebarsUtils.IsTruthy(arguments[0]))
+                {
+                    options.Template(output, context);
+                }
+                else
+                {
+                    options.Inverse(output, context);
+                }
+            });
+
+            var template = handlebars.Compile(source);
+    
+            Assert.Equal("empty", template(null));
+            Assert.Equal("empty", template(new { otherInput = 1 }));
+            Assert.Equal("not empty", template(new { input = 1 }));
+        }
     }
 }

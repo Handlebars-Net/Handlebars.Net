@@ -51,7 +51,7 @@ namespace HandlebarsDotNet
         {
             if (context == null) return message;
 
-            return $"{message}\nOccured at:{context.LineNumber}:{context.CharNumber}";
+            return $"{message}\n\nOccured at: {context.LineNumber}:{context.CharNumber}";
         }
     }
 }

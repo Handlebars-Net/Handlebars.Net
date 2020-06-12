@@ -130,12 +130,11 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
             if (!(instance is UndefinedBindingResult))
                 return instance;
 
-            if (hashParameters == null || hashParameters.ContainsKey(chainSegment.Value) ||
+            if (hashParameters == null || hashParameters.ContainsKey(chainSegment) ||
                 context.ParentContext == null)
             {
                 if (context.Configuration.ThrowOnUnresolvedBindingExpression)
-                    throw new HandlebarsUndefinedBindingException(pathInfo.Path,
-                        (instance as UndefinedBindingResult).Value);
+                    throw new HandlebarsUndefinedBindingException(pathInfo, (instance as UndefinedBindingResult).Value);
                 return instance;
             }
 
@@ -143,7 +142,7 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
             if (!(instance is UndefinedBindingResult result)) return instance;
 
             if (context.Configuration.ThrowOnUnresolvedBindingExpression)
-                throw new HandlebarsUndefinedBindingException(pathInfo.Path, result.Value);
+                throw new HandlebarsUndefinedBindingException(pathInfo, result.Value);
             return result;
         }
         
@@ -160,7 +159,7 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
                             insideEscapeBlock = false;
                         }
 
-                        list[list.Count - 1] = new ChainSegment($"{list[list.Count - 1].Value}.{next}");
+                        list[list.Count - 1] = new ChainSegment($"{list[list.Count - 1].ToString()}.{next}");
                         return list;
                     }
 
@@ -187,7 +186,7 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
             if (chainSegment.IsVariable)
             {
                 return !context.TryGetContextVariable(ref chainSegment, out resolvedValue) 
-                    ? new UndefinedBindingResult(chainSegment.Value, context.Configuration) 
+                    ? new UndefinedBindingResult(chainSegment, context.Configuration) 
                     : resolvedValue;
             }
 
@@ -204,7 +203,7 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
                 return resolvedValue;
             }
 
-            return new UndefinedBindingResult(chainSegment.Value, context.Configuration);
+            return new UndefinedBindingResult(chainSegment, context.Configuration);
         }
 
         public static bool TryAccessMember(object instance, ref ChainSegment chainSegment, ICompiledHandlebarsConfiguration configuration, out object value)
@@ -215,10 +214,10 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
                 return false;
             }
             
-            var memberName = chainSegment.Value;
+            var memberName = chainSegment.ToString();
             var instanceType = instance.GetType();
             memberName = TryResolveMemberName(instance, memberName, configuration, out var result) 
-                ? TrimSquareBrackets(result).Intern() 
+                ? ChainSegment.TrimSquareBrackets(result).Intern() 
                 : chainSegment.TrimmedValue;
 
             if (!configuration.ObjectDescriptorProvider.CanHandleType(instanceType))
@@ -234,17 +233,6 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
             }
             
             return descriptor.MemberAccessor.TryGetValue(instance, instanceType, memberName, out value);
-        }
-
-        private static string TrimSquareBrackets(string key)
-        {
-            //Only trim a single layer of brackets.
-            if (key.StartsWith("[") && key.EndsWith("]"))
-            {
-                return key.Substring(1, key.Length - 2);
-            }
-
-            return key;
         }
 
         private static bool TryResolveMemberName(object instance, string memberName, ICompiledHandlebarsConfiguration configuration, out string value)
