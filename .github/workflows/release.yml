@@ -6,6 +6,7 @@ on:
 
 jobs:
   publish:
+    name: Publish
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
@@ -15,16 +16,10 @@ jobs:
         with:
           dotnet-version: 3.1.100
 
-      - name: Build netstandard2.0
+      - name: Pack
         working-directory: ./source
-        run: dotnet build Handlebars.Code.sln -c Release -f netstandard2.0
-      - name: Build netstandard1.3
-        working-directory: ./source
-        run: dotnet build Handlebars.Code.sln -c Release -f netstandard1.3
-      - name: Build net452
-        working-directory: ./source
-        run: dotnet build Handlebars.Code.sln -c Release -f net452
+        run: dotnet pack Handlebars.sln -c Release /p:version=${{ github.event.release.tag_name }}
 
-      - name: publish
+      - name: Publish to NuGet
         working-directory: ./source
-        run: dotnet pack Handlebars.Code.sln --no-build -c Release  /p:version=${{ github.event.release.tag_name }} && dotnet nuget push **/*.nupkg -k ${{ secrets.NUGET_TOKEN }} -s https://api.nuget.org/v3/index.json -n true
+        run: dotnet nuget push **/*.nupkg -k ${{ secrets.NUGET_TOKEN }} -s https://api.nuget.org/v3/index.json

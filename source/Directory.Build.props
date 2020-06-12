@@ -1,0 +1,28 @@
+<Project>
+    <PropertyGroup>
+        <SignAssembly>true</SignAssembly>
+        <AssemblyOriginatorKeyFile>..\..\handlebars.csharp.snk</AssemblyOriginatorKeyFile>
+    </PropertyGroup>
+    
+    <PropertyGroup>
+        <PackageLicense>PACKAGE-LICENSE</PackageLicense>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <Owner>Oleh Formaniuk</Owner>
+        <Copyright>Copyright © 2020 Oleh Formaniuk</Copyright>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <Content Include="..\..\LICENSE">
+            <Visible>false</Visible>
+            <Pack>true</Pack>
+            <PackagePath>.</PackagePath>
+        </Content>
+        <Content Include="..\..\PACKAGE-LICENSE">
+            <Visible>false</Visible>
+            <Pack>true</Pack>
+            <PackagePath>.</PackagePath>
+        </Content>
+    </ItemGroup>
+</Project>
