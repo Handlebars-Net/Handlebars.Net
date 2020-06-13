@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <AssemblyName>Handlebars</AssemblyName>
@@ -27,6 +27,7 @@
     <PackageTags>handlebars;mustache;templating;engine;compiler</PackageTags>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/zjklee/handlebars.csharp</RepositoryUrl>
+    <PackageReleaseNotes>https://github.com/zjklee/Handlebars.CSharp/releases/tag/$(Version)</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
