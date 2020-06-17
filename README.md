@@ -165,6 +165,42 @@ The animal, Fido, is a dog.
 The animal, Chewy, is not a dog.
 */
 ```
+
+### Compatibility feature toggles
+
+Compatibility feature toggles defines a set of settings responsible for controlling compilation/rendering behavior. Each of those settings would enable certain feature that would break compatibility with canonical Handlebars.
+By default all toggles are set to `false`. 
+
+##### Legend
+- Areas
+  - `Compile-time`: takes affect at the time of template compilation
+  - `Runtime`: takes affect at the time of template rendering
+
+#### `RelaxedHelperNaming`
+If `true` enables support for Handlebars.Net helper naming rules.
+This enables helper names to be not-valid Handlebars identifiers (e.g. `{{ one.two }}`).
+Such naming is not supported in Handlebarsjs and would break compatibility.
+
+##### Areas
+- `Compile-time`
+
+##### Example
+```c#
+[Fact]
+public void HelperWithDotSeparatedName()
+{
+    var source = "{{ one.two }}";
+    var handlebars = Handlebars.Create();
+    handlebars.Configuration.Compatibility.RelaxedHelperNaming = true;
+    handlebars.RegisterHelper("one.two", (context, arguments) => 42);
+
+    var template = handlebars.Compile(source);
+    var actual = template(null);
+    
+    Assert.Equal("42", actual);
+}
+```
+
 ## Performance
 
 ### Compilation
