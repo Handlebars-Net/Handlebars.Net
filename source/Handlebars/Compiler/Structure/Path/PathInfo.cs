@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using HandlebarsDotNet.Polyfills;
 
 namespace HandlebarsDotNet.Compiler.Structure.Path
 {
@@ -27,10 +29,16 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
             IsValidHelperLiteral = isValidHelperLiteral;
             HasValue = hasValue;
             _path = path;
+            
             IsVariable = path.StartsWith("@");
+            IsInversion = path.StartsWith("^");
+            IsBlockHelper = path.StartsWith("#");
+            IsBlockClose = path.StartsWith("/");
+            
             Segments = segments;
             ProcessSegment = processSegment;
-            IsThis = string.Equals(path, "this", StringComparison.OrdinalIgnoreCase) || path == ".";
+            TrimmedPath = string.Join(".", Segments?.SelectMany(o => o.PathChain).Select(o => o.TrimmedValue) ?? ArrayEx.Empty<string>());
+            IsThis = string.Equals(path, "this", StringComparison.OrdinalIgnoreCase) || path == "." || TrimmedPath.StartsWith("this.", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -40,6 +48,11 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
         
         /// <inheritdoc cref="PathSegment"/>
         public readonly PathSegment[] Segments;
+
+        internal readonly string TrimmedPath;
+        internal readonly bool IsInversion;
+        internal readonly bool IsBlockHelper;
+        internal readonly bool IsBlockClose;
 
         /// <inheritdoc />
         public bool Equals(PathInfo other)

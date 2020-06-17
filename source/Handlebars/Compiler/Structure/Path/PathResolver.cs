@@ -21,7 +21,7 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
             var isBlockHelper = path.StartsWith("#");
             if (isVariable || isBlockHelper || isInversion)
             {
-                isValidHelperLiteral = false;
+                isValidHelperLiteral = isBlockHelper || isInversion;
                 path = path.Substring(1);
             }
 
@@ -149,34 +149,36 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
         private static IEnumerable<ChainSegment> GetPathChain(string segmentString)
         {
             var insideEscapeBlock = false;
-            var pathChain = segmentString.Split('.')
-                .Aggregate(new List<ChainSegment>(), (list, next) =>
+            var pathChainParts = segmentString.Split(new[]{'.'}, StringSplitOptions.RemoveEmptyEntries);
+            if (pathChainParts.Length == 0 && segmentString == ".") return new[] { new ChainSegment("this") };
+            
+            var pathChain = pathChainParts.Aggregate(new List<ChainSegment>(), (list, next) =>
+            {
+                if (insideEscapeBlock)
                 {
-                    if (insideEscapeBlock)
-                    {
-                        if (next.EndsWith("]"))
-                        {
-                            insideEscapeBlock = false;
-                        }
-
-                        list[list.Count - 1] = new ChainSegment($"{list[list.Count - 1].ToString()}.{next}");
-                        return list;
-                    }
-
-                    if (next.StartsWith("["))
-                    {
-                        insideEscapeBlock = true;
-                    }
-
                     if (next.EndsWith("]"))
                     {
                         insideEscapeBlock = false;
                     }
 
-                    list.Add(new ChainSegment(next));
+                    list[list.Count - 1] = new ChainSegment($"{list[list.Count - 1].ToString()}.{next}");
                     return list;
-                });
-            
+                }
+
+                if (next.StartsWith("["))
+                {
+                    insideEscapeBlock = true;
+                }
+
+                if (next.EndsWith("]"))
+                {
+                    insideEscapeBlock = false;
+                }
+
+                list.Add(new ChainSegment(next));
+                return list;
+            });
+
             return pathChain;
         }
 

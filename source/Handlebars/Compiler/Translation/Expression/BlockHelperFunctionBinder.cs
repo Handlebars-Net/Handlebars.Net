@@ -27,7 +27,8 @@ namespace HandlebarsDotNet.Compiler
         protected override Expression VisitBlockHelperExpression(BlockHelperExpression bhex)
         {
             var isInlinePartial = bhex.HelperName == "#*inline";
-            
+
+            var pathInfo = CompilationContext.Configuration.PathInfoStore.GetOrAdd(bhex.HelperName);
             var context = Arg<BindingContext>(CompilationContext.BindingContext);
             var bindingContext = isInlinePartial 
                 ? context.Cast<object>()
@@ -36,8 +37,8 @@ namespace HandlebarsDotNet.Compiler
             var readerContext = Arg(bhex.Context);
             var body = FunctionBuilder.CompileCore(((BlockExpression) bhex.Body).Expressions, CompilationContext.Configuration);
             var inverse = FunctionBuilder.CompileCore(((BlockExpression) bhex.Inversion).Expressions, CompilationContext.Configuration);
-            var helperName = bhex.HelperName.TrimStart('#', '^');
-            var helperPrefix = bhex.IsRaw ? '#' : bhex.HelperName[0];
+            var helperName = pathInfo.TrimmedPath;
+            var helperPrefix = bhex.IsRaw || pathInfo.IsBlockHelper ? '#' : '^';
             var textWriter = context.Property(o => o.TextWriter);
             var args = bhex.Arguments
                 .ApplyOn((PathExpression pex) => pex.Context = PathExpression.ResolutionContext.Parameter)

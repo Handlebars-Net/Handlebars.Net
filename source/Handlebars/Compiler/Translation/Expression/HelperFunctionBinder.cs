@@ -23,10 +23,10 @@ namespace HandlebarsDotNet.Compiler
         protected override Expression VisitHelperExpression(HelperExpression hex)
         {
             var pathInfo = CompilationContext.Configuration.PathInfoStore.GetOrAdd(hex.HelperName);
-            if(!pathInfo.IsValidHelperLiteral) return Expression.Empty();
+            if(!pathInfo.IsValidHelperLiteral && !CompilationContext.Configuration.Compatibility.RelaxedHelperNaming) return Expression.Empty();
 
             var readerContext = Arg(hex.Context);
-            var helperName = pathInfo.Segments[0].PathChain[0].TrimmedValue;
+            var helperName = pathInfo.TrimmedPath;
             var bindingContext = Arg<BindingContext>(CompilationContext.BindingContext);
             var contextValue = bindingContext.Property(o => o.Value);
             var textWriter = bindingContext.Property(o => o.TextWriter);

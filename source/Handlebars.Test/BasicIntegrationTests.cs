@@ -22,6 +22,7 @@ namespace HandlebarsDotNet.Test
         {
             Handlebars.Create(),
             Handlebars.Create(new HandlebarsConfiguration{ CompileTimeConfiguration = { UseAggressiveCaching = false}}),
+            Handlebars.Create(new HandlebarsConfiguration().Configure(o => o.Compatibility.RelaxedHelperNaming = true)),
             Handlebars.Create(new HandlebarsConfiguration().UseCompileFast()),
             Handlebars.Create(new HandlebarsConfiguration().UseWarmUp(types =>
             {
@@ -618,7 +619,7 @@ false
             var result = template(data);
             Assert.Equal("hello world ", result);
         }
-        
+
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
         public void DictionaryEnumeratorWithBlockParams(IHandlebars handlebars)
         {
@@ -1861,6 +1862,26 @@ false
             
             var log = Assert.Single(logs);
             Assert.Equal("foo; bar", log);
+        }
+        
+        [Theory]
+        [InlineData("[one].two")]
+        [InlineData("one.[two]")]
+        [InlineData("[one].[two]")]
+        [InlineData("one.two")]
+        public void ReferencingDirectlyVariableWhenHelperRegistered(string helperName)
+        {
+            foreach (IHandlebars handlebars in new HandlebarsEnvGenerator().Select(o => o[0]))
+            {
+                var source = "{{ ./" + helperName + " }}";
+                handlebars.RegisterHelper("one.two", (context, arguments) => 0);
+
+                var template = handlebars.Compile(source);
+
+                var actual = template(new { one = new { two = 42 } });
+            
+                Assert.Equal("42", actual);   
+            }
         }
 
         private class StringHelperResolver : IHelperResolver

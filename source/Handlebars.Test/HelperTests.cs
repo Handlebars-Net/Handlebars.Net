@@ -29,8 +29,45 @@ namespace HandlebarsDotNet.Test
 
             Assert.Equal(expected, output);
         }
+
+        [Theory]
+        [InlineData("one.two")]
+        [InlineData("[one.two]")]
+        [InlineData("[one].two")]
+        [InlineData("one.[two]")]
+        public void HelperWithDotSeparatedNameWithNoParameters(string helperName)
+        {
+            var source = "{{ " + helperName + " }}";
+            var handlebars = Handlebars.Create();
+            handlebars.Configuration.Compatibility.RelaxedHelperNaming = true;
+            handlebars.RegisterHelper("one.two", (context, arguments) => 42);
         
+            var template = handlebars.Compile(source);
         
+            var actual = template(null);
+            
+            Assert.Equal("42", actual);
+        }
+        
+        [Theory]
+        [InlineData("one.two")]
+        [InlineData("[one.two]")]
+        [InlineData("[one].two")]
+        [InlineData("one.[two]")]
+        public void HelperWithDotSeparatedNameWithParameters(string helperName)
+        {
+            var source = "{{ " + helperName + " 'a' 'b' }}";
+            var handlebars = Handlebars.Create();
+            handlebars.Configuration.Compatibility.RelaxedHelperNaming = true;
+            handlebars.RegisterHelper("one.two", (context, arguments) => "42" + arguments[0] + arguments[1]);
+        
+            var template = handlebars.Compile(source);
+        
+            var actual = template(null);
+            
+            Assert.Equal("42ab", actual);
+        }
+
         [Fact]
         public void BlockHelperWithBlockParams()
         {

@@ -31,18 +31,14 @@ namespace HandlebarsDotNet.Compiler
 
             var resolvePath = Call(() => PathResolver.ResolvePath(context, ref pathInfo));
 
-            if (!pathInfo.IsValidHelperLiteral || pathInfo.IsThis) return resolvePath;
-            
-            var helperName = pathInfo.Segments[0].PathChain[0].TrimmedValue;
+            if (pex.Context == PathExpression.ResolutionContext.Parameter) return resolvePath;
+            if (!pathInfo.IsValidHelperLiteral && !CompilationContext.Configuration.Compatibility.RelaxedHelperNaming || pathInfo.IsThis) return resolvePath;
+
+            var helperName = pathInfo.TrimmedPath;
             var tryBoundHelper = Call(() =>
                 HelperFunctionBinder.TryLateBindHelperExpression(context, helperName, ArrayEx.Empty<object>())
             );
 
-            if (pex.Context == PathExpression.ResolutionContext.Parameter)
-            {
-                return resolvePath;
-            }
-            
             return Block()
                 .Parameter<ResultHolder>(out var result, tryBoundHelper)
                 .Line(Condition()
