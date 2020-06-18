@@ -6,9 +6,9 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class ExpressionBuilder
     {
-        private readonly HandlebarsConfiguration _configuration;
+        private readonly InternalHandlebarsConfiguration _configuration;
 
-        public ExpressionBuilder(HandlebarsConfiguration configuration)
+        public ExpressionBuilder(InternalHandlebarsConfiguration configuration)
         {
             _configuration = configuration;
         }

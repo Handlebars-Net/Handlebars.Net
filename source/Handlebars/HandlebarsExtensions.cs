@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.IO;
 
 namespace HandlebarsDotNet
@@ -27,8 +28,20 @@ namespace HandlebarsDotNet
         {
             writer.WriteSafeString(value.ToString());
         }
+        
+        /// <summary>
+        /// Allows configuration manipulations
+        /// </summary>
+        /// <param name="configuration"></param>
+        /// <param name="config"></param>
+        /// <returns></returns>
+        public static HandlebarsConfiguration Configure(this HandlebarsConfiguration configuration, Action<HandlebarsConfiguration> config)
+        {
+            config(configuration);
 
-        [DebuggerDisplay("{_value}")]
+            return configuration;
+        }
+        
         private class SafeString : ISafeString
         {
             private readonly string _value;

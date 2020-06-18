@@ -15,14 +15,14 @@ namespace HandlebarsDotNet.Compiler
 
         public static IEnumerable<object> Convert(
             IEnumerable<object> sequence,
-            HandlebarsConfiguration configuration)
+            InternalHandlebarsConfiguration configuration)
         {
             return new HelperConverter(configuration).ConvertTokens(sequence).ToList();
         }
 
-        private readonly HandlebarsConfiguration _configuration;
+        private readonly InternalHandlebarsConfiguration _configuration;
 
-        private HelperConverter(HandlebarsConfiguration configuration)
+        private HelperConverter(InternalHandlebarsConfiguration configuration)
         {
             _configuration = configuration;
         }
@@ -71,25 +71,33 @@ namespace HandlebarsDotNet.Compiler
 
         private bool IsRegisteredHelperName(string name)
         {
+            var pathInfo = _configuration.PathInfoStore.GetOrAdd(name);
+            if (!pathInfo.IsValidHelperLiteral && !_configuration.Compatibility.RelaxedHelperNaming) return false;
+            if (pathInfo.IsBlockHelper || pathInfo.IsInversion || pathInfo.IsBlockClose) return false;
+            name = pathInfo.TrimmedPath;
+            
             return _configuration.Helpers.ContainsKey(name) || _configuration.ReturnHelpers.ContainsKey(name) || BuiltInHelpers.Contains(name);
         }
 
         private bool IsRegisteredBlockHelperName(string name, bool isRaw)
         {
-            if (!isRaw && !(name[0] == '#' || name[0] == '^')) return false;
-            name = name
-                .Replace("#", "")
-                .Replace("^", "");
+            var pathInfo = _configuration.PathInfoStore.GetOrAdd(name);
+            if (!pathInfo.IsValidHelperLiteral && !_configuration.Compatibility.RelaxedHelperNaming) return false;
+            if (!isRaw && !(pathInfo.IsBlockHelper || pathInfo.IsInversion)) return false;
+            if (pathInfo.IsBlockClose) return false;
+
+            name = pathInfo.TrimmedPath;
             
             return _configuration.BlockHelpers.ContainsKey(name) || BuiltInHelpers.Contains(name);
         }
         
         private bool IsUnregisteredBlockHelperName(string name, bool isRaw, IEnumerable<object> sequence)
         {
-            if (!isRaw && !(name[0] == '#' || name[0] == '^')) return false;
-            name = name
-                .Replace("#", "")
-                .Replace("^", "");
+            var pathInfo = _configuration.PathInfoStore.GetOrAdd(name);
+            if (!pathInfo.IsValidHelperLiteral && !_configuration.Compatibility.RelaxedHelperNaming) return false;
+            
+            if (!isRaw && !(pathInfo.IsBlockHelper || pathInfo.IsInversion)) return false;
+            name = name.Substring(1);
 
             var expectedBlockName = $"/{name}";
             return sequence.OfType<WordExpressionToken>().Any(o =>
