@@ -94,7 +94,7 @@ var result = template(data);
 
 ```c#
 Handlebars.RegisterHelper("link_to", (writer, context, parameters) => {
-  writer.WriteSafeString("<a href='" + context.url + "'>" + context.text + "</a>");
+    writer.WriteSafeString("<a href='" + (string)context.url + "'>" + (string)context.text + "</a>");
 });
 
 string source = @"Click here: {{link_to}}";
