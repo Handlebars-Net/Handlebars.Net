@@ -249,6 +249,8 @@ namespace HandlebarsDotNet.Compiler
                         innerContext.RegisterValueProvider(iterator);
                         template(context, context.TextWriter, innerContext);
                     }
+                    
+                    iterator.Index++;
                 }
 
                 if (iterator.Index == 0 && !enumerated)
