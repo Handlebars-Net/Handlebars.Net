@@ -16,7 +16,7 @@ namespace HandlebarsDotNet.MemberAccessors
         {
             _configuration = configuration;
             _inner = configuration.CompileTimeConfiguration.UseAggressiveCaching
-                ? (IMemberAccessor) new MemberAccessor<CompiledObjectTypeDescriptor>()
+                ? (IMemberAccessor) new MemberAccessor<CompiledObjectTypeDescriptor>() // will be removed in next iterations
                 : (IMemberAccessor) new MemberAccessor<RawObjectTypeDescriptor>();
         }
 

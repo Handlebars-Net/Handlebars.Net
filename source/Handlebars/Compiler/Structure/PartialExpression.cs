@@ -13,8 +13,6 @@ namespace HandlebarsDotNet.Compiler
 
         public override ExpressionType NodeType => (ExpressionType)HandlebarsExpressionType.PartialExpression;
 
-        //public override Type Type => typeof(void);
-
         public Expression PartialName { get; }
 
         public Expression Argument { get; }

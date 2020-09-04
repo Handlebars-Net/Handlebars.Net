@@ -5,9 +5,7 @@ using System.Linq;
 
 namespace HandlebarsDotNet
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    
     public static class HandlebarsUtils
     {
         /// <summary>
@@ -44,22 +42,12 @@ namespace HandlebarsDotNet
             }
             return false;
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
+        
         public static bool IsTruthyOrNonEmpty(object value)
         {
             return !IsFalsyOrEmpty(value);
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
+        
         public static bool IsFalsyOrEmpty(object value)
         {
             if(IsFalsy(value))

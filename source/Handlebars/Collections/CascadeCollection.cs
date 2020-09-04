@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace HandlebarsDotNet.Collections
 {
+    // Will be removed in next iterations
     internal class CascadeCollection<T> : ICollection<T>
     {
         private readonly ICollection<T> _outer;

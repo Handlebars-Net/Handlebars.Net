@@ -3,9 +3,6 @@ using System.Collections.Generic;
 
 namespace HandlebarsDotNet.Features
 {
-    /// <summary>
-    /// 
-    /// </summary>
     public static class WarmUpFeatureExtensions
     {
         /// <summary>

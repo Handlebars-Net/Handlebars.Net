@@ -5,11 +5,6 @@ using HandlebarsDotNet.Compiler;
 
 namespace HandlebarsDotNet
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="configuration"></param>
-    /// <param name="templatePath"></param>
     public delegate TextReader ViewReaderFactory(ICompiledHandlebarsConfiguration configuration, string templatePath);
     
     internal class HandlebarsEnvironment : IHandlebars

@@ -7,11 +7,6 @@ namespace HandlebarsDotNet
     /// </summary>
     public interface IExpressionMiddleware
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="expression"></param>
-        /// <returns></returns>
         Expression Invoke(Expression expression);
     }
 }

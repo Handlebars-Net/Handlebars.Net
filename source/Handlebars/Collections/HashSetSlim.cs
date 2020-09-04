@@ -3,6 +3,7 @@ using System.Threading;
 
 namespace HandlebarsDotNet.Collections
 {
+    // Will be removed in next iterations
     internal sealed class HashSetSlim<TKey>
     {
         private HashSet<TKey> _inner;

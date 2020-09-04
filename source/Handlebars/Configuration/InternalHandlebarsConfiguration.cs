@@ -66,7 +66,7 @@ namespace HandlebarsDotNet
                 Features = new List<IFeatureFactory>(configuration.CompileTimeConfiguration.Features),
                 AliasProviders = new List<IMemberAliasProvider>(configuration.CompileTimeConfiguration.AliasProviders)
                 {
-                    new CollectionMemberAliasProvider(this)
+                    new CollectionMemberAliasProvider(this) // will not be registered by default in next iterations
                 }
             };
             

@@ -27,9 +27,7 @@ namespace HandlebarsDotNet
     /// <param name="arguments"></param>
     public delegate void HandlebarsBlockHelper(TextWriter output, HelperOptions options, dynamic context, params object[] arguments);
 
-    /// <summary>
-    /// 
-    /// </summary>
+    
     public sealed class Handlebars
     {
         // Lazy-load Handlebars environment to ensure thread safety.  See Jon Skeet's excellent article on this for more info. http://csharpindepth.com/Articles/General/Singleton.aspx
@@ -47,22 +45,12 @@ namespace HandlebarsDotNet
             configuration = configuration ?? new HandlebarsConfiguration();
             return new HandlebarsEnvironment(configuration);
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="template"></param>
-        /// <returns></returns>
+        
         public static Action<TextWriter, object> Compile(TextReader template)
         {
             return Instance.Compile(template);
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="template"></param>
-        /// <returns></returns>
+        
         public static Func<object, string> Compile(string template)
         {
             return Instance.Compile(template);
@@ -77,33 +65,17 @@ namespace HandlebarsDotNet
         {
             return Instance.CompileView(templatePath);
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="templatePath"></param>
-        /// <param name="readerFactoryFactory"></param>
-        /// <returns></returns>
+        
         public static Action<TextWriter, object> CompileView(string templatePath, ViewReaderFactory readerFactoryFactory)
         {
             return Instance.CompileView(templatePath, readerFactoryFactory);
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="templateName"></param>
-        /// <param name="template"></param>
+        
         public static void RegisterTemplate(string templateName, Action<TextWriter, object> template)
         {
             Instance.RegisterTemplate(templateName, template);
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="templateName"></param>
-        /// <param name="template"></param>
+        
         public static void RegisterTemplate(string templateName, string template)
         {
             Instance.RegisterTemplate(templateName, template);

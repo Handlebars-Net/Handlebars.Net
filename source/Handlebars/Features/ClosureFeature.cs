@@ -25,9 +25,7 @@ namespace HandlebarsDotNet.Features
         /// </summary>
         internal ExpressionContainer<object[]> ClosureInternal { get; } = ExpressionShortcuts.Var<object[]>("closure");
 
-        /// <summary>
-        /// 
-        /// </summary>
+        
         public ParameterExpression Closure => (ParameterExpression) ClosureInternal.Expression;
 
         /// <summary>
@@ -40,9 +38,7 @@ namespace HandlebarsDotNet.Features
         /// </summary>
         public IExpressionMiddleware ExpressionMiddleware { get; }
 
-        /// <summary>
-        /// 
-        /// </summary>
+        
         public ClosureFeature()
         {
             ExpressionMiddleware = new ClosureExpressionMiddleware(TemplateClosure, ClosureInternal);

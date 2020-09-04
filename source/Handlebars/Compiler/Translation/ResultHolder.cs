@@ -1,5 +1,6 @@
 namespace HandlebarsDotNet.Compiler
 {
+    // Will be removed in next iterations
     internal struct ResultHolder
     {
         public readonly bool Success;

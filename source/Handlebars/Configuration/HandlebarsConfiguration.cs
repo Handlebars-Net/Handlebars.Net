@@ -8,60 +8,40 @@ using HandlebarsDotNet.Helpers;
 
 namespace HandlebarsDotNet
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    
     public class HandlebarsConfiguration
     {
-        /// <summary>
-        /// 
-        /// </summary>
+        
         public IDictionary<string, HandlebarsHelper> Helpers { get; protected set; }
         
-        /// <summary>
-        /// 
-        /// </summary>
+        
         public IDictionary<string, HandlebarsReturnHelper> ReturnHelpers { get; protected set; }
 
-        /// <summary>
-        /// 
-        /// </summary>
+        
         public IDictionary<string, HandlebarsBlockHelper> BlockHelpers { get; protected set; }
 
-        /// <summary>
-        /// 
-        /// </summary>
+        
         public IDictionary<string, Action<TextWriter, object>> RegisteredTemplates { get; protected set; }
         
         /// <inheritdoc cref="HandlebarsDotNet.Helpers.IHelperResolver"/>
         public ICollection<IHelperResolver> HelperResolvers { get; protected set; }
 
-        /// <summary>
-        /// 
-        /// </summary>
+        
         public virtual IExpressionNameResolver ExpressionNameResolver { get; set; }
 
-        /// <summary>
-        /// 
-        /// </summary>
+        
         public virtual ITextEncoder TextEncoder { get; set; } = new HtmlEncoder();
         
         /// <inheritdoc cref="IFormatProvider"/>
         public virtual IFormatProvider FormatProvider { get; set; } = CultureInfo.CurrentCulture;
 
-        /// <summary>
-        /// 
-        /// </summary>
+        
         public virtual ViewEngineFileSystem FileSystem { get; set; }
 
-        /// <summary>
-        /// 
-        /// </summary>
+        
 	    public virtual string UnresolvedBindingFormatter { get; set; }
 
-        /// <summary>
-        /// 
-        /// </summary>
+        
         public virtual bool ThrowOnUnresolvedBindingExpression { get; set; }
 
         /// <summary>
@@ -81,9 +61,7 @@ namespace HandlebarsDotNet
         /// <inheritdoc cref="HandlebarsDotNet.CompileTimeConfiguration"/>
         public virtual CompileTimeConfiguration CompileTimeConfiguration { get; } = new CompileTimeConfiguration();
 
-        /// <summary>
-        /// 
-        /// </summary>
+        
         public HandlebarsConfiguration()
         {
             Helpers = new ConcurrentDictionary<string, HandlebarsHelper>(StringComparer.OrdinalIgnoreCase);

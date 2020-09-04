@@ -1,7 +1,7 @@
 <Project>
     <PropertyGroup>
-        <SignAssembly>true</SignAssembly>
-        <AssemblyOriginatorKeyFile>..\..\handlebars.csharp.snk</AssemblyOriginatorKeyFile>
+        <SignAssembly>false</SignAssembly>
+        <AssemblyOriginatorKeyFile>TBD</AssemblyOriginatorKeyFile>
     </PropertyGroup>
     
     <PropertyGroup>
@@ -9,8 +9,12 @@
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <IncludeSymbols>true</IncludeSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-        <Owner>Oleh Formaniuk</Owner>
-        <Copyright>Copyright © 2020 Oleh Formaniuk</Copyright>
+        <Owner></Owner>
+        <Copyright></Copyright>
+    </PropertyGroup>
+    
+    <PropertyGroup>
+        <NoWarn>1591</NoWarn>
     </PropertyGroup>
     
     <ItemGroup>

@@ -6,6 +6,7 @@ using HandlebarsDotNet.Polyfills;
 
 namespace HandlebarsDotNet.Compiler.Structure.Path
 {
+    // A lot is going to be changed here in next iterations
     internal static partial class PathResolver
     {
         public static PathInfo GetPathInfo(string path)

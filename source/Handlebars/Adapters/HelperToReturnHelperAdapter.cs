@@ -1,5 +1,6 @@
 namespace HandlebarsDotNet.Adapters
 {
+    // Will be removed in next iterations
     internal class HelperToReturnHelperAdapter
     {
         private readonly HandlebarsHelper _helper;

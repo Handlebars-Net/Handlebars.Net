@@ -8,12 +8,6 @@ namespace HandlebarsDotNet
     /// </summary>
     public interface IExpressionCompiler
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="expression"></param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
         T Compile<T>(Expression<T> expression) where T: class;
     }
 }

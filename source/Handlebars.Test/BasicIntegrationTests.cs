@@ -10,8 +10,6 @@ using HandlebarsDotNet.Helpers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using HandlebarsDotNet.Features;
-using HandlebarsDotNet.Extension.CompileFast;
-using HandlebarsDotNet.Extension.Logger;
 using Xunit.Abstractions;
 
 namespace HandlebarsDotNet.Test
@@ -23,7 +21,6 @@ namespace HandlebarsDotNet.Test
             Handlebars.Create(),
             Handlebars.Create(new HandlebarsConfiguration{ CompileTimeConfiguration = { UseAggressiveCaching = false}}),
             Handlebars.Create(new HandlebarsConfiguration().Configure(o => o.Compatibility.RelaxedHelperNaming = true)),
-            Handlebars.Create(new HandlebarsConfiguration().UseCompileFast()),
             Handlebars.Create(new HandlebarsConfiguration().UseWarmUp(types =>
             {
                 types.Add(typeof(Dictionary<string, object>));
@@ -1783,64 +1780,55 @@ false
             
             Assert.Equal(data.input.ToLower(), actual);
         }
-        
-        [Fact]
-        public void BasicLog()
+
+        [Theory]
+        [InlineData("[one].two")]
+        [InlineData("one.[two]")]
+        [InlineData("[one].[two]")]
+        [InlineData("one.two")]
+        public void ReferencingDirectlyVariableWhenHelperRegistered(string helperName)
         {
-            var logs = new List<string>();
-            var handlebars = Handlebars.Create();
-            handlebars.Configuration
-                .UseLogger((arguments, level, format) => logs.Add(format(arguments)));
-            
-            var source = "{{log name}}";
-            var template = handlebars.Compile(source);
-            var data = new
+            foreach (IHandlebars handlebars in new HandlebarsEnvGenerator().Select(o => o[0]))
             {
-                name = "Handlebars.Net"
-            };
-            _ = template(data);
-            var log = Assert.Single(logs);
-            Assert.Equal("Handlebars.Net", log);
+                var source = "{{ ./" + helperName + " }}";
+                handlebars.RegisterHelper("one.two", (context, arguments) => 0);
+
+                var template = handlebars.Compile(source);
+
+                var actual = template(new { one = new { two = 42 } });
+            
+                Assert.Equal("42", actual);   
+            }
         }
-        
-        [Fact]
-        public void BasicLogWithLevel()
+
+        private class StringHelperResolver : IHelperResolver
         {
-            var logs = new List<string>();
-            var handlebars = Handlebars.Create();
-            handlebars.Configuration
-                .UseLogger((arguments, level, format) => logs.Add($"Level: {level} -> {format(arguments)}"));
-            
-            var source = $"{{{{log name level='{LoggingLevel.Warn}'}}}}";
-            var template = handlebars.Compile(source);
-            var data = new
+            public bool TryResolveReturnHelper(string name, Type targetType, out HandlebarsReturnHelper helper)
             {
-                name = "Handlebars.Net"
-            };
-            _ = template(data);
-            var log = Assert.Single(logs);
-            Assert.Equal("Level: Warn -> Handlebars.Net", log);
-        }
-        
-        [Fact]
-        public void BasicLogWithFormat()
-        {
-            var logs = new List<string>();
-            var handlebars = Handlebars.Create();
-            handlebars.Configuration
-                .UseLogger((arguments, level, format) => logs.Add(format(arguments)));
-            
-            var source = "{{log foo bar format='[0], [1]'}}";
-            var template = handlebars.Compile(source);
-            var data = new
+                if (targetType == typeof(string))
+                {
+                    var method = targetType.GetMethods(BindingFlags.Instance | BindingFlags.Public)
+                        .FirstOrDefault(o => string.Equals(o.Name, name, StringComparison.OrdinalIgnoreCase));
+
+                    if (method == null)
+                    {
+                        helper = null;
+                        return false;
+                    }
+
+                    helper = (context, arguments) => method.Invoke(arguments[0], arguments.Skip(1).ToArray());
+                    return true;
+                }
+                
+                helper = null;
+                return false;
+            }
+
+            public bool TryResolveBlockHelper(string name, out HandlebarsBlockHelper helper)
             {
-                foo = "foo",
-                bar = "bar"
-            };
-            _ = template(data);
-            
-            var log = Assert.Single(logs);
-            Assert.Equal("foo, bar", log);
+                helper = null;
+                return false;
+            }
         }
         
         [Fact]

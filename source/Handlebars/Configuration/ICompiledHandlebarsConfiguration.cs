@@ -8,74 +8,46 @@ using HandlebarsDotNet.ObjectDescriptors;
 
 namespace HandlebarsDotNet
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    
     public interface ICompiledHandlebarsConfiguration
     {
-        /// <summary>
-        /// 
-        /// </summary>
+        
         IExpressionNameResolver ExpressionNameResolver { get; }
         
-        /// <summary>
-        /// 
-        /// </summary>
+        
         ITextEncoder TextEncoder { get; }
         
-        /// <summary>
-        /// 
-        /// </summary>
+        
         IFormatProvider FormatProvider { get; }
         
-        /// <summary>
-        /// 
-        /// </summary>
+        
         ViewEngineFileSystem FileSystem { get; }
         
-        /// <summary>
-        /// 
-        /// </summary>
+        
         string UnresolvedBindingFormatter { get; }
         
-        /// <summary>
-        /// 
-        /// </summary>
+        
         bool ThrowOnUnresolvedBindingExpression { get; }
         
-        /// <summary>
-        /// 
-        /// </summary>
+        
         IPartialTemplateResolver PartialTemplateResolver { get; }
         
-        /// <summary>
-        /// 
-        /// </summary>
+        
         IMissingPartialTemplateHandler MissingPartialTemplateHandler { get; }
         
-        /// <summary>
-        /// 
-        /// </summary>
+        
         IDictionary<string, HandlebarsHelper> Helpers { get; }
         
-        /// <summary>
-        /// 
-        /// </summary>
+        
         IDictionary<string, HandlebarsReturnHelper> ReturnHelpers { get; }
         
-        /// <summary>
-        /// 
-        /// </summary>
+        
         IDictionary<string, HandlebarsBlockHelper> BlockHelpers { get; }
         
-        /// <summary>
-        /// 
-        /// </summary>
+        
         ICollection<IHelperResolver> HelperResolvers { get; }
         
-        /// <summary>
-        /// 
-        /// </summary>
+        
         IDictionary<string, Action<TextWriter, object>> RegisteredTemplates { get; }
         
         /// <inheritdoc cref="Compatibility"/>

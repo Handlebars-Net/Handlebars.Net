@@ -6,9 +6,7 @@ using HandlebarsDotNet.Compiler;
 
 namespace HandlebarsDotNet
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    
     public delegate void BlockParamsConfiguration(ConfigureBlockParams blockParamsConfiguration, params object[] dependencies);
     
     /// <summary>

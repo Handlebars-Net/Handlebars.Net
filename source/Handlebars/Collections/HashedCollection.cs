@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace HandlebarsDotNet.Compiler
+namespace HandlebarsDotNet.Collections
 {
     internal class HashedCollection<T> : IReadOnlyList<T>, ICollection<T> where T:class
     {

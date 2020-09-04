@@ -12,9 +12,6 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
         
         internal readonly string LowerInvariant;
         
-        /// <summary>
-        ///  
-        /// </summary>
         public ChainSegment(string value)
         {
             var segmentValue = string.IsNullOrEmpty(value) ? "this" : value.TrimStart('@').Intern();

@@ -1,4 +1,4 @@
-﻿using HandlebarsDotNet.Compiler.Lexer;
+using HandlebarsDotNet.Compiler.Lexer;
 using System.Collections.Generic;
 using System.Linq;
 

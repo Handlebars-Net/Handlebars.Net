@@ -4,9 +4,7 @@ using System.IO;
 
 namespace HandlebarsDotNet
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    
     public static class HandlebarsExtensions
     {
         /// <summary>
@@ -58,9 +56,7 @@ namespace HandlebarsDotNet
         }
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
+    
     public interface ISafeString
     {
     }

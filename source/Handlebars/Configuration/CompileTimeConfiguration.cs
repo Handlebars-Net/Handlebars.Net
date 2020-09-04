@@ -12,9 +12,7 @@ namespace HandlebarsDotNet
         /// <inheritdoc cref="ObjectDescriptor"/>
         public IList<IObjectDescriptorProvider> ObjectDescriptorProviders { get; } = new List<IObjectDescriptorProvider>();
         
-        /// <summary>
-        /// 
-        /// </summary>
+        
         public IList<IExpressionMiddleware> ExpressionMiddleware { get; internal set; } = new List<IExpressionMiddleware>();
         
         /// <inheritdoc cref="IFeature"/>

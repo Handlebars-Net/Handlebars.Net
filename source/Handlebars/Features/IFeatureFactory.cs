@@ -1,8 +1,6 @@
 namespace HandlebarsDotNet.Features
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    
     public interface IFeatureFactory
     {
         /// <summary>

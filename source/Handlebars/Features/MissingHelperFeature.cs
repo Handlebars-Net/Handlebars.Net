@@ -7,9 +7,6 @@ using HandlebarsDotNet.Helpers;
 
 namespace HandlebarsDotNet.Features
 {
-    /// <summary>
-    /// 
-    /// </summary>
     public static class MissingHelperFeatureExtension
     {
         /// <summary>

@@ -9,9 +9,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
     /// </summary>
     public class ObjectDescriptor : IEquatable<ObjectDescriptor>
     {
-        /// <summary>
-        /// 
-        /// </summary>
+        
         public static readonly ObjectDescriptor Empty = new ObjectDescriptor();
 
         private readonly bool _isNotEmpty;

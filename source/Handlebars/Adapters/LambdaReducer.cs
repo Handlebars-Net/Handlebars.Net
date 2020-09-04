@@ -4,6 +4,7 @@ using HandlebarsDotNet.Compiler;
 
 namespace HandlebarsDotNet.Adapters
 {
+    // Will be removed in next iterations
     internal class LambdaReducer
     {
         private readonly BindingContext _context;

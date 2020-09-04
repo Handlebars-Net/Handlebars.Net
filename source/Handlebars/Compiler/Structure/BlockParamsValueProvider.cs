@@ -6,6 +6,10 @@ using Microsoft.Extensions.ObjectPool;
 
 namespace HandlebarsDotNet.Compiler
 {
+    /*
+     * Is going to be changed in next iterations
+     */
+    
     /// <summary>
     /// Configures BlockParameters for current BlockHelper
     /// </summary>
