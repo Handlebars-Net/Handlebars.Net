@@ -1,0 +1,32 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    name: Publish
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Obtain SNK
+        id: obtain_snk
+        uses: timheuer/base64-to-file@v1.0.3
+        with:
+          fileName: 'SigningKey.snk'
+          encodedString: ${{ secrets.SNK_BASE64 }}
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 3.1.100
+
+      - name: Pack
+        working-directory: ./source
+        run: dotnet pack Handlebars.sln -c Release /p:version=${{ github.event.release.tag_name }} /p:AssemblyOriginatorKeyFile=${{ steps.obtain_snk.outputs.filePath }} /p:SignAssembly=true
+
+      - name: Publish to NuGet
+        working-directory: ./source
+        run: dotnet nuget push **/*.nupkg -k ${{ secrets.NUGET_PUSH_KEY }} -s https://api.nuget.org/v3/index.json

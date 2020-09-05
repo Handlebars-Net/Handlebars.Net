@@ -1,0 +1,26 @@
+<Project>
+    <PropertyGroup>
+        <SignAssembly>false</SignAssembly>
+        <AssemblyOriginatorKeyFile>ToBeObtained.snk</AssemblyOriginatorKeyFile> <!-- obtainde during publish from secrets -->
+    </PropertyGroup>
+    
+    <PropertyGroup>
+        <PackageLicense>LICENSE</PackageLicense>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <Owner>Rex Morgan; Handlebars-Net</Owner>
+    </PropertyGroup>
+    
+    <PropertyGroup>
+        <NoWarn>1591</NoWarn>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <Content Include="..\..\LICENSE">
+            <Visible>false</Visible>
+            <Pack>true</Pack>
+            <PackagePath>.</PackagePath>
+        </Content>
+    </ItemGroup>
+</Project>
