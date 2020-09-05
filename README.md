@@ -1,14 +1,6 @@
-## Handlebars.CSharp [![Build](https://github.com/zjklee/Handlebars.CSharp/workflows/CI/badge.svg)](https://github.com/zjklee/Handlebars.CSharp/actions?query=workflow%3ACI) [![Nuget](https://img.shields.io/nuget/v/handlebars.csharp)](https://www.nuget.org/packages/handlebars.csharp/)
-
-#### SonarCloud
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=zjklee_handlebars.csharp&metric=alert_status)](https://sonarcloud.io/dashboard?id=zjklee_handlebars.csharp)
-[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=zjklee_handlebars.csharp&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=zjklee_handlebars.csharp)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=zjklee_handlebars.csharp&metric=bugs)](https://sonarcloud.io/dashboard?id=zjklee_handlebars.csharp)
-[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=zjklee_handlebars.csharp&metric=vulnerabilities)](https://sonarcloud.io/dashboard?id=zjklee_handlebars.csharp)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=zjklee_handlebars.csharp&metric=coverage)](https://sonarcloud.io/dashboard?id=zjklee_handlebars.csharp)
-##
- 
-_This is a fork of [rexm/Handlebars.Net](https://github.com/rexm/Handlebars.Net) developed by @rexm. Unfortunately project had no activity for a while. I'd be glad to back-merge all the changes back to original repo if I'd have a chance. Meanwhile I'd try to support the fork._
+Handlebars.Net [![Build Status](https://travis-ci.org/rexm/Handlebars.Net.svg?branch=master)](https://travis-ci.org/rexm/Handlebars.Net) [![Nuget](https://img.shields.io/nuget/v/Handlebars.Net)](https://www.nuget.org/packages/Handlebars.Net/)
+==============
+**[Call for Input on v2](https://github.com/rexm/Handlebars.Net/issues/294)**
 
 Blistering-fast [Handlebars.js templates](http://handlebarsjs.com) in your .NET application.
 
@@ -19,19 +11,8 @@ Check out the [handlebars.js documentation](http://handlebarsjs.com) for how to 
 handlebars.csharp doesn't use a scripting engine to run a Javascript library - it **compiles Handlebars templates directly to IL bytecode**. It also mimics the JS library's API as closely as possible.
 
 ## Install
-```cmd
-dotnet add package Handlebars.CSharp
-```
-## Extensions
-| Package           | Version |
-|-------------------|---|
-| Handlebars.Extension.CompileFast | [![Nuget](https://img.shields.io/nuget/v/Handlebars.Extension.CompileFast)](https://www.nuget.org/packages/Handlebars.Extension.CompileFast/) |
-| Handlebars.Extension.Logging | [![Nuget](https://img.shields.io/nuget/v/Handlebars.Extension.Logging)](https://www.nuget.org/packages/Handlebars.Extension.Logging/) |
 
-#### See also
-| GitHub | NuGet |
-|---|---|
-| [![GitHub](https://img.shields.io/badge/StefH-Handlebars.Net.Helpers-blue?logo=github&style=flat-square)](https://github.com/StefH/Handlebars.Net.Helpers) | [![Nuget](https://img.shields.io/nuget/v/Handlebars.CSharp.Helpers)](https://www.nuget.org/packages/Handlebars.CSharp.Helpers/) |
+    dotnet add package Handlebars.Net
 
 ## Usage
 
@@ -217,9 +198,6 @@ Nearly all time spent in rendering is in the routine that resolves values agains
 - The slowest (up to hundreds of milliseconds or worse) tend to be objects with custom type implementations (such as `ICustomTypeDescriptor`) that are not optimized for heavy reflection.
 
 ~~A frequent performance issue that comes up is JSON.NET's `JObject`, which for reasons we haven't fully researched, has very slow reflection characteristics when used as a model in Handlebars.Net. A simple fix is to just use JSON.NET's built-in ability to deserialize a JSON string to an `ExpandoObject` instead of a `JObject`. This will yield nearly an order of magnitude improvement in render times on average.~~
-
-### More
-For mo retails see [Performance measurements](Performance.md)
 
 ## Future roadmap
 
