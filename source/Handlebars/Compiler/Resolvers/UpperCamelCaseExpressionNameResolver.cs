@@ -2,10 +2,8 @@
 
 namespace HandlebarsDotNet.Compiler.Resolvers
 {
-    /// <inheritdoc />
     public class UpperCamelCaseExpressionNameResolver : IExpressionNameResolver
     {
-        /// <inheritdoc />
         public string ResolveExpressionName(object instance, string expressionName)
         {
             if (string.IsNullOrEmpty(expressionName))

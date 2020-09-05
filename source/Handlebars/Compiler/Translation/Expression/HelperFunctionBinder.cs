@@ -66,6 +66,7 @@ namespace HandlebarsDotNet.Compiler
             );
         }
 
+        // will be significantly improved in next iterations
         public static ResultHolder TryLateBindHelperExpression(BindingContext context, string helperName, object[] arguments)
         {
             var configuration = context.Configuration;

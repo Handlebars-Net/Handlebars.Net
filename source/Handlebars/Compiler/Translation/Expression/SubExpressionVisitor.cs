@@ -8,6 +8,7 @@ using Expressions.Shortcuts;
 
 namespace HandlebarsDotNet.Compiler
 {
+    // will be significantly improved in next iterations
     internal class SubExpressionVisitor : HandlebarsExpressionVisitor
     {
         private readonly IExpressionCompiler _expressionCompiler;

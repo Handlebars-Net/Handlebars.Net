@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace HandlebarsDotNet.Compiler.Lexer
 {
@@ -48,7 +49,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
                     {
                         var peek = (char) reader.Peek();
 
-                        if (peek == '}' || peek == '~' || peek == ')' || peek == '=' || char.IsWhiteSpace(peek) && CanBreakAtSpace(new StringBuilderEnumerator(buffer)))
+                        if (peek == '}' || peek == '~' || peek == ')' || peek == '=' || char.IsWhiteSpace(peek) && CanBreakAtSpace(buffer))
                         {
                             break;
                         }
@@ -73,32 +74,32 @@ namespace HandlebarsDotNet.Compiler.Lexer
             }
         }
 
-        private static bool CanBreakAtSpace(IEnumerable<char> buffer)
+        private static bool CanBreakAtSpace(StringBuilder buffer)
         {
             CalculateBraces(buffer, out var left, out var right);
 
             return left == 0 || left == right;
         }
 
-        private static void CalculateBraces(IEnumerable<char> buffer, out int left, out int right)
+        private static void CalculateBraces(StringBuilder buffer, out int left, out int right)
         {
-            var result = buffer.Aggregate(new {Right = 0, Left = 0}, (acc, a) =>
+            left = 0;
+            right = 0;
+            
+            var enumerator = new StringBuilderEnumerator(buffer);
+            while (enumerator.MoveNext())
             {
-                if (a == ']')
+                switch (enumerator.Current)
                 {
-                    return new {Right = acc.Right + 1, acc.Left};
+                    case ']':
+                        right++;
+                        break;
+                    
+                    case '[':
+                        left++;
+                        break;
                 }
-
-                if (a == '[')
-                {
-                    return new {acc.Right, Left = acc.Left + 1};
-                }
-
-                return acc;
-            });
-
-            left = result.Left;
-            right = result.Right;
+            }
         }
     }
 }

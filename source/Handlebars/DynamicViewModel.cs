@@ -5,28 +5,18 @@ using System.Reflection;
 
 namespace HandlebarsDotNet
 {
-    /// <summary>
-    /// 
-    /// </summary>
     public class DynamicViewModel : DynamicObject
     {
-        /// <summary>
-        /// 
-        /// </summary>
         public object[] Objects { get; set; }
 
         private static readonly BindingFlags BindingFlags = BindingFlags.Public | BindingFlags.Instance |
                                                             BindingFlags.IgnoreCase;
 
-        /// <summary>
-        /// 
-        /// </summary>
         public DynamicViewModel(params object[] objects)
         {
             Objects = objects;
         }
 
-        /// <inheritdoc />
         public override IEnumerable<string> GetDynamicMemberNames()
         {
             return Objects.Select(o => o.GetType())
@@ -34,7 +24,6 @@ namespace HandlebarsDotNet
                 .Select(m => m.Name);
         }
 
-        /// <inheritdoc />
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
             result = null;

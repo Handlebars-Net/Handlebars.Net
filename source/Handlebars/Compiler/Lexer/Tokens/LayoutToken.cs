@@ -9,8 +9,14 @@
             _layout = layout.Trim('-', ' ');
         }
 
-        public override TokenType Type => TokenType.Layout;
+        public override TokenType Type
+        {
+            get { return TokenType.Layout; }
+        }
 
-        public override string Value => _layout;
+        public override string Value
+        {
+            get { return _layout; }
+        }
     }
 }

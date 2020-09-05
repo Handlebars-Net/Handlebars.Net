@@ -1,5 +1,5 @@
 ﻿using System.Linq.Expressions;
-using Expressions.Shortcuts;
+using static Expressions.Shortcuts.ExpressionShortcuts;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -14,11 +14,12 @@ namespace HandlebarsDotNet.Compiler
 
         protected override Expression VisitStatementExpression(StatementExpression sex)
         {
-            var context = ExpressionShortcuts.Arg<BindingContext>(CompilationContext.BindingContext);
-            var suppressEncoding = context.Property(o => o.SuppressEncoding);
             if (!sex.IsEscaped)
             {
-                return ExpressionShortcuts.Block(typeof(void))
+                var context = Arg<BindingContext>(CompilationContext.BindingContext);
+                var suppressEncoding = context.Property(o => o.SuppressEncoding);
+                
+                return Block(typeof(void))
                     .Line(suppressEncoding.Assign(true))
                     .Line(sex)
                     .Line(suppressEncoding.Assign(false))

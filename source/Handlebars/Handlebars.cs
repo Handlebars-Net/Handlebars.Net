@@ -56,11 +56,6 @@ namespace HandlebarsDotNet
             return Instance.Compile(template);
         }
         
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="templatePath"></param>
-        /// <returns></returns>
         public static Func<object, string> CompileView(string templatePath)
         {
             return Instance.CompileView(templatePath);

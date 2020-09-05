@@ -5,7 +5,6 @@ using System.Linq;
 
 namespace HandlebarsDotNet
 {
-    
     public static class HandlebarsUtils
     {
         /// <summary>

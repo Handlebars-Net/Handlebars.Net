@@ -2,10 +2,8 @@
 
 namespace HandlebarsDotNet
 {
-    /// <inheritdoc />
     public class FileSystemPartialTemplateResolver : IPartialTemplateResolver
     {
-        /// <inheritdoc />
         public bool TryRegisterPartial(IHandlebars env, string partialName, string templatePath)
         {
             if (env == null)
@@ -33,9 +31,11 @@ namespace HandlebarsDotNet
 
                 return true;
             }
-
-            // Failed to find partial in filesystem
-            return false;
+            else
+            {
+                // Failed to find partial in filesystem
+                return false;
+            }
         }
     }
 }

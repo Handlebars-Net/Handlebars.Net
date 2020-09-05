@@ -1,4 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Collections.Generic;
+using HandlebarsDotNet.Compiler.Lexer;
 
 namespace HandlebarsDotNet.Compiler
 {

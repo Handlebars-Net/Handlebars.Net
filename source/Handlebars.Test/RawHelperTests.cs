@@ -155,6 +155,17 @@ namespace HandlebarsDotNet.Test
                 inst.Compile("{{{{rawBlockHelper}}}}{{foo}}")(new { foo = "foo" });
             });
         }
+
+        [Fact]
+        public void TestMissingRawHelperRawBlockExpressionException()
+        {
+            var inst = Handlebars.Create();
+
+            Assert.Throws<HandlebarsCompilerException>(() =>
+            {
+                inst.Compile("{{{{rawBlockHelper}}}}{{foo}}{{{{/rawBlockHelper}}}}")(new { foo = "foo" });
+            });
+        }
     }
 }
 

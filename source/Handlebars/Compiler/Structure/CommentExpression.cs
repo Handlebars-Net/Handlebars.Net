@@ -12,7 +12,5 @@ namespace HandlebarsDotNet.Compiler
         public string Value { get; }
 
         public override ExpressionType NodeType => (ExpressionType) HandlebarsExpressionType.CommentExpression;
-
-        //public override Type Type => typeof (void);
     }
 }

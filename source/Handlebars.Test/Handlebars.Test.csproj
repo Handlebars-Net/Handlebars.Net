@@ -4,7 +4,7 @@
     <DebugType>full</DebugType>
     <TargetFrameworks>netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">$(TargetFrameworks);net452;net461;net472</TargetFrameworks>
-    <ProjectGuid>700AF0B4-EA70-47B7-9F9D-17351E977B00</ProjectGuid>
+    <ProjectGuid>9DD1CF49-391B-473C-9498-1CA23B312116</ProjectGuid>
     <RootNamespace>HandlebarsDotNet.Test</RootNamespace>
     <IsPackable>false</IsPackable>
     <SignAssembly>false</SignAssembly>
@@ -33,8 +33,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Handlebars.Extension.CompileFast\Handlebars.Extension.CompileFast.csproj" />
-    <ProjectReference Include="..\Handlebars.Extension.Logger\Handlebars.Extension.Logger.csproj" />
     <ProjectReference Include="..\Handlebars\Handlebars.csproj" />
   </ItemGroup>
 

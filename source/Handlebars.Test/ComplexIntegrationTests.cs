@@ -195,7 +195,7 @@ namespace HandlebarsDotNet.Test
 				County = new[] { "Kane", "Salt Lake" }
 			};
 
-			var template = Handlebars.Create().Compile(naturalLanguageListTemplate);
+			var template = Handlebars.Compile(naturalLanguageListTemplate);
 
 			var result = template(data);
 
@@ -210,7 +210,7 @@ namespace HandlebarsDotNet.Test
 				County = new[] { "Kane", "Salt Lake", "Weber" }
 			};
 
-			var template = Handlebars.Create().Compile(naturalLanguageListTemplate);
+			var template = Handlebars.Compile(naturalLanguageListTemplate);
 
 			var result = template(data);
 

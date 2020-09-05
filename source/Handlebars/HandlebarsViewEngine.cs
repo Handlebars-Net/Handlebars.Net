@@ -1,16 +1,13 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace HandlebarsDotNet
 {
 
-    /// <summary>
-    /// 
-    /// </summary>
     public abstract class ViewEngineFileSystem
     {
-        /// <summary>
-        /// 
-        /// </summary>
         public abstract string GetFileContent(string filename);
 
         private static string GetDir(string currentFilePath)
@@ -21,9 +18,6 @@ namespace HandlebarsDotNet
             return string.Join("/", parts.Take(parts.Length - 1));
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
         public string Closest(string filename, string otherFileName)
         {
             var dir = GetDir(filename);
@@ -37,14 +31,8 @@ namespace HandlebarsDotNet
             return null;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
         protected abstract string CombinePath(string dir, string otherFileName);
 
-        /// <summary>
-        /// 
-        /// </summary>
         public abstract bool FileExists(string filePath);
     }
 }

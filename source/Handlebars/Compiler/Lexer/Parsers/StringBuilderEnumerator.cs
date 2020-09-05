@@ -4,26 +4,33 @@ using System.Text;
 
 namespace HandlebarsDotNet.Compiler.Lexer
 {
-    internal class StringBuilderEnumerator : IEnumerable<char>
+    internal struct StringBuilderEnumerator : IEnumerator<char>
     {
         private readonly StringBuilder _stringBuilder;
+        private int _index;
 
-        public StringBuilderEnumerator(StringBuilder stringBuilder)
+        public StringBuilderEnumerator(StringBuilder stringBuilder) : this()
         {
             _stringBuilder = stringBuilder;
+            _index = -1;
         }
 
-        public IEnumerator<char> GetEnumerator()
+        public bool MoveNext()
         {
-            for (int index = 0; index < _stringBuilder.Length; index++)
-            {
-                yield return _stringBuilder[index];
-            }
+            if (++_index >= _stringBuilder.Length) return false;
+            
+            Current = _stringBuilder[_index];
+            return true;
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
+        public void Reset() => _index = -1;
+
+        public char Current { get; private set; }
+
+        object IEnumerator.Current => Current;
+        
+        public void Dispose()
         {
-            return GetEnumerator();
         }
     }
 }

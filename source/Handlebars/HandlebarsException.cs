@@ -7,10 +7,6 @@ namespace HandlebarsDotNet
     /// </summary>
     public class HandlebarsException : Exception
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="message"></param>
         public HandlebarsException(string message)
             : this(message, null, null)
         {

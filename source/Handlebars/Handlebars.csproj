@@ -20,6 +20,7 @@
 
   <PropertyGroup>
     <Authors>Rex Morgan</Authors>
+    <Copyright>Copyright © 2014-2019 Rex Morgan</Copyright>
     <Description>Blistering-fast Handlebars.js templates in your .NET application.</Description>
     <PackageIcon>hbnet-icon.png</PackageIcon>
     <PackageId>Handlebars.Net</PackageId>
@@ -28,7 +29,6 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/Handlebars-Net/Handlebars.Net</RepositoryUrl>
     <PackageReleaseNotes>https://github.com/Handlebars-Net/Handlebars.Net/releases/tag/$(Version)</PackageReleaseNotes>
-    <Copyright>Copyright © 2014-2019 Rex Morgan</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
@@ -56,7 +56,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ExpressionShortcuts" Version="1.0.4.36" PrivateAssets="All" />
+    <PackageReference Include="ExpressionShortcuts" Version="1.0.4.38" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

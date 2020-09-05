@@ -1,4 +1,6 @@
-﻿namespace HandlebarsDotNet.Compiler.Lexer
+﻿using System;
+
+namespace HandlebarsDotNet.Compiler.Lexer
 {
     internal class CommentToken : Token
     {
