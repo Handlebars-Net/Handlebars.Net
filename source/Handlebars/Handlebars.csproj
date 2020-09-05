@@ -5,10 +5,10 @@
     <DebugType>portable</DebugType>
     <TargetFrameworks>netstandard1.3;netstandard2.0</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">$(TargetFrameworks);net451;net452</TargetFrameworks>
-    <Version>1.0.2</Version>
-    <LangVersion>7</LangVersion>
+    <Version>2.0.0</Version>
+    <LangVersion>8</LangVersion>
     <RootNamespace>HandlebarsDotNet</RootNamespace>
-    <ProjectGuid>7F6A54F4-161A-46EA-9A27-DF834B7810DB</ProjectGuid>
+    <ProjectGuid>B71E2F59-8773-4395-A161-BDFE32C50041</ProjectGuid>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)'=='netstandard1.3'">
@@ -19,15 +19,16 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Authors>Rex Morgan, Oleh Formaniuk</Authors>
+    <Authors>Rex Morgan</Authors>
     <Description>Blistering-fast Handlebars.js templates in your .NET application.</Description>
     <PackageIcon>hbnet-icon.png</PackageIcon>
-    <PackageId>Handlebars.CSharp</PackageId>
-    <PackageProjectUrl>https://github.com/zjklee/handlebars.csharp</PackageProjectUrl>
+    <PackageId>Handlebars.Net</PackageId>
+    <PackageProjectUrl>https://github.com/Handlebars-Net</PackageProjectUrl>
     <PackageTags>handlebars;mustache;templating;engine;compiler</PackageTags>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/zjklee/handlebars.csharp</RepositoryUrl>
-    <PackageReleaseNotes>https://github.com/zjklee/Handlebars.CSharp/releases/tag/$(Version)</PackageReleaseNotes>
+    <RepositoryUrl>https://github.com/Handlebars-Net/Handlebars.Net</RepositoryUrl>
+    <PackageReleaseNotes>https://github.com/Handlebars-Net/Handlebars.Net/releases/tag/$(Version)</PackageReleaseNotes>
+    <Copyright>Copyright © 2014-2019 Rex Morgan</Copyright>
   </PropertyGroup>
 
   <ItemGroup>

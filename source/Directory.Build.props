@@ -5,12 +5,11 @@
     </PropertyGroup>
     
     <PropertyGroup>
-        <PackageLicense>PACKAGE-LICENSE</PackageLicense>
+        <PackageLicense>LICENSE</PackageLicense>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <IncludeSymbols>true</IncludeSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-        <Owner></Owner>
-        <Copyright></Copyright>
+        <Owner>Rex Morgan; Handlebars-Net</Owner>
     </PropertyGroup>
     
     <PropertyGroup>
@@ -19,11 +18,6 @@
     
     <ItemGroup>
         <Content Include="..\..\LICENSE">
-            <Visible>false</Visible>
-            <Pack>true</Pack>
-            <PackagePath>.</PackagePath>
-        </Content>
-        <Content Include="..\..\PACKAGE-LICENSE">
             <Visible>false</Visible>
             <Pack>true</Pack>
             <PackagePath>.</PackagePath>
