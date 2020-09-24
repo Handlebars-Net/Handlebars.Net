@@ -8,7 +8,7 @@ Blistering-fast [Handlebars.js templates](http://handlebarsjs.com) in your .NET 
 
 Check out the [handlebars.js documentation](http://handlebarsjs.com) for how to write Handlebars templates.
 
-handlebars.csharp doesn't use a scripting engine to run a Javascript library - it **compiles Handlebars templates directly to IL bytecode**. It also mimics the JS library's API as closely as possible.
+Handlebars.Net doesn't use a scripting engine to run a Javascript library - it **compiles Handlebars templates directly to IL bytecode**. It also mimics the JS library's API as closely as possible.
 
 ## Install
 
