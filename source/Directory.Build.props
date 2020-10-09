@@ -1,7 +1,7 @@
 <Project>
     <PropertyGroup>
         <SignAssembly>false</SignAssembly>
-        <AssemblyOriginatorKeyFile>TBD</AssemblyOriginatorKeyFile>
+        <AssemblyOriginatorKeyFile>ToBeObtained.snk</AssemblyOriginatorKeyFile> <!-- obtainde during publish from secrets -->
     </PropertyGroup>
     
     <PropertyGroup>

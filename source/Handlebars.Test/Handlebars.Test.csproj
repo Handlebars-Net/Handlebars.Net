@@ -1,10 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <DebugType>full</DebugType>
-    <TargetFrameworks>netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">$(TargetFrameworks);net452;net461;net472</TargetFrameworks>
-    <ProjectGuid>9DD1CF49-391B-473C-9498-1CA23B312116</ProjectGuid>
+    <ProjectGuid>6BA232A6-8C4D-4C7D-BD75-1844FE9774AF</ProjectGuid>
     <RootNamespace>HandlebarsDotNet.Test</RootNamespace>
     <IsPackable>false</IsPackable>
     <SignAssembly>false</SignAssembly>
@@ -28,6 +28,7 @@
   <PropertyGroup Condition="'$(TargetFramework)'=='netcoreapp2.1'">
     <DefineConstants>$(DefineConstants);netcoreapp;netstandard</DefineConstants>
   </PropertyGroup>
+   
   <PropertyGroup Condition="'$(TargetFramework)'=='netcoreapp3.1'">
     <DefineConstants>$(DefineConstants);netcoreapp;netstandard</DefineConstants>
   </PropertyGroup>
@@ -46,6 +47,7 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
   </ItemGroup>
   
+
   <ItemGroup Condition="'$(TargetFramework)'=='net461' or '$(TargetFramework)'=='net472' or '$(TargetFramework)'=='net452'">
     <PackageReference Include="CsQuery" Version="1.3.4" />
     <PackageReference Include="Microsoft.AspNet.WebPages" Version="3.2.3" />
@@ -53,6 +55,7 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
   </ItemGroup>
   
+
   <ItemGroup Condition="'$(TargetFramework)'=='netcoreapp3.1' or '$(TargetFramework)'=='netcoreapp2.1'">
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.6.1" />
     <PackageReference Include="System.Collections.NonGeneric" Version="4.3.0" />

@@ -1,0 +1,18 @@
+updateBranch: true
+deleteBranchAfterMerge: true
+reportStatus: true
+
+minApprovals:
+  MEMBER: 1
+maxRequestedChanges:
+  NONE: 0
+blockingLabels:
+  - blocked
+
+# Will merge whenever the above conditions are met, but also
+# the owner has approved or merge label was added.
+rules:
+  - minApprovals:
+      MEMBER: 1
+  - requiredLabels:
+      - merge

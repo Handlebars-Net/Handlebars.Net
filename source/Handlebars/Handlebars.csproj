@@ -3,12 +3,12 @@
   <PropertyGroup>
     <AssemblyName>Handlebars</AssemblyName>
     <DebugType>portable</DebugType>
+    <ProjectGuid>9822C7B8-7E51-42BC-9A49-72A10491B202</ProjectGuid>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <TargetFrameworks>netstandard1.3;netstandard2.0</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">$(TargetFrameworks);net451;net452</TargetFrameworks>
-    <Version>2.0.0</Version>
+    <Version>1.11.1</Version>
     <LangVersion>8</LangVersion>
-    <RootNamespace>HandlebarsDotNet</RootNamespace>
-    <ProjectGuid>B71E2F59-8773-4395-A161-BDFE32C50041</ProjectGuid>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)'=='netstandard1.3'">
