@@ -44,7 +44,7 @@ jobs:
           dotnet-version: 3.1.102
       - name: Test
         working-directory: ./source
-        run: dotnet test Handlebars.Test/Handlebars.Test.csproj -f netcoreapp3.1 --logger:trx
+        run: dotnet test Handlebars.sln --logger:trx
 
   test-macos-netcoreapp-31:
     runs-on: macos-latest
@@ -58,7 +58,7 @@ jobs:
           dotnet-version: 3.1.102
       - name: Test
         working-directory: ./source
-        run: dotnet test Handlebars.Test/Handlebars.Test.csproj -f netcoreapp3.1 --logger:trx
+        run: dotnet test Handlebars.sln --logger:trx
         
   sonar-pr:
     name: SonarCloud
