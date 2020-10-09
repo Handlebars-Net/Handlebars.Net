@@ -8,6 +8,7 @@
     <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">$(TargetFrameworks);net452</TargetFrameworks>
     <Version>1.11.1</Version>
     <LangVersion>7</LangVersion>
+    <SignAssembly Condition="$(ShouldSignAssembly) == 'true'">true</SignAssembly>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)'=='netstandard1.3'">
