@@ -67,6 +67,9 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - uses: actions/setup-java@v1
+        with:
+          java-version: '13' # The JDK version to make available on the path.
       - name: Cache SonarCloud packages
         uses: actions/cache@v1
         with:
