@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<RunSettings>
+    <DataCollectionRunSettings>
+        <DataCollectors>
+            <DataCollector friendlyName="XPlat Code Coverage">
+                <Configuration>
+                    <Format>opencover</Format>
+                    <Include>[Handlebars*]HandlebarsDotNet,[Handlebars*]HandlebarsDotNet.*</Include> <!-- [Assembly-Filter]Type-Filter -->
+                    <IncludeTestAssembly>true</IncludeTestAssembly>
+                </Configuration>
+            </DataCollector>
+        </DataCollectors>
+    </DataCollectionRunSettings>
+</RunSettings>

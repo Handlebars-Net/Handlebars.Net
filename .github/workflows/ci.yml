@@ -59,34 +59,44 @@ jobs:
       - name: Test
         working-directory: ./source
         run: dotnet test Handlebars.sln --logger:trx
-  
-  sonar-ci:
+
+  sonar-pr:
     name: SonarCloud
-    runs-on: ubuntu-latest
-    needs: [build]
-    steps:
-    - uses: actions/checkout@v2
-    - name: Setup dotnet
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 3.1.102
-    - name: Sonarscanner for dotnet
-      uses: Secbyte/dotnet-sonarscanner@v2.3
-      with:
-        buildCommand: dotnet build source/Handlebars.sln
-        testCommand: dotnet test source/Handlebars.sln --logger:trx --collect:"XPlat Code Coverage" --settings source/Handlebars.Test/coverlet.runsettings
-        projectKey: Handlebars-Net_Handlebars.Net
-        projectName: Handlebars.Net
-        sonarOrganisation: handlebars-net
-        beginArguments: >
-            /d:sonar.verbose="true"
-            /d:sonar.cs.opencover.reportsPaths="**/*.opencover.xml"
-            /d:sonar.coverage.exclusions="**/*.md;source/Handlebars.Benchmark/**/*.*"
-            /d:sonar.cs.vstest.reportsPaths="**/*.trx"
-            
-      env:
-        SONAR_TOKEN: ee613b797cee47bc17202bcf9bc04b44d8a44e1b
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    runs-on: windows-latest
+      steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v1
+        with:
+          path: ~\sonar\cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+      - name: Cache SonarCloud scanner
+        id: cache-sonar-scanner
+        uses: actions/cache@v1
+        with:
+          path: .\.sonar\scanner
+          key: ${{ runner.os }}-sonar-scanner
+          restore-keys: ${{ runner.os }}-sonar-scanner
+      - name: Install SonarCloud scanner
+        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
+        shell: powershell
+        run: |
+          New-Item -Path .\.sonar\scanner -ItemType Directory
+          dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
+      - name: Run tests
+        run: dotnet test source/Handlebars.sln --logger:trx --collect:"XPlat Code Coverage" --settings source/Handlebars.Test/coverlet.runsettings
+      - name: Build and analyze
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: 22a5e1c1df52b7200ac14fc139ed1dfbe53dda4d
+        shell: powershell
+        run: |
+          .\.sonar\scanner\dotnet-sonarscanner begin /k:"Handlebars-Net_Handlebars.Net" /o:"handlebars-net" /d:sonar.login="${{ SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths="**/*.opencover.xml" /d:sonar.cs.vstest.reportsPaths="**/*.trx" /d:sonar.coverage.exclusions="**/*.md;source/Handlebars.Benchmark/**/*.*"
+          dotnet build source/Handlebars.sln -c Release
+          .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ SONAR_TOKEN }}"
         
   update_release_draft:
     name: Release Drafter
