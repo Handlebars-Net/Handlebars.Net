@@ -113,7 +113,7 @@ jobs:
         with:
           dotnet-version: '3.1.201'  # SDK Version to use. keep in line with examples/benchmarkdotnet/global.json
       - name: Run '${{ matrix.benchmark }}' benchmark
-        run: cd source/Handlebars.Benchmark && dotnet run -c Release --exporters json --filter '*${{ matrix.benchmark }}*'
+        run: cd source/Handlebars.Benchmark && dotnet run -c Release --exporters json --filter '*${{ matrix.benchmark }}*' -m
       - name: Store '${{ matrix.benchmark }}' benchmark result
         uses: Happypig375/github-action-benchmark@v1.8.2
         with:
@@ -121,9 +121,13 @@ jobs:
           tool: 'benchmarkdotnet'
           output-file-path: source/Handlebars.Benchmark/BenchmarkDotNet.Artifacts/results/HandlebarsNet.Benchmark.${{ matrix.benchmark }}-report-full-compressed.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          auto-push: true
+          auto-push: false
           # Show alert with commit comment on detecting possible performance regression
           alert-threshold: '200%'
           comment-on-alert: true
           fail-on-alert: true
           alert-comment-cc-users: '@zjklee'
+      - name: Push benchmark result
+        env: 
+          PERF_TOKEN: ${{ secrets.PERF_GITHUB_TOKEN }}
+        run: "git push 'https://zjklee:${{ env.PERF_TOKEN }}@github.com/handlebars-net/Handlebars.Net.git' gh-pages:gh-pages"
