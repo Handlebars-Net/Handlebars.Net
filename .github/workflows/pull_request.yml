@@ -90,7 +90,7 @@ jobs:
         id: benchmarkfilename
         run: |
           cd source/Handlebars.Benchmark/BenchmarkDotNet.Artifacts/results
-          echo '::set-output name=file::find . -type f -name "BenchmarkRun-joined-*-report-full-compressed.json" | rev | cut -d '/' -f1 | rev'
+          echo "::set-output name=file::find . -type f -name 'BenchmarkRun-joined-*-report-full-compressed.json' | rev | cut -d '/' -f1 | rev"
           
       - name: Store benchmark result
         uses: Happypig375/github-action-benchmark@v1.8.2
