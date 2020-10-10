@@ -19,16 +19,16 @@
 
   <PropertyGroup>
     <Authors>Rex Morgan</Authors>
-    <Copyright>Copyright © 2014-2019 Rex Morgan</Copyright>
+    <Copyright>Copyright © 2014-2020 Rex Morgan</Copyright>
     <Description>Blistering-fast Handlebars.js templates in your .NET application.</Description>
-    <PackageIconUrl>https://raw.githubusercontent.com/rexm/Handlebars.Net/master/hbnet-icon.png</PackageIconUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/Handlebars-Net/Handlebars.Net/master/hbnet-icon.png</PackageIconUrl>
     <PackageId>Handlebars.Net</PackageId>
     <PackageLicenseUrl>https://opensource.org/licenses/mit</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/rexm/Handlebars.Net</PackageProjectUrl>
-    <PackageReleaseNotes>Added quad-stache syntax, better support for inline and partial blocks, various bug fixes</PackageReleaseNotes>
+    <PackageReleaseNotes>https://github.com/Handlebars-Net/Handlebars.Net/releases/tag/$(Version)</PackageReleaseNotes>
     <PackageTags>handlebars;mustache;templating;engine;compiler</PackageTags>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/rexm/Handlebars.Net</RepositoryUrl>
+    <RepositoryUrl>https://github.com/Handlebars-Net/Handlebars.Net</RepositoryUrl>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
