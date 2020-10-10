@@ -103,7 +103,7 @@ jobs:
 
   benchmark:
     name: Run Benchmark.Net
-    runs-on: [perf]
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         benchmark: ['Compilation', 'Execution', 'EndToEnd']
