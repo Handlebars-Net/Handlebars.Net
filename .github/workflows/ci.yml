@@ -116,7 +116,7 @@ jobs:
   update_release_draft:
     name: Release Drafter
     runs-on: ubuntu-latest
-    needs: [build, test-windows, test-linux-netcoreapp-31, test-macos-netcoreapp-31, sonar-ci]
+    needs: [build, test, sonar-ci]
     steps:
       - uses: release-drafter/release-drafter@v5
         env:
