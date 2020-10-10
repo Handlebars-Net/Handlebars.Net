@@ -22,9 +22,9 @@ jobs:
     name: Tests on ${{ matrix.os }}
     needs: [build]
     runs-on: ${{ matrix.os }}
-      strategy:
-        matrix:
-          os: [ macos-latest, ubuntu-latest, windows-latest ]
+    strategy:
+      matrix:
+        os: [ macos-latest, ubuntu-latest, windows-latest ]
     steps:
       - uses: actions/checkout@master
       - name: Setup dotnet
@@ -85,12 +85,15 @@ jobs:
         with:
           dotnet-version: '3.1.201'  # SDK Version to use. keep in line with examples/benchmarkdotnet/global.json
       - name: Run benchmark
-        run: cd source/Handlebars.Benchmark && dotnet run -c Release --exporters json --filter '*' -m --join
+        working-directory: ./source/Handlebars.Benchmark
+        run: dotnet run -c Release --exporters json --filter '*' -m --join
       - name: Get benchmark file name
         id: benchmarkfilename
+        working-directory: ./source/Handlebars.Benchmark/BenchmarkDotNet.Artifacts/results
         run: |
-          cd source/Handlebars.Benchmark/BenchmarkDotNet.Artifacts/results
-          echo "::set-output name=file::find . -type f -name 'BenchmarkRun-joined-*-report-full-compressed.json' | rev | cut -d '/' -f1 | rev"
+          filePath=$(find . -type f -name 'BenchmarkRun-joined-*-report-full-compressed.json' | rev | cut -d '/' -f1 | rev)
+          echo $filePath
+          echo "::set-output name=file::$filePath"
       - name: Store benchmark result
         uses: Happypig375/github-action-benchmark@v1.8.2
         with:

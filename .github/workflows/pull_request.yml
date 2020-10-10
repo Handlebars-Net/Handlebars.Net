@@ -22,9 +22,9 @@ jobs:
     name: Tests on ${{ matrix.os }}
     needs: [ build ]
     runs-on: ${{ matrix.os }}
-      strategy:
-        matrix:
-          os: [ macos-latest, ubuntu-latest, windows-latest ]
+    strategy:
+      matrix:
+        os: [ macos-latest, ubuntu-latest, windows-latest ]
     steps:
       - uses: actions/checkout@master
       - name: Setup dotnet
@@ -39,7 +39,7 @@ jobs:
     name: SonarCloud
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2 
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
       - uses: actions/setup-java@v1
@@ -90,7 +90,10 @@ jobs:
       - name: Get benchmark file name
         working-directory: ./source/Handlebars.Benchmark/BenchmarkDotNet.Artifacts/results
         id: benchmarkfilename
-        run: echo "::set-output name=file::find . -type f -name 'BenchmarkRun-joined-*-report-full-compressed.json' | rev | cut -d '/' -f1 | rev"
+        run: |
+          filePath=$(find . -type f -name 'BenchmarkRun-joined-*-report-full-compressed.json' | rev | cut -d '/' -f1 | rev)
+          echo $filePath
+          echo "::set-output name=file::$filePath"
       - name: Store benchmark result
         uses: Happypig375/github-action-benchmark@v1.8.2
         with:
