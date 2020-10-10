@@ -18,38 +18,13 @@ jobs:
         working-directory: ./source
         run: dotnet build Handlebars.sln -c Release
 
-  test-windows:
-    name: Tests on Windows
-    runs-on: windows-latest
+  test:
+    name: Tests on ${{ matrix.os }}
     needs: [build]
-    steps:
-      - uses: actions/checkout@master
-      - name: Setup dotnet
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: 3.1.102
-      - name: Test
-        working-directory: ./source
-        run: dotnet test Handlebars.sln --logger:trx
-
-  test-linux-netcoreapp-31:
-    runs-on: ubuntu-latest
-    needs: [build]
-    name: Tests on Linux (.NET Core 3.1.102)
-    steps:
-      - uses: actions/checkout@master
-      - name: Setup dotnet
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: 3.1.102
-      - name: Test
-        working-directory: ./source
-        run: dotnet test Handlebars.sln --logger:trx
-
-  test-macos-netcoreapp-31:
-    runs-on: macos-latest
-    needs: [build]
-    name: Tests on MacOS (.NET Core 3.1.102)
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ macos-latest, ubuntu-latest, windows-latest ]
     steps:
       - uses: actions/checkout@master
       - name: Setup dotnet
@@ -100,6 +75,43 @@ jobs:
           .\.sonar\scanner\dotnet-sonarscanner begin /k:"Handlebars-Net_Handlebars.Net" /o:"handlebars-net" /d:sonar.login="${{ env.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths="**/*.opencover.xml" /d:sonar.cs.vstest.reportsPaths="**/*.trx" /d:sonar.coverage.exclusions="**/*.md;source/Handlebars.Benchmark/**/*.*"
           dotnet build source/Handlebars.sln -c Release
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ env.SONAR_TOKEN }}"
+        
+  benchmark:
+    name: Run Benchmark.Net
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '3.1.201'  # SDK Version to use. keep in line with examples/benchmarkdotnet/global.json
+      - name: Run benchmark
+        working-directory: ./source/Handlebars.Benchmark
+        run: dotnet run -c Release --exporters json --filter '*' -m --join
+      - name: Get benchmark file name
+        id: benchmarkfilename
+        working-directory: ./source/Handlebars.Benchmark/BenchmarkDotNet.Artifacts/results
+        run: |
+          filePath=$(find . -type f -name 'BenchmarkRun-joined-*-report-full-compressed.json' | rev | cut -d '/' -f1 | rev)
+          echo $filePath
+          echo "::set-output name=file::$filePath"
+      - name: Store benchmark result
+        uses: Happypig375/github-action-benchmark@v1.8.2
+        with:
+          name: Benchmark.Net Benchmark
+          tool: 'benchmarkdotnet'
+          output-file-path: source/Handlebars.Benchmark/BenchmarkDotNet.Artifacts/results/${{ steps.benchmarkfilename.outputs.file }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          # Show alert with commit comment on detecting possible performance regression
+          alert-threshold: '200%'
+          comment-on-alert: true
+          fail-on-alert: true
+          alert-comment-cc-users: '@zjklee'
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: Benchmark
+          path: source/Handlebars.Benchmark/BenchmarkDotNet.Artifacts/results/      
         
   update_release_draft:
     name: Release Drafter
