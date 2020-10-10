@@ -9,10 +9,9 @@ maxRequestedChanges:
 blockingLabels:
   - blocked
 
-# Will merge whenever the above conditions are met, but also
-# the owner has approved or merge label was added.
+# Will merge whenever the above conditions are met, but also црут merge label was added.
 rules:
   - minApprovals:
-      MEMBER: 1
+      MEMBER: 0
   - requiredLabels:
       - merge
