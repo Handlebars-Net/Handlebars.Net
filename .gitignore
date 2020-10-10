@@ -69,3 +69,6 @@ nupkgs
 
 # Rider files
 .idea/
+
+#DotNet Benchmark
+BenchmarkDotNet.Artifacts/

@@ -4,10 +4,9 @@
     <AssemblyName>Handlebars</AssemblyName>
     <DebugType>portable</DebugType>
     <ProjectGuid>9822C7B8-7E51-42BC-9A49-72A10491B202</ProjectGuid>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <TargetFrameworks>netstandard1.3;netstandard2.0</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">$(TargetFrameworks);net451;net452</TargetFrameworks>
-    <Version>1.11.1</Version>
+    <Version>2.0.0</Version>
     <LangVersion>8</LangVersion>
   </PropertyGroup>
 
@@ -20,7 +19,7 @@
 
   <PropertyGroup>
     <Authors>Rex Morgan</Authors>
-    <Copyright>Copyright © 2014-2019 Rex Morgan</Copyright>
+    <Copyright>Copyright © 2014-2020 Rex Morgan</Copyright>
     <Description>Blistering-fast Handlebars.js templates in your .NET application.</Description>
     <PackageIcon>hbnet-icon.png</PackageIcon>
     <PackageId>Handlebars.Net</PackageId>
@@ -29,6 +28,7 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/Handlebars-Net/Handlebars.Net</RepositoryUrl>
     <PackageReleaseNotes>https://github.com/Handlebars-Net/Handlebars.Net/releases/tag/$(Version)</PackageReleaseNotes>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
