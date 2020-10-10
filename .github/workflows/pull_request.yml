@@ -115,7 +115,7 @@ jobs:
       - name: Run '${{ matrix.benchmark }}' benchmark
         run: cd source/Handlebars.Benchmark && dotnet run -c Relase --exporters json --filter '*${{ matrix.benchmark }}*'
       - name: Store '${{ matrix.benchmark }}' benchmark result
-        uses: rhysd/github-action-benchmark@v1
+        uses: Happypig375/github-action-benchmark@v1.8.2
         with:
           name: Benchmark.Net Benchmark
           tool: 'benchmarkdotnet'
