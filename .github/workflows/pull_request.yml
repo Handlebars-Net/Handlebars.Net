@@ -13,11 +13,11 @@ jobs:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 3.1.102
+          dotnet-version: 3.1.201
       - name: Build
         working-directory: ./source
         run: dotnet build Handlebars.sln -c Release
-
+        
   test:
     name: Tests on ${{ matrix.os }}
     needs: [ build ]
@@ -30,7 +30,7 @@ jobs:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 3.1.102
+          dotnet-version: 3.1.201
       - name: Test
         working-directory: ./source
         run: dotnet test Handlebars.sln --logger:trx
@@ -83,15 +83,14 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '3.1.201'  # SDK Version to use. keep in line with examples/benchmarkdotnet/global.json
+          dotnet-version: 3.1.201  # SDK Version to use. keep in line with examples/benchmarkdotnet/global.json
       - name: Run benchmark
-        run: cd source/Handlebars.Benchmark && dotnet run -c Release --exporters json --filter '*' -m --join
+        working-directory: ./source/Handlebars.Benchmark
+        run: dotnet run -c Release --exporters json --filter '*' -m --join
       - name: Get benchmark file name
+        working-directory: ./source/Handlebars.Benchmark/BenchmarkDotNet.Artifacts/results
         id: benchmarkfilename
-        run: |
-          cd source/Handlebars.Benchmark/BenchmarkDotNet.Artifacts/results
-          echo "::set-output name=file::find . -type f -name 'BenchmarkRun-joined-*-report-full-compressed.json' | rev | cut -d '/' -f1 | rev"
-          
+        run: echo "::set-output name=file::find . -type f -name 'BenchmarkRun-joined-*-report-full-compressed.json' | rev | cut -d '/' -f1 | rev"
       - name: Store benchmark result
         uses: Happypig375/github-action-benchmark@v1.8.2
         with:
