@@ -15,8 +15,13 @@ namespace HandlebarsNet.Benchmark
     {
         public static async Task Main(string[] args)
         {
+            var job = Job.MediumRun
+                .WithToolchain(CsProjCoreToolchain.NetCoreApp31)
+                .WithLaunchCount(1);
+
             var manualConfig = DefaultConfig.Instance
-                .AddJob(Job.MediumRun.WithToolchain(CsProjCoreToolchain.NetCoreApp31).WithLaunchCount(1));
+                .AddJob(job)
+                .WithOptions(ConfigOptions.JoinSummary);
 
             manualConfig.AddLogicalGroupRules(BenchmarkLogicalGroupRule.ByMethod);
             
