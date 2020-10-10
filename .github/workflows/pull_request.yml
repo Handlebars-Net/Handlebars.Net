@@ -103,7 +103,7 @@ jobs:
 
   benchmark:
     name: Run Benchmark.Net
-    runs-on: ubuntu-latest
+    runs-on: [perf]
     strategy:
       matrix:
         benchmark: ['Compilation', 'Execution', 'EndToEnd']
@@ -113,7 +113,7 @@ jobs:
         with:
           dotnet-version: '3.1.201'  # SDK Version to use. keep in line with examples/benchmarkdotnet/global.json
       - name: Run '${{ matrix.benchmark }}' benchmark
-        run: cd source/Handlebars.Benchmark && dotnet run -c Relase --exporters json --filter '*${{ matrix.benchmark }}*'
+        run: cd source/Handlebars.Benchmark && dotnet run -c Release --exporters json --filter '*${{ matrix.benchmark }}*'
       - name: Store '${{ matrix.benchmark }}' benchmark result
         uses: Happypig375/github-action-benchmark@v1.8.2
         with:
