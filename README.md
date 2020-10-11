@@ -1,5 +1,15 @@
-Handlebars.Net [![Build Status](https://travis-ci.org/rexm/Handlebars.Net.svg?branch=master)](https://travis-ci.org/rexm/Handlebars.Net) [![Nuget](https://img.shields.io/nuget/v/Handlebars.Net)](https://www.nuget.org/packages/Handlebars.Net/)
-==============
+# Handlebars.Net
+
+#### [![CI](https://github.com/Handlebars-Net/Handlebars.Net/workflows/CI/badge.svg)](https://github.com/Handlebars-Net/Handlebars.Net/actions?query=workflow%3ACI) [![Nuget](https://img.shields.io/nuget/v/Handlebars.Net)](https://www.nuget.org/packages/Handlebars.Net/) [![performance](https://img.shields.io/badge/benchmark-statistics-blue)](http://handlebars-net.github.io/Handlebars.Net/dev/bench/)
+
+---
+
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Handlebars-Net_Handlebars.Net&metric=alert_status)](https://sonarcloud.io/dashboard?id=Handlebars-Net_Handlebars.Net) [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=Handlebars-Net_Handlebars.Net&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=Handlebars-Net_Handlebars.Net) [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=Handlebars-Net_Handlebars.Net&metric=security_rating)](https://sonarcloud.io/dashboard?id=Handlebars-Net_Handlebars.Net)
+
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=Handlebars-Net_Handlebars.Net&metric=bugs)](https://sonarcloud.io/dashboard?id=Handlebars-Net_Handlebars.Net) [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=Handlebars-Net_Handlebars.Net&metric=code_smells)](https://sonarcloud.io/dashboard?id=Handlebars-Net_Handlebars.Net) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Handlebars-Net_Handlebars.Net&metric=coverage)](https://sonarcloud.io/dashboard?id=Handlebars-Net_Handlebars.Net) 
+
+---
+
 **[Call for Input on v2](https://github.com/rexm/Handlebars.Net/issues/294)**
 
 Blistering-fast [Handlebars.js templates](http://handlebarsjs.com) in your .NET application.
