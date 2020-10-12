@@ -105,7 +105,7 @@ jobs:
           # Show alert with commit comment on detecting possible performance regression
           alert-threshold: '200%'
           comment-on-alert: true
-          fail-on-alert: true
+          fail-on-alert: false
           alert-comment-cc-users: '@zjklee'
       - name: Upload Artifacts
         uses: actions/upload-artifact@v2
