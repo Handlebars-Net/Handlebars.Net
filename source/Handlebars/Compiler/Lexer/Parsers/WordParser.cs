@@ -1,5 +1,4 @@
-using System;
-using System.IO;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -7,72 +6,101 @@ namespace HandlebarsDotNet.Compiler.Lexer
 {
     internal class WordParser : Parser
     {
-        private const string validWordStartCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_$.@[]";
+        private const string ValidWordStartCharactersString = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_$.@[]";
+        private static readonly HashSet<char> ValidWordStartCharacters = new HashSet<char>();
 
-        public override Token Parse(TextReader reader)
+        static WordParser()
         {
+            for (var index = 0; index < ValidWordStartCharactersString.Length; index++)
+            {
+                ValidWordStartCharacters.Add(ValidWordStartCharactersString[index]);
+            }
+        }
+
+        public override Token Parse(ExtendedStringReader reader)
+        {
+            var context = reader.GetContext();
             if (IsWord(reader))
             {
                 var buffer = AccumulateWord(reader);
 
-                return Token.Word(buffer);
+                return Token.Word(buffer, context);
             }
             return null;
         }
 
-        private bool IsWord(TextReader reader)
+        private static bool IsWord(ExtendedStringReader reader)
         {
-            var peek = (char)reader.Peek();
-            return validWordStartCharacters.Contains(peek.ToString());
+            var peek = reader.Peek();
+            return ValidWordStartCharacters.Contains((char) peek);
         }
 
-        private string AccumulateWord(TextReader reader)
+        private static string AccumulateWord(ExtendedStringReader reader)
         {
-            StringBuilder buffer = new StringBuilder();
-
-            var inString = false;
-
-            while (true)
+            using(var container = StringBuilderPool.Shared.Use())
             {
-                if (!inString)
-                {
-                    var peek = (char)reader.Peek();
+                var buffer = container.Value;
+                
+                var inString = false;
 
-                    if (peek == '}' || peek == '~' || peek == ')' || peek == '=' || (char.IsWhiteSpace(peek) && CanBreakAtSpace(buffer.ToString())))
+                while (true)
+                {
+                    if (!inString)
                     {
-                        break;
+                        var peek = (char) reader.Peek();
+
+                        if (peek == '}' || peek == '~' || peek == ')' || peek == '=' || char.IsWhiteSpace(peek) && CanBreakAtSpace(buffer))
+                        {
+                            break;
+                        }
                     }
+
+                    var node = reader.Read();
+
+                    if (node == -1)
+                    {
+                        throw new HandlebarsParserException("Reached end of template before the expression was closed.", reader.GetContext());
+                    }
+
+                    if (node == '\'' || node == '"')
+                    {
+                        inString = !inString;
+                    }
+
+                    buffer.Append((char)node);
                 }
-
-                var node = reader.Read();
-
-                if (node == -1)
-                {
-                    throw new InvalidOperationException("Reached end of template before the expression was closed.");
-                }
-
-                if (node == '\'' || node == '"')
-                {
-                    inString = !inString;
-                }
-
-                buffer.Append((char)node);
+                
+                return buffer.ToString().Trim();
             }
-
-            if (buffer.ToString().Contains("[") && !buffer.ToString().Contains("]"))
-            {
-                throw new HandlebarsCompilerException("Expression is missing a closing ].");
-            }
-
-            return buffer.ToString().Trim();
         }
 
-        private bool CanBreakAtSpace(string buffer)
+        private static bool CanBreakAtSpace(StringBuilder buffer)
         {
-            var bufferQueryable = buffer.OfType<char>();
-            return (!buffer.Contains("[") || (bufferQueryable.Count(x => x == '[') == bufferQueryable.Count(x => x == ']')));
+            CalculateBraces(buffer, out var left, out var right);
+
+            return left == 0 || left == right;
         }
 
+        private static void CalculateBraces(StringBuilder buffer, out int left, out int right)
+        {
+            left = 0;
+            right = 0;
+            
+            var enumerator = new StringBuilderEnumerator(buffer);
+            while (enumerator.MoveNext())
+            {
+                switch (enumerator.Current)
+                {
+                    case ']':
+                        right++;
+                        break;
+                    
+                    case '[':
+                        left++;
+                        break;
+                }
+            }
+        }
     }
 }
 

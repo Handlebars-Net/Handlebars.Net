@@ -156,6 +156,42 @@ The animal, Fido, is a dog.
 The animal, Chewy, is not a dog.
 */
 ```
+
+### Compatibility feature toggles
+
+Compatibility feature toggles defines a set of settings responsible for controlling compilation/rendering behavior. Each of those settings would enable certain feature that would break compatibility with canonical Handlebars.
+By default all toggles are set to `false`. 
+
+##### Legend
+- Areas
+  - `Compile-time`: takes affect at the time of template compilation
+  - `Runtime`: takes affect at the time of template rendering
+
+#### `RelaxedHelperNaming`
+If `true` enables support for Handlebars.Net helper naming rules.
+This enables helper names to be not-valid Handlebars identifiers (e.g. `{{ one.two }}`).
+Such naming is not supported in Handlebarsjs and would break compatibility.
+
+##### Areas
+- `Compile-time`
+
+##### Example
+```c#
+[Fact]
+public void HelperWithDotSeparatedName()
+{
+    var source = "{{ one.two }}";
+    var handlebars = Handlebars.Create();
+    handlebars.Configuration.Compatibility.RelaxedHelperNaming = true;
+    handlebars.RegisterHelper("one.two", (context, arguments) => 42);
+
+    var template = handlebars.Compile(source);
+    var actual = template(null);
+    
+    Assert.Equal("42", actual);
+}
+```
+
 ## Performance
 
 ### Compilation
@@ -166,16 +202,16 @@ Compared to rendering, compiling is a fairly intensive process. While both are s
 Nearly all time spent in rendering is in the routine that resolves values against the model. Different types of objects have different performance characteristics when used as models.
 
 #### Model Types
-- The absolute fastest model is a dictionary (microseconds), because no reflection is necessary at render time.
+- The absolute fastest model is a `IDictionary<string, object>` (microseconds).
 - The next fastest is a POCO (typically a few milliseconds for an average-sized template and model), which uses traditional reflection and is fairly fast.
 - Rendering starts to get slower (into the tens of milliseconds or more) on dynamic objects.
 - The slowest (up to hundreds of milliseconds or worse) tend to be objects with custom type implementations (such as `ICustomTypeDescriptor`) that are not optimized for heavy reflection.
 
-A frequent performance issue that comes up is JSON.NET's `JObject`, which for reasons we haven't fully researched, has very slow reflection characteristics when used as a model in Handlebars.Net. A simple fix is to just use JSON.NET's built-in ability to deserialize a JSON string to an `ExpandoObject` instead of a `JObject`. This will yield nearly an order of magnitude improvement in render times on average.
+~~A frequent performance issue that comes up is JSON.NET's `JObject`, which for reasons we haven't fully researched, has very slow reflection characteristics when used as a model in Handlebars.Net. A simple fix is to just use JSON.NET's built-in ability to deserialize a JSON string to an `ExpandoObject` instead of a `JObject`. This will yield nearly an order of magnitude improvement in render times on average.~~
 
 ## Future roadmap
 
-**[Call for Input on v2](https://github.com/rexm/Handlebars.Net/issues/294)**
+TBD
 
 ## Contributing
 

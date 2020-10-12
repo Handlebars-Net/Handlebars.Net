@@ -1,5 +1,5 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
+using HandlebarsDotNet.Compiler.Structure.Path;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -7,15 +7,21 @@ namespace HandlebarsDotNet.Compiler
     internal class UndefinedBindingResult
     {
 	    public readonly string Value;
-	    private readonly HandlebarsConfiguration _configuration;
+	    private readonly ICompiledHandlebarsConfiguration _configuration;
 
-	    public UndefinedBindingResult(string value, HandlebarsConfiguration configuration)
+	    public UndefinedBindingResult(string value, ICompiledHandlebarsConfiguration configuration)
+	    {
+		    Value = value;
+		    _configuration = configuration;
+	    }
+	    
+	    public UndefinedBindingResult(ChainSegment value, ICompiledHandlebarsConfiguration configuration)
 	    {
 		    Value = value;
 		    _configuration = configuration;
 	    }
 
-        public override string ToString()
+	    public override string ToString()
         {
 	        var formatter = _configuration.UnresolvedBindingFormatter ?? string.Empty;
 	        return string.Format( formatter, Value );

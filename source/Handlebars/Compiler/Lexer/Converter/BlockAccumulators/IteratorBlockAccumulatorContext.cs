@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Collections.Generic;
@@ -25,7 +24,8 @@ namespace HandlebarsDotNet.Compiler
             if (IsElseBlock(item))
             {
                 _accumulatedExpression = HandlebarsExpression.Iterator(
-                    _startingNode.Arguments.Single(),
+                    _startingNode.Arguments.Single(o => o.NodeType != (ExpressionType)HandlebarsExpressionType.BlockParamsExpression),
+                    _startingNode.Arguments.OfType<BlockParamsExpression>().SingleOrDefault() ?? BlockParamsExpression.Empty(),
                     Expression.Block(_body));
                 _body = new List<Expression>();
             }
@@ -44,13 +44,15 @@ namespace HandlebarsDotNet.Compiler
                 if (_accumulatedExpression == null)
                 {
                     _accumulatedExpression = HandlebarsExpression.Iterator(
-                        _startingNode.Arguments.Single(),
+                        _startingNode.Arguments.Single(o => o.NodeType != (ExpressionType)HandlebarsExpressionType.BlockParamsExpression),
+                        _startingNode.Arguments.OfType<BlockParamsExpression>().SingleOrDefault() ?? BlockParamsExpression.Empty(),
                         Expression.Block(bodyStatements));
                 }
                 else
                 {
                     _accumulatedExpression = HandlebarsExpression.Iterator(
                         ((IteratorExpression)_accumulatedExpression).Sequence,
+                        ((IteratorExpression)_accumulatedExpression).BlockParams,
                         ((IteratorExpression)_accumulatedExpression).Template,
                         Expression.Block(bodyStatements));
                 }

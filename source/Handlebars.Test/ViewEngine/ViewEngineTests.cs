@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using HandlebarsDotNet;
+using System.IO;
+using System.Text;
 using Xunit;
 
 namespace HandlebarsDotNet.Test.ViewEngine
@@ -21,13 +21,36 @@ namespace HandlebarsDotNet.Test.ViewEngine
             };
 
             //When a viewengine renders that view
-            var handleBars = Handlebars.Create(new HandlebarsConfiguration() {FileSystem = files});
-            var renderView = handleBars.CompileView("views\\someview.hbs");
+            var handleBars = Handlebars.Create(new HandlebarsConfiguration() { FileSystem = files });
+            var renderView = handleBars.CompileView ("views\\someview.hbs");
             var output = renderView(null);
-            
+
             //Then the correct output should be rendered
             Assert.Equal("layout start\r\nThis is the body\r\nlayout end", output);
         }
+        [Fact]
+        public void CanLoadAWriterViewWithALayout()
+        {
+            //Given a layout in a subfolder
+            var files = new FakeFileSystem()
+            {
+                {"views\\somelayout.hbs", "layout start\r\n{{{body}}}\r\nlayout end"},
+                //And a view in the same folder which uses that layout
+                { "views\\someview.hbs", "{{!< somelayout}}This is the body"}
+            };
+
+            //When a viewengine renders that view
+            var handleBars = Handlebars.Create(new HandlebarsConfiguration() { FileSystem = files });
+            var renderView = handleBars.CompileView("views\\someview.hbs", null);
+            var sb = new StringBuilder();
+            var writer = new StringWriter(sb);
+            renderView(writer, null);
+            var output = sb.ToString();
+
+            //Then the correct output should be rendered
+            Assert.Equal("layout start\r\nThis is the body\r\nlayout end", output);
+        }
+        
         [Fact]
         public void CanLoadAViewWithALayoutInTheRoot()
         {

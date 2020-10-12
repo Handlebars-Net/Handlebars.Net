@@ -1,4 +1,4 @@
-﻿using HandlebarsDotNet.Compiler.Lexer;
+using HandlebarsDotNet.Compiler.Lexer;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -86,36 +86,39 @@ namespace HandlebarsDotNet.Compiler
 
         private IEnumerable<object> CollectBody(IEnumerator<object> enumerator, string rawHelperName)
         {
-            var buffer = new StringBuilder();
-            object precedingItem = null;
-
-            while (enumerator.MoveNext())
+            using (var container = StringBuilderPool.Shared.Use())
             {
-                var item = enumerator.Current;
+                var buffer = container.Value;
+                object precedingItem = null;
 
-                if (item is StartExpressionToken startExpressionToken)
+                while (enumerator.MoveNext())
                 {
-                    item = GetNext(enumerator);
-                    if (IsClosingTag(startExpressionToken, item, rawHelperName))
+                    var item = enumerator.Current;
+
+                    if (item is StartExpressionToken startExpressionToken)
                     {
-                        yield return Token.Static(buffer.ToString());
-                        yield return startExpressionToken;
-                        yield return item;
-                        yield break;
+                        item = GetNext(enumerator);
+                        if (IsClosingTag(startExpressionToken, item, rawHelperName))
+                        {
+                            yield return Token.Static(buffer.ToString());
+                            yield return startExpressionToken;
+                            yield return item;
+                            yield break;
+                        }
+
+                        buffer.Append(Stringify(startExpressionToken, precedingItem));
+                        buffer.Append(Stringify(item, startExpressionToken));
+                    }
+                    else
+                    {
+                        buffer.Append(Stringify(item, precedingItem));
                     }
 
-                    buffer.Append(Stringify(startExpressionToken, precedingItem));
-                    buffer.Append(Stringify(item, startExpressionToken));
-                }
-                else
-                {
-                    buffer.Append(Stringify(item, precedingItem));
+                    precedingItem = item;
                 }
 
-                precedingItem = item;
+                throw new HandlebarsCompilerException($"Reached end of template before raw block helper expression '{rawHelperName}' was closed");
             }
-
-            throw new HandlebarsCompilerException($"Reached end of template before raw block helper expression '{rawHelperName}' was closed");
         }
 
         private bool IsClosingTag(StartExpressionToken startExpressionToken, object item, string helperName)

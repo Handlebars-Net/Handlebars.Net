@@ -1,5 +1,3 @@
-using System;
-
 namespace HandlebarsDotNet.Compiler.Lexer
 {
     internal enum TokenType
@@ -15,7 +13,8 @@ namespace HandlebarsDotNet.Compiler.Lexer
         Layout = 8,
         StartSubExpression = 9,
         EndSubExpression = 10,
-        Assignment = 11
+        Assignment = 11,
+        BlockParams = 12
     }
 }
 

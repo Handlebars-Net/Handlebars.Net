@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using Xunit;
 
 namespace HandlebarsDotNet.Test
@@ -123,14 +123,14 @@ namespace HandlebarsDotNet.Test
         [Fact]
         public void StandaloneInvertedSection()
         {
-            var source = "  {{^some}}\n{{none}}\n{{else}}\n{{none}}\n{{/some}}  ";
+            var source = "  {{^some}}{{none}}{{else}}{{none}}{{/some}}  ";
 
             var template = _handlebars.Compile(source);
 
             var data = new {none = "No people"};
             var result = template(data);
 
-            Assert.Equal("No people\n", result);
+            Assert.Equal("  No people  ", result);
         }
 
         [Fact]

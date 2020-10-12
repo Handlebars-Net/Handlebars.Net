@@ -1,40 +1,42 @@
-﻿using System;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using System.Collections.Generic;
 
 namespace HandlebarsDotNet.Compiler
 {
     internal class BlockHelperExpression : HelperExpression
     {
-        private readonly Expression _body;
-        private readonly Expression _inversion;
-
         public BlockHelperExpression(
             string helperName,
             IEnumerable<Expression> arguments,
             Expression body,
             Expression inversion,
             bool isRaw = false)
-            : base(helperName, arguments, isRaw)
+            : this(helperName, arguments, BlockParamsExpression.Empty(), body, inversion, isRaw)
         {
-            _body = body;
-            _inversion = inversion;
+        }
+        
+        public BlockHelperExpression(
+            string helperName,
+            IEnumerable<Expression> arguments,
+            BlockParamsExpression blockParams,
+            Expression body,
+            Expression inversion,
+            bool isRaw = false)
+            : base(helperName, true, arguments, isRaw)
+        {
+            Body = body;
+            Inversion = inversion;
+            BlockParams = blockParams;
+            IsBlock = true;
         }
 
-        public Expression Body
-        {
-            get { return _body; }
-        }
+        public Expression Body { get; }
 
-        public Expression Inversion
-        {
-            get { return _inversion; }
-        }
+        public Expression Inversion { get; }
 
-        public override ExpressionType NodeType
-        {
-            get { return (ExpressionType)HandlebarsExpressionType.BlockExpression; }
-        }
+        public new BlockParamsExpression BlockParams { get; }
+
+        public override ExpressionType NodeType => (ExpressionType) HandlebarsExpressionType.BlockExpression;
     }
 }
 

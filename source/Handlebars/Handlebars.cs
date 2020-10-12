@@ -3,27 +3,54 @@ using System.IO;
 
 namespace HandlebarsDotNet
 {
+    /// <summary>
+    /// InlineHelper: {{#helper arg1 arg2}}
+    /// </summary>
+    /// <param name="output"></param>
+    /// <param name="context"></param>
+    /// <param name="arguments"></param>
     public delegate void HandlebarsHelper(TextWriter output, dynamic context, params object[] arguments);
+    
+    /// <summary>
+    /// InlineHelper: {{#helper arg1 arg2}}, supports <see cref="object"/> value return
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="arguments"></param>
+    public delegate object HandlebarsReturnHelper(dynamic context, params object[] arguments);
+    
+    /// <summary>
+    /// BlockHelper: {{#helper}}..{{/helper}}
+    /// </summary>
+    /// <param name="output"></param>
+    /// <param name="options"></param>
+    /// <param name="context"></param>
+    /// <param name="arguments"></param>
     public delegate void HandlebarsBlockHelper(TextWriter output, HelperOptions options, dynamic context, params object[] arguments);
 
-    public sealed partial class Handlebars
+    
+    public sealed class Handlebars
     {
         // Lazy-load Handlebars environment to ensure thread safety.  See Jon Skeet's excellent article on this for more info. http://csharpindepth.com/Articles/General/Singleton.aspx
-        private static readonly Lazy<IHandlebars> lazy = new Lazy<IHandlebars>(() => new HandlebarsEnvironment(new HandlebarsConfiguration()));
+        private static readonly Lazy<IHandlebars> Lazy = new Lazy<IHandlebars>(() => new HandlebarsEnvironment(new HandlebarsConfiguration()));
 
-        private static IHandlebars Instance { get { return lazy.Value; } }
+        private static IHandlebars Instance => Lazy.Value;
 
+        /// <summary>
+        /// Creates standalone instance of <see cref="Handlebars"/> environment
+        /// </summary>
+        /// <param name="configuration"></param>
+        /// <returns></returns>
         public static IHandlebars Create(HandlebarsConfiguration configuration = null)
         {
             configuration = configuration ?? new HandlebarsConfiguration();
             return new HandlebarsEnvironment(configuration);
         }
-
+        
         public static Action<TextWriter, object> Compile(TextReader template)
         {
             return Instance.Compile(template);
         }
-
+        
         public static Func<object, string> Compile(string template)
         {
             return Instance.Compile(template);
@@ -33,33 +60,55 @@ namespace HandlebarsDotNet
         {
             return Instance.CompileView(templatePath);
         }
-
+        
+        public static Action<TextWriter, object> CompileView(string templatePath, ViewReaderFactory readerFactoryFactory)
+        {
+            return Instance.CompileView(templatePath, readerFactoryFactory);
+        }
+        
         public static void RegisterTemplate(string templateName, Action<TextWriter, object> template)
         {
             Instance.RegisterTemplate(templateName, template);
         }
-
+        
         public static void RegisterTemplate(string templateName, string template)
         {
             Instance.RegisterTemplate(templateName, template);
         }
 
+        /// <summary>
+        /// Registers new <see cref="HandlebarsHelper"/>
+        /// </summary>
+        /// <param name="helperName"></param>
+        /// <param name="helperFunction"></param>
         public static void RegisterHelper(string helperName, HandlebarsHelper helperFunction)
         {
             Instance.RegisterHelper(helperName, helperFunction);
         }
+        
+        /// <summary>
+        /// Registers new <see cref="HandlebarsReturnHelper"/>
+        /// </summary>
+        /// <param name="helperName"></param>
+        /// <param name="helperFunction"></param>
+        public static void RegisterHelper(string helperName, HandlebarsReturnHelper helperFunction)
+        {
+            Instance.RegisterHelper(helperName, helperFunction);
+        }
 
+        /// <summary>
+        /// Registers new <see cref="HandlebarsBlockHelper"/>
+        /// </summary>
+        /// <param name="helperName"></param>
+        /// <param name="helperFunction"></param>
         public static void RegisterHelper(string helperName, HandlebarsBlockHelper helperFunction)
         {
             Instance.RegisterHelper(helperName, helperFunction);
         }
 
         /// <summary>
-        /// Expose the configuration on order to have access in all Helpers and Templates.
+        /// Expose the configuration in order to have access in all Helpers and Templates.
         /// </summary>
-        public static HandlebarsConfiguration Configuration
-        {
-            get { return Instance.Configuration; }
-        }
+        public static HandlebarsConfiguration Configuration => Instance.Configuration;
     }
 }

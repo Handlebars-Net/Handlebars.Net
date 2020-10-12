@@ -1,109 +1,119 @@
-using System;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
-using System.Collections.Generic;
+using System.IO;
+using Expressions.Shortcuts;
+using static Expressions.Shortcuts.ExpressionShortcuts;
 
 namespace HandlebarsDotNet.Compiler
 {
     internal class HelperFunctionBinder : HandlebarsExpressionVisitor
     {
-        public static Expression Bind(Expression expr, CompilationContext context)
-        {
-            return new HelperFunctionBinder(context).Visit(expr);
-        }
+        private CompilationContext CompilationContext { get; }
 
-        private HelperFunctionBinder(CompilationContext context)
-            : base(context)
+        public HelperFunctionBinder(CompilationContext compilationContext)
         {
+            CompilationContext = compilationContext;
         }
-
+        
         protected override Expression VisitStatementExpression(StatementExpression sex)
         {
-            if (sex.Body is HelperExpression)
-            {
-                return Visit(sex.Body);
-            }
-            else
-            {
-                return sex;
-            }
+            return sex.Body is HelperExpression ? Visit(sex.Body) : sex;
         }
-
+        
         protected override Expression VisitHelperExpression(HelperExpression hex)
         {
-            if (CompilationContext.Configuration.Helpers.ContainsKey(hex.HelperName))
+            var pathInfo = CompilationContext.Configuration.PathInfoStore.GetOrAdd(hex.HelperName);
+            if(!pathInfo.IsValidHelperLiteral && !CompilationContext.Configuration.Compatibility.RelaxedHelperNaming) return Expression.Empty();
+
+            var readerContext = Arg(hex.Context);
+            var helperName = pathInfo.TrimmedPath;
+            var bindingContext = Arg<BindingContext>(CompilationContext.BindingContext);
+            var contextValue = bindingContext.Property(o => o.Value);
+            var textWriter = bindingContext.Property(o => o.TextWriter);
+            var arguments = hex.Arguments
+                .ApplyOn<Expression, PathExpression>(path => path.Context = PathExpression.ResolutionContext.Parameter)
+                .Select(o => FunctionBuilder.Reduce(o, CompilationContext));
+            
+            var args = Array<object>(arguments);
+
+            var configuration = CompilationContext.Configuration;
+            if (configuration.Helpers.TryGetValue(helperName, out var helper))
             {
-                var helper = CompilationContext.Configuration.Helpers[hex.HelperName];
-                var arguments = new Expression[]
+                return Call(() => helper(textWriter, contextValue, args));
+            }
+            
+            if (configuration.ReturnHelpers.TryGetValue(helperName, out var returnHelper))
+            {
+                return Call(() =>
+                    CaptureResult(textWriter, Call(() => returnHelper(contextValue, args)))
+                );
+            }
+            
+            foreach (var resolver in configuration.HelperResolvers)
+            {
+                if (resolver.TryResolveReturnHelper(helperName, typeof(object), out var resolvedHelper))
                 {
-                    Expression.Property(
-                        CompilationContext.BindingContext,
-#if netstandard
-                        typeof(BindingContext).GetRuntimeProperty("TextWriter")),
-#else
-                        typeof(BindingContext).GetProperty("TextWriter")),
-#endif
-                    Expression.Property(
-                        CompilationContext.BindingContext,
-#if netstandard
-                        typeof(BindingContext).GetRuntimeProperty("Value")),
-#else
-                        typeof(BindingContext).GetProperty("Value")),
-#endif
-                    Expression.NewArrayInit(typeof(object), hex.Arguments.Select(a => Visit(a)))
-                };
-                if (helper.Target != null)
-                {
-                    return Expression.Call(
-                        Expression.Constant(helper.Target),
-#if netstandard
-                        helper.GetMethodInfo(),
-#else
-                        helper.Method,
-#endif
-                        arguments);
-                }
-                else
-                {
-                    return Expression.Call(
-#if netstandard
-                        helper.GetMethodInfo(),
-#else
-                        helper.Method,
-#endif
-                        arguments);
+                    return Call(() =>
+                        CaptureResult(textWriter, Call(() => resolvedHelper(contextValue, args)))
+                    );
                 }
             }
-            else
-            {
-                return Expression.Call(
-                    Expression.Constant(this),
-#if netstandard
-                    new Action<BindingContext, string, IEnumerable<object>>(LateBindHelperExpression).GetMethodInfo(),
-#else
-                    new Action<BindingContext, string, IEnumerable<object>>(LateBindHelperExpression).Method,
-#endif
-                    CompilationContext.BindingContext,
-                    Expression.Constant(hex.HelperName),
-                    Expression.NewArrayInit(typeof(object), hex.Arguments));
-            }
+
+            return Call(() => 
+                CaptureResult(textWriter, Call(() => 
+                    LateBindHelperExpression(bindingContext, helperName, args, (IReaderContext) readerContext)
+                ))
+            );
         }
 
-        private void LateBindHelperExpression(
-            BindingContext context,
-            string helperName,
-            IEnumerable<object> arguments)
+        // will be significantly improved in next iterations
+        public static ResultHolder TryLateBindHelperExpression(BindingContext context, string helperName, object[] arguments)
         {
-            if (CompilationContext.Configuration.Helpers.ContainsKey(helperName))
+            var configuration = context.Configuration;
+            if (configuration.Helpers.TryGetValue(helperName, out var helper))
             {
-                var helper = CompilationContext.Configuration.Helpers[helperName];
-                helper(context.TextWriter, context.Value, arguments.ToArray());
+                using (var write = new PolledStringWriter(configuration.FormatProvider))
+                {
+                    helper(write, context.Value, arguments);
+                    var result = write.ToString();
+                    return new ResultHolder(true, result);
+                }
             }
-            else
+            
+            if (configuration.ReturnHelpers.TryGetValue(helperName, out var returnHelper))
             {
-                throw new HandlebarsRuntimeException(string.Format("Template references a helper that is not registered. Could not find helper '{0}'", helperName));
+                var result = returnHelper(context.Value, arguments);
+                return new ResultHolder(true, result);
             }
+            
+            var targetType = arguments.FirstOrDefault()?.GetType();
+            foreach (var resolver in configuration.HelperResolvers)
+            {
+                if (!resolver.TryResolveReturnHelper(helperName, targetType, out returnHelper)) continue;
+                
+                var result = returnHelper(context.Value, arguments);
+                return new ResultHolder(true, result);
+            }
+            
+            return new ResultHolder(false, null);
+        }
+        
+        private static object LateBindHelperExpression(BindingContext context, string helperName, object[] arguments,
+            IReaderContext readerContext)
+        {
+            var result = TryLateBindHelperExpression(context, helperName, arguments);
+            if (result.Success)
+            {
+                return result.Value;
+            }
+
+            throw new HandlebarsRuntimeException($"Template references a helper that cannot be resolved. Helper '{helperName}'", readerContext);
+        }
+
+        private static object CaptureResult(TextWriter writer, object result)
+        {
+            writer?.WriteSafeString(result);
+            return result;
         }
     }
 }

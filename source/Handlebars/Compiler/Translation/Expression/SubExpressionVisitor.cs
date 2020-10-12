@@ -1,84 +1,109 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.IO;
-using System.Text;
+using System.Linq;
 using System.Reflection;
+using Expressions.Shortcuts;
 
 namespace HandlebarsDotNet.Compiler
 {
+    // will be significantly improved in next iterations
     internal class SubExpressionVisitor : HandlebarsExpressionVisitor
     {
-        public static Expression Visit(Expression expr, CompilationContext context)
-        {
-            return new SubExpressionVisitor(context).Visit(expr);
-        }
+        private readonly IExpressionCompiler _expressionCompiler;
+        private CompilationContext CompilationContext { get; }
 
-        private SubExpressionVisitor(CompilationContext context)
-            : base(context)
+        public SubExpressionVisitor(CompilationContext compilationContext)
         {
+            CompilationContext = compilationContext;
+            
+            _expressionCompiler = CompilationContext.Configuration.CompileTimeConfiguration.ExpressionCompiler;
         }
-
+        
         protected override Expression VisitSubExpression(SubExpressionExpression subex)
         {
-            var helperCall = subex.Expression as MethodCallExpression;
-            if (helperCall == null)
+            switch (subex.Expression)
             {
-                throw new HandlebarsCompilerException("Sub-expression does not contain a converted MethodCall expression");
+                case InvocationExpression invocationExpression:
+                    return HandleInvocationExpression(invocationExpression);
+
+                case MethodCallExpression callExpression:
+                    return HandleMethodCallExpression(callExpression);
+                
+                default:
+                    var expression = FunctionBuilder.Reduce(subex.Expression, CompilationContext);
+                    if (expression is MethodCallExpression lateBoundCall)
+                        return HandleMethodCallExpression(lateBoundCall);
+                    
+                    throw new HandlebarsCompilerException("Sub-expression does not contain a converted MethodCall expression");
             }
-            HandlebarsHelper helper = GetHelperDelegateFromMethodCallExpression(helperCall);
-            return Expression.Call(
-#if netstandard
-                new Func<HandlebarsHelper, object, object[], string>(CaptureTextWriterOutputFromHelper).GetMethodInfo(),
-#else
-                new Func<HandlebarsHelper, object, object[], string>(CaptureTextWriterOutputFromHelper).Method,
-#endif
-                Expression.Constant(helper),
-                Visit(helperCall.Arguments[1]),
-                Visit(helperCall.Arguments[2]));
         }
 
-        private static HandlebarsHelper GetHelperDelegateFromMethodCallExpression(MethodCallExpression helperCall)
+        private Expression HandleMethodCallExpression(MethodCallExpression helperCall)
         {
-            object target = helperCall.Object;
-            HandlebarsHelper helper;
-            if (target != null)
+            if (helperCall.Type != typeof(void))
             {
-                if (target is ConstantExpression)
-                {
-                    target = ((ConstantExpression)target).Value;
-                }
-                else
-                {
-                    throw new NotSupportedException("Helper method instance target must be reduced to a ConstantExpression");
-                }
-#if netstandard
-                helper = (HandlebarsHelper)helperCall.Method.CreateDelegate(typeof(HandlebarsHelper), target);
-#else
-                helper = (HandlebarsHelper)Delegate.CreateDelegate(typeof(HandlebarsHelper), target, helperCall.Method);
-#endif
+                return helperCall.Update(helperCall.Object, 
+                    ReplaceValuesOf<TextWriter>(helperCall.Arguments, ExpressionShortcuts.Null<TextWriter>()).Select(Visit)
+                );
             }
-            else
-            {
-#if netstandard
-                helper = (HandlebarsHelper)helperCall.Method.CreateDelegate(typeof(HandlebarsHelper));
-#else
-                helper = (HandlebarsHelper)Delegate.CreateDelegate(typeof(HandlebarsHelper), helperCall.Method);
-#endif
-            }
-            return helper;
+
+            var context = ExpressionShortcuts.Var<BindingContext>();
+            var writer = ExpressionShortcuts.Var<TextWriter>();
+            helperCall = helperCall.Update(ExpressionUtils.ReplaceParameters(helperCall.Object, context), 
+                ExpressionUtils.ReplaceParameters(
+                    ReplaceValuesOf<TextWriter>(helperCall.Arguments, writer), new Expression[] { context }
+                    ).Select(Visit)
+            );
+
+            var formatProvider = ExpressionShortcuts.Arg(CompilationContext.Configuration.FormatProvider);
+            var block = ExpressionShortcuts.Block()
+                .Parameter(writer, ExpressionShortcuts.New(() => new PolledStringWriter((IFormatProvider) formatProvider)))
+                .Line(writer.Using((o, body) =>
+                    body.Line(helperCall)
+                        .Line(o.Call(x => (object) x.ToString()))
+                ));
+            
+            var continuation = _expressionCompiler.Compile(Expression.Lambda<Func<BindingContext, object>>(block, (ParameterExpression) context));
+            return ExpressionShortcuts.Arg<object>(Expression.Invoke(Expression.Constant(continuation), CompilationContext.BindingContext));
         }
 
-        private static string CaptureTextWriterOutputFromHelper(
-            HandlebarsHelper helper,
-            object context,
-            object[] arguments)
+        private static IEnumerable<Expression> ReplaceValuesOf<T>(IEnumerable<Expression> instance, Expression newValue)
         {
-            var builder = new StringBuilder();
-            using (var writer = new StringWriter(builder))
+            var targetType = typeof(T);
+            return instance.Select(value => targetType.IsAssignableFrom(value.Type)
+                ? newValue
+                : value);
+        }
+
+        private Expression HandleInvocationExpression(InvocationExpression invocation)
+        {
+            if (invocation.Type != typeof(void))
             {
-                helper(writer, context, arguments);
+                return invocation.Update(invocation.Expression, 
+                    ReplaceValuesOf<TextWriter>(invocation.Arguments, ExpressionShortcuts.Null<TextWriter>()).Select(Visit)
+                );
             }
-            return builder.ToString();
+
+            var context = ExpressionShortcuts.Var<BindingContext>();
+            var writer = ExpressionShortcuts.Var<TextWriter>();
+            invocation = invocation.Update(ExpressionUtils.ReplaceParameters(invocation.Expression, context), 
+                ExpressionUtils.ReplaceParameters(
+                    ReplaceValuesOf<TextWriter>(invocation.Arguments, writer), new Expression[]{ context }
+                    ).Select(Visit)
+            );
+
+            var formatProvider = ExpressionShortcuts.Arg(CompilationContext.Configuration.FormatProvider);
+            var block = ExpressionShortcuts.Block()
+                .Parameter(writer, ExpressionShortcuts.New(() => new PolledStringWriter((IFormatProvider) formatProvider)))
+                .Line(writer.Using((o, body) =>
+                    body.Line(invocation)
+                        .Line(o.Call(x => (object) x.ToString()))
+                ));
+            
+            var continuation = _expressionCompiler.Compile(Expression.Lambda<Func<BindingContext, object>>(block, (ParameterExpression) context));
+            return ExpressionShortcuts.Arg<object>(Expression.Invoke(Expression.Constant(continuation), CompilationContext.BindingContext));
         }
     }
 }

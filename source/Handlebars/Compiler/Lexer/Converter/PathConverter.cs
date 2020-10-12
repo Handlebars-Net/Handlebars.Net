@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using HandlebarsDotNet.Compiler.Lexer;
 using System.Linq.Expressions;
@@ -21,9 +21,9 @@ namespace HandlebarsDotNet.Compiler
         {
             foreach (var item in sequence)
             {
-                if (item is WordExpressionToken)
+                if (item is WordExpressionToken wordExpressionToken)
                 {
-                    yield return HandlebarsExpression.Path(((WordExpressionToken)item).Value);
+                    yield return HandlebarsExpression.Path(wordExpressionToken.Value);
                 }
                 else
                 {

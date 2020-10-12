@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Xunit;
 
 namespace HandlebarsDotNet.Test
@@ -9,7 +10,7 @@ namespace HandlebarsDotNet.Test
         public void BasicIterator()
         {
             var source = "Hello,{{#each people}}\n- {{name}}{{/each}}";
-            var template = Handlebars.Compile(source);
+            var template = Handlebars.Create().Compile(source);
             var data = new {
                 people = new []{
                     new { 
@@ -86,7 +87,7 @@ namespace HandlebarsDotNet.Test
                         {{/each}}
                     {{/each}}    
                 {{/each}}";
-            var template = Handlebars.Compile( source );
+            var template = Handlebars.Create().Compile( source );
             var data = new
                 {
                     level1 = new[]{
@@ -275,6 +276,19 @@ namespace HandlebarsDotNet.Test
                 };
             var result = template(data);
             Assert.Equal("Hello, (no one listed)", result);
+        }
+        
+        [Fact]
+        public void EnumerableIterator()
+        {
+            var source = "{{#each people}}{{.}}{{@index}}{{/each}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                people = Enumerable.Range(0, 3).Select(x => x.ToString())
+            };
+            var result = template(data);
+            Assert.Equal("001122", result);
         }
     }
 }

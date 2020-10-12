@@ -6,9 +6,9 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class ExpressionBuilder
     {
-        private readonly HandlebarsConfiguration _configuration;
+        private readonly InternalHandlebarsConfiguration _configuration;
 
-        public ExpressionBuilder(HandlebarsConfiguration configuration)
+        public ExpressionBuilder(InternalHandlebarsConfiguration configuration)
         {
             _configuration = configuration;
         }
@@ -21,6 +21,7 @@ namespace HandlebarsDotNet.Compiler
             tokens = LiteralConverter.Convert(tokens);
             tokens = HashParameterConverter.Convert(tokens);
             tokens = PathConverter.Convert(tokens);
+            tokens = BlockParamsConverter.Convert(tokens);
             tokens = SubExpressionConverter.Convert(tokens);
             tokens = HashParametersAccumulator.Accumulate(tokens);
             tokens = PartialConverter.Convert(tokens);

@@ -4,64 +4,77 @@ using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using HandlebarsDotNet.Compiler.Lexer;
 
 namespace HandlebarsDotNet.Compiler
 {
     internal class HandlebarsCompiler
     {
-        private Tokenizer _tokenizer;
-        private FunctionBuilder _functionBuilder;
-        private ExpressionBuilder _expressionBuilder;
-        private HandlebarsConfiguration _configuration;
+        private readonly HandlebarsConfiguration _configuration;
 
         public HandlebarsCompiler(HandlebarsConfiguration configuration)
         {
             _configuration = configuration;
-            _tokenizer = new Tokenizer(configuration);
-            _expressionBuilder = new ExpressionBuilder(configuration);
-            _functionBuilder = new FunctionBuilder(configuration);
         }
 
-        public Action<TextWriter, object> Compile(TextReader source)
+        public Action<TextWriter, object> Compile(ExtendedStringReader source)
         {
-            var tokens = _tokenizer.Tokenize(source).ToList();
-            var expressions = _expressionBuilder.ConvertTokensToExpressions(tokens);
-            return _functionBuilder.Compile(expressions);
-        }
-
-        internal Action<TextWriter, object> CompileView(string templatePath)
-        {
-            var fs = _configuration.FileSystem;
-            if (fs == null) throw new InvalidOperationException("Cannot compile view when configuration.FileSystem is not set");
-            var template = fs.GetFileContent(templatePath);
-            if (template == null) throw new InvalidOperationException("Cannot find template at '" + templatePath + "'");
-            IEnumerable<object> tokens = null;
-            using (var sr = new StringReader(template))
+            var configuration = new InternalHandlebarsConfiguration(_configuration);
+            var createdFeatures = configuration.Features;
+            for (var index = 0; index < createdFeatures.Count; index++)
             {
-                tokens = _tokenizer.Tokenize(sr).ToList();
+                createdFeatures[index].OnCompiling(configuration);
             }
+            
+            var expressionBuilder = new ExpressionBuilder(configuration);
+            var tokens = Tokenizer.Tokenize(source).ToList();
+            var expressions = expressionBuilder.ConvertTokensToExpressions(tokens);
+            var action = FunctionBuilder.Compile(expressions, configuration);
+            
+            for (var index = 0; index < createdFeatures.Count; index++)
+            {
+                createdFeatures[index].CompilationCompleted();
+            }
+
+            return action;
+        }
+
+        internal Action<TextWriter, object> CompileView(ViewReaderFactory readerFactoryFactory, string templatePath, InternalHandlebarsConfiguration configuration)
+        {
+            IEnumerable<object> tokens;
+            using (var sr = readerFactoryFactory(configuration, templatePath))
+            {
+                using (var reader = new ExtendedStringReader(sr))
+                {
+                    tokens = Tokenizer.Tokenize(reader).ToList();
+                }
+            }
+
             var layoutToken = tokens.OfType<LayoutToken>().SingleOrDefault();
 
-            var expressions = _expressionBuilder.ConvertTokensToExpressions(tokens);
-            var compiledView = _functionBuilder.Compile(expressions, templatePath);
+            var expressionBuilder = new ExpressionBuilder(configuration);
+            var expressions = expressionBuilder.ConvertTokensToExpressions(tokens);
+            var compiledView = FunctionBuilder.Compile(expressions, configuration, templatePath);
             if (layoutToken == null) return compiledView;
 
+            var fs = configuration.FileSystem;
             var layoutPath = fs.Closest(templatePath, layoutToken.Value + ".hbs");
-            if (layoutPath == null) throw new InvalidOperationException("Cannot find layout '" + layoutPath + "' for template '" + templatePath + "'");
+            if (layoutPath == null)
+                throw new InvalidOperationException("Cannot find layout '" + layoutPath + "' for template '" +
+                                                    templatePath + "'");
 
-            var compiledLayout = CompileView(layoutPath);
+            var compiledLayout = CompileView(readerFactoryFactory, layoutPath, configuration);
 
             return (tw, vm) =>
             {
-                var sb = new StringBuilder();
-                using (var innerWriter = new StringWriter(sb))
+                string inner;
+                using (var innerWriter = new PolledStringWriter(configuration.FormatProvider))
                 {
                     compiledView(innerWriter, vm);
+                    inner = innerWriter.ToString();
                 }
-                var inner = sb.ToString();
-                compiledLayout(tw, new DynamicViewModel(new object[] { new { body = inner }, vm }));
+
+                compiledLayout(tw, new DynamicViewModel(new[] {new {body = inner}, vm}));
             };
         }
 

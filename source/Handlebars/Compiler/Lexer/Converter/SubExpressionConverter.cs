@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -46,6 +46,7 @@ namespace HandlebarsDotNet.Compiler
             return HandlebarsExpression.SubExpression(
                 HandlebarsExpression.Helper(
                     path.Path,
+                    false,
                     helperArguments));
         }
 
@@ -53,15 +54,15 @@ namespace HandlebarsDotNet.Compiler
         {
             var item = GetNext(enumerator);
             List<Expression> helperArguments = new List<Expression>();
-            while ((item is EndSubExpressionToken) == false)
+            while (!(item is EndSubExpressionToken))
             {
                 if (item is StartSubExpressionToken)
                 {
                     item = BuildSubExpression(enumerator);
                 }
-                else if ((item is Expression) == false)
+                else if (!(item is Expression))
                 {
-                    throw new HandlebarsCompilerException(string.Format("Token '{0}' could not be converted to an expression", item));
+                    throw new HandlebarsCompilerException($"Token '{item}' could not be converted to an expression");
                 }
                 helperArguments.Add((Expression)item);
                 item = GetNext(enumerator);

@@ -1,53 +1,53 @@
-﻿using System;
-using System.IO;
-using System.Text;
-using System.Linq;
+﻿using System.Linq;
 
 namespace HandlebarsDotNet.Compiler.Lexer
 {
     internal class LiteralParser : Parser
     {
-        public override Token Parse(TextReader reader)
+        public override Token Parse(ExtendedStringReader reader)
         {
-            LiteralExpressionToken token = null;
-            if (IsDelimitedLiteral(reader) == true)
+            var context = reader.GetContext();
+            if (IsDelimitedLiteral(reader))
             {
-                char delimiter = (char)reader.Read();
+                var delimiter = (char)reader.Read();
                 var buffer = AccumulateLiteral(reader, true, delimiter);
-                token = Token.Literal(buffer, delimiter.ToString());
+                return Token.Literal(buffer, delimiter.ToString(), context);
             }
-            else if (IsNonDelimitedLiteral(reader) == true)
+
+            if (IsNonDelimitedLiteral(reader))
             {
                 var buffer = AccumulateLiteral(reader, false, ' ', ')');
-                token = Token.Literal(buffer);
+                return Token.Literal(buffer, context: context);
             }
-            return token;
+
+            return null;
         }
 
-        private static bool IsDelimitedLiteral(TextReader reader)
+        private static bool IsDelimitedLiteral(ExtendedStringReader reader)
         {
             var peek = (char)reader.Peek();
             return peek == '\'' || peek == '"';
         }
 
-        private static bool IsNonDelimitedLiteral(TextReader reader)
+        private static bool IsNonDelimitedLiteral(ExtendedStringReader reader)
         {
             var peek = (char)reader.Peek();
             return char.IsDigit(peek) || peek == '-';
         }
 
-        private static string AccumulateLiteral(TextReader reader, bool captureDelimiter, params char[] delimiters)
+        private static string AccumulateLiteral(ExtendedStringReader reader, bool captureDelimiter, params char[] delimiters)
         {
-            StringBuilder buffer = new StringBuilder();
-            while (true)
+            using(var container = StringBuilderPool.Shared.Use())
             {
-                var node = reader.Peek();
-                if (node == -1)
+                var buffer = container.Value;
+                while (true)
                 {
-                    throw new InvalidOperationException("Reached end of template before the expression was closed.");
-                }
-                else
-                {
+                    var node = reader.Peek();
+                    if (node == -1)
+                    {
+                        throw new HandlebarsParserException("Reached end of template before the expression was closed.", reader.GetContext());
+                    }
+
                     if (delimiters.Contains((char)node))
                     {
                         if (captureDelimiter)
@@ -56,17 +56,17 @@ namespace HandlebarsDotNet.Compiler.Lexer
                         }
                         break;
                     }
-                    else if (!captureDelimiter && (char)node == '}')
+
+                    if (!captureDelimiter && (char)node == '}')
                     {
                         break;
                     }
-                    else
-                    {
-                        buffer.Append((char)reader.Read());
-                    }
+
+                    buffer.Append((char)reader.Read());
                 }
+                
+                return buffer.ToString();
             }
-            return buffer.ToString();
         }
     }
 }

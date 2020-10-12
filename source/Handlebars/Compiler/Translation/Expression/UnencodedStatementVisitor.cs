@@ -1,39 +1,32 @@
-﻿using System;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
+using static Expressions.Shortcuts.ExpressionShortcuts;
 
 namespace HandlebarsDotNet.Compiler
 {
     internal class UnencodedStatementVisitor : HandlebarsExpressionVisitor
     {
-        public static Expression Visit(Expression expr, CompilationContext context)
-        {
-            return new UnencodedStatementVisitor(context).Visit(expr);
-        }
+        private CompilationContext CompilationContext { get; }
 
-        private UnencodedStatementVisitor(CompilationContext context)
-            : base(context)
+        public UnencodedStatementVisitor(CompilationContext compilationContext)
         {
+            CompilationContext = compilationContext;
         }
 
         protected override Expression VisitStatementExpression(StatementExpression sex)
         {
-            if (sex.IsEscaped == false)
+            if (!sex.IsEscaped)
             {
-                return Expression.Block(
-                    typeof(void),
-                    Expression.Assign(
-                        Expression.Property(CompilationContext.BindingContext, "SuppressEncoding"),
-                        Expression.Constant(true)),
-                    sex,
-                    Expression.Assign(
-                        Expression.Property(CompilationContext.BindingContext, "SuppressEncoding"),
-                        Expression.Constant(false)),
-                    Expression.Empty());
+                var context = Arg<BindingContext>(CompilationContext.BindingContext);
+                var suppressEncoding = context.Property(o => o.SuppressEncoding);
+                
+                return Block(typeof(void))
+                    .Line(suppressEncoding.Assign(true))
+                    .Line(sex)
+                    .Line(suppressEncoding.Assign(false))
+                    .Line(Expression.Empty());
             }
-            else
-            {
-                return sex;
-            }
+
+            return sex;
         }
     }
 }

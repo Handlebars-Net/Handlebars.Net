@@ -4,13 +4,7 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class CommentVisitor : HandlebarsExpressionVisitor
     {
-        public static Expression Visit(Expression expr, CompilationContext compilationContext)
-        {
-            return new CommentVisitor(compilationContext).Visit(expr);
-        }
-
-        private CommentVisitor(CompilationContext compilationContext) 
-            : base(compilationContext)
+        public CommentVisitor()
         {
         }
 

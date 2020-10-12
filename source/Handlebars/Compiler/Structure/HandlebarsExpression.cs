@@ -1,3 +1,4 @@
+using System;
 using System.Linq.Expressions;
 using System.Collections.Generic;
 
@@ -11,40 +12,50 @@ namespace HandlebarsDotNet.Compiler
         HelperExpression = 6003,
         PathExpression = 6004,
         IteratorExpression = 6005,
-        DeferredSection = 6006,
         PartialExpression = 6007,
         BoolishExpression = 6008,
         SubExpression = 6009,
         HashParameterAssignmentExpression = 6010,
         HashParametersExpression = 6011,
-        CommentExpression = 6012
+        CommentExpression = 6012,
+        BlockParamsExpression = 6013
     }
 
     internal abstract class HandlebarsExpression : Expression
     {
-        public static HelperExpression Helper(string helperName, IEnumerable<Expression> arguments, bool isRaw = false)
+        public override Type Type => GetType();
+
+        public override bool CanReduce { get; } = false;
+
+        public static HelperExpression Helper(string helperName, bool isBlock, IEnumerable<Expression> arguments, bool isRaw = false)
         {
-            return new HelperExpression(helperName, arguments, isRaw);
+            return new HelperExpression(helperName, isBlock, arguments, isRaw);
         }
 
-        public static HelperExpression Helper(string helperName, bool isRaw = false)
+        public static HelperExpression Helper(string helperName, bool isBlock, bool isRaw = false, IReaderContext context = null)
         {
-            return new HelperExpression(helperName, isRaw);
+            return new HelperExpression(helperName, isBlock, isRaw, context);
         }
 
         public static BlockHelperExpression BlockHelper(
             string helperName,
             IEnumerable<Expression> arguments,
+            BlockParamsExpression blockParams,
             Expression body,
             Expression inversion,
             bool isRaw = false)
         {
-            return new BlockHelperExpression(helperName, arguments, body, inversion, isRaw);
+            return new BlockHelperExpression(helperName, arguments, blockParams, body, inversion, isRaw);
         }
 
         public static PathExpression Path(string path)
         {
             return new PathExpression(path);
+        }
+        
+        public static BlockParamsExpression BlockParams(string action, string blockParams)
+        {
+            return new BlockParamsExpression(action, blockParams);
         }
 
         public static StaticExpression Static(string value)
@@ -59,25 +70,19 @@ namespace HandlebarsDotNet.Compiler
 
         public static IteratorExpression Iterator(
             Expression sequence,
+            BlockParamsExpression blockParams,
             Expression template)
         {
-            return new IteratorExpression(sequence, template);
+            return new IteratorExpression(sequence, blockParams, template, Empty());
         }
 
         public static IteratorExpression Iterator(
             Expression sequence,
+            BlockParamsExpression blockParams,
             Expression template,
             Expression ifEmpty)
         {
-            return new IteratorExpression(sequence, template, ifEmpty);
-        }
-
-        public static DeferredSectionExpression DeferredSection(
-            PathExpression path,
-            BlockExpression body,
-            BlockExpression inversion)
-        {
-            return new DeferredSectionExpression(path, body, inversion);
+            return new IteratorExpression(sequence, blockParams, template, ifEmpty);
         }
 
         public static PartialExpression Partial(Expression partialName)

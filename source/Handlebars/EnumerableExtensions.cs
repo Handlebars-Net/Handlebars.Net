@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
 
 namespace HandlebarsDotNet
 {
@@ -12,21 +8,28 @@ namespace HandlebarsDotNet
         public static bool IsOneOf<TSource, TExpected>(this IEnumerable<TSource> source)
             where TExpected : TSource
         {
-            var enumerator = source.GetEnumerator();
+            using var enumerator = source.GetEnumerator();
             enumerator.MoveNext();
-            return (enumerator.Current is TExpected) && (enumerator.MoveNext() == false);
+            return enumerator.Current is TExpected && !enumerator.MoveNext();
+        }
+        
+        public static bool IsMultiple<T>(this IEnumerable<T> source)
+        {
+            using var enumerator = source.GetEnumerator();
+            var hasNext = enumerator.MoveNext();
+            hasNext = hasNext && enumerator.MoveNext();
+            return hasNext;
         }
 
-        public static void AddOrUpdate<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue value)
+        public static IEnumerable<T> ApplyOn<T, TV>(this IEnumerable<T> source, Action<TV> mutator)
+            where T: class
+            where TV : T
         {
-            if (dictionary.ContainsKey(key))
+            foreach (var item in source)
             {
-                dictionary[key] = value;
-            }
-            else
-            {
-                dictionary.Add(key, value);
-            }
+                if(item is TV typed) mutator(typed);
+                yield return item;
+            }   
         }
     }
 }

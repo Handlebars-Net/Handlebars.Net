@@ -1,13 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <AssemblyName>Handlebars</AssemblyName>
     <DebugType>portable</DebugType>
     <ProjectGuid>9822C7B8-7E51-42BC-9A49-72A10491B202</ProjectGuid>
     <TargetFrameworks>netstandard1.3;netstandard2.0</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">$(TargetFrameworks);net452</TargetFrameworks>
-    <Version>1.11.4</Version>
+    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">$(TargetFrameworks);net451;net452</TargetFrameworks>
+    <Version>2.0.0</Version>
     <LangVersion>8</LangVersion>
-    <SignAssembly Condition="$(ShouldSignAssembly) == 'true'">true</SignAssembly>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)'=='netstandard1.3'">
@@ -21,28 +21,42 @@
     <Authors>Rex Morgan</Authors>
     <Copyright>Copyright © 2014-2020 Rex Morgan</Copyright>
     <Description>Blistering-fast Handlebars.js templates in your .NET application.</Description>
-    <PackageIconUrl>https://raw.githubusercontent.com/Handlebars-Net/Handlebars.Net/master/hbnet-icon.png</PackageIconUrl>
+    <PackageIcon>hbnet-icon.png</PackageIcon>
     <PackageId>Handlebars.Net</PackageId>
-    <PackageLicenseUrl>https://opensource.org/licenses/mit</PackageLicenseUrl>
-    <PackageProjectUrl>https://github.com/rexm/Handlebars.Net</PackageProjectUrl>
-    <PackageReleaseNotes>https://github.com/Handlebars-Net/Handlebars.Net/releases/tag/$(Version)</PackageReleaseNotes>
+    <PackageProjectUrl>https://github.com/Handlebars-Net</PackageProjectUrl>
     <PackageTags>handlebars;mustache;templating;engine;compiler</PackageTags>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/Handlebars-Net/Handlebars.Net</RepositoryUrl>
+    <PackageReleaseNotes>https://github.com/Handlebars-Net/Handlebars.Net/releases/tag/$(Version)</PackageReleaseNotes>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)'=='net452'">
+  <ItemGroup>
+    <Content Include="..\..\hbnet-icon.png">
+      <Visible>false</Visible>
+      <Pack>true</Pack>
+      <PackagePath>.</PackagePath>
+    </Content>
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(TargetFramework)'=='net451' or '$(TargetFramework)'=='net452'">
     <Reference Include="Microsoft.CSharp" />
+    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="1.1.1" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)'=='netstandard1.3'">
-    <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
-    <PackageReference Include="System.Reflection.TypeExtensions " Version="4.3.0" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="System.ComponentModel.TypeConverter" Version="4.3.0" />
+    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="1.1.1" />
   </ItemGroup>
+
   <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
-    <PackageReference Include="Microsoft.CSharp" Version="4.4.0" />
-    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.4.0" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="3.1.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ExpressionShortcuts" Version="1.0.4.38" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

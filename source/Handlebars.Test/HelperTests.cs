@@ -1,7 +1,8 @@
-﻿using Xunit;
+using Xunit;
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using HandlebarsDotNet.Features;
 
 namespace HandlebarsDotNet.Test
 {
@@ -26,6 +27,344 @@ namespace HandlebarsDotNet.Test
 
             var expected = "Here are some things: \nThing 1: foo\nThing 2: bar";
 
+            Assert.Equal(expected, output);
+        }
+
+        [Theory]
+        [InlineData("one.two")]
+        [InlineData("[one.two]")]
+        [InlineData("[one].two")]
+        [InlineData("one.[two]")]
+        public void HelperWithDotSeparatedNameWithNoParameters(string helperName)
+        {
+            var source = "{{ " + helperName + " }}";
+            var handlebars = Handlebars.Create();
+            handlebars.Configuration.Compatibility.RelaxedHelperNaming = true;
+            handlebars.RegisterHelper("one.two", (context, arguments) => 42);
+        
+            var template = handlebars.Compile(source);
+        
+            var actual = template(null);
+            
+            Assert.Equal("42", actual);
+        }
+        
+        [Theory]
+        [InlineData("one.two")]
+        [InlineData("[one.two]")]
+        [InlineData("[one].two")]
+        [InlineData("one.[two]")]
+        public void HelperWithDotSeparatedNameWithParameters(string helperName)
+        {
+            var source = "{{ " + helperName + " 'a' 'b' }}";
+            var handlebars = Handlebars.Create();
+            handlebars.Configuration.Compatibility.RelaxedHelperNaming = true;
+            handlebars.RegisterHelper("one.two", (context, arguments) => "42" + arguments[0] + arguments[1]);
+        
+            var template = handlebars.Compile(source);
+        
+            var actual = template(null);
+            
+            Assert.Equal("42ab", actual);
+        }
+
+        [Fact]
+        public void BlockHelperWithBlockParams()
+        {
+            Handlebars.RegisterHelper("myHelper", (writer, options, context, args) => {
+                var count = 0;
+                options.BlockParams((parameters, binder, deps) =>
+                {
+                    binder(parameters.ElementAtOrDefault(0), ctx => ++count);
+                });
+                
+                foreach(var arg in args)
+                {
+                    options.Template(writer, arg);
+                }
+            });
+
+            var source = "Here are some things: {{#myHelper 'foo' 'bar' as |counter|}}{{counter}}:{{this}}\n{{/myHelper}}";
+
+            var template = Handlebars.Compile(source);
+
+            var output = template(new { });
+
+            var expected = "Here are some things: 1:foo\n2:bar\n";
+
+            Assert.Equal(expected, output);
+        }
+        
+        [Fact]
+        public void BlockHelperLateBound()
+        {
+            var source = "Here are some things: \n" +
+                         "{{#myHelper 'foo' 'bar' as |counter|}}\n" +
+                         "{{counter}}:{{this}}\n" +
+                         "{{/myHelper}}";
+
+            var template = Handlebars.Compile(source);
+
+            Handlebars.RegisterHelper("myHelper", (writer, options, context, args) => {
+                var count = 0;
+                options.BlockParams((parameters, binder, deps) => 
+                    binder(parameters.ElementAtOrDefault(0), ctx => ++count));
+                
+                foreach(var arg in args)
+                {
+                    options.Template(writer, arg);
+                }
+            });
+            
+            var output = template(new { });
+
+            var expected = "Here are some things: \n1:foo\n2:bar\n";
+
+            Assert.Equal(expected, output);
+        }
+        
+        [Fact]
+        public void BlockHelperLateBoundConflictsWithValue()
+        {
+            var source = "{{#late}}late{{/late}}";
+
+            var handlebars = Handlebars.Create();
+            var template = handlebars.Compile(source);
+
+            handlebars.RegisterHelper("late", (writer, options, context, args) =>
+            {
+                options.Template(writer, context);
+            });
+            
+            var output = template(new { late = "should be ignored" });
+
+            var expected = "late";
+
+            Assert.Equal(expected, output);
+        }
+        
+        [Fact]
+        public void BlockHelperLateBoundMissingHelperFallbackToDeferredSection()
+        {
+            var source = "{{#late}}late{{/late}}";
+
+            var handlebars = Handlebars.Create();
+            handlebars.Configuration.RegisterMissingHelperHook(
+                (context, arguments) => "Hook"
+            );
+            var template = handlebars.Compile(source);
+            
+            var output = template(new { late = "late" });
+
+            var expected = "late";
+
+            Assert.Equal(expected, output);
+        }
+        
+        [Fact]
+        public void HelperLateBound()
+        {
+            var source = "{{lateHelper}}";
+
+            var template = Handlebars.Compile(source);
+
+            var expected = "late";
+            Handlebars.RegisterHelper("lateHelper", (writer, context, arguments) =>
+            {
+                writer.WriteSafeString(expected);
+            });
+            
+            var output = template(null);
+
+            Assert.Equal(expected, output);
+        }
+        
+        [Theory]
+        [InlineData("[$lateHelper]")]
+        [InlineData("[late.Helper]")]
+        [InlineData("[@lateHelper]")]
+        public void HelperEscapedLateBound(string helperName)
+        {
+            var handlebars = Handlebars.Create();
+
+            var source = "{{" + helperName + "}}";
+
+            var template = handlebars.Compile(source);
+
+            var expected = "late";
+            handlebars.RegisterHelper(helperName.Trim('[', ']'), (writer, context, arguments) =>
+            {
+                writer.WriteSafeString(expected);
+            });
+            
+            var output = template(null);
+
+            Assert.Equal(expected, output);
+        }
+        
+        [Theory]
+        [InlineData("{{lateHelper.a}}")]
+        [InlineData("{{[lateHelper].a}}")]
+        [InlineData("{{[lateHelper.a]}}")]
+        public void WrongHelperLiteralLateBound(string source)
+        {
+            var handlebars = Handlebars.Create();
+
+            var template = handlebars.Compile(source);
+            
+            handlebars.RegisterHelper("lateHelper", (writer, context, arguments) =>
+            {
+                writer.WriteSafeString("should not appear");
+            });
+            
+            var output = template(null);
+
+            Assert.Equal(string.Empty, output);
+        }
+        
+        [Theory]
+        [InlineData("missing")]
+        [InlineData("[missing]")]
+        [InlineData("[$missing]")]
+        [InlineData("[m.i.s.s.i.n.g]")]
+        public void MissingHelperHook(string helperName)
+        {
+            var handlebars = Handlebars.Create();
+            var format = "Missing helper: {0}";
+            handlebars.Configuration
+                .RegisterMissingHelperHook(
+                    (context, arguments) =>
+                    {
+                        var name = arguments.Last().ToString();
+                        return string.Format(format, name.Trim('[', ']'));
+                    });
+
+            var source = "{{"+ helperName +"}}";
+
+            var template = handlebars.Compile(source);
+            
+            var output = template(null);
+
+            var expected = string.Format(format, helperName.Trim('[', ']'));
+            Assert.Equal(expected, output);
+        }
+        
+        [Fact]
+        public void MissingHelperHookViaFeatureAndMethod()
+        {
+            var expected = "Hook";
+            var handlebars = Handlebars.Create();
+            handlebars.Configuration
+                .RegisterMissingHelperHook(
+                    (context, arguments) => expected
+                );
+
+            handlebars.RegisterHelper("helperMissing", 
+                (context, arguments) => "Should be ignored"
+            );
+            
+            var source = "{{missing}}";
+            var template = handlebars.Compile(source);
+            
+            var output = template(null);
+            
+            Assert.Equal(expected, output);
+        }
+        
+        [Theory]
+        [InlineData("missing")]
+        [InlineData("[missing]")]
+        [InlineData("[$missing]")]
+        [InlineData("[m.i.s.s.i.n.g]")]
+        public void MissingHelperHookViaHelperRegistration(string helperName)
+        {
+            var handlebars = Handlebars.Create();
+            var format = "Missing helper: {0}";
+            handlebars.RegisterHelper("helperMissing", (context, arguments) =>
+            {
+                var name = arguments.Last().ToString();
+                return string.Format(format, name.Trim('[', ']'));
+            });
+
+            var source = "{{"+ helperName +"}}";
+
+            var template = handlebars.Compile(source);
+            
+            var output = template(null);
+
+            var expected = string.Format(format, helperName.Trim('[', ']'));
+            Assert.Equal(expected, output);
+        }
+        
+        [Theory]
+        [InlineData("missing")]
+        [InlineData("[missing]")]
+        [InlineData("[$missing]")]
+        [InlineData("[m.i.s.s.i.n.g]")]
+        public void MissingBlockHelperHook(string helperName)
+        {
+            var handlebars = Handlebars.Create();
+            var format = "Missing block helper: {0}";
+            handlebars.Configuration
+                .RegisterMissingHelperHook(
+                    blockHelperMissing: (writer, options, context, arguments) =>
+                    {
+                        var name = options.GetValue<string>("name");
+                        writer.WriteSafeString(string.Format(format, name.Trim('[', ']')));
+                    });
+
+            var source = "{{#"+ helperName +"}}should not appear{{/" + helperName + "}}";
+
+            var template = handlebars.Compile(source);
+            
+            var output = template(null);
+
+            var expected = string.Format(format, helperName.Trim('[', ']'));
+            Assert.Equal(expected, output);
+        }
+        
+        [Theory]
+        [InlineData("missing")]
+        [InlineData("[missing]")]
+        [InlineData("[$missing]")]
+        [InlineData("[m.i.s.s.i.n.g]")]
+        public void MissingBlockHelperHookViaHelperRegistration(string helperName)
+        {
+            var handlebars = Handlebars.Create();
+            var format = "Missing block helper: {0}";
+            handlebars.RegisterHelper("blockHelperMissing", (writer, options, context, arguments) =>
+            {
+                var name = options.GetValue<string>("name");
+                writer.WriteSafeString(string.Format(format, name.Trim('[', ']')));
+            });
+
+            var source = "{{#"+ helperName +"}}should not appear{{/" + helperName + "}}";
+
+            var template = handlebars.Compile(source);
+            
+            var output = template(null);
+
+            var expected = string.Format(format, helperName.Trim('[', ']'));
+            Assert.Equal(expected, output);
+        }
+        
+        [Fact]
+        public void MissingHelperHookWhenVariableExists()
+        {
+            var handlebars = Handlebars.Create();
+            var expected = "Variable";
+            
+            handlebars.Configuration
+                .RegisterMissingHelperHook(
+                    (context, arguments) => "Hook"
+                );
+
+            var source = "{{missing}}";
+
+            var template = Handlebars.Compile(source);
+            
+            var output = template(new { missing = "Variable" });
+            
             Assert.Equal(expected, output);
         }
 
@@ -339,7 +678,8 @@ namespace HandlebarsDotNet.Test
         [Fact]
         public void HelperWithHashArgument()
         {
-            Handlebars.RegisterHelper("myHelper", (writer, context, args) => {
+            var h = Handlebars.Create();
+            h.RegisterHelper("myHelper", (writer, context, args) => {
                 var hash = args[2] as Dictionary<string, object>;
                 foreach(var item in hash)
                 {
@@ -349,7 +689,7 @@ namespace HandlebarsDotNet.Test
 
             var source = "Here are some things:{{myHelper 'foo' 'bar' item1='val1' item2='val2'}}";
 
-            var template = Handlebars.Compile(source);
+            var template = h.Compile(source);
 
             var output = template(new { });
 

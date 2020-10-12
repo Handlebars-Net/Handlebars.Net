@@ -1,28 +1,19 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
 
 namespace HandlebarsDotNet.Compiler.Lexer
 {
-    internal class Tokenizer
+    internal static class Tokenizer
     {
-        private readonly HandlebarsConfiguration _configuration;
-
-        private static Parser _wordParser = new WordParser();
-        private static Parser _literalParser = new LiteralParser();
-        private static Parser _commentParser = new CommentParser();
-        private static Parser _partialParser = new PartialParser();
-        private static Parser _blockWordParser = new BlockWordParser();
+        private static readonly Parser WordParser = new WordParser();
+        private static readonly Parser LiteralParser = new LiteralParser();
+        private static readonly Parser CommentParser = new CommentParser();
+        private static readonly Parser PartialParser = new PartialParser();
+        private static readonly Parser BlockWordParser = new BlockWordParser();
+        private static readonly Parser BlockParamsParser = new BlockParamsParser();
         //TODO: structure parser
-
-        public Tokenizer(HandlebarsConfiguration configuration)
-        {
-            _configuration = configuration;
-        }
-
-        public IEnumerable<Token> Tokenize(TextReader source)
+        
+        public static IEnumerable<Token> Tokenize(ExtendedStringReader source)
         {
             try
             {
@@ -34,11 +25,13 @@ namespace HandlebarsDotNet.Compiler.Lexer
             }
         }
 
-        private IEnumerable<Token> Parse(TextReader source)
+        private static IEnumerable<Token> Parse(ExtendedStringReader source)
         {
             bool inExpression = false;
             bool trimWhitespace = false;
-            var buffer = new StringBuilder();
+            using var container = StringBuilderPool.Shared.Use();
+            var buffer = container.Value;
+
             var node = source.Read();
             while (true)
             {
@@ -52,7 +45,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
                         }
                         else
                         {
-                            yield return Token.Static(buffer.ToString());
+                            yield return Token.Static(buffer.ToString(), source.GetContext());
                         }
                     }
                     break;
@@ -64,12 +57,12 @@ namespace HandlebarsDotNet.Compiler.Lexer
                         yield return Token.StartSubExpression();
                     }
 
-                    Token token = null;
-                    token = token ?? _wordParser.Parse(source);
-                    token = token ?? _literalParser.Parse(source);
-                    token = token ?? _commentParser.Parse(source);
-                    token = token ?? _partialParser.Parse(source);
-                    token = token ?? _blockWordParser.Parse(source);
+                    var token = WordParser.Parse(source);
+                    token ??= LiteralParser.Parse(source);
+                    token ??= CommentParser.Parse(source);
+                    token ??= PartialParser.Parse(source);
+                    token ??= BlockWordParser.Parse(source);
+                    token ??= BlockParamsParser.Parse(source);
 
                     if (token != null)
                     {
@@ -78,7 +71,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
                         if ((char)source.Peek() == '=')
                         {
                             source.Read();
-                            yield return Token.Assignment();
+                            yield return Token.Assignment(source.GetContext());
                             continue;
                         }
                     }
@@ -88,22 +81,22 @@ namespace HandlebarsDotNet.Compiler.Lexer
                         bool raw = false;
                         if ((char)source.Peek() == '}')
                         {
-                            node = source.Read();
+                            source.Read();
                             escaped = false;
                         }
                         if ((char)source.Peek() == '}')
                         {
-                            node = source.Read();
+                            source.Read();
                             raw = true;
                         }
                         node = source.Read();
-                        yield return Token.EndExpression(escaped, trimWhitespace, raw);
+                        yield return Token.EndExpression(escaped, trimWhitespace, raw, source.GetContext());
                         inExpression = false;
                     }
                     else if ((char)node == ')')
                     {
                         node = source.Read();
-                        yield return Token.EndSubExpression();
+                        yield return Token.EndSubExpression(source.GetContext());
                     }
                     else if (char.IsWhiteSpace((char)node) || char.IsWhiteSpace((char)source.Peek()))
                     {
@@ -119,7 +112,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
                         if (token == null)
                         {
                             
-                            throw new HandlebarsParserException("Reached unparseable token in expression: " + source.ReadLine());
+                            throw new HandlebarsParserException("Reached unparseable token in expression: " + source.ReadLine(), source.GetContext());
                         }
                         node = source.Read();
                     }
@@ -168,10 +161,10 @@ namespace HandlebarsDotNet.Compiler.Lexer
                             node = source.Peek();
                             trimWhitespace = true;
                         }
-                        yield return Token.Static(buffer.ToString());
-                        yield return Token.StartExpression(escaped, trimWhitespace, raw);
+                        yield return Token.Static(buffer.ToString(), source.GetContext());
+                        yield return Token.StartExpression(escaped, trimWhitespace, raw, source.GetContext());
                         trimWhitespace = false;
-                        buffer = new StringBuilder();
+                        buffer.Clear();
                         inExpression = true;
                     }
                     else

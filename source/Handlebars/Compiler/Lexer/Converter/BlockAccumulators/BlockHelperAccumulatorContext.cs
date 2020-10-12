@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Collections.Generic;
@@ -37,7 +36,7 @@ namespace HandlebarsDotNet.Compiler
             }
             else
             {
-                _body.Add((Expression)item);
+                _body.Add(item);
             }
         }
 
@@ -55,8 +54,11 @@ namespace HandlebarsDotNet.Compiler
 
         private bool IsClosingNode(Expression item)
         {
-            var helperName = _startingNode.HelperName.Replace("#", "").Replace("*", "");
-            return item is PathExpression && ((PathExpression)item).Path == "/" + helperName;
+            var helperName = _startingNode.HelperName
+                .Replace("#", string.Empty)
+                .Replace("^", string.Empty)
+                .Replace("*", string.Empty);
+            return item is PathExpression expression && expression.Path == "/" + helperName;
         }
 
         public override Expression GetAccumulatedBlock()
@@ -73,7 +75,8 @@ namespace HandlebarsDotNet.Compiler
 
             var resultExpr = HandlebarsExpression.BlockHelper(
                 _startingNode.HelperName,
-                _startingNode.Arguments,
+                _startingNode.Arguments.Where(o => o.NodeType != (ExpressionType)HandlebarsExpressionType.BlockParamsExpression),
+                _startingNode.Arguments.OfType<BlockParamsExpression>().SingleOrDefault() ?? BlockParamsExpression.Empty(),
                 _accumulatedBody,
                 _accumulatedInversion,
                 _startingNode.IsRaw);
