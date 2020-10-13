@@ -1,6 +1,4 @@
-using HandlebarsDotNet.Compiler;
 using HandlebarsDotNet.Compiler.Structure.Path;
-using HandlebarsDotNet.ObjectDescriptors;
 
 namespace HandlebarsDotNet.Helpers
 {
@@ -22,14 +20,9 @@ namespace HandlebarsDotNet.Helpers
             
             var segment = ChainSegment.Create(arguments[1]);
 
-            if (ObjectDescriptor.TryCreate(arguments[0], _configuration, out var descriptor))
-            {
-                return !PathResolver.TryAccessMember(arguments[0], segment, _configuration, out var value) 
-                    ? segment.GetUndefinedBindingResult(_configuration)
-                    : value;
-            }
-
-            return segment.GetUndefinedBindingResult(_configuration);
+            return !PathResolver.TryAccessMember(arguments[0], segment, _configuration, out var value) 
+                ? segment.GetUndefinedBindingResult(_configuration)
+                : value;
         }
     }
 }

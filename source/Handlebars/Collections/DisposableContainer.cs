@@ -13,9 +13,6 @@ namespace HandlebarsDotNet
             Value = value;
         }
         
-        public void Dispose()
-        {
-            _onDispose(Value);
-        }
+        public void Dispose() => _onDispose(Value);
     }
 }

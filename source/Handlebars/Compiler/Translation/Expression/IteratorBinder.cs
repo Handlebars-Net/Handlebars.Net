@@ -122,15 +122,16 @@ namespace HandlebarsDotNet.Compiler
             blockParams.CreateProperty(1, out var _1);
             
             var accessor = new MemberAccessor(target, descriptor);
-            var enumerable = new ExtendedEnumerable<object>(properties);
+            var enumerable = new ExtendedEnumerator<object>(properties.GetEnumerator());
             var enumerated = false;
 
             object iteratorValue;
             ChainSegment iteratorKey;
-            
-            foreach (var enumerableValue in enumerable)
+
+            while (enumerable.MoveNext())
             {
                 enumerated = true;
+                var enumerableValue = enumerable.Current;
                 iteratorKey = ChainSegment.Create(enumerableValue.Value);
                 
                 iterator.Key = iteratorKey;
@@ -262,15 +263,16 @@ namespace HandlebarsDotNet.Compiler
             blockParams.CreateProperty(0, out var _0);
             blockParams.CreateProperty(1, out var _1);
             
-            var enumerable = new ExtendedEnumerable<object>(target);
+            var enumerator = new ExtendedEnumerator<object>(target.GetEnumerator());
             var enumerated = false;
 
             object boxedIndex;            
             object iteratorValue;
-            
-            foreach (var enumerableValue in enumerable)
+
+            while (enumerator.MoveNext())
             {
                 enumerated = true;
+                var enumerableValue = enumerator.Current;
                 
                 if (enumerableValue.Index == 1) iterator.First = BoxedValues.False;
                 if (enumerableValue.IsLast) iterator.Last = BoxedValues.True;

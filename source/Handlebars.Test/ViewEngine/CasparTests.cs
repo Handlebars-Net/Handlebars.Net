@@ -5,12 +5,11 @@ namespace HandlebarsDotNet.Test.ViewEngine
 {
     public class CasparTests
     {
-#if !netstandard
         [Fact]
         public void CanRenderCasparIndexTemplate()
         {
-            var fs = (new DiskFileSystem());
-            var handlebars = HandlebarsDotNet.Handlebars.Create(new HandlebarsConfiguration()
+            var fs = new DiskFileSystem();
+            var handlebars = Handlebars.Create(new HandlebarsConfiguration()
             {
                 FileSystem = fs
             });
@@ -40,8 +39,8 @@ namespace HandlebarsDotNet.Test.ViewEngine
         [Fact]
         public void CanRenderCasparPostTemplate()
         {
-            var fs = (new DiskFileSystem());
-            var handlebars = HandlebarsDotNet.Handlebars.Create(new HandlebarsConfiguration()
+            var fs = new DiskFileSystem();
+            var handlebars = Handlebars.Create(new HandlebarsConfiguration()
             {
                 FileSystem = fs
             });
@@ -64,7 +63,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
             var cq = CsQuery.CQ.CreateDocument(output);
             Assert.Equal("My Post Title", cq["h1.post-title"].Html());
         }
-#endif
+
         private static void AddHelpers(IHandlebars handlebars)
         {
             handlebars.RegisterHelper("asset",
@@ -78,7 +77,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
             handlebars.RegisterHelper("url", (writer, context, arguments) => writer.Write("url:" + string.Join("|", arguments)));
             handlebars.RegisterHelper("excerpt", (writer, context, arguments) => writer.Write("url:" + string.Join("|", arguments)));
         }
-#if !netstandard
+
         [Fact]
         public void CanRenderCasparPostNoLayoutTemplate()
         {
@@ -135,7 +134,6 @@ namespace HandlebarsDotNet.Test.ViewEngine
             var cq = CsQuery.CQ.CreateDocument(output);
             Assert.Equal("My Post Title", cq["h2.post-title a"].Text());
         }
-#endif
 
         class DiskFileSystem : ViewEngineFileSystem
         {

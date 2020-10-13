@@ -5,21 +5,19 @@ using Xunit;
 
 namespace HandlebarsDotNet.Test.Collections
 {
+    public struct ObjectComparer : IEqualityComparer<object>
+    {
+        public new bool Equals(object x, object y) => ReferenceEquals(x, y);
+
+        public int GetHashCode(object obj) => obj.GetHashCode();
+    }
+    
     public class FixedSizeDictionaryTests : IDisposable
     {
-        public struct ObjectComparer : IEqualityComparer<object>
-        {
-            public bool Equals(object x, object y) => ReferenceEquals(x, y);
-
-            public int GetHashCode(object obj) => obj.GetHashCode();
-        }
-        
         private static readonly FixedSizeDictionary<object, object, ObjectComparer> FixedSizeDictionary;
 
-        static FixedSizeDictionaryTests()
-        {
-            FixedSizeDictionary = new FixedSizeDictionary<object, object, ObjectComparer>(15, 17, new ObjectComparer());
-        }
+        static FixedSizeDictionaryTests() 
+            => FixedSizeDictionary = new FixedSizeDictionary<object, object, ObjectComparer>(15, 17, new ObjectComparer());
 
         [Fact]
         public void AddOrReplace()

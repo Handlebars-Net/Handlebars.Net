@@ -188,10 +188,7 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
         
         private class Disposer : IDisposable
         {
-            public void Dispose()
-            {
-                Lookup.Clear();
-            }
+            public void Dispose() => Lookup.Clear();
         }
         
         public struct ChainSegmentEqualityComparer : IEqualityComparer<ChainSegment>

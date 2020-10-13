@@ -9,10 +9,17 @@ namespace HandlebarsDotNet.Polyfills
         public static T[] Empty<T>()
         {
 #if !netstandard
-            return new T[0];
+            return EmptyArray<T>.Value;
 #else
             return Array.Empty<T>();
 #endif
         }
+        
+#if !netstandard
+        private static class EmptyArray<T>
+        {
+            public static readonly T[] Value = new T[0];
+        }
+#endif
     }
 }

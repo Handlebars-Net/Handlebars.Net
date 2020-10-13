@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Concurrent;
-using System.Threading;
 
 namespace HandlebarsDotNet
 {
@@ -17,8 +16,7 @@ namespace HandlebarsDotNet
     {
         private readonly IInternalObjectPoolPolicy<T> _policy;
         private ConcurrentQueue<T> _queue = new ConcurrentQueue<T>();
-        private T _firstItem;
-    
+
         public InternalObjectPool(IInternalObjectPoolPolicy<T> policy)
         {
             Handlebars.Disposables.Enqueue(new Disposer(this));
@@ -30,33 +28,17 @@ namespace HandlebarsDotNet
     
         public T Get()
         {
-            var item = _firstItem;
-            if (item == null || item != Interlocked.CompareExchange(ref _firstItem, null, item))
+            if (_queue.TryDequeue(out var item))
             {
-                if (_queue.TryDequeue(out item))
-                {
-                    return item;
-                }
-    
-                item = _policy.Create();
+                return item;
             }
-            
-            return item;
+    
+            return _policy.Create();
         }
     
         public void Return(T obj)
         {
             if (!_policy.Return(obj)) return;
-            
-            if (_firstItem == null)
-            {
-                // Intentionally not using interlocked here. 
-                // In a worst case scenario two objects may be stored into same slot.
-                // It is very unlikely to happen and will only mean that one of the objects will get collected.
-                _firstItem = obj;
-                return;
-            }
-            
             _queue.Enqueue(obj);
         }
     

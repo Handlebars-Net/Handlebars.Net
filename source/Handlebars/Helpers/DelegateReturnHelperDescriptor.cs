@@ -6,19 +6,13 @@ namespace HandlebarsDotNet.Helpers
     {
         private readonly HandlebarsReturnHelper _helper;
 
-        public DelegateReturnHelperDescriptor(PathInfo name, HandlebarsReturnHelper helper) : base(name)
-        {
-            _helper = helper;
-        }
-        
-        public DelegateReturnHelperDescriptor(string name, HandlebarsReturnHelper helper) : base(name)
-        {
-            _helper = helper;
-        }
+        public DelegateReturnHelperDescriptor(PathInfo name, HandlebarsReturnHelper helper) : base(name) 
+            => _helper = helper;
 
-        public override object Invoke(object context, params object[] arguments)
-        {
-            return _helper(context, arguments);
-        }
+        public DelegateReturnHelperDescriptor(string name, HandlebarsReturnHelper helper) : base(name) 
+            => _helper = helper;
+
+        public override object Invoke(object context, params object[] arguments) 
+            => _helper(context, arguments);
     }
 }
