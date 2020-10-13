@@ -1,58 +1,49 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Threading;
 
 namespace HandlebarsDotNet.Collections
 {
-    internal sealed class LookupSlim<TKey, TValue> where TKey : class
+    internal sealed class LookupSlim<TKey, TValue>
     {
-        private static readonly DictionaryPool<TKey, TValue> Pool = DictionaryPool<TKey, TValue>.Shared;
-
         private Dictionary<TKey, TValue> _inner;
+        private readonly IEqualityComparer<TKey> _comparer;
 
-        public LookupSlim() => _inner = Pool.Get();
+        public LookupSlim(IEqualityComparer<TKey> comparer = null)
+        {
+            _comparer = comparer ?? EqualityComparer<TKey>.Default;
+            _inner = new Dictionary<TKey, TValue>(_comparer);
+        }
 
         public bool ContainsKey(TKey key) => _inner.ContainsKey(key);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public TValue GetOrAdd(TKey key, Func<TKey, TValue> valueFactory)
         {
-            return _inner.TryGetValue(key, out var value) 
-                ? value 
-                : Write(key, valueFactory(key));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public TValue GetOrAdd<TState>(TKey key, Func<TKey, TState, TValue> valueFactory, TState state)
-        {
-            return _inner.TryGetValue(key, out var value)
-                ? value 
-                : Write(key, valueFactory(key, state));
+            return !_inner.TryGetValue(key, out var value) 
+                ? Write(key, valueFactory(key)) 
+                : value;
         }
         
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public TValue GetOrAdd<TState>(TKey key, Func<TKey, TState, TValue> valueFactory, TState state)
+        {
+            return !_inner.TryGetValue(key, out var value) 
+                ? Write(key, valueFactory(key, state)) 
+                : value;
+        }
+
         public bool TryGetValue(TKey key, out TValue value) => _inner.TryGetValue(key, out value);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Clear() => _inner.Clear();
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private TValue Write(TKey key, TValue value)
         {
-            var copy = Pool.Get();
             var inner = _inner;
-            inner.CopyTo(copy);
-            copy[key] = value;
-
-            if (Interlocked.CompareExchange(ref _inner, copy, inner) != _inner)
+            var copy = new Dictionary<TKey, TValue>(inner, _comparer)
             {
-                Pool.Return(inner);
-            }
-            else
-            {
-                Pool.Return(copy);   
-            }
+                [key] = value
+            };
+            
+            Interlocked.CompareExchange(ref _inner, copy, inner);
 
             return value;
         }
