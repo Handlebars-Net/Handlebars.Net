@@ -33,7 +33,7 @@ jobs:
           dotnet-version: 3.1.102
       - name: Test
         working-directory: ./source
-        run: dotnet test Handlebars.sln --logger:trx
+        run: dotnet test Handlebars.sln --logger:trx --logger:GitHubActions
 
   sonar-ci:
     name: SonarCloud
