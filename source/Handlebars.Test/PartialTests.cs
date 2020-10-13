@@ -277,9 +277,9 @@ namespace HandlebarsDotNet.Test
         [Fact]
         public void DynamicPartialWithContext()
         {
-            var source = "Hello, {{> (lookup name) context }}!";
+            var source = "Hello, {{> (lookup1 name) context }}!";
 
-            Handlebars.RegisterHelper("lookup", (output, context, arguments) =>
+            Handlebars.RegisterHelper("lookup1", (output, context, arguments) =>
             {
                 output.WriteSafeString(arguments[0]);
             });
@@ -309,9 +309,9 @@ namespace HandlebarsDotNet.Test
         [Fact]
         public void DynamicPartialWithParameters()
         {
-            var source = "Hello, {{> (lookup name) first='Marc' last='Smith' }}!";
+            var source = "Hello, {{> (lookup1 name) first='Marc' last='Smith' }}!";
 
-            Handlebars.RegisterHelper("lookup", (output, context, arguments) =>
+            Handlebars.RegisterHelper("lookup1", (output, context, arguments) =>
             {
                 output.WriteSafeString(arguments[0]);
             });
@@ -599,7 +599,7 @@ namespace HandlebarsDotNet.Test
 
         public class TestMissingPartialTemplateHandler : IMissingPartialTemplateHandler
         {
-            public void Handle(HandlebarsConfiguration configuration, string partialName, TextWriter textWriter)
+            public void Handle(ICompiledHandlebarsConfiguration configuration, string partialName, TextWriter textWriter)
             {
                 textWriter.Write($"Partial Not Found: {partialName}");
             }

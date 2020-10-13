@@ -15,14 +15,14 @@ namespace HandlebarsDotNet.Compiler
 
         public static IEnumerable<object> Convert(
             IEnumerable<object> sequence,
-            InternalHandlebarsConfiguration configuration)
+            ICompiledHandlebarsConfiguration configuration)
         {
             return new HelperConverter(configuration).ConvertTokens(sequence).ToList();
         }
 
-        private readonly InternalHandlebarsConfiguration _configuration;
+        private readonly ICompiledHandlebarsConfiguration _configuration;
 
-        private HelperConverter(InternalHandlebarsConfiguration configuration)
+        private HelperConverter(ICompiledHandlebarsConfiguration configuration)
         {
             _configuration = configuration;
         }
@@ -73,10 +73,10 @@ namespace HandlebarsDotNet.Compiler
         {
             var pathInfo = _configuration.PathInfoStore.GetOrAdd(name);
             if (!pathInfo.IsValidHelperLiteral && !_configuration.Compatibility.RelaxedHelperNaming) return false;
-            if (pathInfo.IsBlockHelper || pathInfo.IsInversion || pathInfo.IsBlockClose) return false;
+            if (pathInfo.IsBlockHelper || pathInfo.IsInversion || pathInfo.IsBlockClose || pathInfo.IsThis) return false;
             name = pathInfo.TrimmedPath;
             
-            return _configuration.Helpers.ContainsKey(name) || _configuration.ReturnHelpers.ContainsKey(name) || BuiltInHelpers.Contains(name);
+            return _configuration.Helpers.ContainsKey(pathInfo) || BuiltInHelpers.Contains(name);
         }
 
         private bool IsRegisteredBlockHelperName(string name, bool isRaw)
@@ -85,10 +85,11 @@ namespace HandlebarsDotNet.Compiler
             if (!pathInfo.IsValidHelperLiteral && !_configuration.Compatibility.RelaxedHelperNaming) return false;
             if (!isRaw && !(pathInfo.IsBlockHelper || pathInfo.IsInversion)) return false;
             if (pathInfo.IsBlockClose) return false;
+            if (pathInfo.IsThis) return false;
 
             name = pathInfo.TrimmedPath;
             
-            return _configuration.BlockHelpers.ContainsKey(name) || BuiltInHelpers.Contains(name);
+            return _configuration.BlockHelpers.ContainsKey(pathInfo) || BuiltInHelpers.Contains(name);
         }
         
         private bool IsUnregisteredBlockHelperName(string name, bool isRaw, IEnumerable<object> sequence)

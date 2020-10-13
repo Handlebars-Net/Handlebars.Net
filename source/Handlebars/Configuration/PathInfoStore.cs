@@ -7,11 +7,17 @@ namespace HandlebarsDotNet
     /// <summary>
     /// Provides access to path expressions in the template
     /// </summary>
-    public interface IReadOnlyPathInfoStore : IReadOnlyDictionary<string, PathInfo>
+    public interface IPathInfoStore : IReadOnlyDictionary<string, PathInfo>
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        PathInfo GetOrAdd(string path);
     }
     
-    internal class PathInfoStore : IReadOnlyPathInfoStore
+    internal class PathInfoStore : IPathInfoStore
     {
         private readonly Dictionary<string, PathInfo> _paths = new Dictionary<string, PathInfo>();
         
@@ -21,6 +27,12 @@ namespace HandlebarsDotNet
             
             pathInfo = PathResolver.GetPathInfo(path);
             _paths.Add(path, pathInfo);
+            
+            var trimmedPath = pathInfo.TrimmedPath;
+            if ((pathInfo.IsBlockHelper || pathInfo.IsInversion) && !_paths.ContainsKey(trimmedPath))
+            {
+                _paths.Add(trimmedPath, PathResolver.GetPathInfo(trimmedPath));
+            }
 
             return pathInfo;
         }

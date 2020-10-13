@@ -6,7 +6,7 @@ namespace HandlebarsDotNet.Compiler
 {
     internal abstract class BlockAccumulatorContext
     {
-        public static BlockAccumulatorContext Create(Expression item, HandlebarsConfiguration configuration)
+        public static BlockAccumulatorContext Create(Expression item, ICompiledHandlebarsConfiguration configuration)
         {
             BlockAccumulatorContext context = null;
             if (IsConditionalBlock(item))
@@ -53,14 +53,14 @@ namespace HandlebarsDotNet.Compiler
             return (item is HelperExpression) && new[] { "#if", "#unless" }.Contains(((HelperExpression)item).HelperName);
         }
 
-        private static bool IsBlockHelper(Expression item, HandlebarsConfiguration configuration)
+        private static bool IsBlockHelper(Expression item, ICompiledHandlebarsConfiguration configuration)
         {
             item = UnwrapStatement(item);
             if (item is HelperExpression hitem)
             {
                 var helperName = hitem.HelperName;
-                return hitem.IsBlock || !(configuration.Helpers.ContainsKey(helperName) || configuration.ReturnHelpers.ContainsKey(helperName)) &&
-                       configuration.BlockHelpers.ContainsKey(helperName.Replace("#", "").Replace("^", ""));
+                var helperPathInfo = configuration.PathInfoStore.GetOrAdd(helperName);
+                return hitem.IsBlock || !configuration.Helpers.ContainsKey(helperPathInfo) && configuration.BlockHelpers.ContainsKey(helperPathInfo);
             }
             return false;
         }

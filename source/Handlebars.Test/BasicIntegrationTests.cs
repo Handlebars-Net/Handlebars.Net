@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using HandlebarsDotNet.Compiler;
@@ -10,6 +11,7 @@ using HandlebarsDotNet.Helpers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using HandlebarsDotNet.Features;
+using HandlebarsDotNet.Helpers.BlockHelpers;
 using Xunit.Abstractions;
 
 namespace HandlebarsDotNet.Test
@@ -19,7 +21,6 @@ namespace HandlebarsDotNet.Test
         private readonly List<IHandlebars> _data = new List<IHandlebars>
         {
             Handlebars.Create(),
-            Handlebars.Create(new HandlebarsConfiguration{ CompileTimeConfiguration = { UseAggressiveCaching = false}}),
             Handlebars.Create(new HandlebarsConfiguration().Configure(o => o.Compatibility.RelaxedHelperNaming = true)),
             Handlebars.Create(new HandlebarsConfiguration().UseWarmUp(types =>
             {
@@ -328,7 +329,7 @@ false
             var aliasProvider = new DelegatedMemberAliasProvider()
                 .AddAlias<IList>("myCountAlias", list => list.Count);
             
-            handlebars.Configuration.CompileTimeConfiguration.AliasProviders.Add(aliasProvider);
+            handlebars.Configuration.AliasProviders.Add(aliasProvider);
             
             var source = "Array is {{ names.myCountAlias }} item(s) long";
             var template = handlebars.Compile(source);
@@ -615,6 +616,42 @@ false
             };
             var result = template(data);
             Assert.Equal("hello world ", result);
+        }
+        
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicDictionaryEnumeratorDeep(IHandlebars handlebars)
+        {
+            var source = "{{#each enumerateMe}}{{this.inner.a}}{{this.inner.b}}{{/each}}";
+            var template = handlebars.Compile(source);
+            var data = new
+            {
+                enumerateMe = new Dictionary<string, object>
+                {
+                    {
+                        "foo", new Dictionary<string, object>
+                        {
+                            ["inner"] = new Dictionary<string, object>
+                            {
+                                ["a"] = "1",
+                                ["b"] = "2"
+                            }
+                        }
+                    },
+                    {
+                        "bar", new Dictionary<string, object>
+                        {
+                            ["inner"] = new Dictionary<string, object>
+                            {
+                                ["a"] = "3",
+                                ["b"] = "4"
+                            }
+                        }
+                    }
+                }
+            };
+            
+            var result = template(data);
+            Assert.Equal("1234", result);
         }
 
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
@@ -1633,8 +1670,7 @@ false
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
         public void CollectionReturnFromHelper(IHandlebars handlebars)
         {
-            var getData = $"getData{Guid.NewGuid()}";
-            handlebars.RegisterHelper(getData, (context, arguments) =>
+            handlebars.RegisterHelper($"getData", (context, arguments) =>
             {
                 var data = new Dictionary<string, string>
                 {
@@ -1644,7 +1680,7 @@ false
         
                 return data;
             });
-            var source = $"{{{{#each ({getData} 'Darmstadt' 'San Francisco')}}}}{{{{@key}}}} lives in {{{{@value}}}}. {{{{/each}}}}";
+            var source = "{{#each (getData 'Darmstadt' 'San Francisco')}}{{@key}} lives in {{@value}}. {{/each}}";
             var template = handlebars.Compile(source);
             
             var result = template(new object());
@@ -1788,9 +1824,10 @@ false
         [InlineData("one.two")]
         public void ReferencingDirectlyVariableWhenHelperRegistered(string helperName)
         {
+            var source = "{{ ./" + helperName + " }}";
+            
             foreach (IHandlebars handlebars in new HandlebarsEnvGenerator().Select(o => o[0]))
             {
-                var source = "{{ ./" + helperName + " }}";
                 handlebars.RegisterHelper("one.two", (context, arguments) => 0);
 
                 var template = handlebars.Compile(source);
@@ -1803,7 +1840,7 @@ false
 
         private class StringHelperResolver : IHelperResolver
         {
-            public bool TryResolveReturnHelper(string name, Type targetType, out HandlebarsReturnHelper helper)
+            public bool TryResolveHelper(string name, Type targetType, out HelperDescriptorBase helper)
             {
                 if (targetType == typeof(string))
                 {
@@ -1816,7 +1853,8 @@ false
                         return false;
                     }
 
-                    helper = (context, arguments) => method.Invoke(arguments[0], arguments.Skip(1).ToArray());
+                    object Helper(dynamic context, object[] arguments) => method.Invoke(arguments[0], arguments.Skip(1).ToArray());
+                    helper = new DelegateReturnHelperDescriptor(name, Helper);
                     return true;
                 }
                 
@@ -1824,7 +1862,7 @@ false
                 return false;
             }
 
-            public bool TryResolveBlockHelper(string name, out HandlebarsBlockHelper helper)
+            public bool TryResolveBlockHelper(string name, out BlockHelperDescriptorBase helper)
             {
                 helper = null;
                 return false;

@@ -3,23 +3,27 @@ using System.Text;
 
 namespace HandlebarsDotNet
 {
-	internal class EncodedTextWriter : TextWriter
+	internal sealed class EncodedTextWriter : TextWriter
 	{
-		private readonly ITextEncoder _encoder;
+		private static readonly EncodedTextWriterPool Pool = new EncodedTextWriterPool();
+		
+		private ITextEncoder _encoder;
 
 		public bool SuppressEncoding { get; set; }
 
-		private EncodedTextWriter(TextWriter writer, ITextEncoder encoder)
+		private EncodedTextWriter()
 		{
-			UnderlyingWriter = writer;
-			_encoder = encoder;
 		}
 
 		public static EncodedTextWriter From(TextWriter writer, ITextEncoder encoder)
 		{
-			var encodedTextWriter = writer as EncodedTextWriter;
+			if (writer is EncodedTextWriter encodedTextWriter) return encodedTextWriter;
+			
+			var textWriter = Pool.Get();
+			textWriter._encoder = encoder;
+			textWriter.UnderlyingWriter = writer;
 
-			return encodedTextWriter ?? new EncodedTextWriter(writer, encoder);
+			return textWriter;
 		}
 
 		public void Write(string value, bool encode)
@@ -49,12 +53,48 @@ namespace HandlebarsDotNet
 				return;
 			}
 
-			var encode = !(value is ISafeString);
-			Write(value.ToString(), encode);
+			if (value is ISafeString safeString)
+			{
+				Write(safeString.Value, false);
+				return;
+			}
+			
+			var @string = value as string ?? value.ToString();
+			if(string.IsNullOrEmpty(@string)) return;
+			
+			Write(@string, true);
 		}
 
-		public TextWriter UnderlyingWriter { get; }
+		public TextWriter UnderlyingWriter { get; private set; }
+
+		protected override void Dispose(bool disposing)
+		{
+			Pool.Return(this);
+		}
 
 		public override Encoding Encoding => UnderlyingWriter.Encoding;
+		
+		private class EncodedTextWriterPool : InternalObjectPool<EncodedTextWriter>
+		{
+			public EncodedTextWriterPool() : base(new Policy())
+			{
+			}
+			
+			private class Policy : IInternalObjectPoolPolicy<EncodedTextWriter>
+			{
+				public EncodedTextWriter Create()
+				{
+					return new EncodedTextWriter();
+				}
+
+				public bool Return(EncodedTextWriter obj)
+				{
+					obj._encoder = null;
+					obj.UnderlyingWriter = null;
+					
+					return true;
+				}
+			}
+		}
 	}
 }

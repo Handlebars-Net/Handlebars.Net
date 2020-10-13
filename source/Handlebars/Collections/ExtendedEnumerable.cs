@@ -76,7 +76,7 @@ namespace HandlebarsDotNet.Collections
         }
     }
 
-    internal struct EnumeratorValue<T>
+    internal readonly struct EnumeratorValue<T>
     {
         public static readonly EnumeratorValue<T> Empty = new EnumeratorValue<T>();
         
@@ -88,9 +88,9 @@ namespace HandlebarsDotNet.Collections
             IsFirst = index == 0;
         }
 
-        public T Value { get; }
-        public int Index { get; }
-        public bool IsFirst { get; }
-        public bool IsLast { get; }
+        public readonly T Value;
+        public readonly int Index;
+        public readonly bool IsFirst;
+        public readonly bool IsLast;
     }
 }

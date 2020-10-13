@@ -68,6 +68,8 @@ namespace HandlebarsDotNet.Test
         [Fact]
         public void WithParentIndex()
         {
+            var handlebars = Handlebars.Create();
+            
             var source = @"
                 {{#each level1}}
                     id={{id}}
@@ -87,7 +89,8 @@ namespace HandlebarsDotNet.Test
                         {{/each}}
                     {{/each}}    
                 {{/each}}";
-            var template = Handlebars.Create().Compile( source );
+            
+            var template = handlebars.Compile( source );
             var data = new
                 {
                     level1 = new[]{

@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.IO;
+using HandlebarsDotNet.Helpers;
+using HandlebarsDotNet.Helpers.BlockHelpers;
 
 namespace HandlebarsDotNet
 {
@@ -26,6 +29,14 @@ namespace HandlebarsDotNet
     /// <param name="context"></param>
     /// <param name="arguments"></param>
     public delegate void HandlebarsBlockHelper(TextWriter output, HelperOptions options, dynamic context, params object[] arguments);
+    
+    /// <summary>
+    /// BlockHelper: {{#helper}}..{{/helper}}
+    /// </summary>
+    /// <param name="options"></param>
+    /// <param name="context"></param>
+    /// <param name="arguments"></param>
+    public delegate object HandlebarsReturnBlockHelper(HelperOptions options, dynamic context, params object[] arguments);
 
     
     public sealed class Handlebars
@@ -46,6 +57,23 @@ namespace HandlebarsDotNet
             return new HandlebarsEnvironment(configuration);
         }
         
+        
+        /// <summary>
+        /// Creates standalone instance of <see cref="Handlebars"/> environment
+        /// </summary>
+        /// <param name="configuration"></param>
+        /// <returns></returns>
+        internal static IHandlebars Create(ICompiledHandlebarsConfiguration configuration)
+        {
+            configuration ??= new HandlebarsConfigurationAdapter(new HandlebarsConfiguration());
+            return new HandlebarsEnvironment(configuration);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="template"></param>
+        /// <returns></returns>
         public static Action<TextWriter, object> Compile(TextReader template)
         {
             return Instance.Compile(template);
@@ -105,10 +133,51 @@ namespace HandlebarsDotNet
         {
             Instance.RegisterHelper(helperName, helperFunction);
         }
+        
+        /// <summary>
+        /// Registers new <see cref="HandlebarsReturnBlockHelper"/>
+        /// </summary>
+        /// <param name="helperName"></param>
+        /// <param name="helperFunction"></param>
+        public static void RegisterHelper(string helperName, HandlebarsReturnBlockHelper helperFunction)
+        {
+            Instance.RegisterHelper(helperName, helperFunction);
+        }
+        
+        /// <summary>
+        /// Registers new <see cref="HelperDescriptorBase"/>
+        /// </summary>
+        /// <param name="helperObject"></param>
+        public static void RegisterHelper(HelperDescriptorBase helperObject)
+        {
+            Instance.RegisterHelper((HelperDescriptor) helperObject);
+        }
+        
+        /// <summary>
+        /// Registers new <see cref="BlockHelperDescriptorBase"/>
+        /// </summary>
+        /// <param name="helperObject"></param>
+        public static void RegisterHelper(BlockHelperDescriptorBase helperObject)
+        {
+            Instance.RegisterHelper((BlockHelperDescriptor) helperObject);
+        }
 
         /// <summary>
         /// Expose the configuration in order to have access in all Helpers and Templates.
         /// </summary>
         public static HandlebarsConfiguration Configuration => Instance.Configuration;
+
+        /// <summary>
+        /// Allows to perform cleanup of internal static buffers
+        /// </summary>
+        public static void Cleanup()
+        {
+            while (Disposables.TryDequeue(out var disposable))
+            {
+                disposable.Dispose();
+            }
+        }
+        
+        internal static readonly ConcurrentQueue<IDisposable> Disposables = new ConcurrentQueue<IDisposable>();
     }
 }

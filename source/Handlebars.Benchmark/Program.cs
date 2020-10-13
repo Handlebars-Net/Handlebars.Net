@@ -14,8 +14,7 @@ namespace HandlebarsNet.Benchmark
                 .WithLaunchCount(1);
 
             var manualConfig = DefaultConfig.Instance
-                .AddJob(job)
-                .WithOptions(ConfigOptions.JoinSummary);
+                .AddJob(job);
 
             manualConfig.AddLogicalGroupRules(BenchmarkLogicalGroupRule.ByMethod);
             

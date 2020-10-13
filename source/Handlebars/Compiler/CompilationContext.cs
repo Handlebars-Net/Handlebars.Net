@@ -4,13 +4,13 @@ namespace HandlebarsDotNet.Compiler
 {
     internal sealed class CompilationContext
     {
-        public CompilationContext(InternalHandlebarsConfiguration configuration)
+        public CompilationContext(ICompiledHandlebarsConfiguration configuration)
         {
             Configuration = configuration;
             BindingContext = Expression.Variable(typeof(BindingContext), "context");
         }
 
-        public InternalHandlebarsConfiguration Configuration { get; }
+        public ICompiledHandlebarsConfiguration Configuration { get; }
 
         public ParameterExpression BindingContext { get; }
     }

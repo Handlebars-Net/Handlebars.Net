@@ -1,6 +1,8 @@
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using Expressions.Shortcuts;
 using HandlebarsDotNet.Compiler.Structure.Path;
+using HandlebarsDotNet.Helpers;
 using HandlebarsDotNet.Polyfills;
 using static Expressions.Shortcuts.ExpressionShortcuts;
 
@@ -27,25 +29,32 @@ namespace HandlebarsDotNet.Compiler
         protected override Expression VisitPathExpression(PathExpression pex)
         {
             var context = Arg<BindingContext>(CompilationContext.BindingContext);
-            var pathInfo = CompilationContext.Configuration.PathInfoStore.GetOrAdd(pex.Path);
+            var configuration = CompilationContext.Configuration;
+            var pathInfo = configuration.PathInfoStore.GetOrAdd(pex.Path);
 
-            var resolvePath = Call(() => PathResolver.ResolvePath(context, ref pathInfo));
-
+            var resolvePath = Call(() => PathResolver.ResolvePath(context, pathInfo));
+            
             if (pex.Context == PathExpression.ResolutionContext.Parameter) return resolvePath;
-            if (!pathInfo.IsValidHelperLiteral && !CompilationContext.Configuration.Compatibility.RelaxedHelperNaming || pathInfo.IsThis) return resolvePath;
+            if (pathInfo.IsVariable || pathInfo.IsThis) return resolvePath;
+            if (!pathInfo.IsValidHelperLiteral && !configuration.Compatibility.RelaxedHelperNaming) return resolvePath;
+            
+            if (!configuration.Helpers.TryGetValue(pathInfo, out var helper))
+            {
+                helper = new StrongBox<HelperDescriptorBase>(new LateBindHelperDescriptor(pathInfo, configuration));
+                configuration.Helpers.Add(pathInfo, helper);
+            }
+            else if (configuration.Compatibility.RelaxedHelperNaming)
+            {
+                pathInfo.TagComparer();
+                if (!configuration.Helpers.ContainsKey(pathInfo))
+                {
+                    helper = new StrongBox<HelperDescriptorBase>(new LateBindHelperDescriptor(pathInfo, configuration));
+                    configuration.Helpers.Add(pathInfo, helper);
+                }
+            }
 
-            var helperName = pathInfo.TrimmedPath;
-            var tryBoundHelper = Call(() =>
-                HelperFunctionBinder.TryLateBindHelperExpression(context, helperName, ArrayEx.Empty<object>())
-            );
-
-            return Block()
-                .Parameter<ResultHolder>(out var result, tryBoundHelper)
-                .Line(Condition()
-                    .If(result.Member(o => o.Success))
-                    .Then(result.Member(o => o.Value))
-                    .Else(resolvePath)
-                );
+            var argumentsArg = Arg(ArrayEx.Empty<object>());
+            return context.Call(o => helper.Value.ReturnInvoke(o, o.Value, argumentsArg));
         }
     }
 }

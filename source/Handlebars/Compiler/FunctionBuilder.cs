@@ -33,7 +33,7 @@ namespace HandlebarsDotNet.Compiler
             return expression;
         }
 
-        public static Action<BindingContext, TextWriter, object> CompileCore(IEnumerable<Expression> expressions, InternalHandlebarsConfiguration configuration, string templatePath = null)
+        public static Action<BindingContext, TextWriter, object> CompileCore(IEnumerable<Expression> expressions, ICompiledHandlebarsConfiguration configuration, string templatePath = null)
         {
             try
             {
@@ -51,7 +51,7 @@ namespace HandlebarsDotNet.Compiler
                 expression = Reduce(expression, context);
 
                 var lambda = ContextBinder.Bind(context, expression, templatePath);
-                return configuration.CompileTimeConfiguration.ExpressionCompiler.Compile(lambda);
+                return configuration.ExpressionCompiler.Compile(lambda);
             }
             catch (Exception ex)
             {
@@ -59,7 +59,7 @@ namespace HandlebarsDotNet.Compiler
             }
         }
         
-        public static Expression<Action<TextWriter, object>> CompileCore(IEnumerable<Expression> expressions, Expression parentContext, InternalHandlebarsConfiguration configuration, string templatePath = null)
+        public static Expression<Action<TextWriter, object>> CompileCore(IEnumerable<Expression> expressions, Expression parentContext, ICompiledHandlebarsConfiguration configuration, string templatePath = null)
         {
             try
             {
@@ -84,13 +84,13 @@ namespace HandlebarsDotNet.Compiler
             }
         }
 
-        public static Action<TextWriter, object> Compile(IEnumerable<Expression> expressions, InternalHandlebarsConfiguration configuration, string templatePath = null)
+        public static Action<TextWriter, object> Compile(IEnumerable<Expression> expressions, ICompiledHandlebarsConfiguration configuration, string templatePath = null)
         {
             try
             {
                 var expression = CompileCore(expressions, null, configuration,  templatePath);
 
-                return configuration.CompileTimeConfiguration.ExpressionCompiler.Compile(expression);
+                return configuration.ExpressionCompiler.Compile(expression);
             }
             catch (Exception ex)
             {

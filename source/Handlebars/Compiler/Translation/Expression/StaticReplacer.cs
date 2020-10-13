@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using Expressions.Shortcuts;
+using static Expressions.Shortcuts.ExpressionShortcuts;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -14,8 +15,8 @@ namespace HandlebarsDotNet.Compiler
         
         protected override Expression VisitStaticExpression(StaticExpression stex)
         {
-            var context = ExpressionShortcuts.Arg<BindingContext>(CompilationContext.BindingContext);
-            var value = ExpressionShortcuts.Arg(stex.Value);
+            var context = Arg<BindingContext>(CompilationContext.BindingContext);
+            var value = Arg(stex.Value);
             
             return context.Call(o => o.TextWriter.Write(value, false));
         }

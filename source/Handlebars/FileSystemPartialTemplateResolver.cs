@@ -11,12 +11,13 @@ namespace HandlebarsDotNet
                 throw new ArgumentNullException(nameof(env));
             }
 
-            if (env.Configuration?.FileSystem == null || templatePath == null || partialName == null)
+            var handlebarsTemplateRegistrations = env.Configuration as IHandlebarsTemplateRegistrations ?? env.As<ICompiledHandlebars>().CompiledConfiguration;
+            if (handlebarsTemplateRegistrations?.FileSystem == null || templatePath == null || partialName == null)
             {
                 return false;
             }
 
-            var partialPath = env.Configuration.FileSystem.Closest(templatePath,
+            var partialPath = handlebarsTemplateRegistrations.FileSystem.Closest(templatePath,
                 "partials/" + partialName + ".hbs");
 
             if (partialPath != null)
@@ -24,7 +25,7 @@ namespace HandlebarsDotNet
                 var compiled = env
                     .CompileView(partialPath);
 
-                env.Configuration.RegisteredTemplates.Add(partialName, (writer, o) =>
+                handlebarsTemplateRegistrations.RegisteredTemplates.Add(partialName, (writer, o) =>
                 {
                     writer.Write(compiled(o));
                 });

@@ -31,7 +31,6 @@ namespace HandlebarsDotNet.Features
             var descriptorProvider = configuration.ObjectDescriptorProvider;
             foreach (var type in _types)
             {
-                if(!descriptorProvider.CanHandleType(type)) continue;
                 descriptorProvider.TryGetDescriptor(type, out _);
             }
         }

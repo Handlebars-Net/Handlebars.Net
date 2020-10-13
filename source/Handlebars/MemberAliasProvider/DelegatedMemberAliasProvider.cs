@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using HandlebarsDotNet.Compiler.Structure.Path;
 
 namespace HandlebarsDotNet
 {
@@ -33,7 +34,8 @@ namespace HandlebarsDotNet
             return this;
         }
         
-        bool IMemberAliasProvider.TryGetMemberByAlias(object instance, Type targetType, string memberAlias, out object value)
+        bool IMemberAliasProvider.TryGetMemberByAlias(object instance, Type targetType, ChainSegment memberAlias,
+            out object value)
         {
             if (_aliases.TryGetValue(targetType, out var aliases))
             {

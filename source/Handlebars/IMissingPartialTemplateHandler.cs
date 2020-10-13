@@ -14,6 +14,6 @@ namespace HandlebarsDotNet
         /// <param name="configuration">The current environment configuration.</param>
         /// <param name="partialName">The name of the partial that was not found.</param>
         /// <param name="textWriter">The output writer.</param>
-        void Handle(HandlebarsConfiguration configuration, string partialName, TextWriter textWriter);
+        void Handle(ICompiledHandlebarsConfiguration configuration, string partialName, TextWriter textWriter);
     }
 }

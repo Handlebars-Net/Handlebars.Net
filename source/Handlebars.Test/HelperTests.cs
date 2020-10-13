@@ -1,8 +1,13 @@
 using Xunit;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.Features;
+using HandlebarsDotNet.Helpers.BlockHelpers;
+using HandlebarsDotNet.ValueProviders;
 
 namespace HandlebarsDotNet.Test
 {
@@ -71,26 +76,60 @@ namespace HandlebarsDotNet.Test
         [Fact]
         public void BlockHelperWithBlockParams()
         {
-            Handlebars.RegisterHelper("myHelper", (writer, options, context, args) => {
-                var count = 0;
-                options.BlockParams((parameters, binder, deps) =>
-                {
-                    binder(parameters.ElementAtOrDefault(0), ctx => ++count);
-                });
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterHelper("myHelper", (writer, options, context, args) =>
+            {
+                using var frame = options.CreateFrame();
+                var blockParamsValues = new BlockParamsValues(frame, options.BlockParams);
+                blockParamsValues.CreateProperty(0, out var _0);
                 
-                foreach(var arg in args)
+                for (var index = 0; index < args.Length; index++)
                 {
-                    options.Template(writer, arg);
+                    var arg = args[index];
+                    blockParamsValues[_0] = index;
+                    frame.Value = arg;
+                    options.Template(writer, frame);
                 }
             });
 
             var source = "Here are some things: {{#myHelper 'foo' 'bar' as |counter|}}{{counter}}:{{this}}\n{{/myHelper}}";
 
-            var template = Handlebars.Compile(source);
+            var template = handlebars.Compile(source);
 
             var output = template(new { });
 
-            var expected = "Here are some things: 1:foo\n2:bar\n";
+            var expected = "Here are some things: 0:foo\n1:bar\n";
+
+            Assert.Equal(expected, output);
+        }
+        
+        [Fact]
+        public void BlockHelperLateBindWithBlockParams()
+        {
+            var handlebars = Handlebars.Create();
+            
+            var source = "Here are some things: {{#myHelper 'foo' 'bar' as |counter|}}{{counter}}:{{this}}\n{{/myHelper}}";
+
+            var template = handlebars.Compile(source);
+            
+            handlebars.RegisterHelper("myHelper", (writer, options, context, args) =>
+            {
+                using var frame = options.CreateFrame();
+                var blockParamsValues = new BlockParamsValues(frame, options.BlockParams);
+                blockParamsValues.CreateProperty(0, out var _0);
+                
+                for (var index = 0; index < args.Length; index++)
+                {
+                    var arg = args[index];
+                    blockParamsValues[_0] = index;
+                    frame.Value = arg;
+                    options.Template(writer, frame);
+                }
+            });
+
+            var output = template(new { });
+
+            var expected = "Here are some things: 0:foo\n1:bar\n";
 
             Assert.Equal(expected, output);
         }
@@ -105,20 +144,24 @@ namespace HandlebarsDotNet.Test
 
             var template = Handlebars.Compile(source);
 
-            Handlebars.RegisterHelper("myHelper", (writer, options, context, args) => {
-                var count = 0;
-                options.BlockParams((parameters, binder, deps) => 
-                    binder(parameters.ElementAtOrDefault(0), ctx => ++count));
+            Handlebars.RegisterHelper("myHelper", (writer, options, context, args) =>
+            {
+                using var frame = options.CreateFrame();
+                var blockParamsValues = new BlockParamsValues(frame, options.BlockParams);
+                blockParamsValues.CreateProperty(0, out var _0);
                 
-                foreach(var arg in args)
+                for (var index = 0; index < args.Length; index++)
                 {
-                    options.Template(writer, arg);
+                    var arg = args[index];
+                    blockParamsValues[_0] = index;
+                    frame.Value = arg;
+                    options.Template(writer, frame);
                 }
             });
             
             var output = template(new { });
 
-            var expected = "Here are some things: \n1:foo\n2:bar\n";
+            var expected = "Here are some things: \n0:foo\n1:bar\n";
 
             Assert.Equal(expected, output);
         }
@@ -256,11 +299,11 @@ namespace HandlebarsDotNet.Test
             var handlebars = Handlebars.Create();
             handlebars.Configuration
                 .RegisterMissingHelperHook(
-                    (context, arguments) => expected
+                    (context, arguments) => "Should be ignored"
                 );
 
             handlebars.RegisterHelper("helperMissing", 
-                (context, arguments) => "Should be ignored"
+                (context, arguments) => expected
             );
             
             var source = "{{missing}}";
@@ -309,7 +352,7 @@ namespace HandlebarsDotNet.Test
                 .RegisterMissingHelperHook(
                     blockHelperMissing: (writer, options, context, arguments) =>
                     {
-                        var name = options.GetValue<string>("name");
+                        var name = options.GetValue<string>("name").ToString();
                         writer.WriteSafeString(string.Format(format, name.Trim('[', ']')));
                     });
 
@@ -437,7 +480,7 @@ namespace HandlebarsDotNet.Test
             var template = Handlebars.Compile(source);
             var data = new
                 {
-                    key = new string[] { "element" }
+                    key = new[] { "element" }
                 };
             var output = template(data);
             var expected = "";
@@ -808,6 +851,46 @@ namespace HandlebarsDotNet.Test
 
             var output = template(data);
             Assert.Equal("True 1 abc", output);
+        }
+
+        [Fact]
+        public void BlockHelperWithCustomIndex()
+        {
+            var handlebars = Handlebars.Create();
+            
+            handlebars.RegisterHelper(new CustomEachBlockHelper());
+
+            var template = handlebars.Compile("{{#customEach this}}{{@value}}'s index is {{@index}} {{/customEach}}");
+
+            var result = template(new[] { "one", "two" });
+            
+            Assert.Equal("one's index is 0 two's index is 1 ", result);
+        }
+        
+        private class CustomEachBlockHelper : BlockHelperDescriptor
+        {
+            public CustomEachBlockHelper() : base("customEach")
+            {
+            }
+
+            public override void Invoke(TextWriter output, HelperOptions options, object context, params object[] arguments)
+            {
+                using var frame = options.CreateFrame();
+                frame.Data.CreateProperty(ChainSegment.Index, out var index);
+                frame.Data.CreateProperty(ChainSegment.Value, null, out var value);
+
+                var iterationIndex = 0;
+                foreach (var item in (IEnumerable) arguments[0])
+                {
+                    frame.Data[index] = iterationIndex;
+                    frame.Data[value] = item;
+                    frame.Value = item;
+
+                    options.Template(output, frame);
+                    
+                    ++iterationIndex;
+                }
+            }
         }
     }
 }
