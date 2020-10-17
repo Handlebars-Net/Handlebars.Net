@@ -8,18 +8,10 @@ using HandlebarsDotNet.Compiler.Lexer;
 
 namespace HandlebarsDotNet.Compiler
 {
-    internal class HandlebarsCompiler
+    internal static class HandlebarsCompiler
     {
-        private readonly HandlebarsConfiguration _configuration;
-
-        public HandlebarsCompiler(HandlebarsConfiguration configuration)
+        public static Action<TextWriter, object> Compile(ExtendedStringReader source, ICompiledHandlebarsConfiguration configuration)
         {
-            _configuration = configuration;
-        }
-
-        public Action<TextWriter, object> Compile(ExtendedStringReader source)
-        {
-            var configuration = new InternalHandlebarsConfiguration(_configuration);
             var createdFeatures = configuration.Features;
             for (var index = 0; index < createdFeatures.Count; index++)
             {
@@ -39,7 +31,7 @@ namespace HandlebarsDotNet.Compiler
             return action;
         }
 
-        internal Action<TextWriter, object> CompileView(ViewReaderFactory readerFactoryFactory, string templatePath, InternalHandlebarsConfiguration configuration)
+        internal static Action<TextWriter, object> CompileView(ViewReaderFactory readerFactoryFactory, string templatePath, ICompiledHandlebarsConfiguration configuration)
         {
             IEnumerable<object> tokens;
             using (var sr = readerFactoryFactory(configuration, templatePath))
@@ -68,7 +60,7 @@ namespace HandlebarsDotNet.Compiler
             return (tw, vm) =>
             {
                 string inner;
-                using (var innerWriter = new PolledStringWriter(configuration.FormatProvider))
+                using (var innerWriter = ReusableStringWriter.Get(configuration.FormatProvider))
                 {
                     compiledView(innerWriter, vm);
                     inner = innerWriter.ToString();
@@ -77,7 +69,6 @@ namespace HandlebarsDotNet.Compiler
                 compiledLayout(tw, new DynamicViewModel(new[] {new {body = inner}, vm}));
             };
         }
-
 
         internal class DynamicViewModel : DynamicObject
         {
@@ -119,9 +110,6 @@ namespace HandlebarsDotNet.Compiler
                 return false;
             }
         }
-
     }
-
-
 }
 

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using HandlebarsDotNet.MemberAccessors;
 
@@ -9,9 +10,20 @@ namespace HandlebarsDotNet.ObjectDescriptors
     /// </summary>
     public class ObjectDescriptor : IEquatable<ObjectDescriptor>
     {
-        
         public static readonly ObjectDescriptor Empty = new ObjectDescriptor();
 
+        public static ObjectDescriptor Create(object from, ICompiledHandlebarsConfiguration configuration)
+        {
+            if (from == null) return null;
+            if (!configuration.ObjectDescriptorProvider.TryGetDescriptor(@from.GetType(), out var descriptor)) return null;
+            return descriptor;
+        }
+        
+        public static bool TryCreate(object from, ICompiledHandlebarsConfiguration configuration, out ObjectDescriptor descriptor)
+        {
+            return configuration.ObjectDescriptorProvider.TryGetDescriptor(from.GetType(), out descriptor);
+        }
+        
         private readonly bool _isNotEmpty;
 
         /// <summary>
@@ -25,7 +37,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
         public ObjectDescriptor(
             Type describedType, 
             IMemberAccessor memberAccessor,
-            Func<ObjectDescriptor, object, IEnumerable<object>> getProperties,
+            Func<ObjectDescriptor, object, IEnumerable> getProperties,
             bool shouldEnumerate = false,
             params object[] dependencies
         )
@@ -59,7 +71,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
         /// <summary>
         /// Factory enabling receiving properties of specific instance   
         /// </summary>
-        public readonly Func<ObjectDescriptor, object, IEnumerable<object>> GetProperties;
+        public readonly Func<ObjectDescriptor, object, IEnumerable> GetProperties;
 
         /// <summary>
         /// <see cref="IMemberAccessor"/> associated with the <see cref="ObjectDescriptor"/>

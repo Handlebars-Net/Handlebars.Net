@@ -27,5 +27,7 @@ namespace HandlebarsDotNet.Collections
                 return _value;
             }
         }
+
+        public void Reset() => _isValueCreated = false;
     }
 }

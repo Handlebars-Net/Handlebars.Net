@@ -13,20 +13,23 @@ namespace HandlebarsDotNet.ObjectDescriptors
         private static readonly Func<ObjectDescriptor, object, IEnumerable<object>> GetProperties = (descriptor, arg) =>
         {
             return Enumerate((IDictionary) arg);
-            
-            IEnumerable<object> Enumerate(IDictionary dictionary)
+
+            static IEnumerable<object> Enumerate(IDictionary dictionary)
             {
                 foreach (var key in dictionary.Keys) yield return key;
             }
         };
 
-        public bool CanHandleType(Type type)
-        {
-            return typeof(IDictionary).IsAssignableFrom(type);
-        }
+        private static readonly Type Type = typeof(IDictionary);
 
         public bool TryGetDescriptor(Type type, out ObjectDescriptor value)
         {
+            if (!Type.IsAssignableFrom(type))
+            {
+                value = ObjectDescriptor.Empty;;
+                return false;
+            }
+            
             value = new ObjectDescriptor(type, DictionaryMemberAccessor, GetProperties);
 
             return true;

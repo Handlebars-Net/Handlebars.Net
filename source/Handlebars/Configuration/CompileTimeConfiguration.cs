@@ -12,26 +12,17 @@ namespace HandlebarsDotNet
         /// <inheritdoc cref="ObjectDescriptor"/>
         public IList<IObjectDescriptorProvider> ObjectDescriptorProviders { get; } = new List<IObjectDescriptorProvider>();
         
-        
-        public IList<IExpressionMiddleware> ExpressionMiddleware { get; internal set; } = new List<IExpressionMiddleware>();
+        public IList<IExpressionMiddleware> ExpressionMiddleware { get; } = new List<IExpressionMiddleware>();
         
         /// <inheritdoc cref="IFeature"/>
-        public IList<IFeatureFactory> Features { get; internal set; } = new List<IFeatureFactory>
+        public IList<IFeatureFactory> Features { get; } = new List<IFeatureFactory>
         {
             new BuildInHelpersFeatureFactory(),
             new ClosureFeatureFactory(),
             new DefaultCompilerFeatureFactory(),
             new MissingHelperFeatureFactory()
         };
-        
-        /// <inheritdoc cref="IMemberAliasProvider"/>
-        public IList<IMemberAliasProvider> AliasProviders { get; internal set; } = new List<IMemberAliasProvider>();
-        
-        /// <summary>
-        /// Defines whether Handlebars uses aggressive caching to achieve better performance. <see langword="true"/> by default. 
-        /// </summary>
-        public bool UseAggressiveCaching { get; set; } = true;
-        
+
         /// <summary>
         /// The compiler used to compile <see cref="System.Linq.Expressions.Expression"/> 
         /// </summary>

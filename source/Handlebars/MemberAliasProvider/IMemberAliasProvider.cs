@@ -1,4 +1,5 @@
 ﻿using System;
+using HandlebarsDotNet.Compiler.Structure.Path;
 
 namespace HandlebarsDotNet
 {
@@ -7,6 +8,6 @@ namespace HandlebarsDotNet
     /// </summary>
     public interface IMemberAliasProvider
     {
-        bool TryGetMemberByAlias(object instance, Type targetType, string memberAlias, out object value);
+        bool TryGetMemberByAlias(object instance, Type targetType, ChainSegment memberAlias, out object value);
     }
 }

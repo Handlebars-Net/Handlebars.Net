@@ -23,7 +23,7 @@ namespace HandlebarsDotNet.Compiler
         {
             var bindingContext = ExpressionShortcuts.Arg<BindingContext>(CompilationContext.BindingContext);
             var partialBlockTemplate = pex.Fallback != null 
-                ? FunctionBuilder.CompileCore(new[] { pex.Fallback }, null, CompilationContext.Configuration) 
+                ? FunctionBuilder.CompileCore(new[] { pex.Fallback }, CompilationContext.Configuration) 
                 : null;
 
             if (pex.Argument != null || partialBlockTemplate != null)
@@ -36,14 +36,14 @@ namespace HandlebarsDotNet.Compiler
             var partialName = ExpressionShortcuts.Cast<string>(pex.PartialName);
             var configuration = ExpressionShortcuts.Arg(CompilationContext.Configuration);
             return ExpressionShortcuts.Call(() =>
-                InvokePartialWithFallback(partialName, bindingContext, configuration)
+                InvokePartialWithFallback(partialName, bindingContext, (ICompiledHandlebarsConfiguration) configuration)
             );
         }
 
         private static void InvokePartialWithFallback(
             string partialName,
             BindingContext context,
-            HandlebarsConfiguration configuration)
+            ICompiledHandlebarsConfiguration configuration)
         {
             if (InvokePartial(partialName, context, configuration)) return;
             if (context.PartialBlockTemplate == null)
@@ -55,13 +55,13 @@ namespace HandlebarsDotNet.Compiler
                 return;
             }
 
-            context.PartialBlockTemplate(context.TextWriter, context);
+            context.PartialBlockTemplate(context, context.TextWriter, context);
         }
 
         private static bool InvokePartial(
             string partialName,
             BindingContext context,
-            HandlebarsConfiguration configuration)
+            ICompiledHandlebarsConfiguration configuration)
         {
             if (partialName.Equals(SpecialPartialBlockName))
             {
@@ -70,22 +70,23 @@ namespace HandlebarsDotNet.Compiler
                     return false;
                 }
 
-                context.PartialBlockTemplate(context.TextWriter, context);
+                context.PartialBlockTemplate(context, context.TextWriter, context);
                 return true;
             }
 
             //if we have an inline partial, skip the file system and RegisteredTemplates collection
-            if (context.InlinePartialTemplates.ContainsKey(partialName))
+            if (context.InlinePartialTemplates.TryGetValue(partialName, out var partial))
             {
-                context.InlinePartialTemplates[partialName](context.TextWriter, context);
+                partial(context.TextWriter, context);
                 return true;
             }
             
             // Partial is not found, so call the resolver and attempt to load it.
             if (!configuration.RegisteredTemplates.ContainsKey(partialName))
             {
+                var handlebars = Handlebars.Create(configuration);
                 if (configuration.PartialTemplateResolver == null 
-                    || !configuration.PartialTemplateResolver.TryRegisterPartial(Handlebars.Create(configuration), partialName, context.TemplatePath))
+                    || !configuration.PartialTemplateResolver.TryRegisterPartial(handlebars, partialName, context.TemplatePath))
                 {
                     // Template not found.
                     return false;

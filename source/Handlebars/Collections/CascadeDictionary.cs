@@ -6,32 +6,27 @@ namespace HandlebarsDotNet.Collections
 {
     internal class CascadeDictionary<TKey, TValue> : IDictionary<TKey, TValue>
     {
-        private readonly IDictionary<TKey, TValue> _outer;
-        private readonly IDictionary<TKey, TValue> _inner;
+        private static readonly Dictionary<TKey, TValue> Empty = new Dictionary<TKey, TValue>();
 
-        public CascadeDictionary(IDictionary<TKey, TValue> outer, IEqualityComparer<TKey> comparer = null)
+        public IDictionary<TKey, TValue> Outer { get; set; }
+        private readonly Dictionary<TKey, TValue> _inner;
+        
+        public CascadeDictionary(IEqualityComparer<TKey> comparer = null)
         {
-            _outer = outer;
-            _inner = new Dictionary<TKey, TValue>(comparer);
+            Outer = Empty;
+            _inner = new Dictionary<TKey, TValue>(comparer ?? EqualityComparer<TKey>.Default);
         }
 
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
-            foreach (var value in _outer)
-            {
-                if (_inner.TryGetValue(value.Key, out var innerValue))
-                {
-                    yield return new KeyValuePair<TKey, TValue>(value.Key, innerValue);
-                }
-                else
-                {
-                    yield return value;   
-                }
-            }
-            
             foreach (var value in _inner)
             {
-                if (_outer.ContainsKey(value.Key)) continue;
+                yield return value;
+            }
+            
+            foreach (var value in Outer)
+            {
+                if (_inner.ContainsKey(value.Key)) continue;
                 
                 yield return value;
             }
@@ -44,22 +39,20 @@ namespace HandlebarsDotNet.Collections
 
         public void Add(KeyValuePair<TKey, TValue> item)
         {
-            _inner.Add(item);
+            _inner.Add(item.Key, item.Value);
         }
 
         public void Clear()
         {
+            Outer = Empty;
             _inner.Clear();
         }
 
-        public bool Contains(KeyValuePair<TKey, TValue> item)
-        {
-            return _inner.Contains(item) || _outer.Contains(item);
-        }
+        public bool Contains(KeyValuePair<TKey, TValue> item) => _inner.Contains(item) || Outer.Contains(item);
 
         public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
         {
-            foreach (var value in _outer)
+            foreach (var value in Outer)
             {
                 if (_inner.TryGetValue(value.Key, out var innerValue))
                 {
@@ -72,29 +65,26 @@ namespace HandlebarsDotNet.Collections
                     arrayIndex++;
                 }
             }
-            
+
             foreach (var value in _inner)
             {
-                if (_outer.ContainsKey(value.Key)) continue;
-                
+                if (Outer.ContainsKey(value.Key)) continue;
+
                 array[arrayIndex] = value;
                 arrayIndex++;
             }
         }
 
-        public bool Remove(KeyValuePair<TKey, TValue> item)
-        {
-            return _inner.Remove(item);
-        }
+        public bool Remove(KeyValuePair<TKey, TValue> item) => _inner.Remove(item.Key);
 
         public int Count
         {
             get
             {
-                var count = _outer.Count;
+                var count = Outer.Count;
                 foreach (var value in _inner)
                 {
-                    if (_outer.ContainsKey(value.Key)) continue;
+                    if (Outer.ContainsKey(value.Key)) continue;
                     count++;
                 }
 
@@ -102,31 +92,22 @@ namespace HandlebarsDotNet.Collections
             }
         }
 
-        public bool IsReadOnly => _inner.IsReadOnly;
+        public bool IsReadOnly => false;
 
-        public bool ContainsKey(TKey key)
-        {
-            return _inner.ContainsKey(key) || _outer.ContainsKey(key);
-        }
+        public bool ContainsKey(TKey key) => _inner.ContainsKey(key) || Outer.ContainsKey(key);
 
-        public void Add(TKey key, TValue value)
-        {
-            _inner.Add(key, value);
-        }
+        public void Add(TKey key, TValue value) => _inner.Add(key, value);
 
-        public bool Remove(TKey key)
-        {
-            return _inner.Remove(key);
-        }
+        public bool Remove(TKey key) => _inner.Remove(key);
 
         public bool TryGetValue(TKey key, out TValue value)
         {
-            return _inner.TryGetValue(key, out value) || _outer.TryGetValue(key, out value);
+            return _inner.TryGetValue(key, out value) || Outer.TryGetValue(key, out value);
         }
 
         public TValue this[TKey key]
         {
-            get => !_inner.TryGetValue(key, out var value) ? _outer[key] : value;
+            get => !_inner.TryGetValue(key, out var value) ? Outer[key] : value;
             set => _inner[key] = value;
         }
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.MemberAccessors;
 using HandlebarsDotNet.Polyfills;
 
@@ -11,14 +12,16 @@ namespace HandlebarsDotNet.ObjectDescriptors
         private static readonly string[] Properties = { "key", "value" };
         private static readonly MethodInfo CreateDescriptorMethodInfo = typeof(KeyValuePairObjectDescriptorProvider).GetMethod(nameof(CreateDescriptor), BindingFlags.NonPublic | BindingFlags.Static);
         private static readonly Func<ObjectDescriptor, object, IEnumerable<object>> GetProperties = (descriptor, o) => Properties;
-
-        public bool CanHandleType(Type type)
-        {
-            return type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(KeyValuePair<,>);
-        }
-
+        private static readonly Type Type = typeof(KeyValuePair<,>);
+        
         public bool TryGetDescriptor(Type type, out ObjectDescriptor value)
         {
+            if (!(type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == Type))
+            {
+                value = ObjectDescriptor.Empty;
+                return false;
+            }
+            
             var genericArguments = type.GetGenericArguments();
             var descriptorCreator = CreateDescriptorMethodInfo
                 .MakeGenericMethod(genericArguments[0], genericArguments[1]);
@@ -34,23 +37,24 @@ namespace HandlebarsDotNet.ObjectDescriptors
         
         private class KeyValuePairAccessor<T, TV> : IMemberAccessor
         {
-            public bool TryGetValue(object instance, Type instanceType, string memberName, out object value)
+            public bool TryGetValue(object instance, ChainSegment memberName, out object value)
             {
                 var keyValuePair = (KeyValuePair<T, TV>) instance;
-                switch (memberName.ToLowerInvariant())
+
+                if (memberName.IsKey)
                 {
-                    case "key":
-                        value = keyValuePair.Key;
-                        return true;
-                    
-                    case "value":
-                        value = keyValuePair.Value;
-                        return true;
-                    
-                    default:
-                        value = default(TV);
-                        return false;
+                    value = keyValuePair.Key;
+                    return true;
                 }
+                
+                if (memberName.IsValue)
+                {
+                    value = keyValuePair.Value;
+                    return true;
+                }
+                
+                value = default(TV);
+                return false;
             }
         }
     }

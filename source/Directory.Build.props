@@ -10,10 +10,11 @@
         <IncludeSymbols>true</IncludeSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
         <Owner>Rex Morgan; Handlebars-Net</Owner>
+        <LangVersion>8</LangVersion>
     </PropertyGroup>
     
     <PropertyGroup>
-        <NoWarn>1591</NoWarn>
+        <NoWarn>1591;1574;1584;1658</NoWarn>
     </PropertyGroup>
     
     <ItemGroup>

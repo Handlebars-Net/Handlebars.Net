@@ -15,10 +15,7 @@ namespace HandlebarsDotNet.Collections
             _inner = new Dictionary<TKey, TValue>(_comparer);
         }
 
-        public bool ContainsKey(TKey key)
-        {
-            return _inner.ContainsKey(key);
-        }
+        public bool ContainsKey(TKey key) => _inner.ContainsKey(key);
 
         public TValue GetOrAdd(TKey key, Func<TKey, TValue> valueFactory)
         {
@@ -34,19 +31,19 @@ namespace HandlebarsDotNet.Collections
                 : value;
         }
 
-        public bool TryGetValue(TKey key, out TValue value)
-        {
-            return _inner.TryGetValue(key, out value);
-        }
+        public bool TryGetValue(TKey key, out TValue value) => _inner.TryGetValue(key, out value);
+
+        public void Clear() => _inner.Clear();
 
         private TValue Write(TKey key, TValue value)
         {
-            var copy = new Dictionary<TKey, TValue>(_inner, _comparer)
+            var inner = _inner;
+            var copy = new Dictionary<TKey, TValue>(inner, _comparer)
             {
                 [key] = value
             };
             
-            Interlocked.CompareExchange(ref _inner, copy, _inner);
+            Interlocked.CompareExchange(ref _inner, copy, inner);
 
             return value;
         }

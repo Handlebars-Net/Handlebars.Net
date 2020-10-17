@@ -2,58 +2,40 @@ using System;
 using System.Collections;
 using System.Reflection;
 using HandlebarsDotNet.MemberAccessors;
+using HandlebarsDotNet.MemberAccessors.EnumerableAccessors;
 
 namespace HandlebarsDotNet.ObjectDescriptors
 {
     internal class CollectionObjectDescriptor : IObjectDescriptorProvider
     {
-        private readonly ObjectDescriptorProvider _objectDescriptorProvider;
+        private readonly IObjectDescriptorProvider _objectDescriptorProvider;
+        private static readonly Type Type = typeof(ICollection);
 
-        public CollectionObjectDescriptor(ObjectDescriptorProvider objectDescriptorProvider)
+        public CollectionObjectDescriptor(IObjectDescriptorProvider objectDescriptorProvider)
         {
             _objectDescriptorProvider = objectDescriptorProvider;
         }
         
-        public bool CanHandleType(Type type)
-        {
-            return typeof(ICollection).IsAssignableFrom(type) && _objectDescriptorProvider.CanHandleType(type);
-        }
-
         public bool TryGetDescriptor(Type type, out ObjectDescriptor value)
         {
-            if (!_objectDescriptorProvider.TryGetDescriptor(type, out value)) return false;
-            
-            var mergedMemberAccessor = new MergedMemberAccessor(new EnumerableMemberAccessor(), value.MemberAccessor);
-            value = new ObjectDescriptor(
-                value.DescribedType, 
-                mergedMemberAccessor,
-                value.GetProperties,
-                true
-            );
-            
-            return true;
-
-        }
-    }
-
-    internal class MergedMemberAccessor : IMemberAccessor
-    {
-        private readonly IMemberAccessor[] _accessors;
-
-        public MergedMemberAccessor(params IMemberAccessor[] accessors)
-        {
-            _accessors = accessors;
-        }
-
-        public bool TryGetValue(object instance, Type type, string memberName, out object value)
-        {
-            for (var index = 0; index < _accessors.Length; index++)
+            if (!Type.IsAssignableFrom(type))
             {
-                if (_accessors[index].TryGetValue(instance, type, memberName, out value)) return true;
+                value = ObjectDescriptor.Empty;
+                return false;
             }
 
-            value = default(object);
-            return false;
+            if (!_objectDescriptorProvider.TryGetDescriptor(type, out value))
+            {
+                value = ObjectDescriptor.Empty;
+                return false;
+            }
+            
+            var enumerableMemberAccessor = EnumerableMemberAccessor.Create(type);
+            
+            var mergedMemberAccessor = new MergedMemberAccessor(enumerableMemberAccessor, value.MemberAccessor);
+            value = new ObjectDescriptor(value.DescribedType, mergedMemberAccessor, value.GetProperties, true);
+            
+            return true;
         }
     }
 }

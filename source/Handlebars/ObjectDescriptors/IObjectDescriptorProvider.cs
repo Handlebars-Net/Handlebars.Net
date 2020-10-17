@@ -8,14 +8,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
     public interface IObjectDescriptorProvider
     {
         /// <summary>
-        /// Lightweight method to check whether descriptor can be created
-        /// </summary>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        bool CanHandleType(Type type);
-        
-        /// <summary>
-        /// Tries to create <see cref="ObjectDescriptor"/> for <paramref name="type"/>. Methods is guarantied to be called if <see cref="CanHandleType"/> return <see langword="true"/>. 
+        /// Tries to create <see cref="ObjectDescriptor"/> for <paramref name="type"/>. 
         /// </summary>
         /// <param name="type"></param>
         /// <param name="value"></param>

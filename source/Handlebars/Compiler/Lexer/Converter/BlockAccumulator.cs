@@ -9,14 +9,14 @@ namespace HandlebarsDotNet.Compiler
     {
         public static IEnumerable<object> Accumulate(
             IEnumerable<object> tokens,
-            HandlebarsConfiguration configuration)
+            ICompiledHandlebarsConfiguration configuration)
         {
             return new BlockAccumulator(configuration).ConvertTokens(tokens).ToList();
         }
 
-        private readonly HandlebarsConfiguration _configuration;
+        private readonly ICompiledHandlebarsConfiguration _configuration;
 
-        private BlockAccumulator(HandlebarsConfiguration configuration)
+        private BlockAccumulator(ICompiledHandlebarsConfiguration configuration)
         {
             _configuration = configuration;
         }

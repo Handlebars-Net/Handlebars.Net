@@ -44,7 +44,7 @@ namespace HandlebarsDotNet.Compiler
 
                 if (endExpression.IsEscaped != startExpression.IsEscaped)
                 {
-                    throw new HandlebarsCompilerException("Starting and ending handlebars do not match");
+                    throw new HandlebarsCompilerException("Starting and ending handlebars do not match", endExpression.Context);
                 }
 
                 yield return HandlebarsExpression.Statement(

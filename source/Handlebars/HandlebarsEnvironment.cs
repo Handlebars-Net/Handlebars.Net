@@ -1,13 +1,14 @@
 ﻿using System;
 using System.IO;
-using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Compiler;
+using HandlebarsDotNet.Helpers;
+using HandlebarsDotNet.Helpers.BlockHelpers;
 
 namespace HandlebarsDotNet
 {
     public delegate TextReader ViewReaderFactory(ICompiledHandlebarsConfiguration configuration, string templatePath);
     
-    internal class HandlebarsEnvironment : IHandlebars
+    internal class HandlebarsEnvironment : IHandlebars, ICompiledHandlebars
     {
         private static readonly ViewReaderFactory ViewReaderFactory = (configuration, path) =>
         {
@@ -25,10 +26,19 @@ namespace HandlebarsDotNet
         {
             Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
+        
+        internal HandlebarsEnvironment(ICompiledHandlebarsConfiguration configuration)
+        {
+            CompiledConfiguration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        }
+        
+        public HandlebarsConfiguration Configuration { get; }
+        internal ICompiledHandlebarsConfiguration CompiledConfiguration { get; }
+        ICompiledHandlebarsConfiguration ICompiledHandlebars.CompiledConfiguration => CompiledConfiguration;
 
         public Action<TextWriter, object> CompileView(string templatePath, ViewReaderFactory readerFactoryFactory)
         {
-            readerFactoryFactory = readerFactoryFactory ?? ViewReaderFactory;
+            readerFactoryFactory ??= ViewReaderFactory;
             return CompileViewInternal(templatePath, readerFactoryFactory);
         }
 
@@ -37,25 +47,23 @@ namespace HandlebarsDotNet
             var view = CompileViewInternal(templatePath, ViewReaderFactory);
             return (vm) =>
             {
-                using (var writer = new PolledStringWriter(Configuration.FormatProvider))
-                {
-                    view(writer, vm);
-                    return writer.ToString();
-                }
+                var formatProvider = Configuration?.FormatProvider ?? CompiledConfiguration.FormatProvider;
+                using var writer = ReusableStringWriter.Get(formatProvider);
+                view(writer, vm);
+                return writer.ToString();
             };
         }
 
         private Action<TextWriter, object> CompileViewInternal(string templatePath, ViewReaderFactory readerFactoryFactory)
         {
-            var configuration = new InternalHandlebarsConfiguration(Configuration);
+            var configuration = CompiledConfiguration ?? new HandlebarsConfigurationAdapter(Configuration);
             var createdFeatures = configuration.Features;
             for (var index = 0; index < createdFeatures.Count; index++)
             {
                 createdFeatures[index].OnCompiling(configuration);
             }
-
-            var compiler = new HandlebarsCompiler(configuration);
-            var compiledView = compiler.CompileView(readerFactoryFactory, templatePath, configuration);
+            
+            var compiledView = HandlebarsCompiler.CompileView(readerFactoryFactory, templatePath, configuration);
     
             for (var index = 0; index < createdFeatures.Count; index++)
             {
@@ -65,15 +73,11 @@ namespace HandlebarsDotNet
             return compiledView;
         }
 
-        public HandlebarsConfiguration Configuration { get; }
-
         public Action<TextWriter, object> Compile(TextReader template)
         {
-            using (var reader = new ExtendedStringReader(template))
-            {
-                var compiler = new HandlebarsCompiler(Configuration);
-                return compiler.Compile(reader);
-            }
+            var configuration = CompiledConfiguration ?? new HandlebarsConfigurationAdapter(Configuration);
+            using var reader = new ExtendedStringReader(template);
+            return HandlebarsCompiler.Compile(reader, configuration);
         }
 
         public Func<object, string> Compile(string template)
@@ -83,41 +87,64 @@ namespace HandlebarsDotNet
                 var compiledTemplate = Compile(reader);
                 return context =>
                 {
-                    using (var writer = new PolledStringWriter(Configuration.FormatProvider))
-                    {
-                        compiledTemplate(writer, context);
-                        return writer.ToString();
-                    }
+                    var formatProvider = Configuration?.FormatProvider ?? CompiledConfiguration?.FormatProvider;
+                    using var writer = ReusableStringWriter.Get(formatProvider);
+                    compiledTemplate(writer, context);
+                    return writer.ToString();
                 };
             }
         }
 
         public void RegisterTemplate(string templateName, Action<TextWriter, object> template)
         {
-            Configuration.RegisteredTemplates[templateName] = template;
+            var registrations = Configuration ?? (IHandlebarsTemplateRegistrations) CompiledConfiguration;
+            registrations.RegisteredTemplates[templateName] = template;
         }
 
         public void RegisterTemplate(string templateName, string template)
         {
-            using (var reader = new StringReader(template))
-            {
-                RegisterTemplate(templateName, Compile(reader));
-            }
+            using var reader = new StringReader(template);
+            RegisterTemplate(templateName,Compile(reader));
         }
 
         public void RegisterHelper(string helperName, HandlebarsHelper helperFunction)
         {
-            Configuration.Helpers[helperName] = helperFunction;
+            Configuration.Helpers[helperName] = new DelegateHelperDescriptor(helperName, helperFunction);
         }
             
         public void RegisterHelper(string helperName, HandlebarsReturnHelper helperFunction)
         {
-            Configuration.ReturnHelpers[helperName] = helperFunction;
+            Configuration.Helpers[helperName] = new DelegateReturnHelperDescriptor(helperName, helperFunction);
         }
 
         public void RegisterHelper(string helperName, HandlebarsBlockHelper helperFunction)
         {
-            Configuration.BlockHelpers[helperName] = helperFunction;
+            Configuration.BlockHelpers[helperName] = new DelegateBlockHelperDescriptor(helperName, helperFunction);
+        }
+        
+        public void RegisterHelper(string helperName, HandlebarsReturnBlockHelper helperFunction)
+        {
+            Configuration.BlockHelpers[helperName] = new DelegateReturnBlockHelperDescriptor(helperName, helperFunction);
+        }
+
+        public void RegisterHelper(BlockHelperDescriptor helperObject)
+        {
+            Configuration.BlockHelpers[helperObject.Name] = helperObject;
+        }
+        
+        public void RegisterHelper(ReturnBlockHelperDescriptor helperObject)
+        {
+            Configuration.BlockHelpers[helperObject.Name] = helperObject;
+        }
+
+        public void RegisterHelper(HelperDescriptor helperObject)
+        {
+            Configuration.Helpers[helperObject.Name] = helperObject;
+        }
+        
+        public void RegisterHelper(ReturnHelperDescriptor helperObject)
+        {
+            Configuration.Helpers[helperObject.Name] = helperObject;
         }
     }
 }

@@ -23,7 +23,13 @@ namespace HandlebarsDotNet.Compiler
 
 	    public override string ToString()
         {
-	        var formatter = _configuration.UnresolvedBindingFormatter ?? string.Empty;
+	        var formatter = _configuration.UnresolvedBindingFormatter;
+	        if (formatter == null)
+	        {
+		        if(string.IsNullOrEmpty(Value)) return string.Empty;
+		        formatter = string.Empty;
+	        }
+	        
 	        return string.Format( formatter, Value );
         }
     }

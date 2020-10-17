@@ -1,4 +1,5 @@
 using System;
+using HandlebarsDotNet.Helpers.BlockHelpers;
 
 namespace HandlebarsDotNet.Helpers
 {
@@ -14,14 +15,14 @@ namespace HandlebarsDotNet.Helpers
         /// <param name="targetType"></param>
         /// <param name="helper"></param>
         /// <returns></returns>
-        bool TryResolveReturnHelper(string name, Type targetType, out HandlebarsReturnHelper helper);
-        
+        bool TryResolveHelper(string name, Type targetType, out HelperDescriptorBase helper);
+
         /// <summary>
         /// Resolves <see cref="HandlebarsBlockHelper"/>
         /// </summary>
         /// <param name="name"></param>
         /// <param name="helper"></param>
         /// <returns></returns>
-        bool TryResolveBlockHelper(string name, out HandlebarsBlockHelper helper);
+        bool TryResolveBlockHelper(string name, out BlockHelperDescriptorBase helper);
     }
 }

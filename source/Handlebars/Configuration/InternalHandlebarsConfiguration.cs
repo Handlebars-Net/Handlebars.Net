@@ -3,94 +3,154 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.Compiler.Resolvers;
+using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.Features;
 using HandlebarsDotNet.Helpers;
+using HandlebarsDotNet.Helpers.BlockHelpers;
+using HandlebarsDotNet.MemberAliasProvider;
 using HandlebarsDotNet.ObjectDescriptors;
 
 namespace HandlebarsDotNet
 {
-    internal sealed class InternalHandlebarsConfiguration : HandlebarsConfiguration, ICompiledHandlebarsConfiguration
+    internal class HandlebarsConfigurationAdapter : ICompiledHandlebarsConfiguration
     {
-        private readonly HandlebarsConfiguration _configuration;
+        private readonly PathInfoStore _pathInfoStore;
         
-        public override IExpressionNameResolver ExpressionNameResolver => _configuration.ExpressionNameResolver;
-        public override ITextEncoder TextEncoder => _configuration.TextEncoder;
-        public override IFormatProvider FormatProvider => _configuration.FormatProvider;
-        public override ViewEngineFileSystem FileSystem => _configuration.FileSystem;
-        public override string UnresolvedBindingFormatter => _configuration.UnresolvedBindingFormatter;
-        public override bool ThrowOnUnresolvedBindingExpression => _configuration.ThrowOnUnresolvedBindingExpression;
-        public override IPartialTemplateResolver PartialTemplateResolver => _configuration.PartialTemplateResolver;
-        public override IMissingPartialTemplateHandler MissingPartialTemplateHandler => _configuration.MissingPartialTemplateHandler;
-        public override Compatibility Compatibility => _configuration.Compatibility;
-        public override CompileTimeConfiguration CompileTimeConfiguration { get; }
+        public HandlebarsConfigurationAdapter(HandlebarsConfiguration configuration)
+        {
+            UnderlingConfiguration = configuration;
+
+            HelperResolvers = new ObservableList<IHelperResolver>(configuration.HelperResolvers);
+            RegisteredTemplates = new ObservableDictionary<string, Action<TextWriter, object>>(configuration.RegisteredTemplates);
+            PathInfoStore = _pathInfoStore = new PathInfoStore();
+            ObjectDescriptorProvider = CreateObjectDescriptorProvider();
+            AliasProviders = new ObservableList<IMemberAliasProvider>(UnderlingConfiguration.AliasProviders);
+
+            ExpressionMiddleware = new ObservableList<IExpressionMiddleware>(UnderlingConfiguration.CompileTimeConfiguration.ExpressionMiddleware);
+
+            Features = UnderlingConfiguration.CompileTimeConfiguration.Features
+                .Select(o => o.CreateFeature())
+                .OrderBy(o => o.GetType().GetTypeInfo().GetCustomAttribute<FeatureOrderAttribute>()?.Order ?? 100)
+                .ToList();
+            
+            CreateHelpersSubscription();
+            CreateBlockHelpersSubscription();
+            
+            AliasProviders.Add(new CollectionMemberAliasProvider(this));
+        }
+
+        public HandlebarsConfiguration UnderlingConfiguration { get; }
+        public IExpressionNameResolver ExpressionNameResolver => UnderlingConfiguration.ExpressionNameResolver;
+        public ITextEncoder TextEncoder => UnderlingConfiguration.TextEncoder;
+        public IFormatProvider FormatProvider => UnderlingConfiguration.FormatProvider;
+        public ViewEngineFileSystem FileSystem => UnderlingConfiguration.FileSystem;
+        public string UnresolvedBindingFormatter => UnderlingConfiguration.UnresolvedBindingFormatter;
+        public bool ThrowOnUnresolvedBindingExpression => UnderlingConfiguration.ThrowOnUnresolvedBindingExpression;
+        public IPartialTemplateResolver PartialTemplateResolver => UnderlingConfiguration.PartialTemplateResolver;
+        public IMissingPartialTemplateHandler MissingPartialTemplateHandler => UnderlingConfiguration.MissingPartialTemplateHandler;
+        public Compatibility Compatibility => UnderlingConfiguration.Compatibility;
         
-        public List<IFeature> Features { get; }
         public IObjectDescriptorProvider ObjectDescriptorProvider { get; }
-        public ICollection<IExpressionMiddleware> ExpressionMiddleware => CompileTimeConfiguration.ExpressionMiddleware;
-        public ICollection<IMemberAliasProvider> AliasProviders => CompileTimeConfiguration.AliasProviders;
-        public IExpressionCompiler ExpressionCompiler
-        {
-            get => CompileTimeConfiguration.ExpressionCompiler;
-            set => CompileTimeConfiguration.ExpressionCompiler = value;
-        }
+        public IList<IExpressionMiddleware> ExpressionMiddleware { get; }
+        public IList<IMemberAliasProvider> AliasProviders { get; }
+        public IExpressionCompiler ExpressionCompiler { get; set; }
+        public IReadOnlyList<IFeature> Features { get; }
+        public IPathInfoStore PathInfoStore { get; }
         
-        public bool UseAggressiveCaching
+        public IDictionary<PathInfo, StrongBox<HelperDescriptorBase>> Helpers { get; private set; }
+        public IDictionary<PathInfo, StrongBox<BlockHelperDescriptorBase>> BlockHelpers { get; private set; }
+        public IList<IHelperResolver> HelperResolvers { get; }
+        public IDictionary<string, Action<TextWriter, object>> RegisteredTemplates { get; }
+        
+        private void CreateHelpersSubscription()
         {
-            get => CompileTimeConfiguration.UseAggressiveCaching;
-            set => CompileTimeConfiguration.UseAggressiveCaching = value;
-        }
-        IReadOnlyList<IFeature> ICompiledHandlebarsConfiguration.Features => Features;
+            var existingHelpers = UnderlingConfiguration.Helpers.ToDictionary(
+                o => _pathInfoStore.GetOrAdd($"[{o.Key}]"),
+                o => new StrongBox<HelperDescriptorBase>(o.Value)
+            );
 
-        public PathInfoStore PathInfoStore { get; }
-
-        IReadOnlyPathInfoStore ICompiledHandlebarsConfiguration.PathInfoStore => PathInfoStore;
-
-        internal InternalHandlebarsConfiguration(HandlebarsConfiguration configuration)
-        {
-            _configuration = configuration;
+            Helpers = new ObservableDictionary<PathInfo, StrongBox<HelperDescriptorBase>>(existingHelpers, Compatibility.RelaxedHelperNaming ? PathInfo.PlainPathComparer : PathInfo.PlainPathWithPartsCountComparer);
             
-            Helpers = new CascadeDictionary<string, HandlebarsHelper>(configuration.Helpers, StringComparer.OrdinalIgnoreCase);
-            ReturnHelpers = new CascadeDictionary<string, HandlebarsReturnHelper>(configuration.ReturnHelpers, StringComparer.OrdinalIgnoreCase);
-            BlockHelpers = new CascadeDictionary<string, HandlebarsBlockHelper>(configuration.BlockHelpers, StringComparer.OrdinalIgnoreCase);
-            RegisteredTemplates = new CascadeDictionary<string, Action<TextWriter, object>>(configuration.RegisteredTemplates, StringComparer.OrdinalIgnoreCase);
-            HelperResolvers = new CascadeCollection<IHelperResolver>(configuration.HelperResolvers);
-            PathInfoStore = new PathInfoStore();
-            
-            CompileTimeConfiguration = new CompileTimeConfiguration
-            {
-                UseAggressiveCaching = _configuration.CompileTimeConfiguration.UseAggressiveCaching,
-                ExpressionCompiler = _configuration.CompileTimeConfiguration.ExpressionCompiler,
-                ExpressionMiddleware = new List<IExpressionMiddleware>(configuration.CompileTimeConfiguration.ExpressionMiddleware),
-                Features = new List<IFeatureFactory>(configuration.CompileTimeConfiguration.Features),
-                AliasProviders = new List<IMemberAliasProvider>(configuration.CompileTimeConfiguration.AliasProviders)
+            var helpersObserver = new ObserverBuilder<ObservableEvent<HelperDescriptorBase>>()
+                .OnEvent<ObservableDictionary<string, HelperDescriptorBase>.ReplacedObservableEvent>(
+                    @event => Helpers[_pathInfoStore.GetOrAdd($"[{@event.Key}]")].Value = @event.Value
+                    )
+                .OnEvent<ObservableDictionary<string, HelperDescriptorBase>.AddedObservableEvent>(
+                    @event =>
+                    {
+                        Helpers.AddOrUpdate(_pathInfoStore.GetOrAdd($"[{@event.Key}]"), 
+                            h => new StrongBox<HelperDescriptorBase>(h), 
+                            (h, o) => o.Value = h, 
+                            @event.Value);
+                    })
+                .OnEvent<ObservableDictionary<string, HelperDescriptorBase>.RemovedObservableEvent>(@event =>
                 {
-                    new CollectionMemberAliasProvider(this) // will not be registered by default in next iterations
-                }
-            };
-            
+                    if (Helpers.TryGetValue(_pathInfoStore.GetOrAdd($"[{@event.Key}]"), out var helperToRemove))
+                    {
+                        helperToRemove.Value = new LateBindHelperDescriptor(@event.Key, this);
+                    }
+                })
+                .Build();
+
+            UnderlingConfiguration.Helpers
+                .As<ObservableDictionary<string, HelperDescriptorBase>>()
+                .Subscribe(helpersObserver);
+        }
+
+        private void CreateBlockHelpersSubscription()
+        {
+            var existingBlockHelpers = UnderlingConfiguration.BlockHelpers.ToDictionary(
+                o => _pathInfoStore.GetOrAdd($"[{o.Key}]"),
+                o => new StrongBox<BlockHelperDescriptorBase>(o.Value)
+            );
+
+            BlockHelpers =
+                new ObservableDictionary<PathInfo, StrongBox<BlockHelperDescriptorBase>>(existingBlockHelpers, Compatibility.RelaxedHelperNaming ? PathInfo.PlainPathComparer : PathInfo.PlainPathWithPartsCountComparer);
+
+            var blockHelpersObserver = new ObserverBuilder<ObservableEvent<BlockHelperDescriptorBase>>()
+                .OnEvent<ObservableDictionary<string, BlockHelperDescriptorBase>.ReplacedObservableEvent>(
+                    @event => BlockHelpers[_pathInfoStore.GetOrAdd($"[{@event.Key}]")].Value = @event.Value)
+                .OnEvent<ObservableDictionary<string, BlockHelperDescriptorBase>.AddedObservableEvent>(
+                    @event =>
+                    {
+                        BlockHelpers.AddOrUpdate(_pathInfoStore.GetOrAdd($"[{@event.Key}]"), 
+                            h => new StrongBox<BlockHelperDescriptorBase>(h), 
+                            (h, o) => o.Value = h, 
+                            @event.Value);
+                    })
+                .OnEvent<ObservableDictionary<string, BlockHelperDescriptorBase>.RemovedObservableEvent>(@event =>
+                {
+                    if (BlockHelpers.TryGetValue(_pathInfoStore.GetOrAdd($"[{@event.Key}]"), out var helperToRemove))
+                    {
+                        helperToRemove.Value = new LateBindBlockHelperDescriptor(@event.Key, this);
+                    }
+                })
+                .Build();
+
+            UnderlingConfiguration.BlockHelpers
+                .As<ObservableDictionary<string, BlockHelperDescriptorBase>>()
+                .Subscribe(blockHelpersObserver);
+        }
+
+        private IObjectDescriptorProvider CreateObjectDescriptorProvider()
+        {
             var objectDescriptorProvider = new ObjectDescriptorProvider(this);
-            var listObjectDescriptor = new CollectionObjectDescriptor(objectDescriptorProvider);
-            var providers = new List<IObjectDescriptorProvider>(configuration.CompileTimeConfiguration.ObjectDescriptorProviders)
+            var providers = new List<IObjectDescriptorProvider>(UnderlingConfiguration.CompileTimeConfiguration.ObjectDescriptorProviders)
             {
-                new ContextObjectDescriptor(),
                 new StringDictionaryObjectDescriptorProvider(),
                 new GenericDictionaryObjectDescriptorProvider(),
                 new DictionaryObjectDescriptor(),
-                listObjectDescriptor,
-                new EnumerableObjectDescriptor(listObjectDescriptor),
                 new KeyValuePairObjectDescriptorProvider(),
+                new CollectionObjectDescriptor(objectDescriptorProvider),
+                new EnumerableObjectDescriptor(objectDescriptorProvider),
                 objectDescriptorProvider,
                 new DynamicObjectDescriptor()
             };
 
-            ObjectDescriptorProvider = new ObjectDescriptorFactory(providers);
-
-            Features = CompileTimeConfiguration
-                .Features.Select(o => o.CreateFeature())
-                .OrderBy(o => o.GetType().GetTypeInfo().GetCustomAttribute<FeatureOrderAttribute>()?.Order ?? 100)
-                .ToList();
+            return new ObjectDescriptorFactory(providers);
         }
     }
 }

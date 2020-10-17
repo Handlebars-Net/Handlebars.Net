@@ -2,7 +2,7 @@ using System;
 
 namespace HandlebarsDotNet
 {
-    internal struct DisposableContainer<T> : IDisposable
+    internal readonly struct DisposableContainer<T> : IDisposable
     {
         private readonly Action<T> _onDispose;
         public readonly T Value;
@@ -13,9 +13,6 @@ namespace HandlebarsDotNet
             Value = value;
         }
         
-        public void Dispose()
-        {
-            _onDispose(Value);
-        }
+        public void Dispose() => _onDispose(Value);
     }
 }

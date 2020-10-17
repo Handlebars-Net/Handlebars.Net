@@ -72,3 +72,6 @@ nupkgs
 
 #DotNet Benchmark
 BenchmarkDotNet.Artifacts/
+
+#Test results
+TestResults/

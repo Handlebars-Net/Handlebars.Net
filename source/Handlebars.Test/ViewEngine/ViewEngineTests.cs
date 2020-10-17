@@ -111,7 +111,10 @@ namespace HandlebarsDotNet.Test.ViewEngine
             Assert.Equal("layout start\r\nThis is the body\r\nlayout end", output);
         }
 
-        [Fact]
+        /* @todo Implement @data property
+         * @body Implement @data property based on https://handlebarsjs.com/api-reference/data-variables.html
+        */ 
+        [Fact(Skip = "add @data support: https://handlebarsjs.com/api-reference/data-variables.html")]
         public void CanRenderAGlobalVariable()
         {
             //Given a layout in the root which contains an @ variable

@@ -1,31 +1,27 @@
 ﻿using System;
 using System.Collections;
 using System.IO;
+using HandlebarsDotNet.Compiler.Structure.Path;
+using HandlebarsDotNet.Polyfills;
+using HandlebarsDotNet.ValueProviders;
 
 namespace HandlebarsDotNet.Compiler
 {
     internal static class DeferredSectionBlockHelper
     {
-        public static void Helper(BindingContext context, char prefix, object value,
-            Action<BindingContext, TextWriter, object> body, Action<BindingContext, TextWriter, object> inverse,
-            BlockParamsValueProvider blockParamsValueProvider)
+        private static readonly ChainSegment[] BlockParamsVariables = ArrayEx.Empty<ChainSegment>();
+
+        public static void PlainHelper(BindingContext context, object value,
+            Action<BindingContext, TextWriter, object> body, Action<BindingContext, TextWriter, object> inverse)
         {
-            if (prefix == '#')
-            {
-                RenderSection(value, context, body, inverse, blockParamsValueProvider);
-            }
-            else
-            {
-                RenderSection(value, context, inverse, body, blockParamsValueProvider);
-            }
+            RenderSection(value, context, body, inverse);
         }
         
         private static void RenderSection(
             object value, 
             BindingContext context,
             Action<BindingContext, TextWriter, object> body, 
-            Action<BindingContext, TextWriter, object> inversion,
-            BlockParamsValueProvider blockParamsValueProvider
+            Action<BindingContext, TextWriter, object> inversion
         )
         {
             switch (value)
@@ -44,7 +40,7 @@ namespace HandlebarsDotNet.Compiler
                     return;
                 
                 case IEnumerable enumerable:
-                    Iterator.Iterate(context, blockParamsValueProvider, enumerable, body, inversion);
+                    Iterator.Iterate(context, BlockParamsVariables, enumerable, body, inversion);
                     break;
                 
                 default:
