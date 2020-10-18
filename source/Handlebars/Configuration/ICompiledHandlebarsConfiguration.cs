@@ -99,5 +99,7 @@ namespace HandlebarsDotNet
         
         /// <inheritdoc cref="IPathInfoStore"/>
         IPathInfoStore PathInfoStore { get; }
+        
+        bool NoEscape { get; }
     }
 }

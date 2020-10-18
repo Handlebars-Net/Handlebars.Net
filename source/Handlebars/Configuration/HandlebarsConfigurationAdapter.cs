@@ -49,6 +49,7 @@ namespace HandlebarsDotNet
         public IPartialTemplateResolver PartialTemplateResolver => UnderlingConfiguration.PartialTemplateResolver;
         public IMissingPartialTemplateHandler MissingPartialTemplateHandler => UnderlingConfiguration.MissingPartialTemplateHandler;
         public Compatibility Compatibility => UnderlingConfiguration.Compatibility;
+        public bool NoEscape => UnderlingConfiguration.NoEscape;
         
         public IObjectDescriptorProvider ObjectDescriptorProvider { get; }
         public IList<IExpressionMiddleware> ExpressionMiddleware { get; }

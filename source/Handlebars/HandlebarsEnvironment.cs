@@ -72,7 +72,7 @@ namespace HandlebarsDotNet
 
             return (writer, context, data) =>
             {
-                using var encodedTextWriter = new EncodedTextWriter(writer, configuration.TextEncoder);
+                using var encodedTextWriter = new EncodedTextWriter(writer, configuration.TextEncoder, configuration.NoEscape);
                 if (context is BindingContext bindingContext)
                 {
                     compiledView(encodedTextWriter, bindingContext);
@@ -109,7 +109,7 @@ namespace HandlebarsDotNet
                 }
                 else
                 {
-                    using var encodedTextWriter = new EncodedTextWriter(writer, configuration.TextEncoder);
+                    using var encodedTextWriter = new EncodedTextWriter(writer, configuration.TextEncoder, configuration.NoEscape);
                     if (context is BindingContext bindingContext)
                     {
                         compiledTemplate(encodedTextWriter, bindingContext);

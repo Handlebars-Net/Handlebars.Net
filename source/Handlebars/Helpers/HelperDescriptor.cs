@@ -20,7 +20,7 @@ namespace HandlebarsDotNet.Helpers
         internal sealed override object ReturnInvoke(BindingContext bindingContext, object context, in Arguments arguments)
         {
             using var writer = ReusableStringWriter.Get(bindingContext.Configuration.FormatProvider);
-            using var encodedTextWriter = new EncodedTextWriter(writer, bindingContext.Configuration.TextEncoder);
+            using var encodedTextWriter = new EncodedTextWriter(writer, bindingContext.Configuration.TextEncoder, bindingContext.Configuration.NoEscape);
             WriteInvoke(bindingContext, encodedTextWriter, context, arguments);
             return writer.ToString();
         }

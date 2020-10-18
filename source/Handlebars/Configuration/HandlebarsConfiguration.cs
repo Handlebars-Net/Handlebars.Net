@@ -32,6 +32,8 @@ namespace HandlebarsDotNet
 	    public string UnresolvedBindingFormatter { get; set; }
         
         public bool ThrowOnUnresolvedBindingExpression { get; set; }
+        
+        public bool NoEscape { get; set; }
 
         /// <summary>
         /// The resolver used for unregistered partials. Defaults
