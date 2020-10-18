@@ -879,13 +879,12 @@ namespace HandlebarsDotNet.Test
             {
                 using var frame = options.CreateFrame();
                 var data = new DataValues(frame);
-                data.CreateProperty(ChainSegment.Index, out var index);
                 data.CreateProperty(ChainSegment.Value, null, out var value);
 
                 var iterationIndex = 0;
                 foreach (var item in (IEnumerable) arguments[0])
                 {
-                    data[index] = iterationIndex;
+                    data[ChainSegment.Index] = iterationIndex;
                     data[value] = item;
                     frame.Value = item;
 

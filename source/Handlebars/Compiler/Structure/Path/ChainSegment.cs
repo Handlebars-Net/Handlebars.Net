@@ -29,8 +29,6 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
         
         public static ChainSegmentEqualityComparer EqualityComparer { get; } = new ChainSegmentEqualityComparer();
 
-        static ChainSegment() => Handlebars.Disposables.Enqueue(new Disposer());
-        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ChainSegment Create(string value) => Lookup.GetOrAdd(value, v => new ChainSegment(v));
         
@@ -192,12 +190,7 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
                 return _undefinedBindingResult ??= new UndefinedBindingResult(this, configuration);
             }
         }
-        
-        private class Disposer : IDisposable
-        {
-            public void Dispose() => Lookup.Clear();
-        }
-        
+
         public struct ChainSegmentEqualityComparer : IEqualityComparer<ChainSegment>
         {
             [DebuggerStepThrough]

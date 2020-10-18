@@ -8,7 +8,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
     /// <summary>
     /// Provides meta-information about <see cref="Type"/>
     /// </summary>
-    public class ObjectDescriptor : IEquatable<ObjectDescriptor>
+    public class ObjectDescriptor
     {
         public static readonly ObjectDescriptor Empty = new ObjectDescriptor();
 

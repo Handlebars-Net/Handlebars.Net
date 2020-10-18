@@ -141,7 +141,6 @@ namespace HandlebarsDotNet
                 new StringDictionaryObjectDescriptorProvider(),
                 new GenericDictionaryObjectDescriptorProvider(),
                 new DictionaryObjectDescriptor(),
-                new KeyValuePairObjectDescriptorProvider(),
                 new CollectionObjectDescriptor(objectDescriptorProvider),
                 new EnumerableObjectDescriptor(objectDescriptorProvider),
                 objectDescriptorProvider,

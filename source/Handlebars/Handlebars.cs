@@ -167,18 +167,5 @@ namespace HandlebarsDotNet
         /// Expose the configuration in order to have access in all Helpers and Templates.
         /// </summary>
         public static HandlebarsConfiguration Configuration => Instance.Configuration;
-
-        /// <summary>
-        /// Allows to perform cleanup of internal static buffers
-        /// </summary>
-        public static void Cleanup()
-        {
-            while (Disposables.TryDequeue(out var disposable))
-            {
-                disposable.Dispose();
-            }
-        }
-        
-        internal static readonly ConcurrentQueue<IDisposable> Disposables = new ConcurrentQueue<IDisposable>();
     }
 }
