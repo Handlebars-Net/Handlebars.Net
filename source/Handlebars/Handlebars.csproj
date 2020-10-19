@@ -2,13 +2,11 @@
 
   <PropertyGroup>
     <AssemblyName>Handlebars</AssemblyName>
-    <DebugType>portable</DebugType>
     <ProjectGuid>9822C7B8-7E51-42BC-9A49-72A10491B202</ProjectGuid>
     <TargetFrameworks>netstandard1.3;netstandard2.0;netstandard2.1</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">$(TargetFrameworks);net451;net452</TargetFrameworks>
     <Version>2.0.0</Version>
     <RootNamespace>HandlebarsDotNet</RootNamespace>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)'=='netstandard1.3'">
@@ -66,7 +64,6 @@
 
   <ItemGroup>
     <PackageReference Include="ExpressionShortcuts" Version="1.0.4.38" PrivateAssets="All" />
-    <PackageReference Include="System.Memory" Version="4.5.4" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(ContinuousIntegrationBuild)' == 'true'">
