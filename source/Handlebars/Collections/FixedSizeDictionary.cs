@@ -50,7 +50,7 @@ namespace HandlebarsDotNet.Collections
         {
             if (comparer == null) throw new ArgumentNullException(nameof(comparer));
             if (bucketsCount > MaximumSize) throw new ArgumentException($" cannot be greater then {MaximumSize}", nameof(bucketsCount));
-            if (bucketSize > HashHelper.Primes[^1]) throw new ArgumentException($" cannot be greater then {HashHelper.Primes[^1]}", nameof(bucketSize));
+            if (bucketSize > HashHelper.Primes[HashHelper.Primes.Length - 1]) throw new ArgumentException($" cannot be greater then {HashHelper.Primes[HashHelper.Primes.Length - 1]}", nameof(bucketSize));
 
             // size is always ^2.
             bucketsCount = AlignSize(bucketsCount);
@@ -83,7 +83,7 @@ namespace HandlebarsDotNet.Collections
                     if (prime >= bucketSize) return prime;
                 }
 
-                return HashHelper.Primes[^1];
+                return HashHelper.Primes[HashHelper.Primes.Length - 1];
             }
         }
 

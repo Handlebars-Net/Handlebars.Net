@@ -76,15 +76,15 @@ namespace HandlebarsDotNet.Compiler.Lexer
 
         private static bool CanBreakAtSpace(StringBuilder buffer)
         {
-            var (left, right) = CalculateBraces(buffer);
+            CalculateBraces(buffer, out var left, out var right);
 
             return left == 0 || left == right;
         }
 
-        private static (int left, int right) CalculateBraces(StringBuilder buffer)
+        private static void CalculateBraces(StringBuilder buffer, out int left, out int right)
         {
-            var left = 0;
-            var right = 0;
+            left = 0;
+            right = 0;
             
             var enumerator = new StringBuilderEnumerator(buffer);
             while (enumerator.MoveNext())
@@ -100,8 +100,6 @@ namespace HandlebarsDotNet.Compiler.Lexer
                         break;
                 }
             }
-
-            return (left, right);
         }
     }
 }

@@ -215,7 +215,7 @@ namespace HandlebarsDotNet
                     array[i] = _array[i];
                 }
 
-                array[^1] = value;
+                array[array.Length - 1] = value;
                 return new Arguments(array);
             }
         }
