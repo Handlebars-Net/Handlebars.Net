@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Expressions.Shortcuts;
+using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.Helpers;
 using static Expressions.Shortcuts.ExpressionShortcuts;
 
@@ -11,6 +13,8 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class HelperFunctionBinder : HandlebarsExpressionVisitor
     {
+        private static readonly LookupSlim<int, DeferredValue<Expression[], ConstructorInfo>> ArgumentsConstructorsMap = new LookupSlim<int, DeferredValue<Expression[], ConstructorInfo>>();
+        
         private CompilationContext CompilationContext { get; }
 
         public HelperFunctionBinder(CompilationContext compilationContext)
@@ -59,7 +63,7 @@ namespace HandlebarsDotNet.Compiler
             
             ExpressionContainer<Arguments> CreateArguments()
             {
-                var arguments = hex.Arguments
+                Expression[] arguments = hex.Arguments
                     .ApplyOn<Expression, PathExpression>(path => path.Context = PathExpression.ResolutionContext.Parameter)
                     .Select(o => FunctionBuilder.Reduce(o, CompilationContext))
                     .ToArray();
@@ -68,11 +72,22 @@ namespace HandlebarsDotNet.Compiler
                 {
                     return Arg(Arguments.Empty);
                 }
-                
-                var argumentTypes = new Type[arguments.Length];
-                for (var i = 0; i < argumentTypes.Length; i++) argumentTypes[i] = typeof(object);
-                var constructor = typeof(Arguments).GetConstructor(argumentTypes);
-                
+
+                var constructor = ArgumentsConstructorsMap.GetOrAdd(arguments.Length, (i, d) =>
+                {
+                    return new DeferredValue<Expression[], ConstructorInfo>(d, o =>
+                    {
+                        var objectType = typeof(object);
+                        var argumentTypes = new Type[o.Length];
+                        for (var index = 0; index < argumentTypes.Length; index++)
+                        {
+                            argumentTypes[index] = objectType;
+                        }
+
+                        return typeof(Arguments).GetConstructor(argumentTypes);
+                    });
+                }, arguments).Value;
+
                 if (constructor == null) // cannot handle by direct args pass
                 {
                     var arr = Array<object>(arguments);

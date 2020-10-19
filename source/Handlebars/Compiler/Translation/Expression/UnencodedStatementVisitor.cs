@@ -20,11 +20,10 @@ namespace HandlebarsDotNet.Compiler
                 var writer = Arg<EncodedTextWriter>(CompilationContext.EncodedWriter);
                 var suppressEncoding = writer.Property(o => o.SuppressEncoding);
                 
-                return Block(typeof(void))
+                return Block()
                     .Line(suppressEncoding.Assign(true))
                     .Line(sex)
-                    .Line(suppressEncoding.Assign(false))
-                    .Line(Expression.Empty());
+                    .Line(suppressEncoding.Assign(false));
             }
 
             return sex;

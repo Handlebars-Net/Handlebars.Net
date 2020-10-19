@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Expressions.Shortcuts;
+using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.Helpers.BlockHelpers;
 using HandlebarsDotNet.Polyfills;
@@ -13,8 +15,10 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class BlockHelperFunctionBinder : HandlebarsExpressionVisitor
     {
-        private enum BlockHelperDirection { Direct, Inverse }
+        private static readonly LookupSlim<int, DeferredValue<Expression[], ConstructorInfo>> ArgumentsConstructorsMap = new LookupSlim<int, DeferredValue<Expression[], ConstructorInfo>>();
         
+        private enum BlockHelperDirection { Direct, Inverse }
+
         private CompilationContext CompilationContext { get; }
 
         public BlockHelperFunctionBinder(CompilationContext compilationContext)
@@ -42,7 +46,7 @@ namespace HandlebarsDotNet.Compiler
             var readerContext = bhex.Context;
             var direct = Compile(bhex.Body);
             var inverse = Compile(bhex.Inversion);
-            var arguments = CreateArguments();
+            var args = CreateArguments();
             
             var helperName = pathInfo.TrimmedPath;
             var direction = bhex.IsRaw || pathInfo.IsBlockHelper ? BlockHelperDirection.Direct : BlockHelperDirection.Inverse;
@@ -86,27 +90,38 @@ namespace HandlebarsDotNet.Compiler
             
             ExpressionContainer<Arguments> CreateArguments()
             {
-                var args = bhex.Arguments
+                var arguments = bhex.Arguments
                     .ApplyOn((PathExpression pex) => pex.Context = PathExpression.ResolutionContext.Parameter)
                     .Select(o => FunctionBuilder.Reduce(o, CompilationContext))
                     .ToArray();
 
-                if (args.Length == 0)
+                if (arguments.Length == 0)
                 {
                     return Arg(Arguments.Empty);
                 }
                 
-                var argumentTypes = new Type[args.Length];
-                for (var i = 0; i < argumentTypes.Length; i++) argumentTypes[i] = typeof(object);
-                var constructor = typeof(Arguments).GetConstructor(argumentTypes);
+                var constructor = ArgumentsConstructorsMap.GetOrAdd(arguments.Length, (i, d) =>
+                {
+                    return new DeferredValue<Expression[], ConstructorInfo>(d, o =>
+                    {
+                        var objectType = typeof(object);
+                        var argumentTypes = new Type[o.Length];
+                        for (var index = 0; index < argumentTypes.Length; index++)
+                        {
+                            argumentTypes[index] = objectType;
+                        }
+
+                        return typeof(Arguments).GetConstructor(argumentTypes);
+                    });
+                }, arguments).Value;
                 
                 if (constructor == null) // cannot handle by direct args pass
                 {
-                    var arr = Array<object>(args);
+                    var arr = Array<object>(arguments);
                     return New(() => new Arguments(arr));
                 }
                 
-                return Arg<Arguments>(Expression.New(constructor, args));
+                return Arg<Arguments>(Expression.New(constructor, arguments));
             }
             
             TemplateDelegate Compile(Expression expression)
@@ -130,13 +145,13 @@ namespace HandlebarsDotNet.Compiler
                     case BlockHelperDirection.Inverse:
                     {
                         var helperOptions = Expression.New(helperOptionsCtor, Expression.Constant(inverse), Expression.Constant(direct), blockParams, bindingContext);
-                        return Expression.Call(inst, methodInfo, writer, helperOptions, context, arguments);
+                        return Expression.Call(inst, methodInfo, writer, helperOptions, context, args);
                     }
                     
                     case BlockHelperDirection.Direct:
                     {
                         var helperOptions = Expression.New(helperOptionsCtor, Expression.Constant(direct), Expression.Constant(inverse), blockParams, bindingContext);
-                        return Expression.Call(inst, methodInfo, writer, helperOptions, context, arguments);
+                        return Expression.Call(inst, methodInfo, writer, helperOptions, context, args);
                     }
                     default:
                         throw new HandlebarsCompilerException("Helper referenced with unknown prefix", readerContext);
