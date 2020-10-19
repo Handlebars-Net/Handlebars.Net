@@ -1,4 +1,3 @@
-using System.IO;
 using HandlebarsDotNet.Compiler;
 using HandlebarsDotNet.Compiler.Structure.Path;
 
@@ -12,11 +11,11 @@ namespace HandlebarsDotNet.Helpers
 
         public PathInfo Name { get; }
         public abstract HelperType Type { get; }
-
-        internal abstract object ReturnInvoke(BindingContext bindingContext, object context, object[] arguments);
-
-        internal abstract void WriteInvoke(BindingContext bindingContext, TextWriter output, object context, object[] arguments);
         
+        internal abstract object ReturnInvoke(BindingContext bindingContext, object context, in Arguments arguments);
+
+        internal abstract void WriteInvoke(BindingContext bindingContext, in EncodedTextWriter output, object context, in Arguments arguments);
+
         public override string ToString() => Name;
     }
 }

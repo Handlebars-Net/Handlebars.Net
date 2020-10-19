@@ -1,6 +1,6 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using HandlebarsDotNet.MemberAccessors;
 
 namespace HandlebarsDotNet.ObjectDescriptors
@@ -12,6 +12,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
     {
         public static readonly ObjectDescriptor Empty = new ObjectDescriptor();
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ObjectDescriptor Create(object from, ICompiledHandlebarsConfiguration configuration)
         {
             if (from == null) return null;
@@ -19,6 +20,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
             return descriptor;
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryCreate(object from, ICompiledHandlebarsConfiguration configuration, out ObjectDescriptor descriptor)
         {
             return configuration.ObjectDescriptorProvider.TryGetDescriptor(from.GetType(), out descriptor);

@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.Compiler;
@@ -26,12 +25,13 @@ namespace HandlebarsDotNet.Helpers
             _helperMissing = _configuration.Helpers[pathInfoStore.GetOrAdd("helperMissing")];
         }
 
-        internal override object ReturnInvoke(BindingContext bindingContext, object context, object[] arguments)
+        internal override object ReturnInvoke(BindingContext bindingContext, object context, in Arguments arguments)
         {
+            // TODO: add cache
             var helperResolvers = (ObservableList<IHelperResolver>) _configuration.HelperResolvers;
             if(helperResolvers.Count != 0)
             {
-                var targetType = arguments.FirstOrDefault()?.GetType();
+                var targetType = arguments.Length > 0 ? arguments[0].GetType() : null;
                 for (var index = 0; index < helperResolvers.Count; index++)
                 {
                     var resolver = helperResolvers[index];
@@ -43,14 +43,12 @@ namespace HandlebarsDotNet.Helpers
 
             var value = PathResolver.ResolvePath(bindingContext, Name);
             if (!(value is UndefinedBindingResult)) return value;
-
-            var nameIndex = arguments.Length;
-            Array.Resize(ref arguments, nameIndex + 1);
-            arguments[nameIndex] = Name.TrimmedPath;
-            return _helperMissing.Value.ReturnInvoke(bindingContext, context, arguments);
+            
+            var newArguments = arguments.Add(Name.TrimmedPath);
+            return _helperMissing.Value.ReturnInvoke(bindingContext, context, newArguments);
         }
 
-        public override object Invoke(object context, params object[] arguments)
+        public override object Invoke(object context, in Arguments arguments)
         {
             throw new NotImplementedException();
         }

@@ -36,25 +36,25 @@ namespace HandlebarsDotNet
         internal ICompiledHandlebarsConfiguration CompiledConfiguration { get; }
         ICompiledHandlebarsConfiguration ICompiledHandlebars.CompiledConfiguration => CompiledConfiguration;
 
-        public Action<TextWriter, object> CompileView(string templatePath, ViewReaderFactory readerFactoryFactory)
+        public HandlebarsTemplate<TextWriter, object, object> CompileView(string templatePath, ViewReaderFactory readerFactoryFactory)
         {
             readerFactoryFactory ??= ViewReaderFactory;
             return CompileViewInternal(templatePath, readerFactoryFactory);
         }
 
-        public Func<object,string> CompileView(string templatePath)
+        public HandlebarsTemplate<object, object> CompileView(string templatePath)
         {
             var view = CompileViewInternal(templatePath, ViewReaderFactory);
-            return (vm) =>
+            return (vm, data) =>
             {
                 var formatProvider = Configuration?.FormatProvider ?? CompiledConfiguration.FormatProvider;
                 using var writer = ReusableStringWriter.Get(formatProvider);
-                view(writer, vm);
+                view(writer, vm, data);
                 return writer.ToString();
             };
         }
 
-        private Action<TextWriter, object> CompileViewInternal(string templatePath, ViewReaderFactory readerFactoryFactory)
+        private HandlebarsTemplate<TextWriter, object, object> CompileViewInternal(string templatePath, ViewReaderFactory readerFactoryFactory)
         {
             var configuration = CompiledConfiguration ?? new HandlebarsConfigurationAdapter(Configuration);
             var createdFeatures = configuration.Features;
@@ -70,32 +70,74 @@ namespace HandlebarsDotNet
                 createdFeatures[index].CompilationCompleted();
             }
 
-            return compiledView;
+            return (writer, context, data) =>
+            {
+                using var encodedTextWriter = new EncodedTextWriter(writer, configuration.TextEncoder);
+                if (context is BindingContext bindingContext)
+                {
+                    compiledView(encodedTextWriter, bindingContext);
+                    return;
+                }
+                
+                using var newBindingContext = BindingContext.Create(configuration, context, templatePath);
+                newBindingContext.SetDataObject(data);
+                
+                compiledView(encodedTextWriter, newBindingContext);
+            };
         }
 
-        public Action<TextWriter, object> Compile(TextReader template)
+        public HandlebarsTemplate<TextWriter, object, object> Compile(TextReader template)
         {
             var configuration = CompiledConfiguration ?? new HandlebarsConfigurationAdapter(Configuration);
             using var reader = new ExtendedStringReader(template);
-            return HandlebarsCompiler.Compile(reader, configuration);
-        }
-
-        public Func<object, string> Compile(string template)
-        {
-            using (var reader = new StringReader(template))
+            var compiledTemplate = HandlebarsCompiler.Compile(reader, configuration);
+            return (writer, context, data) =>
             {
-                var compiledTemplate = Compile(reader);
-                return context =>
+                if (writer is EncodedTextWriterWrapper encodedTextWriterWrapper)
                 {
-                    var formatProvider = Configuration?.FormatProvider ?? CompiledConfiguration?.FormatProvider;
-                    using var writer = ReusableStringWriter.Get(formatProvider);
-                    compiledTemplate(writer, context);
-                    return writer.ToString();
-                };
-            }
+                    var encodedTextWriter = encodedTextWriterWrapper.UnderlyingWriter;
+                    if (context is BindingContext bindingContext)
+                    {
+                        compiledTemplate(encodedTextWriter, bindingContext);
+                        return;
+                    }
+                
+                    using var newBindingContext = BindingContext.Create(configuration, context);
+                    newBindingContext.SetDataObject(data);
+
+                    compiledTemplate(encodedTextWriter, newBindingContext);
+                }
+                else
+                {
+                    using var encodedTextWriter = new EncodedTextWriter(writer, configuration.TextEncoder);
+                    if (context is BindingContext bindingContext)
+                    {
+                        compiledTemplate(encodedTextWriter, bindingContext);
+                        return;
+                    }
+                
+                    using var newBindingContext = BindingContext.Create(configuration, context);
+                    newBindingContext.SetDataObject(data);
+
+                    compiledTemplate(encodedTextWriter, newBindingContext);   
+                }
+            };
         }
 
-        public void RegisterTemplate(string templateName, Action<TextWriter, object> template)
+        public HandlebarsTemplate<object, object> Compile(string template)
+        {
+            using var reader = new StringReader(template);
+            var compiledTemplate = Compile(reader);
+            return (context, data) =>
+            {
+                var formatProvider = Configuration?.FormatProvider ?? CompiledConfiguration?.FormatProvider;
+                using var writer = ReusableStringWriter.Get(formatProvider);
+                compiledTemplate(writer, context, data);
+                return writer.ToString();
+            };
+        }
+
+        public void RegisterTemplate(string templateName, HandlebarsTemplate<TextWriter, object, object> template)
         {
             var registrations = Configuration ?? (IHandlebarsTemplateRegistrations) CompiledConfiguration;
             registrations.RegisteredTemplates[templateName] = template;
@@ -104,7 +146,7 @@ namespace HandlebarsDotNet
         public void RegisterTemplate(string templateName, string template)
         {
             using var reader = new StringReader(template);
-            RegisterTemplate(templateName,Compile(reader));
+            RegisterTemplate(templateName, Compile(reader));
         }
 
         public void RegisterHelper(string helperName, HandlebarsHelper helperFunction)

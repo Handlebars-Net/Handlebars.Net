@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Dynamic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using HandlebarsDotNet.Compiler.Lexer;
 
 namespace HandlebarsDotNet.Compiler
 {
+    internal delegate void TemplateDelegate(in EncodedTextWriter writer, BindingContext context);
+    
     internal static class HandlebarsCompiler
     {
-        public static Action<TextWriter, object> Compile(ExtendedStringReader source, ICompiledHandlebarsConfiguration configuration)
+        public static TemplateDelegate Compile(ExtendedStringReader source, ICompiledHandlebarsConfiguration configuration)
         {
             var createdFeatures = configuration.Features;
             for (var index = 0; index < createdFeatures.Count; index++)
@@ -31,7 +32,7 @@ namespace HandlebarsDotNet.Compiler
             return action;
         }
 
-        internal static Action<TextWriter, object> CompileView(ViewReaderFactory readerFactoryFactory, string templatePath, ICompiledHandlebarsConfiguration configuration)
+        internal static TemplateDelegate CompileView(ViewReaderFactory readerFactoryFactory, string templatePath, ICompiledHandlebarsConfiguration configuration)
         {
             IEnumerable<object> tokens;
             using (var sr = readerFactoryFactory(configuration, templatePath))
@@ -46,27 +47,29 @@ namespace HandlebarsDotNet.Compiler
 
             var expressionBuilder = new ExpressionBuilder(configuration);
             var expressions = expressionBuilder.ConvertTokensToExpressions(tokens);
-            var compiledView = FunctionBuilder.Compile(expressions, configuration, templatePath);
+            var compiledView = FunctionBuilder.Compile(expressions, configuration);
             if (layoutToken == null) return compiledView;
 
             var fs = configuration.FileSystem;
             var layoutPath = fs.Closest(templatePath, layoutToken.Value + ".hbs");
             if (layoutPath == null)
-                throw new InvalidOperationException("Cannot find layout '" + layoutPath + "' for template '" +
-                                                    templatePath + "'");
+                throw new InvalidOperationException($"Cannot find layout '{layoutToken.Value}' for template '{templatePath}'");
 
             var compiledLayout = CompileView(readerFactoryFactory, layoutPath, configuration);
-
-            return (tw, vm) =>
+            
+            return (in EncodedTextWriter writer, BindingContext context) =>
             {
-                string inner;
-                using (var innerWriter = ReusableStringWriter.Get(configuration.FormatProvider))
-                {
-                    compiledView(innerWriter, vm);
-                    inner = innerWriter.ToString();
-                }
+                var config = context.Configuration;
+                using var innerWriter = ReusableStringWriter.Get(config.FormatProvider);
+                using var textWriter = new EncodedTextWriter(innerWriter, config.TextEncoder, true);
+                compiledView(textWriter, context);
+                var inner = innerWriter.ToString();
 
-                compiledLayout(tw, new DynamicViewModel(new[] {new {body = inner}, vm}));
+                var vmContext = new [] {new {body = inner}, context.Value};
+                var viewModel = new DynamicViewModel(vmContext);
+                using var bindingContext = BindingContext.Create(config, viewModel);
+
+                compiledLayout(writer, bindingContext);
             };
         }
 

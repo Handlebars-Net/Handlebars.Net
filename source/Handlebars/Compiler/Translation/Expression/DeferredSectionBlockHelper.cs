@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections;
-using System.IO;
 using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.Polyfills;
-using HandlebarsDotNet.ValueProviders;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -11,41 +9,51 @@ namespace HandlebarsDotNet.Compiler
     {
         private static readonly ChainSegment[] BlockParamsVariables = ArrayEx.Empty<ChainSegment>();
 
-        public static void PlainHelper(BindingContext context, object value,
-            Action<BindingContext, TextWriter, object> body, Action<BindingContext, TextWriter, object> inverse)
+        public static void PlainHelper(
+            BindingContext context, 
+            EncodedTextWriter writer,
+            object value,
+            TemplateDelegate body, 
+            TemplateDelegate inverse
+        )
         {
-            RenderSection(value, context, body, inverse);
+            RenderSection(value, context, writer, body, inverse);
         }
         
-        private static void RenderSection(
-            object value, 
+        private static void RenderSection(object value,
             BindingContext context,
-            Action<BindingContext, TextWriter, object> body, 
-            Action<BindingContext, TextWriter, object> inversion
-        )
+            EncodedTextWriter writer,
+            TemplateDelegate body,
+            TemplateDelegate inversion)
         {
             switch (value)
             {
                 case bool boolValue when boolValue:
-                    body(context, context.TextWriter, context);
+                    body(writer, context);
                     return;
                 
                 case null:
                 case object _ when HandlebarsUtils.IsFalsyOrEmpty(value):
-                    inversion(context, context.TextWriter, context);
+                    inversion(writer, context);
                     return;
 
                 case string _:
-                    body(context, context.TextWriter, value);
+                {
+                    using var frame = context.CreateFrame(value);
+                    body(writer, frame);
                     return;
+                }
                 
                 case IEnumerable enumerable:
-                    Iterator.Iterate(context, BlockParamsVariables, enumerable, body, inversion);
+                    Iterator.Iterate(context, writer, BlockParamsVariables, enumerable, body, inversion);
                     break;
                 
                 default:
-                    body(context, context.TextWriter, value);
+                {
+                    using var frame = context.CreateFrame(value);
+                    body(writer, frame);
                     break;
+                }
             }
         }
     }

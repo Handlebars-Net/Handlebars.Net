@@ -5,7 +5,7 @@ using HandlebarsDotNet.Compiler.Structure.Path;
 
 namespace HandlebarsDotNet.ValueProviders
 {
-    public readonly struct DataValues
+    public readonly ref struct DataValues
     {
         private readonly BindingContext _context;
         private readonly EntryIndex<ChainSegment>[] _wellKnownVariables;

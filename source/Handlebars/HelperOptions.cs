@@ -1,78 +1,104 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
+using System.Runtime.CompilerServices;
+using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.Compiler;
 using HandlebarsDotNet.Compiler.Structure.Path;
-using HandlebarsDotNet.ValueProviders;
 
 namespace HandlebarsDotNet
 {
     /// <summary>
     /// Contains properties accessible withing <see cref="HandlebarsBlockHelper"/> function 
     /// </summary>
-    public sealed class HelperOptions : IDisposable
+    public readonly ref struct HelperOptions
     {
-        private static readonly InternalObjectPool<HelperOptions> Pool = new InternalObjectPool<HelperOptions>(new Policy());
+        private readonly FixedSizeDictionary<string, object, StringComparer> _extensions;
         
-        private readonly Dictionary<string, object> _extensions;
+        internal readonly TemplateDelegate OriginalTemplate;
+        internal readonly TemplateDelegate OriginalInverse;
+        
+        public readonly BindingContext Frame;
+        
+        public readonly ChainSegment[] BlockParams;
 
-        internal static HelperOptions Create(Action<BindingContext, TextWriter, object> template,
-            Action<BindingContext, TextWriter, object> inverse,
+        internal HelperOptions(
+            TemplateDelegate template,
+            TemplateDelegate inverse,
             ChainSegment[] blockParamsValues,
-            BindingContext bindingContext)
+            BindingContext frame
+        )
         {
-            var item = Pool.Get();
-
-            item.OriginalTemplate = template;
-            item.OriginalInverse = inverse;
+            _extensions = frame.Extensions;
             
-            item.BindingContext = bindingContext;
-            item.Configuration = bindingContext.Configuration;
-            item.BlockParams = blockParamsValues;
-            item.Data = new DataValues(bindingContext);
-
-            return item;
+            OriginalTemplate = template;
+            OriginalInverse = inverse;
+            Frame = frame;
+            BlockParams = blockParamsValues;
         }
         
-        private HelperOptions()
-        {
-            _extensions = new Dictionary<string, object>(7);
-            Template = (writer, o) => OriginalTemplate(BindingContext, writer, o);
-            Inverse = (writer, o) => OriginalInverse(BindingContext, writer, o);
-        }
-
         /// <summary>
         /// BlockHelper body
         /// </summary>
-        public Action<TextWriter, object> Template { get; }
-
-        /// <summary>
-        /// BlockHelper <c>else</c> body
-        /// </summary>
-        public Action<TextWriter, object> Inverse { get; }
-
-        public ChainSegment[] BlockParams { get; private set; }
-
-        public DataValues Data { get; private set; }
-
-        internal ICompiledHandlebarsConfiguration Configuration { get; private set; }
-        internal BindingContext BindingContext { get; private set; }
-        internal Action<BindingContext, TextWriter, object> OriginalTemplate { get; private set; }
-        internal Action<BindingContext, TextWriter, object> OriginalInverse { get; private set; }
-        
-        public BindingContext CreateFrame(object value = null)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Template(in EncodedTextWriter writer, object context)
         {
-            return BindingContext.CreateFrame(value);
+            if (context is BindingContext bindingContext)
+            {
+                OriginalTemplate(writer, bindingContext);
+                return;
+            }
+                
+            using var frame = Frame.CreateFrame(context);
+            OriginalTemplate(writer, frame);
         }
         
+        /// <summary>
+        /// BlockHelper body
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Template(in EncodedTextWriter writer, BindingContext context)
+        {
+            OriginalTemplate(writer, context);
+        }
+        
+        /// <summary>
+        /// BlockHelper body
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Inverse(in EncodedTextWriter writer, object context)
+        {
+            if (context is BindingContext bindingContext)
+            {
+                OriginalInverse(writer, bindingContext);
+                return;
+            }
+                
+            using var frame = Frame.CreateFrame(context);
+            OriginalInverse(writer, frame);
+        }
+        
+        /// <summary>
+        /// BlockHelper body
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Inverse(in EncodedTextWriter writer, BindingContext context)
+        {
+            OriginalInverse(writer, context);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public BindingContext CreateFrame(object value = null) => Frame.CreateFrame(value);
+
         /// <summary>
         /// Provides access to dynamic options
         /// </summary>
         /// <param name="property"></param>
         public object this[string property]
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _extensions.TryGetValue(property, out var value) ? value : null;
-            internal set => _extensions[property] = value;
+            
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            internal set => _extensions.AddOrReplace(property, value, out _);
         }
 
         /// <summary>
@@ -81,27 +107,8 @@ namespace HandlebarsDotNet
         /// <param name="property"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T GetValue<T>(string property) => (T) this[property];
-
-        public void Dispose() => Pool.Return(this);
-
-        private class Policy : IInternalObjectPoolPolicy<HelperOptions>
-        {
-            public HelperOptions Create() => new HelperOptions();
-
-            public bool Return(HelperOptions item)
-            {
-                item._extensions.Clear();
-
-                item.Configuration = null;
-                item.BindingContext = null;
-                item.BlockParams = null;
-                item.OriginalInverse = null;
-                item.OriginalTemplate = null;
-
-                return true;
-            }
-        }
     }
 }
 

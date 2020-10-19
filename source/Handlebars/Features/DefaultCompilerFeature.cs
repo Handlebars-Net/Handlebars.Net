@@ -63,7 +63,10 @@ namespace HandlebarsDotNet.Features
                 var lambda = Expression.Lambda(expression.Body, parameters);
                 var compiledLambda = lambda.Compile();
                 
-                var outerParameters = expression.Parameters.Select(o => Expression.Parameter(o.Type, o.Name)).ToArray();
+                var outerParameters = expression.Parameters
+                    .Select(o => Expression.Parameter(o.IsByRef ? o.Type.MakeByRefType() : o.Type, o.Name))
+                    .ToArray();
+                
                 var store = Arg(templateClosure).Member(o => o.Store);
                 var parameterExpressions = new[] { store.Expression }.Concat(outerParameters);
                 var invocationExpression = Expression.Invoke(Expression.Constant(compiledLambda), parameterExpressions);

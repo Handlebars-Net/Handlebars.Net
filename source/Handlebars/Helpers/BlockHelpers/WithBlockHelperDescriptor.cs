@@ -1,15 +1,14 @@
-using System.IO;
 using HandlebarsDotNet.ValueProviders;
 
 namespace HandlebarsDotNet.Helpers.BlockHelpers
 {
     internal sealed class WithBlockHelperDescriptor : BlockHelperDescriptor
     {
-        public WithBlockHelperDescriptor() : base("with")
+        public WithBlockHelperDescriptor(ICompiledHandlebarsConfiguration configuration) : base(configuration.PathInfoStore.GetOrAdd("with"))
         {
         }
 
-        public override void Invoke(TextWriter output, HelperOptions options, object context, params object[] arguments)
+        public override void Invoke(in EncodedTextWriter output, in HelperOptions options, object context, in Arguments arguments)
         {
             if (arguments.Length != 1)
             {

@@ -16,7 +16,7 @@ namespace HandlebarsDotNet.Helpers.BlockHelpers
             _helper = helper;
         }
 
-        public override object Invoke(HelperOptions options, object context, params object[] arguments)
+        public override object Invoke(in HelperOptions options, object context, in Arguments arguments)
         {
             return _helper(options, context, arguments);
         }

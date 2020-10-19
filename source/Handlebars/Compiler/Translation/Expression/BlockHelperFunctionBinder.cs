@@ -1,13 +1,12 @@
-﻿using System;
-using System.IO;
+using System;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using Expressions.Shortcuts;
 using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.Helpers.BlockHelpers;
 using HandlebarsDotNet.Polyfills;
-using HandlebarsDotNet.ValueProviders;
 using static Expressions.Shortcuts.ExpressionShortcuts;
 
 namespace HandlebarsDotNet.Compiler
@@ -30,6 +29,8 @@ namespace HandlebarsDotNet.Compiler
 
         protected override Expression VisitBlockHelperExpression(BlockHelperExpression bhex)
         {
+            var writer = Arg<EncodedTextWriter>(CompilationContext.EncodedWriter);
+            
             var isInlinePartial = bhex.HelperName == "#*inline";
             
             var pathInfo = CompilationContext.Configuration.PathInfoStore.GetOrAdd(bhex.HelperName);
@@ -60,7 +61,10 @@ namespace HandlebarsDotNet.Compiler
                 var resolver = helperResolvers[index];
                 if (!resolver.TryResolveBlockHelper(helperName, out var resolvedDescriptor)) continue;
 
-                return Bind(resolvedDescriptor);
+                descriptor = new StrongBox<BlockHelperDescriptorBase>(resolvedDescriptor);
+                blockHelpers.Add(pathInfo, descriptor);
+                
+                return BindByRef(descriptor);
             }
             
             var lateBindBlockHelperDescriptor = new LateBindBlockHelperDescriptor(pathInfo, CompilationContext.Configuration);
@@ -80,76 +84,64 @@ namespace HandlebarsDotNet.Compiler
                 return Arg(parameters);
             }
             
-            ExpressionContainer<object[]> CreateArguments()
+            ExpressionContainer<Arguments> CreateArguments()
             {
                 var args = bhex.Arguments
                     .ApplyOn((PathExpression pex) => pex.Context = PathExpression.ResolutionContext.Parameter)
-                    .Select(o => FunctionBuilder.Reduce(o, CompilationContext));
-            
-                return Array<object>(args);
+                    .Select(o => FunctionBuilder.Reduce(o, CompilationContext))
+                    .ToArray();
+
+                if (args.Length == 0)
+                {
+                    return Arg(Arguments.Empty);
+                }
+                
+                var argumentTypes = new Type[args.Length];
+                for (var i = 0; i < argumentTypes.Length; i++) argumentTypes[i] = typeof(object);
+                var constructor = typeof(Arguments).GetConstructor(argumentTypes);
+                
+                if (constructor == null) // cannot handle by direct args pass
+                {
+                    var arr = Array<object>(args);
+                    return New(() => new Arguments(arr));
+                }
+                
+                return Arg<Arguments>(Expression.New(constructor, args));
             }
             
-            Action<BindingContext, TextWriter, object> Compile(Expression expression)
+            TemplateDelegate Compile(Expression expression)
             {
                 var blockExpression = (BlockExpression) expression;
-                return FunctionBuilder.CompileCore(blockExpression.Expressions, CompilationContext.Configuration);
+                return FunctionBuilder.Compile(blockExpression.Expressions, CompilationContext.Configuration);
             }
 
-            Expression BindByRef(StrongBox<BlockHelperDescriptorBase> value)
+            Expression BindByRef(StrongBox<BlockHelperDescriptorBase> helperBox)
             {
-                return direction switch
-                {
-                    BlockHelperDirection.Direct => Call(() =>
-                        BlockHelperCallBindingByRef(bindingContext, context, blockParams, direct, inverse, arguments, value)),
-                    
-                    BlockHelperDirection.Inverse => Call(() =>
-                        BlockHelperCallBindingByRef(bindingContext, context, blockParams, inverse, direct, arguments, value)),
-                    
-                    _ => throw new HandlebarsCompilerException("Helper referenced with unknown prefix", readerContext)
-                };
-            }
-            
-            Expression Bind(BlockHelperDescriptorBase value)
-            {
-                return direction switch
-                {
-                    BlockHelperDirection.Direct => Call(() =>
-                        BlockHelperCallBinding(bindingContext, context, blockParams, direct, inverse, arguments, value)),
-                    
-                    BlockHelperDirection.Inverse => Call(() =>
-                        BlockHelperCallBinding(bindingContext, context, blockParams, inverse, direct, arguments, value)),
-                    
-                    _ => throw new HandlebarsCompilerException("Helper referenced with unknown prefix", readerContext)
-                };
-            }
-        }
+                var helperOptionsCtor = typeof(HelperOptions)
+                    .GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+                    .Single(o => o.GetParameters().Length > 0);
+                
+                var methodInfo = typeof(BlockHelperDescriptorBase).GetMethod(nameof(BlockHelperDescriptorBase.Invoke));
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void BlockHelperCallBindingByRef(
-            BindingContext bindingContext, 
-            object context,
-            ChainSegment[] blockParamsVariables,
-            Action<BindingContext, TextWriter, object> direct,
-            Action<BindingContext, TextWriter, object> inverse,
-            object[] arguments,
-            StrongBox<BlockHelperDescriptorBase> helper)
-        {
-            using var helperOptions = HelperOptions.Create(direct, inverse, blockParamsVariables, bindingContext);
-            helper.Value.Invoke(bindingContext.TextWriter, helperOptions, context, arguments);
-        }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void BlockHelperCallBinding(
-            BindingContext bindingContext, 
-            object context,
-            ChainSegment[] blockParamsVariables,
-            Action<BindingContext, TextWriter, object> direct,
-            Action<BindingContext, TextWriter, object> inverse,
-            object[] arguments,
-            BlockHelperDescriptorBase helper)
-        {
-            using var helperOptions = HelperOptions.Create(direct, inverse, blockParamsVariables, bindingContext);
-            helper.Invoke(bindingContext.TextWriter, helperOptions, context, arguments);
+                var inst = Arg(helperBox).Member(o => o.Value);
+
+                switch (direction)
+                {
+                    case BlockHelperDirection.Inverse:
+                    {
+                        var helperOptions = Expression.New(helperOptionsCtor, Expression.Constant(inverse), Expression.Constant(direct), blockParams, bindingContext);
+                        return Expression.Call(inst, methodInfo, writer, helperOptions, context, arguments);
+                    }
+                    
+                    case BlockHelperDirection.Direct:
+                    {
+                        var helperOptions = Expression.New(helperOptionsCtor, Expression.Constant(direct), Expression.Constant(inverse), blockParams, bindingContext);
+                        return Expression.Call(inst, methodInfo, writer, helperOptions, context, arguments);
+                    }
+                    default:
+                        throw new HandlebarsCompilerException("Helper referenced with unknown prefix", readerContext);
+                }
+            }
         }
     }
 }

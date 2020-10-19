@@ -111,7 +111,7 @@ namespace HandlebarsDotNet.Test.Collections
             {
                 var key = keys[i];
                 var value = values[i];
-                var index = indexes[i];
+                destination.TryGetIndex(key, out var index);
                 
                 Assert.True(destination.ContainsKey(index));
                 Assert.True(destination.ContainsKey(key));

@@ -1,4 +1,9 @@
-﻿using System.Globalization;
+﻿using System;
+using System.IO;
+using System.Runtime.CompilerServices;
+using System.Text;
+using HandlebarsDotNet.Compiler.Lexer;
+using HandlebarsDotNet.StringUtils;
 
 namespace HandlebarsDotNet
 {
@@ -8,75 +13,65 @@ namespace HandlebarsDotNet
     /// </summary>
     public class HtmlEncoder : ITextEncoder
     {
-        /// <inheritdoc />
-        public string Encode(string text)
+        public HtmlEncoder(IFormatProvider provider) => FormatProvider = provider;
+
+        public bool ShouldEncode(char c)
         {
-            if (string.IsNullOrEmpty(text))
-                return string.Empty;
-
-
-            // Detect if we need to allocate a stringbuilder and new string
-            for (var i = 0; i < text.Length; i++)
-            {
-                switch (text[i])
-                {
-                    case '"':
-                    case '&':
-                    case '<':
-                    case '>':
-                        return ReallyEncode(text, i);
-                    default:
-                        if (text[i] > 159)
-                        {
-                            return ReallyEncode(text, i);
-                        }
-                        else
-
-                            break;
-                }
-            }
-
-            return text;
+            return c == '"'
+                   || c == '&'
+                   || c == '>'
+                   || c == '<'
+                   || c > 159;
         }
 
-        private static string ReallyEncode(string text, int i)
+        public IFormatProvider FormatProvider { get; }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Encode(StringBuilder text, TextWriter target)
         {
-            using (var container = StringBuilderPool.Shared.Use())
+            if(text == null || text.Length == 0) return;
+            
+            EncodeImpl(new StringBuilderWrapper(text), target);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Encode(string text, TextWriter target)
+        {
+            if(string.IsNullOrEmpty(text)) return;
+            
+            EncodeImpl(new StringWrapper(text), target);
+        }
+        
+        private static void EncodeImpl<T>(T text, TextWriter target) where T: IStringWrapper
+        {
+            for (var i = 0; i < text.Count; i++)
             {
-                var sb = container.Value;
-                sb.Append(text, 0, i);
-                for (; i < text.Length; i++)
+                var value = text[i];
+                switch (value)
                 {
-                    switch (text[i])
-                    {
-                        case '"':
-                            sb.Append("&quot;");
-                            break;
-                        case '&':
-                            sb.Append("&amp;");
-                            break;
-                        case '<':
-                            sb.Append("&lt;");
-                            break;
-                        case '>':
-                            sb.Append("&gt;");
-                            break;
+                    case '"':
+                        target.Write("&quot;");
+                        break;
+                    case '&':
+                        target.Write("&amp;");
+                        break;
+                    case '<':
+                        target.Write("&lt;");
+                        break;
+                    case '>':
+                        target.Write("&gt;");
+                        break;
 
-                        default:
-                            if (text[i] > 159)
-                            {
-                                sb.Append("&#");
-                                sb.Append(((int)text[i]).ToString(CultureInfo.InvariantCulture));
-                                sb.Append(";");
-                            }
-                            else
-                                sb.Append(text[i]);
-
-                            break;
-                    }
+                    default:
+                        if (value > 159)
+                        {
+                            target.Write("&#");
+                            target.Write((int)value);
+                            target.Write(";");
+                        }
+                        else target.Write(value);
+                        break;
                 }
-
-                return sb.ToString();
             }
         }
     }

@@ -1,3 +1,4 @@
+using HandlebarsDotNet.Compiler;
 using HandlebarsDotNet.Compiler.Structure.Path;
 
 namespace HandlebarsDotNet.Helpers
@@ -12,7 +13,7 @@ namespace HandlebarsDotNet.Helpers
         public DelegateReturnHelperDescriptor(string name, HandlebarsReturnHelper helper) : base(name) 
             => _helper = helper;
 
-        public override object Invoke(object context, params object[] arguments) 
+        public override object Invoke(object context, in Arguments arguments) 
             => _helper(context, arguments);
     }
 }

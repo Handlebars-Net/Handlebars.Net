@@ -21,9 +21,10 @@ namespace HandlebarsDotNet.Compiler
         {
             if (!(sex.Body is PathExpression)) return Visit(sex.Body);
             
-            var context = Arg<BindingContext>(CompilationContext.BindingContext);
+            var writer = Arg<EncodedTextWriter>(CompilationContext.EncodedWriter);
+            
             var value = Arg<object>(Visit(sex.Body));
-            return context.Call(o => o.TextWriter.Write(value));
+            return writer.Call(o => o.Write(value));
         }
 
         protected override Expression VisitPathExpression(PathExpression pex)
@@ -53,7 +54,7 @@ namespace HandlebarsDotNet.Compiler
                 }
             }
 
-            var argumentsArg = Arg(ArrayEx.Empty<object>());
+            var argumentsArg = Arg(Arguments.Empty);
             return context.Call(o => helper.Value.ReturnInvoke(o, o.Value, argumentsArg));
         }
     }

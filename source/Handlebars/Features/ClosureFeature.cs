@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Expressions.Shortcuts;
+using HandlebarsDotNet.Helpers;
 
 namespace HandlebarsDotNet.Features
 {
@@ -110,7 +112,7 @@ namespace HandlebarsDotNet.Features
                             return node;
 
                         default:
-                            if (node.Type.GetTypeInfo().IsPrimitive) return node;
+                            if (node.Type.GetTypeInfo().IsValueType) return node;
                             break;
                     }
 
@@ -135,6 +137,11 @@ namespace HandlebarsDotNet.Features
                 {
                     if (!(node.Expression is ConstantExpression constantExpression)) return base.VisitMember(node);
 
+                    if (constantExpression.Value.GetType().IsAssignableToGenericType(typeof(StrongBox<>), out _))
+                    {
+                        return node;
+                    }
+                    
                     switch (node.Member)
                     {
                         case PropertyInfo property:

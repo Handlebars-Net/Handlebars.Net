@@ -17,11 +17,6 @@ namespace HandlebarsDotNet.Test.ViewEngine
             var renderView = handlebars.CompileView("ViewEngine/Casper-master/index.hbs");
             var output = renderView(new
             {
-                blog = new
-                {
-                    url = "http://someblog.com",
-                    title = "This is the blog title"
-                },
                 posts = new[]
                 {
                     new
@@ -30,6 +25,13 @@ namespace HandlebarsDotNet.Test.ViewEngine
                         image = "/someimage.png",
                         post_class = "somepostclass"
                     }
+                }
+            }, new
+            {
+                blog = new
+                {
+                    url = "http://someblog.com",
+                    title = "This is the blog title"
                 }
             });
             var cq = CsQuery.CQ.CreateDocument(output);

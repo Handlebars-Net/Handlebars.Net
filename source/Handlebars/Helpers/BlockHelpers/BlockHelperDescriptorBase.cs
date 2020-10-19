@@ -1,4 +1,4 @@
-using System.IO;
+using HandlebarsDotNet.Compiler;
 using HandlebarsDotNet.Compiler.Structure.Path;
 
 namespace HandlebarsDotNet.Helpers.BlockHelpers
@@ -13,6 +13,6 @@ namespace HandlebarsDotNet.Helpers.BlockHelpers
         
         public abstract HelperType Type { get; }
         
-        public abstract void Invoke(TextWriter output, HelperOptions options, object context, params object[] arguments);
+        public abstract void Invoke(in EncodedTextWriter output, in HelperOptions options, object context, in Arguments arguments);
     }
 }

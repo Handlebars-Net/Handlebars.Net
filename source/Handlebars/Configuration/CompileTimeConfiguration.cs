@@ -20,7 +20,8 @@ namespace HandlebarsDotNet
             new BuildInHelpersFeatureFactory(),
             new ClosureFeatureFactory(),
             new DefaultCompilerFeatureFactory(),
-            new MissingHelperFeatureFactory()
+            new MissingHelperFeatureFactory(),
+            new ExpressionOptimizerFeatureFactory()
         };
 
         /// <summary>

@@ -10,9 +10,9 @@ namespace HandlebarsDotNet.Helpers
         {
         }
 
-        internal override object ReturnInvoke(BindingContext bindingContext, object context, object[] arguments)
+        internal override object ReturnInvoke(BindingContext bindingContext, object context, in Arguments arguments)
         {
-            var nameArgument = arguments.Last();
+            var nameArgument = arguments[^1];
             if (arguments.Length > 1)
             {
                 throw new HandlebarsRuntimeException($"Template references a helper that cannot be resolved. Helper '{nameArgument}'");
@@ -22,6 +22,6 @@ namespace HandlebarsDotNet.Helpers
             return name.GetUndefinedBindingResult(bindingContext.Configuration);
         }
 
-        public override object Invoke(object context, params object[] arguments) => throw new NotSupportedException();
+        public override object Invoke(object context, in Arguments arguments) => throw new NotSupportedException();
     }
 }

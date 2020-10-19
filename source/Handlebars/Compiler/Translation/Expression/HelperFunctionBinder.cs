@@ -1,5 +1,7 @@
+using System;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using Expressions.Shortcuts;
 using HandlebarsDotNet.Helpers;
@@ -28,13 +30,10 @@ namespace HandlebarsDotNet.Compiler
             
             var helperName = pathInfo.TrimmedPath;
             var bindingContext = Arg<BindingContext>(CompilationContext.BindingContext);
-            var contextValue = bindingContext.Property(o => o.Value);
-            var textWriter = bindingContext.Property(o => o.TextWriter);
-            var arguments = hex.Arguments
-                .ApplyOn<Expression, PathExpression>(path => path.Context = PathExpression.ResolutionContext.Parameter)
-                .Select(o => FunctionBuilder.Reduce(o, CompilationContext));
+            var textWriter = Arg<EncodedTextWriter>(CompilationContext.EncodedWriter);
             
-            var args = Array<object>(arguments);
+            var contextValue = bindingContext.Property(o => o.Value);
+            var args = CreateArguments();
 
             var configuration = CompilationContext.Configuration;
             if (configuration.Helpers.TryGetValue(pathInfo, out var helper))
@@ -47,6 +46,8 @@ namespace HandlebarsDotNet.Compiler
                 var resolver = configuration.HelperResolvers[index];
                 if (resolver.TryResolveHelper(helperName, typeof(object), out var resolvedHelper))
                 {
+                    helper = new StrongBox<HelperDescriptorBase>(resolvedHelper);
+                    configuration.Helpers.Add(pathInfo, helper);
                     return Call(() => resolvedHelper.WriteInvoke(bindingContext, textWriter, contextValue, args));
                 }
             }
@@ -55,6 +56,31 @@ namespace HandlebarsDotNet.Compiler
             configuration.Helpers.Add(pathInfo, lateBindDescriptor);
             
             return Call(() => lateBindDescriptor.Value.WriteInvoke(bindingContext, textWriter, contextValue, args));
+            
+            ExpressionContainer<Arguments> CreateArguments()
+            {
+                var arguments = hex.Arguments
+                    .ApplyOn<Expression, PathExpression>(path => path.Context = PathExpression.ResolutionContext.Parameter)
+                    .Select(o => FunctionBuilder.Reduce(o, CompilationContext))
+                    .ToArray();
+
+                if (arguments.Length == 0)
+                {
+                    return Arg(Arguments.Empty);
+                }
+                
+                var argumentTypes = new Type[arguments.Length];
+                for (var i = 0; i < argumentTypes.Length; i++) argumentTypes[i] = typeof(object);
+                var constructor = typeof(Arguments).GetConstructor(argumentTypes);
+                
+                if (constructor == null) // cannot handle by direct args pass
+                {
+                    var arr = Array<object>(arguments);
+                    return New(() => new Arguments(arr));
+                }
+                
+                return Arg<Arguments>(Expression.New(constructor, arguments));
+            }
         }
     }
 }

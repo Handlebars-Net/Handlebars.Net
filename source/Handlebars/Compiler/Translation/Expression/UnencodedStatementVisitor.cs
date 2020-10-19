@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using Expressions.Shortcuts;
 using static Expressions.Shortcuts.ExpressionShortcuts;
 
 namespace HandlebarsDotNet.Compiler
@@ -16,8 +17,8 @@ namespace HandlebarsDotNet.Compiler
         {
             if (!sex.IsEscaped)
             {
-                var context = Arg<BindingContext>(CompilationContext.BindingContext);
-                var suppressEncoding = context.Property(o => o.SuppressEncoding);
+                var writer = Arg<EncodedTextWriter>(CompilationContext.EncodedWriter);
+                var suppressEncoding = writer.Property(o => o.SuppressEncoding);
                 
                 return Block(typeof(void))
                     .Line(suppressEncoding.Assign(true))

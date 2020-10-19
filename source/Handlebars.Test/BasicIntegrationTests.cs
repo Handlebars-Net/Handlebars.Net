@@ -314,6 +314,7 @@ false
         public void AliasedPropertyOnArray(IHandlebars handlebars)
         {
             var source = "Array is {{ names.count }} item(s) long";
+            handlebars.Configuration.UseCollectionMemberAliasProvider();
             var template = handlebars.Compile(source);
             var data = new
             {
@@ -345,6 +346,7 @@ false
         public void AliasedPropertyOnList(IHandlebars handlebars)
         {
             var source = "Array is {{ names.Length }} item(s) long";
+            handlebars.Configuration.UseCollectionMemberAliasProvider();
             var template = handlebars.Compile(source);
             var data = new
             {
@@ -430,6 +432,25 @@ false
             };
             var result = template(data);
             Assert.Equal("Hello, my good friend Erik!", result);
+        }
+        
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void GlobalDataPropagation(IHandlebars handlebars)
+        {
+            var source = "{{#with input}}{{first}} {{@global1}} {{#with second}}{{third}} {{@global2}}{{/with}}{{/with}}";
+            var template = handlebars.Compile(source);
+            var data = new
+            {
+                input = new
+                {
+                    first = 1,
+                    second = new {
+                        third = 3
+                    }
+                }
+            };
+            var result = template(data, new { global1 = 2, global2 = 4 });
+            Assert.Equal("1 2 3 4", result);
         }
         
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
@@ -1853,7 +1874,7 @@ false
                         return false;
                     }
 
-                    object Helper(dynamic context, object[] arguments) => method.Invoke(arguments[0], arguments.Skip(1).ToArray());
+                    object Helper(object context, Arguments arguments) => method.Invoke(arguments[0], arguments.AsEnumerable().Skip(1).ToArray());
                     helper = new DelegateReturnHelperDescriptor(name, Helper);
                     return true;
                 }

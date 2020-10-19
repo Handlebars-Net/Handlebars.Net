@@ -1,5 +1,7 @@
 ﻿using System;
-using System.IO;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.ObjectDescriptors;
@@ -7,31 +9,48 @@ using HandlebarsDotNet.ValueProviders;
 
 namespace HandlebarsDotNet.Compiler
 {
+    [DebuggerTypeProxy(typeof(DebugProxy))]
     public sealed partial class BindingContext : IDisposable
     {
         internal readonly EntryIndex<ChainSegment>[] WellKnownVariables = new EntryIndex<ChainSegment>[8];
         
         private readonly DeferredValue<BindingContext, ObjectDescriptor> _objectDescriptor;
-        
+
         private BindingContext()
         {
-            InlinePartialTemplates = new CascadeDictionary<string, Action<TextWriter, object>>();
+            InlinePartialTemplates = new CascadeDictionary<string, Action<EncodedTextWriter, BindingContext>>();
             
+            RootDataObject = new FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer>(16, 7, ChainSegment.EqualityComparer);
             ContextDataObject = new FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer>(16, 7, ChainSegment.EqualityComparer);
             BlockParamsObject = new FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer>(16, 7, ChainSegment.EqualityComparer);
             
             _objectDescriptor = new DeferredValue<BindingContext, ObjectDescriptor>(this, context => ObjectDescriptor.Create(context.Value, context.Configuration));
-            
-            Data = new DataValues(this);
         }
         
+        internal FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer> RootDataObject { get; }
         internal FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer> ContextDataObject { get; }
         internal FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer> BlockParamsObject { get; }
 
+        internal void SetDataObject(object data)
+        {
+            if(data == null) return;
+            
+            var objectDescriptor = ObjectDescriptor.Create(data, Configuration);
+            var objectAccessor = new ObjectAccessor(data, objectDescriptor);
+
+            foreach (var property in objectAccessor.Properties)
+            {
+                var value = objectAccessor[property];
+                RootDataObject.AddOrReplace(property, value, out _);
+                ContextDataObject.AddOrReplace(property, value, out _);
+            }
+        }
+        
         private void Initialize()
         {
             Root = ParentContext?.Root ?? this;
             
+            if(!ReferenceEquals(Root, this)) Root.RootDataObject.CopyTo(ContextDataObject);
             ContextDataObject.AddOrReplace(ChainSegment.Root, Root.Value, out WellKnownVariables[(int) WellKnownVariable.Root]);
 
             if (ParentContext == null)
@@ -68,23 +87,15 @@ namespace HandlebarsDotNet.Compiler
             PopulateHash(dictionary, ParentContext.Value, Configuration);
         }
 
+        internal FixedSizeDictionary<string, object, StringComparer> Extensions { get; } = new FixedSizeDictionary<string, object, StringComparer>(8, 7, StringComparer.OrdinalIgnoreCase);
+
         internal string TemplatePath { get; private set; }
 
         internal ICompiledHandlebarsConfiguration Configuration { get; private set; }
         
-        internal EncodedTextWriter TextWriter { get; private set; }
+        internal CascadeDictionary<string, Action<EncodedTextWriter, BindingContext>> InlinePartialTemplates { get; }
 
-        internal CascadeDictionary<string, Action<TextWriter, object>> InlinePartialTemplates { get; }
-
-        internal Action<BindingContext, TextWriter, object> PartialBlockTemplate { get; private set; }
-        
-        public bool SuppressEncoding
-        {
-            get => TextWriter.SuppressEncoding;
-            set => TextWriter.SuppressEncoding = value;
-        }
-
-        public DataValues Data;
+        internal TemplateDelegate PartialBlockTemplate { get; private set; }
         
         public object Value { get; set; }
 
@@ -118,19 +129,20 @@ namespace HandlebarsDotNet.Compiler
                    || ContextDataObject.TryGetValue(segment, out value);
         }
 
-        internal BindingContext CreateChildContext(object value, Action<BindingContext, TextWriter, object> partialBlockTemplate = null)
+        internal BindingContext CreateChildContext(object value, TemplateDelegate partialBlockTemplate = null)
         {
-            return Create(Configuration, value ?? Value, TextWriter, this, TemplatePath, partialBlockTemplate ?? PartialBlockTemplate);
+            return Create(Configuration, value ?? Value, this, TemplatePath, partialBlockTemplate ?? PartialBlockTemplate);
         }
         
         internal BindingContext CreateChildContext()
         {
-            return Create(Configuration, null, TextWriter, this, TemplatePath, PartialBlockTemplate);
+            return Create(Configuration, null, this, TemplatePath, PartialBlockTemplate);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BindingContext CreateFrame(object value = null)
         {
-            return Create(Configuration, value, TextWriter, this, TemplatePath, PartialBlockTemplate);
+            return Create(Configuration, value, this, TemplatePath, PartialBlockTemplate);
         }
 
         private static void PopulateHash(HashParameterDictionary hash, object from, ICompiledHandlebarsConfiguration configuration)
@@ -146,6 +158,19 @@ namespace HandlebarsDotNet.Compiler
                 if (!accessor.TryGetValue(@from, segment, out var value)) continue;
                 hash[segment] = value;
             }
+        }
+        
+        internal class DebugProxy
+        {
+            private readonly BindingContext _context;
+
+            public DebugProxy(BindingContext context) => _context = context;
+
+            public object Value => _context.Value;
+            public object Parent => _context.ParentContext?.Value;
+            public object Root => _context.Root.Value;
+            public IReadOnlyDictionary<ChainSegment, object> Data => _context.ContextDataObject;
+            public IReadOnlyDictionary<ChainSegment, object> BlockParams => _context.BlockParamsObject;
         }
     }
 }

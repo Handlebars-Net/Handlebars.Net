@@ -1,12 +1,16 @@
 ﻿using System;
 using HandlebarsDotNet.Compiler;
 using System.Collections;
-using System.Linq;
 
 namespace HandlebarsDotNet
 {
     public static class HandlebarsUtils
     {
+        public static (int a, int b) Tr()
+        {
+            return (1, 2);
+        }
+        
         /// <summary>
         /// Implementation of JS's `==`
         /// </summary>
@@ -54,7 +58,7 @@ namespace HandlebarsDotNet
                 return true;
             }
 
-            return value is IEnumerable enumerable && !enumerable.OfType<object>().Any();
+            return value is IEnumerable enumerable && !enumerable.Any();
         }
 
         private static bool IsNumber(object value)

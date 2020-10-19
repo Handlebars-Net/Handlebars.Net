@@ -7,11 +7,14 @@ namespace HandlebarsDotNet.Compiler
         public CompilationContext(ICompiledHandlebarsConfiguration configuration)
         {
             Configuration = configuration;
-            BindingContext = Expression.Variable(typeof(BindingContext), "context");
+            BindingContext = Expression.Parameter(typeof(BindingContext), "context");
+            EncodedWriter = Expression.Parameter(typeof(EncodedTextWriter).MakeByRefType(), "writer");
         }
 
         public ICompiledHandlebarsConfiguration Configuration { get; }
 
         public ParameterExpression BindingContext { get; }
+        
+        public ParameterExpression EncodedWriter { get; }
     }
 }

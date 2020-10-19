@@ -10,7 +10,6 @@ using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.Features;
 using HandlebarsDotNet.Helpers;
 using HandlebarsDotNet.Helpers.BlockHelpers;
-using HandlebarsDotNet.MemberAliasProvider;
 using HandlebarsDotNet.ObjectDescriptors;
 
 namespace HandlebarsDotNet
@@ -24,7 +23,7 @@ namespace HandlebarsDotNet
             UnderlingConfiguration = configuration;
 
             HelperResolvers = new ObservableList<IHelperResolver>(configuration.HelperResolvers);
-            RegisteredTemplates = new ObservableDictionary<string, Action<TextWriter, object>>(configuration.RegisteredTemplates);
+            RegisteredTemplates = new ObservableDictionary<string, HandlebarsTemplate<TextWriter, object, object>>(configuration.RegisteredTemplates);
             PathInfoStore = _pathInfoStore = new PathInfoStore();
             ObjectDescriptorProvider = CreateObjectDescriptorProvider();
             AliasProviders = new ObservableList<IMemberAliasProvider>(UnderlingConfiguration.AliasProviders);
@@ -38,8 +37,6 @@ namespace HandlebarsDotNet
             
             CreateHelpersSubscription();
             CreateBlockHelpersSubscription();
-            
-            AliasProviders.Add(new CollectionMemberAliasProvider(this));
         }
 
         public HandlebarsConfiguration UnderlingConfiguration { get; }
@@ -63,7 +60,7 @@ namespace HandlebarsDotNet
         public IDictionary<PathInfo, StrongBox<HelperDescriptorBase>> Helpers { get; private set; }
         public IDictionary<PathInfo, StrongBox<BlockHelperDescriptorBase>> BlockHelpers { get; private set; }
         public IList<IHelperResolver> HelperResolvers { get; }
-        public IDictionary<string, Action<TextWriter, object>> RegisteredTemplates { get; }
+        public IDictionary<string, HandlebarsTemplate<TextWriter, object, object>> RegisteredTemplates { get; }
         
         private void CreateHelpersSubscription()
         {

@@ -1,6 +1,7 @@
 using System;
 using System.Linq.Expressions;
 using Expressions.Shortcuts;
+using static Expressions.Shortcuts.ExpressionShortcuts;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -21,46 +22,50 @@ namespace HandlebarsDotNet.Compiler
 
         protected override Expression VisitPartialExpression(PartialExpression pex)
         {
-            var bindingContext = ExpressionShortcuts.Arg<BindingContext>(CompilationContext.BindingContext);
+            var bindingContext = Arg<BindingContext>(CompilationContext.BindingContext);
+            var writer = Arg<EncodedTextWriter>(CompilationContext.EncodedWriter);
+            
             var partialBlockTemplate = pex.Fallback != null 
-                ? FunctionBuilder.CompileCore(new[] { pex.Fallback }, CompilationContext.Configuration) 
+                ? FunctionBuilder.Compile(new[] { pex.Fallback }, CompilationContext.Configuration) 
                 : null;
 
             if (pex.Argument != null || partialBlockTemplate != null)
             {
-                var value = ExpressionShortcuts.Arg<object>(FunctionBuilder.Reduce(pex.Argument, CompilationContext));
-                var partialTemplate = ExpressionShortcuts.Arg(partialBlockTemplate);
+                var value = Arg<object>(FunctionBuilder.Reduce(pex.Argument, CompilationContext));
+                var partialTemplate = Arg(partialBlockTemplate);
                 bindingContext = bindingContext.Call(o => o.CreateChildContext(value, partialTemplate));
             }
 
-            var partialName = ExpressionShortcuts.Cast<string>(pex.PartialName);
-            var configuration = ExpressionShortcuts.Arg(CompilationContext.Configuration);
-            return ExpressionShortcuts.Call(() =>
-                InvokePartialWithFallback(partialName, bindingContext, (ICompiledHandlebarsConfiguration) configuration)
+            var partialName = Cast<string>(pex.PartialName);
+            var configuration = Arg(CompilationContext.Configuration);
+            return Call(() =>
+                InvokePartialWithFallback(partialName, bindingContext, writer, (ICompiledHandlebarsConfiguration) configuration)
             );
         }
 
         private static void InvokePartialWithFallback(
             string partialName,
             BindingContext context,
+            EncodedTextWriter writer,
             ICompiledHandlebarsConfiguration configuration)
         {
-            if (InvokePartial(partialName, context, configuration)) return;
+            if (InvokePartial(partialName, context, writer, configuration)) return;
             if (context.PartialBlockTemplate == null)
             {
                 if (configuration.MissingPartialTemplateHandler == null)
                     throw new HandlebarsRuntimeException($"Referenced partial name {partialName} could not be resolved");
                 
-                configuration.MissingPartialTemplateHandler.Handle(configuration, partialName, context.TextWriter);
+                configuration.MissingPartialTemplateHandler.Handle(configuration, partialName, writer);
                 return;
             }
 
-            context.PartialBlockTemplate(context, context.TextWriter, context);
+            context.PartialBlockTemplate(writer, context);
         }
 
         private static bool InvokePartial(
             string partialName,
             BindingContext context,
+            EncodedTextWriter writer,
             ICompiledHandlebarsConfiguration configuration)
         {
             if (partialName.Equals(SpecialPartialBlockName))
@@ -70,14 +75,14 @@ namespace HandlebarsDotNet.Compiler
                     return false;
                 }
 
-                context.PartialBlockTemplate(context, context.TextWriter, context);
+                context.PartialBlockTemplate(writer, context);
                 return true;
             }
 
             //if we have an inline partial, skip the file system and RegisteredTemplates collection
             if (context.InlinePartialTemplates.TryGetValue(partialName, out var partial))
             {
-                partial(context.TextWriter, context);
+                partial(writer, context);
                 return true;
             }
             
@@ -95,7 +100,8 @@ namespace HandlebarsDotNet.Compiler
 
             try
             {
-                configuration.RegisteredTemplates[partialName](context.TextWriter, context);
+                using var textWriter = writer.CreateWrapper();
+                configuration.RegisteredTemplates[partialName](textWriter, context);
                 return true;
             }
             catch (Exception exception)

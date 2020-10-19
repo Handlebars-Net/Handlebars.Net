@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Collections;
 
@@ -60,10 +61,16 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
         public static ChainSegment Parent { get; } = Create(nameof(Parent), WellKnownVariable.Parent, true);
         public static ChainSegment This { get; } = Create(nameof(This), WellKnownVariable.This);
         
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private readonly object _lock = new object();
 
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private readonly int _hashCode;
+        
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private readonly string _value;
+        
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private UndefinedBindingResult _undefinedBindingResult;
         
         /// <summary>
@@ -193,6 +200,8 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
         
         public struct ChainSegmentEqualityComparer : IEqualityComparer<ChainSegment>
         {
+            [DebuggerStepThrough]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool Equals(ChainSegment x, ChainSegment y)
             {
                 if (ReferenceEquals(x, y)) return true;
@@ -202,6 +211,8 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
                 return x._hashCode == y._hashCode && x.IsThis == y.IsThis && x.LowerInvariant == y.LowerInvariant;
             }
 
+            [DebuggerStepThrough]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public int GetHashCode(ChainSegment obj) => obj._hashCode;
         }
     }

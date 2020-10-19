@@ -13,7 +13,7 @@ namespace HandlebarsDotNet
 {
     public interface IHandlebarsTemplateRegistrations
     {
-        IDictionary<string, Action<TextWriter, object>> RegisteredTemplates { get; }
+        IDictionary<string, HandlebarsTemplate<TextWriter, object, object>> RegisteredTemplates { get; }
         ViewEngineFileSystem FileSystem { get; }
     }
     
