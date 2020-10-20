@@ -49,7 +49,7 @@ namespace HandlebarsDotNet.Compiler
             var readerContext = bhex.Context;
             var direct = Compile(bhex.Body);
             var inverse = Compile(bhex.Inversion);
-            var args = CreateArguments();
+            var args = FunctionBinderHelpers.CreateArguments(bhex.Arguments, CompilationContext);
             
             var helperName = pathInfo.TrimmedPath;
             var direction = bhex.IsRaw || pathInfo.IsBlockHelper ? BlockHelperDirection.Direct : BlockHelperDirection.Inverse;
@@ -89,42 +89,6 @@ namespace HandlebarsDotNet.Compiler
                 }
 
                 return Arg(parameters);
-            }
-            
-            ExpressionContainer<Arguments> CreateArguments()
-            {
-                var arguments = bhex.Arguments
-                    .ApplyOn((PathExpression pex) => pex.Context = PathExpression.ResolutionContext.Parameter)
-                    .Select(o => FunctionBuilder.Reduce(o, CompilationContext))
-                    .ToArray();
-
-                if (arguments.Length == 0)
-                {
-                    return Arg(Arguments.Empty);
-                }
-                
-                var constructor = ArgumentsConstructorsMap.GetOrAdd(arguments.Length, (i, d) =>
-                {
-                    return new DeferredValue<Expression[], ConstructorInfo>(d, o =>
-                    {
-                        var objectType = typeof(object);
-                        var argumentTypes = new Type[o.Length];
-                        for (var index = 0; index < argumentTypes.Length; index++)
-                        {
-                            argumentTypes[index] = objectType;
-                        }
-
-                        return typeof(Arguments).GetConstructor(argumentTypes);
-                    });
-                }, arguments).Value;
-                
-                if (constructor == null) // cannot handle by direct args pass
-                {
-                    var arr = Array<object>(arguments);
-                    return New(() => new Arguments(arr));
-                }
-                
-                return Arg<Arguments>(Expression.New(constructor, arguments));
             }
             
             TemplateDelegate Compile(Expression expression)
