@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace HandlebarsDotNet.Compiler
@@ -33,17 +34,18 @@ namespace HandlebarsDotNet.Compiler
         {
             try
             {
-                if (!expressions.Any())
+                var enumerable = expressions as Expression[] ?? expressions.ToArray();
+                if (!enumerable.Any())
                 {
                     return EmptyLambda;
                 }
-                if (expressions.IsOneOf<Expression, DefaultExpression>())
+                if (enumerable.IsOneOf<Expression, DefaultExpression>())
                 {
                     return EmptyLambda;
                 }
                 
                 var context = new CompilationContext(configuration);
-                var expression = (Expression) Expression.Block(expressions);
+                var expression = (Expression) Expression.Block(enumerable);
                 expression = Reduce(expression, context);
 
                 return ContextBinder.Bind(context, expression);

@@ -16,7 +16,12 @@ namespace HandlebarsDotNet.Compiler
     internal class BlockHelperFunctionBinder : HandlebarsExpressionVisitor
     {
         private static readonly LookupSlim<int, DeferredValue<Expression[], ConstructorInfo>> ArgumentsConstructorsMap = new LookupSlim<int, DeferredValue<Expression[], ConstructorInfo>>();
-        
+        private static readonly MethodInfo HelperInvokeMethodInfo = typeof(BlockHelperDescriptorBase).GetMethod(nameof(BlockHelperDescriptorBase.Invoke));
+
+        private static readonly ConstructorInfo HelperOptionsCtor = typeof(HelperOptions)
+            .GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+            .Single(o => o.GetParameters().Length > 0);
+
         private enum BlockHelperDirection { Direct, Inverse }
 
         private CompilationContext CompilationContext { get; }
@@ -33,8 +38,6 @@ namespace HandlebarsDotNet.Compiler
 
         protected override Expression VisitBlockHelperExpression(BlockHelperExpression bhex)
         {
-            var writer = Arg<EncodedTextWriter>(CompilationContext.EncodedWriter);
-            
             var isInlinePartial = bhex.HelperName == "#*inline";
             
             var pathInfo = CompilationContext.Configuration.PathInfoStore.GetOrAdd(bhex.HelperName);
@@ -132,30 +135,19 @@ namespace HandlebarsDotNet.Compiler
 
             Expression BindByRef(StrongBox<BlockHelperDescriptorBase> helperBox)
             {
-                var helperOptionsCtor = typeof(HelperOptions)
-                    .GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
-                    .Single(o => o.GetParameters().Length > 0);
-                
-                var methodInfo = typeof(BlockHelperDescriptorBase).GetMethod(nameof(BlockHelperDescriptorBase.Invoke));
+                var writer = Arg<EncodedTextWriter>(CompilationContext.EncodedWriter);
+                var helper = Arg(helperBox).Member(o => o.Value);
 
-                var inst = Arg(helperBox).Member(o => o.Value);
-
-                switch (direction)
+                var inverseConstant = Expression.Constant(inverse);
+                var directConstant = Expression.Constant(direct);
+                var helperOptions = direction switch
                 {
-                    case BlockHelperDirection.Inverse:
-                    {
-                        var helperOptions = Expression.New(helperOptionsCtor, Expression.Constant(inverse), Expression.Constant(direct), blockParams, bindingContext);
-                        return Expression.Call(inst, methodInfo, writer, helperOptions, context, args);
-                    }
-                    
-                    case BlockHelperDirection.Direct:
-                    {
-                        var helperOptions = Expression.New(helperOptionsCtor, Expression.Constant(direct), Expression.Constant(inverse), blockParams, bindingContext);
-                        return Expression.Call(inst, methodInfo, writer, helperOptions, context, args);
-                    }
-                    default:
-                        throw new HandlebarsCompilerException("Helper referenced with unknown prefix", readerContext);
-                }
+                    BlockHelperDirection.Inverse => Expression.New(HelperOptionsCtor, inverseConstant, directConstant, blockParams, bindingContext),
+                    BlockHelperDirection.Direct => Expression.New(HelperOptionsCtor, directConstant, inverseConstant, blockParams, bindingContext),
+                    _ => throw new HandlebarsCompilerException("Helper referenced with unknown prefix", readerContext)
+                };
+
+                return Expression.Call(helper, HelperInvokeMethodInfo, writer, helperOptions, context, args);
             }
         }
     }

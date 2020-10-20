@@ -4,16 +4,13 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Expressions.Shortcuts;
-using HandlebarsDotNet.Helpers;
+using static Expressions.Shortcuts.ExpressionShortcuts;
 
 namespace HandlebarsDotNet.Features
 {
     internal class ClosureFeatureFactory : IFeatureFactory
     {
-        public IFeature CreateFeature()
-        {
-            return new ClosureFeature();
-        }
+        public IFeature CreateFeature() => new ClosureFeature();
     }
 
     /// <summary>
@@ -25,11 +22,8 @@ namespace HandlebarsDotNet.Features
         /// <summary>
         /// Parameter of actual closure
         /// </summary>
-        internal ExpressionContainer<object[]> ClosureInternal { get; } = ExpressionShortcuts.Var<object[]>("closure");
-
+        internal ExpressionContainer<object[]> ClosureInternal { get; } = Var<object[]>("closure");
         
-        public ParameterExpression Closure => (ParameterExpression) ClosureInternal.Expression;
-
         /// <summary>
         /// Build-time closure store
         /// </summary>
@@ -79,16 +73,14 @@ namespace HandlebarsDotNet.Features
             public Expression Invoke(Expression expression)
             {
                 var closureVisitor = new ClosureVisitor(_closureArg, _closure);
-                var constantReducer = new ConstantsReducer();
-
-                expression = closureVisitor.Visit(expression);
-                return constantReducer.Visit(expression);
+                return closureVisitor.Visit(expression);
             }
 
             private class ClosureVisitor : ExpressionVisitor
             {
                 private readonly TemplateClosure _templateClosure;
                 private readonly ExpressionContainer<object[]> _templateClosureArg;
+                private readonly Dictionary<Type, bool> _isAssignableToGenericTypeCache = new Dictionary<Type, bool>();
 
                 public ClosureVisitor(ExpressionContainer<object[]> arg, TemplateClosure templateClosure)
                 {
@@ -99,8 +91,10 @@ namespace HandlebarsDotNet.Features
                 protected override Expression VisitLambda<T>(Expression<T> node)
                 {
                     var body = Visit(node.Body);
-                    return node.Update(body ?? throw new InvalidOperationException("Cannot create closure"),
-                        node.Parameters);
+                    var expression = body;
+                    if (expression == null) throw new InvalidOperationException("Cannot create closure");
+
+                    return node.Update(expression, node.Parameters);
                 }
 
                 protected override Expression VisitConstant(ConstantExpression node)
@@ -119,29 +113,34 @@ namespace HandlebarsDotNet.Features
                     UnaryExpression unaryExpression;
                     if (_templateClosure.TryGetKeyByValue(node.Value, out var existingKey))
                     {
-                        unaryExpression =
-                            Expression.Convert(
-                                Expression.ArrayIndex(_templateClosureArg, Expression.Constant(existingKey)),
-                                node.Type);
+                        unaryExpression = Expression.Convert(
+                            Expression.ArrayIndex(_templateClosureArg, Arg(existingKey)),
+                            node.Type
+                        );
+                        
                         return unaryExpression;
                     }
 
                     var key = _templateClosure.CurrentIndex;
                     _templateClosure[key] = node.Value;
-                    var accessor = Expression.ArrayIndex(_templateClosureArg, Expression.Constant(key));
+                    var accessor = Expression.ArrayIndex(_templateClosureArg, Arg(key));
                     unaryExpression = Expression.Convert(accessor, node.Type);
                     return unaryExpression;
                 }
-
+                
                 protected override Expression VisitMember(MemberExpression node)
                 {
                     if (!(node.Expression is ConstantExpression constantExpression)) return base.VisitMember(node);
 
-                    if (constantExpression.Value.GetType().IsAssignableToGenericType(typeof(StrongBox<>), out _))
+                    var expressionType = constantExpression.Value.GetType();
+                    if(!_isAssignableToGenericTypeCache.TryGetValue(expressionType, out var isAssignable))
                     {
-                        return node;
+                        isAssignable = expressionType.IsAssignableToGenericType(typeof(StrongBox<>), out _);
+                        _isAssignableToGenericTypeCache.Add(expressionType, isAssignable);
                     }
                     
+                    if (isAssignable) return node;
+
                     switch (node.Member)
                     {
                         case PropertyInfo property:
@@ -162,26 +161,6 @@ namespace HandlebarsDotNet.Features
                             return node.Update(constant);
                         }
                     }
-                }
-            }
-            
-            private class ConstantsReducer : ExpressionVisitor
-            {
-                private readonly Dictionary<object, ConstantExpression> _expressions = new Dictionary<object, ConstantExpression>();
-                
-                protected override Expression VisitConstant(ConstantExpression node)
-                {
-                    if(node.Value != null && _expressions.TryGetValue(node.Value, out var storedNode))
-                    {
-                        return storedNode;
-                    }
-
-                    if (node.Value != null)
-                    {
-                        _expressions.Add(node.Value, node);
-                    }
-                    
-                    return node;
                 }
             }
         }

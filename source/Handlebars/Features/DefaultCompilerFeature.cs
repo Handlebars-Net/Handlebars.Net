@@ -14,7 +14,7 @@ namespace HandlebarsDotNet.Features
         }
     }
 
-    [FeatureOrder(1)]
+    [FeatureOrder(2)]
     internal class DefaultCompilerFeature : IFeature
     {
         public void OnCompiling(ICompiledHandlebarsConfiguration configuration)
@@ -35,15 +35,23 @@ namespace HandlebarsDotNet.Features
         {
             private readonly ClosureFeature _closureFeature;
             private readonly ICollection<IExpressionMiddleware> _expressionMiddleware;
+            private readonly Dictionary<Expression, object> _alreadyCompiledExpressions;
 
             public DefaultExpressionCompiler(ICompiledHandlebarsConfiguration configuration, ClosureFeature closureFeature)
             {
                 _closureFeature = closureFeature;
                 _expressionMiddleware = configuration.ExpressionMiddleware;
+                _alreadyCompiledExpressions = new Dictionary<Expression, object>();
             }
-
+            
             public T Compile<T>(Expression<T> expression) where T: class
             {
+                var originalExpression = expression;
+                if (_alreadyCompiledExpressions.TryGetValue(expression, out var compiled))
+                {
+                    return (T) compiled;
+                }
+                
                 expression = (Expression<T>) _expressionMiddleware.Aggregate((Expression) expression, (e, m) => m.Invoke(e));
                 
                 var closureFeature = _closureFeature;
@@ -72,7 +80,11 @@ namespace HandlebarsDotNet.Features
                 var invocationExpression = Expression.Invoke(Expression.Constant(compiledLambda), parameterExpressions);
                 var outerLambda = Expression.Lambda<T>(invocationExpression, outerParameters);
 
-                return outerLambda.Compile();
+                var compiledExpression = outerLambda.Compile();
+                
+                _alreadyCompiledExpressions.Add(originalExpression, compiledExpression);
+                
+                return compiledExpression;
             }
         }
     }
