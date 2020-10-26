@@ -13,7 +13,7 @@ jobs:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 3.1.201
+          dotnet-version: 3.1.403
       - name: Build
         working-directory: ./source
         run: dotnet build Handlebars.sln -c Release
@@ -30,7 +30,7 @@ jobs:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 3.1.201
+          dotnet-version: 3.1.403
       - name: Test
         working-directory: ./source
         run: dotnet test Handlebars.sln --logger:trx --logger:GitHubActions
@@ -83,7 +83,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 3.1.201  # SDK Version to use. keep in line with examples/benchmarkdotnet/global.json
+          dotnet-version: 3.1.403
       - name: Run benchmark
         working-directory: ./source/Handlebars.Benchmark
         run: dotnet run -c Release --exporters json --filter '*' -m --join
