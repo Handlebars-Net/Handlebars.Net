@@ -154,13 +154,13 @@ namespace HandlebarsDotNet
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerable<object> AsEnumerable() => new Enumerable(this);
 
-        public HashParameterDictionary Hash
+        public IReadOnlyDictionary<string, object> Hash
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                if (Length == 0) return null;
-                return this[Length - 1] as HashParameterDictionary;
+                if (Length == 0) return HashParameterDictionary.Empty;
+                return this[Length - 1] as HashParameterDictionary ?? HashParameterDictionary.Empty;
             }
         }
 
@@ -226,13 +226,13 @@ namespace HandlebarsDotNet
             }
             else
             {
-                var array = new object[_array.Length];
+                var array = new object[_array.Length + 1];
                 for (var i = 0; i < _array.Length; i++)
                 {
                     array[i] = _array[i];
                 }
 
-                array[array.Length - 1] = value;
+                array[_array.Length] = value;
                 return new Arguments(array);
             }
         }
@@ -258,8 +258,18 @@ namespace HandlebarsDotNet
 
         public bool Equals(Arguments other)
         {
+            if (_useArray && _useArray == other._useArray)
+            {
+                if (Length != other.Length || _array.Length != other._array.Length) return false;
+                for (int i = 0; i < _array.Length; i++)
+                {
+                    if (!_array[i].Equals(other._array[i])) return false;
+                }
+
+                return true;
+            }
+        
             return Length == other.Length
-                   && _useArray == other._useArray && Equals(_array, other._array)
                    && Equals(_element0, other._element0)
                    && Equals(_element1, other._element1)
                    && Equals(_element2, other._element2)
@@ -267,8 +277,6 @@ namespace HandlebarsDotNet
                    && Equals(_element4, other._element4)
                    && Equals(_element5, other._element5);
         }
-
-        public int Count => Length;
         
         public override bool Equals(object obj)
         {
@@ -292,7 +300,7 @@ namespace HandlebarsDotNet
             }
         }
 
-        private class Enumerable : IEnumerable<object>
+        private sealed class Enumerable : IEnumerable<object>
         {
             private readonly Arguments _arguments;
             
@@ -304,7 +312,7 @@ namespace HandlebarsDotNet
             
         }
         
-        public class Enumerator : IEnumerator<object>
+        private sealed class Enumerator : IEnumerator<object>
         {
             private static readonly InternalObjectPool<Enumerator> Pool = new InternalObjectPool<Enumerator>(new Policy());
 

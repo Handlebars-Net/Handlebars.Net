@@ -280,7 +280,7 @@ namespace HandlebarsDotNet.Test
                 .RegisterMissingHelperHook(
                     (context, arguments) =>
                     {
-                        var name = arguments[arguments.Count - 1].ToString();
+                        var name = arguments[arguments.Length - 1].ToString();
                         return string.Format(format, name.Trim('[', ']'));
                     });
 
@@ -327,7 +327,7 @@ namespace HandlebarsDotNet.Test
             var format = "Missing helper: {0}";
             handlebars.RegisterHelper("helperMissing", (context, arguments) =>
             {
-                var name = arguments[arguments.Count - 1].ToString();
+                var name = arguments[arguments.Length - 1].ToString();
                 return string.Format(format, name.Trim('[', ']'));
             });
 

@@ -12,7 +12,7 @@ namespace HandlebarsDotNet.Helpers
 
         internal override object ReturnInvoke(BindingContext bindingContext, object context, in Arguments arguments)
         {
-            var nameArgument = arguments[arguments.Count - 1];
+            var nameArgument = arguments[arguments.Length - 1];
             if (arguments.Length > 1)
             {
                 throw new HandlebarsRuntimeException($"Template references a helper that cannot be resolved. Helper '{nameArgument}'");
