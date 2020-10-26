@@ -1,6 +1,6 @@
 # Handlebars.Net
 
-#### [![CI](https://github.com/Handlebars-Net/Handlebars.Net/workflows/CI/badge.svg)](https://github.com/Handlebars-Net/Handlebars.Net/actions?query=workflow%3ACI) [![Nuget](https://img.shields.io/nuget/v/Handlebars.Net)](https://www.nuget.org/packages/Handlebars.Net/) [![performance](https://img.shields.io/badge/benchmark-statistics-blue)](http://handlebars-net.github.io/Handlebars.Net/dev/bench/)
+#### [![CI](https://github.com/Handlebars-Net/Handlebars.Net/workflows/CI/badge.svg)](https://github.com/Handlebars-Net/Handlebars.Net/actions?query=workflow%3ACI) [![Nuget](https://img.shields.io/nuget/vpre/Handlebars.Net)](https://www.nuget.org/packages/Handlebars.Net/) [![performance](https://img.shields.io/badge/benchmark-statistics-blue)](http://handlebars-net.github.io/Handlebars.Net/dev/bench/)
 
 ---
 
