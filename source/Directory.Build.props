@@ -7,9 +7,11 @@
     <PropertyGroup>
         <PackageLicense>LICENSE</PackageLicense>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <Owner>Rex Morgan; Handlebars-Net</Owner>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
         <IncludeSymbols>true</IncludeSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-        <Owner>Rex Morgan; Handlebars-Net</Owner>
         <LangVersion>8</LangVersion>
     </PropertyGroup>
     
