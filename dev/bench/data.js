@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1602969073623,
+  "lastUpdate": 1603722401803,
   "repoUrl": "https://github.com/Handlebars-Net/Handlebars.Net",
   "entries": {
     "Benchmark.Net Benchmark": [
@@ -672,6 +672,102 @@ window.BENCHMARK_DATA = {
             "value": 258592.634375,
             "unit": "ns",
             "range": "± 9249.212626295168"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "zjklee@gmail.com",
+            "name": "Oleh Formaniuk",
+            "username": "zjklee"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ec841d1c8a53548a3b8ec011eb9a5449c4544586",
+          "message": "Merge pull request #376 from zjklee/feature/nuget-impr\n\nEnable CI build, add SourceLink",
+          "timestamp": "2020-10-26T16:21:19+02:00",
+          "tree_id": "f47a0efb0aef0854e350186f4d519d7c821c2e0e",
+          "url": "https://github.com/Handlebars-Net/Handlebars.Net/commit/ec841d1c8a53548a3b8ec011eb9a5449c4544586"
+        },
+        "date": 1603722401137,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "HandlebarsNet.Benchmark.Compilation.Template",
+            "value": 19088174.595833335,
+            "unit": "ns",
+            "range": "± 243671.9057016972"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithoutParameters",
+            "value": 308.9198212623596,
+            "unit": "ns",
+            "range": "± 3.7027354827757937"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithOneParameter",
+            "value": 320.40050509997775,
+            "unit": "ns",
+            "range": "± 6.3023088105791265"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithTwoParameter",
+            "value": 362.47619773546853,
+            "unit": "ns",
+            "range": "± 5.988276022793533"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithoutParameters",
+            "value": 416.12187836964927,
+            "unit": "ns",
+            "range": "± 8.816345095756885"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithOneParameter",
+            "value": 326.2408130009969,
+            "unit": "ns",
+            "range": "± 5.316395037388925"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithTwoParameter",
+            "value": 347.47285102208457,
+            "unit": "ns",
+            "range": "± 5.513120970666432"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithoutParameters",
+            "value": 670.5265794754029,
+            "unit": "ns",
+            "range": "± 15.93880332718411"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithOneParameter",
+            "value": 686.3951638085501,
+            "unit": "ns",
+            "range": "± 7.931732950280785"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithTwoParameter",
+            "value": 755.470709323883,
+            "unit": "ns",
+            "range": "± 6.077093598617403"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.EndToEnd.Default(N: 5, DataType: \"dictionary\")",
+            "value": 247534.29649135045,
+            "unit": "ns",
+            "range": "± 3515.2184140596873"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.EndToEnd.Default(N: 5, DataType: \"object\")",
+            "value": 268289.3352748326,
+            "unit": "ns",
+            "range": "± 2584.144495820786"
           }
         ]
       }
