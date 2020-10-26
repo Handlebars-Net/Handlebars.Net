@@ -22,7 +22,7 @@ namespace HandlebarsDotNet.ValueProviders
             _wellKnownVariables = bindingContext.WellKnownVariables;
             if (!_supportLastInObjectIterations)
             {
-                var undefined = ChainSegment.Last.GetUndefinedBindingResult(configuration);
+                var undefined = UndefinedBindingResult.Create(ChainSegment.Last);
                 _data.AddOrReplace(ChainSegment.Last, undefined, out _wellKnownVariables[(int) ChainSegment.Last.WellKnownVariable]);
             }
             else

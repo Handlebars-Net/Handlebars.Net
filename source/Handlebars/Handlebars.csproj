@@ -63,12 +63,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ExpressionShortcuts" Version="1.0.4.38" PrivateAssets="All" />
+    <PackageReference Include="ExpressionShortcuts" Version="1.0.4.39" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(ContinuousIntegrationBuild)' == 'true'">
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
   </ItemGroup>
-
 
 </Project>

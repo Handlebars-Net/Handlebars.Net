@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.ObjectDescriptors;
-using HandlebarsDotNet.ValueProviders;
 
 namespace HandlebarsDotNet.Compiler
 {
-    [DebuggerTypeProxy(typeof(DebugProxy))]
     public sealed partial class BindingContext : IDisposable
     {
         internal readonly EntryIndex<ChainSegment>[] WellKnownVariables = new EntryIndex<ChainSegment>[8];
@@ -57,7 +53,7 @@ namespace HandlebarsDotNet.Compiler
             {
                 ContextDataObject.AddOrReplace(
                     ChainSegment.Parent, 
-                    ChainSegment.Parent.GetUndefinedBindingResult(Configuration), 
+                    UndefinedBindingResult.Create(ChainSegment.Parent), 
                     out WellKnownVariables[(int) WellKnownVariable.Parent]
                 );
                 
@@ -133,11 +129,6 @@ namespace HandlebarsDotNet.Compiler
         {
             return Create(Configuration, value ?? Value, this, TemplatePath, partialBlockTemplate ?? PartialBlockTemplate);
         }
-        
-        internal BindingContext CreateChildContext()
-        {
-            return Create(Configuration, null, this, TemplatePath, PartialBlockTemplate);
-        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BindingContext CreateFrame(object value = null)
@@ -158,19 +149,6 @@ namespace HandlebarsDotNet.Compiler
                 if (!accessor.TryGetValue(@from, segment, out var value)) continue;
                 hash[segment] = value;
             }
-        }
-        
-        internal class DebugProxy
-        {
-            private readonly BindingContext _context;
-
-            public DebugProxy(BindingContext context) => _context = context;
-
-            public object Value => _context.Value;
-            public object Parent => _context.ParentContext?.Value;
-            public object Root => _context.Root.Value;
-            public IReadOnlyDictionary<ChainSegment, object> Data => _context.ContextDataObject;
-            public IReadOnlyDictionary<ChainSegment, object> BlockParams => _context.BlockParamsObject;
         }
     }
 }

@@ -1,30 +1,15 @@
+using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
-namespace HandlebarsDotNet.Features
+namespace HandlebarsDotNet.Compiler.Middlewares
 {
-    internal class ExpressionOptimizerFeatureFactory : IFeatureFactory
+    internal class ExpressionOptimizerMiddleware : IExpressionMiddleware
     {
-        public IFeature CreateFeature() => new ExpressionOptimizerFeature();
-    }
-
-    [FeatureOrder(1)]
-    internal class ExpressionOptimizerFeature : IFeature, IExpressionMiddleware
-    {
-        public void OnCompiling(ICompiledHandlebarsConfiguration configuration)
-        {
-            configuration.ExpressionMiddleware.Add(this);
-        }
-
-        public void CompilationCompleted()
-        {
-            // nothing to do here
-        }
-        
-        public Expression Invoke(Expression expression)
+        public Expression<T> Invoke<T>(Expression<T> expression) where T : Delegate
         {
             var visitor = new OptimizationVisitor();
-            return visitor.Visit(expression);
+            return (Expression<T>) visitor.Visit(expression);
         }
         
         private class OptimizationVisitor : ExpressionVisitor
@@ -35,7 +20,7 @@ namespace HandlebarsDotNet.Features
             {
                 if (node.Variables.Count == 0 && node.Expressions.Count == 1 && node.Expressions[0] is BlockExpression blockExpression)
                 {
-                    return blockExpression;
+                    return VisitBlock(blockExpression);
                 }
                 
                 return base.VisitBlock(node);

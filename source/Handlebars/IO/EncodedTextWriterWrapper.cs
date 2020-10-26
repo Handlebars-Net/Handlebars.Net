@@ -1,6 +1,7 @@
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
+using HandlebarsDotNet.Compiler;
 
 namespace HandlebarsDotNet
 {
@@ -24,6 +25,9 @@ namespace HandlebarsDotNet
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Write(StringBuilder value, bool encode) => UnderlyingWriter.Write(value, encode);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Write(UndefinedBindingResult undefined) => UnderlyingWriter.Write(undefined);
+        
         public override void Write(string value) => UnderlyingWriter.Write(value);
 
         public override void Write(char value) => UnderlyingWriter.Write(value);

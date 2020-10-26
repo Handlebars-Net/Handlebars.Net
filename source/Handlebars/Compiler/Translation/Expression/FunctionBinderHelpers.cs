@@ -11,19 +11,22 @@ namespace HandlebarsDotNet.Compiler
 {
     internal static class FunctionBinderHelpers
     {
-        private static readonly LookupSlim<int, DeferredValue<Expression[], ConstructorInfo>> ArgumentsConstructorsMap 
-            = new LookupSlim<int, DeferredValue<Expression[], ConstructorInfo>>();
+        private static readonly LookupSlim<int, DeferredValue<int, ConstructorInfo>> ArgumentsConstructorsMap 
+            = new LookupSlim<int, DeferredValue<int, ConstructorInfo>>();
 
-        private static readonly Func<Expression[], ConstructorInfo> ConstructorFactory = o =>
+        private static readonly Func<int, DeferredValue<int, ConstructorInfo>> CtorFactory = i =>
         {
-            var objectType = typeof(object);
-            var argumentTypes = new Type[o.Length];
-            for (var index = 0; index < argumentTypes.Length; index++)
+            return new DeferredValue<int, ConstructorInfo>(i, count =>
             {
-                argumentTypes[index] = objectType;
-            }
+                var objectType = typeof(object);
+                var argumentTypes = new Type[count];
+                for (var index = 0; index < argumentTypes.Length; index++)
+                {
+                    argumentTypes[index] = objectType;
+                }
 
-            return typeof(Arguments).GetConstructor(argumentTypes);
+                return typeof(Arguments).GetConstructor(argumentTypes);
+            });
         };
 
         public static ExpressionContainer<Arguments> CreateArguments(IEnumerable<Expression> expressions, CompilationContext compilationContext)
@@ -33,13 +36,9 @@ namespace HandlebarsDotNet.Compiler
                 .Select(o => FunctionBuilder.Reduce(o, compilationContext))
                 .ToArray();
 
-            if (arguments.Length == 0) return Arg(Arguments.Empty);
+            if (arguments.Length == 0) return New(() => new Arguments(0));
 
-            var deferredValue = ArgumentsConstructorsMap.GetOrAdd(arguments.Length, 
-    (i, d) => new DeferredValue<Expression[], ConstructorInfo>(d, ConstructorFactory), arguments
-            );
-
-            var constructor = deferredValue.Value;
+            var constructor = ArgumentsConstructorsMap.GetOrAdd(arguments.Length, CtorFactory).Value;
             if (!ReferenceEquals(constructor, null))
             {
                 var newExpression = Expression.New(constructor, arguments);

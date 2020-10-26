@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Linq;
-using System.Reflection;
 using HandlebarsDotNet.Compiler.Lexer;
 
 namespace HandlebarsDotNet.Compiler
 {
-    internal delegate void TemplateDelegate(in EncodedTextWriter writer, BindingContext context);
+    public delegate void TemplateDelegate(in EncodedTextWriter writer, BindingContext context);
     
     internal static class HandlebarsCompiler
     {
@@ -61,7 +59,7 @@ namespace HandlebarsDotNet.Compiler
             {
                 var config = context.Configuration;
                 using var innerWriter = ReusableStringWriter.Get(config.FormatProvider);
-                using var textWriter = new EncodedTextWriter(innerWriter, config.TextEncoder, true);
+                using var textWriter = new EncodedTextWriter(innerWriter, config.TextEncoder, config.UnresolvedBindingFormat, true);
                 compiledView(textWriter, context);
                 var inner = innerWriter.ToString();
 

@@ -9,7 +9,7 @@ namespace HandlebarsDotNet
     /// <summary>
     /// Contains properties accessible withing <see cref="HandlebarsBlockHelper"/> function 
     /// </summary>
-    public readonly ref struct HelperOptions
+    public readonly struct HelperOptions
     {
         private readonly FixedSizeDictionary<string, object, StringComparer> _extensions;
         

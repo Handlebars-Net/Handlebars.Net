@@ -18,8 +18,8 @@ namespace HandlebarsDotNet.Helpers
                 throw new HandlebarsRuntimeException($"Template references a helper that cannot be resolved. Helper '{nameArgument}'");
             }
             
-            var name = bindingContext.Configuration.PathInfoStore.GetOrAdd(nameArgument as string ?? nameArgument.ToString());
-            return name.GetUndefinedBindingResult(bindingContext.Configuration);
+            var name = PathInfoStore.Shared.GetOrAdd(nameArgument as string ?? nameArgument.ToString());
+            return UndefinedBindingResult.Create(name);
         }
 
         public override object Invoke(object context, in Arguments arguments) => throw new NotSupportedException();

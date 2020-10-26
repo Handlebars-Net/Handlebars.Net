@@ -32,8 +32,8 @@ namespace HandlebarsDotNet.Compiler
         
         protected override Expression VisitIteratorExpression(IteratorExpression iex)
         {
-            var context = Arg<BindingContext>(CompilationContext.BindingContext);
-            var writer = Arg<EncodedTextWriter>(CompilationContext.EncodedWriter);
+            var context = CompilationContext.Args.BindingContext;
+            var writer = CompilationContext.Args.EncodedWriter;
 
             var template = FunctionBuilder.Compile(new[] {iex.Template}, CompilationContext.Configuration);
             var ifEmpty = FunctionBuilder.Compile(new[] {iex.IfEmpty}, CompilationContext.Configuration);
@@ -121,7 +121,7 @@ namespace HandlebarsDotNet.Compiler
             TemplateDelegate template,
             TemplateDelegate ifEmpty)
         {
-            using var innerContext = context.CreateChildContext();
+            using var innerContext = context.CreateFrame();
             var iterator = new ObjectIteratorValues(innerContext);
             var blockParams = new BlockParamsValues(innerContext, blockParamsVariables);
             
@@ -272,7 +272,7 @@ namespace HandlebarsDotNet.Compiler
             TemplateDelegate template,
             TemplateDelegate ifEmpty)
         {
-            using var innerContext = context.CreateChildContext();
+            using var innerContext = context.CreateFrame();
             var iterator = new IteratorValues(innerContext);
             var blockParams = new BlockParamsValues(innerContext, blockParamsVariables);
 

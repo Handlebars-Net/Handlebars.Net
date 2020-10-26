@@ -1,10 +1,8 @@
-﻿using HandlebarsDotNet;
-using System;
-using System.Globalization;
+﻿using System.Globalization;
 using System.IO;
 using Xunit;
 
-namespace Handlebars.Test
+namespace HandlebarsDotNet.Test
 {
     public class HtmlEncoderTests
     {

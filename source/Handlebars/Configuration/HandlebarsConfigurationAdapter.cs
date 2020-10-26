@@ -5,8 +5,8 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Collections;
+using HandlebarsDotNet.Compiler.Middlewares;
 using HandlebarsDotNet.Compiler.Resolvers;
-using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.Features;
 using HandlebarsDotNet.Helpers;
 using HandlebarsDotNet.Helpers.BlockHelpers;
@@ -24,11 +24,25 @@ namespace HandlebarsDotNet
 
             HelperResolvers = new ObservableList<IHelperResolver>(configuration.HelperResolvers);
             RegisteredTemplates = new ObservableDictionary<string, HandlebarsTemplate<TextWriter, object, object>>(configuration.RegisteredTemplates);
-            PathInfoStore = _pathInfoStore = new PathInfoStore();
+            PathInfoStore = _pathInfoStore = HandlebarsDotNet.PathInfoStore.Shared;
             ObjectDescriptorProvider = CreateObjectDescriptorProvider();
             AliasProviders = new ObservableList<IMemberAliasProvider>(UnderlingConfiguration.AliasProviders);
-
-            ExpressionMiddleware = new ObservableList<IExpressionMiddleware>(UnderlingConfiguration.CompileTimeConfiguration.ExpressionMiddleware);
+            UnresolvedBindingFormat = configuration.UnresolvedBindingFormat ?? (undefined =>
+            {
+                var formatter = UnresolvedBindingFormatter;
+                if (formatter == null)
+                {
+                    if(string.IsNullOrEmpty(undefined.Value)) return string.Empty;
+                    formatter = string.Empty;
+                }
+	        
+                return string.Format( formatter, undefined.Value );
+            });
+            
+            ExpressionMiddlewares = new ObservableList<IExpressionMiddleware>(UnderlingConfiguration.CompileTimeConfiguration.ExpressionMiddleware)
+            {
+                new ExpressionOptimizerMiddleware()
+            };
 
             Features = UnderlingConfiguration.CompileTimeConfiguration.Features
                 .Select(o => o.CreateFeature())
@@ -44,7 +58,9 @@ namespace HandlebarsDotNet
         public ITextEncoder TextEncoder => UnderlingConfiguration.TextEncoder;
         public IFormatProvider FormatProvider => UnderlingConfiguration.FormatProvider;
         public ViewEngineFileSystem FileSystem => UnderlingConfiguration.FileSystem;
+#pragma warning disable 618
         public string UnresolvedBindingFormatter => UnderlingConfiguration.UnresolvedBindingFormatter;
+#pragma warning restore 618
         public bool ThrowOnUnresolvedBindingExpression => UnderlingConfiguration.ThrowOnUnresolvedBindingExpression;
         public IPartialTemplateResolver PartialTemplateResolver => UnderlingConfiguration.PartialTemplateResolver;
         public IMissingPartialTemplateHandler MissingPartialTemplateHandler => UnderlingConfiguration.MissingPartialTemplateHandler;
@@ -52,25 +68,26 @@ namespace HandlebarsDotNet
         public bool NoEscape => UnderlingConfiguration.NoEscape;
         
         public IObjectDescriptorProvider ObjectDescriptorProvider { get; }
-        public IList<IExpressionMiddleware> ExpressionMiddleware { get; }
+        public IList<IExpressionMiddleware> ExpressionMiddlewares { get; }
         public IList<IMemberAliasProvider> AliasProviders { get; }
         public IExpressionCompiler ExpressionCompiler { get; set; }
         public IReadOnlyList<IFeature> Features { get; }
         public IPathInfoStore PathInfoStore { get; }
         
-        public IDictionary<PathInfo, StrongBox<HelperDescriptorBase>> Helpers { get; private set; }
-        public IDictionary<PathInfo, StrongBox<BlockHelperDescriptorBase>> BlockHelpers { get; private set; }
+        public Func<UndefinedBindingResult, string> UnresolvedBindingFormat { get; }
+        public IDictionary<PathInfoLight, StrongBox<HelperDescriptorBase>> Helpers { get; private set; }
+        public IDictionary<PathInfoLight, StrongBox<BlockHelperDescriptorBase>> BlockHelpers { get; private set; }
         public IList<IHelperResolver> HelperResolvers { get; }
         public IDictionary<string, HandlebarsTemplate<TextWriter, object, object>> RegisteredTemplates { get; }
         
         private void CreateHelpersSubscription()
         {
             var existingHelpers = UnderlingConfiguration.Helpers.ToDictionary(
-                o => _pathInfoStore.GetOrAdd($"[{o.Key}]"),
+                o => new PathInfoLight(_pathInfoStore.GetOrAdd($"[{o.Key}]")), 
                 o => new StrongBox<HelperDescriptorBase>(o.Value)
             );
 
-            Helpers = new ObservableDictionary<PathInfo, StrongBox<HelperDescriptorBase>>(existingHelpers, Compatibility.RelaxedHelperNaming ? PathInfo.PlainPathComparer : PathInfo.PlainPathWithPartsCountComparer);
+            Helpers = new ObservableDictionary<PathInfoLight, StrongBox<HelperDescriptorBase>>(existingHelpers, Compatibility.RelaxedHelperNaming ? PathInfoLight.PlainPathComparer : PathInfoLight.PlainPathWithPartsCountComparer);
             
             var helpersObserver = new ObserverBuilder<ObservableEvent<HelperDescriptorBase>>()
                 .OnEvent<ObservableDictionary<string, HelperDescriptorBase>.ReplacedObservableEvent>(
@@ -101,12 +118,11 @@ namespace HandlebarsDotNet
         private void CreateBlockHelpersSubscription()
         {
             var existingBlockHelpers = UnderlingConfiguration.BlockHelpers.ToDictionary(
-                o => _pathInfoStore.GetOrAdd($"[{o.Key}]"),
+                o => (PathInfoLight)_pathInfoStore.GetOrAdd($"[{o.Key}]"),
                 o => new StrongBox<BlockHelperDescriptorBase>(o.Value)
             );
 
-            BlockHelpers =
-                new ObservableDictionary<PathInfo, StrongBox<BlockHelperDescriptorBase>>(existingBlockHelpers, Compatibility.RelaxedHelperNaming ? PathInfo.PlainPathComparer : PathInfo.PlainPathWithPartsCountComparer);
+            BlockHelpers = new ObservableDictionary<PathInfoLight, StrongBox<BlockHelperDescriptorBase>>(existingBlockHelpers, Compatibility.RelaxedHelperNaming ? PathInfoLight.PlainPathComparer : PathInfoLight.PlainPathWithPartsCountComparer);
 
             var blockHelpersObserver = new ObserverBuilder<ObservableEvent<BlockHelperDescriptorBase>>()
                 .OnEvent<ObservableDictionary<string, BlockHelperDescriptorBase>.ReplacedObservableEvent>(

@@ -1,3 +1,5 @@
+using System;
+using System.Diagnostics.Contracts;
 using System.Linq.Expressions;
 
 namespace HandlebarsDotNet
@@ -7,6 +9,7 @@ namespace HandlebarsDotNet
     /// </summary>
     public interface IExpressionMiddleware
     {
-        Expression Invoke(Expression expression);
+        [Pure]
+        Expression<T> Invoke<T>(Expression<T> expression) where T: Delegate;
     }
 }

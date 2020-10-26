@@ -6,12 +6,18 @@ namespace HandlebarsDotNet.Compiler
     {
         public HandlebarsUndefinedBindingException(string path, string missingKey) : base(missingKey + " is undefined")
         {
-            this.Path = path;
-            this.MissingKey = missingKey;
+            Path = path;
+            MissingKey = missingKey;
+        }
+        
+        public HandlebarsUndefinedBindingException(string path, UndefinedBindingResult undefined) : base(undefined.Value + " is undefined")
+        {
+            Path = path;
+            MissingKey = undefined.Value;
         }
 
-        public string Path { get; set; }
+        public string Path { get; }
 
-        public string MissingKey { get; set; }
+        public string MissingKey { get; }
     }
 }

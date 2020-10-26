@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Compiler.Resolvers;
-using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.Features;
 using HandlebarsDotNet.Helpers;
 using HandlebarsDotNet.Helpers.BlockHelpers;
@@ -42,10 +41,10 @@ namespace HandlebarsDotNet
         /// </summary>
         IFormatProvider FormatProvider { get; }
         
-        /// <summary>
-        /// 
-        /// </summary>
+        [Obsolete("Use `UnresolvedBindingFormat` instead")]
         string UnresolvedBindingFormatter { get; }
+        
+        Func<UndefinedBindingResult, string> UnresolvedBindingFormat { get; }
         
         /// <summary>
         /// 
@@ -65,12 +64,12 @@ namespace HandlebarsDotNet
         /// <summary>
         /// 
         /// </summary>
-        IDictionary<PathInfo, StrongBox<HelperDescriptorBase>> Helpers { get; }
+        IDictionary<PathInfoLight, StrongBox<HelperDescriptorBase>> Helpers { get; }
         
         /// <summary>
         /// 
         /// </summary>
-        IDictionary<PathInfo, StrongBox<BlockHelperDescriptorBase>> BlockHelpers { get; }
+        IDictionary<PathInfoLight, StrongBox<BlockHelperDescriptorBase>> BlockHelpers { get; }
         
         /// <summary>
         /// 
@@ -84,7 +83,7 @@ namespace HandlebarsDotNet
         IObjectDescriptorProvider ObjectDescriptorProvider { get; }
         
         /// <inheritdoc cref="IExpressionMiddleware"/>
-        IList<IExpressionMiddleware> ExpressionMiddleware { get; }
+        IList<IExpressionMiddleware> ExpressionMiddlewares { get; }
         
         /// <inheritdoc cref="IMemberAliasProvider"/>
         IList<IMemberAliasProvider> AliasProviders { get; }

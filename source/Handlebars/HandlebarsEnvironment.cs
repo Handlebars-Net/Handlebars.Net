@@ -72,17 +72,20 @@ namespace HandlebarsDotNet
 
             return (writer, context, data) =>
             {
-                using var encodedTextWriter = new EncodedTextWriter(writer, configuration.TextEncoder, configuration.NoEscape);
                 if (context is BindingContext bindingContext)
                 {
+                    var config = bindingContext.Configuration;
+                    using var encodedTextWriter = new EncodedTextWriter(writer, config.TextEncoder, config.UnresolvedBindingFormat, config.NoEscape);
                     compiledView(encodedTextWriter, bindingContext);
-                    return;
                 }
+                else
+                {
+                    using var newBindingContext = BindingContext.Create(configuration, context, templatePath);
+                    newBindingContext.SetDataObject(data);
                 
-                using var newBindingContext = BindingContext.Create(configuration, context, templatePath);
-                newBindingContext.SetDataObject(data);
-                
-                compiledView(encodedTextWriter, newBindingContext);
+                    using var encodedTextWriter = new EncodedTextWriter(writer, configuration.TextEncoder, configuration.UnresolvedBindingFormat, configuration.NoEscape);
+                    compiledView(encodedTextWriter, newBindingContext);
+                }
             };
         }
 
@@ -109,17 +112,20 @@ namespace HandlebarsDotNet
                 }
                 else
                 {
-                    using var encodedTextWriter = new EncodedTextWriter(writer, configuration.TextEncoder, configuration.NoEscape);
                     if (context is BindingContext bindingContext)
                     {
+                        var config = bindingContext.Configuration;
+                        using var encodedTextWriter = new EncodedTextWriter(writer, config.TextEncoder, config.UnresolvedBindingFormat, config.NoEscape);
                         compiledTemplate(encodedTextWriter, bindingContext);
-                        return;
                     }
-                
-                    using var newBindingContext = BindingContext.Create(configuration, context);
-                    newBindingContext.SetDataObject(data);
+                    else
+                    {
+                        using var newBindingContext = BindingContext.Create(configuration, context);
+                        newBindingContext.SetDataObject(data);
 
-                    compiledTemplate(encodedTextWriter, newBindingContext);   
+                        using var encodedTextWriter = new EncodedTextWriter(writer, configuration.TextEncoder, configuration.UnresolvedBindingFormat, configuration.NoEscape);
+                        compiledTemplate(encodedTextWriter, newBindingContext);    
+                    }  
                 }
             };
         }

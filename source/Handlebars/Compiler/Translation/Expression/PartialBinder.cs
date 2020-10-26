@@ -22,8 +22,8 @@ namespace HandlebarsDotNet.Compiler
 
         protected override Expression VisitPartialExpression(PartialExpression pex)
         {
-            var bindingContext = Arg<BindingContext>(CompilationContext.BindingContext);
-            var writer = Arg<EncodedTextWriter>(CompilationContext.EncodedWriter);
+            var bindingContext = CompilationContext.Args.BindingContext;
+            var writer = CompilationContext.Args.EncodedWriter;
             
             var partialBlockTemplate = pex.Fallback != null 
                 ? FunctionBuilder.Compile(new[] { pex.Fallback }, CompilationContext.Configuration) 

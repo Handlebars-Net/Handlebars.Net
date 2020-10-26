@@ -33,10 +33,10 @@ namespace HandlebarsDotNet.ValueProviders
             var variable = GetVariable(variableIndex);
             if (ReferenceEquals(variable, null))
             {
-                index = new EntryIndex<ChainSegment>(-1, 0);
+                index = new EntryIndex<ChainSegment>(-1, 0, null);
                 return;
             }
-            var value = variable.GetUndefinedBindingResult(_configuration);
+            var value = UndefinedBindingResult.Create(variable);
             
             _values.AddOrReplace(variable, value, out index);
         }

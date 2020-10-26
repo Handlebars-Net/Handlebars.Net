@@ -15,7 +15,7 @@ namespace HandlebarsDotNet.Compiler
         
         protected override Expression VisitStaticExpression(StaticExpression stex)
         {
-            var writer = Arg<EncodedTextWriter>(CompilationContext.EncodedWriter);
+            var writer = CompilationContext.Args.EncodedWriter;
             var value = Arg(stex.Value);
             
             return writer.Call(o => o.Write(value, false));

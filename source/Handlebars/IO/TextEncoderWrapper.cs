@@ -54,15 +54,20 @@ namespace HandlebarsDotNet
 
         public IFormatProvider FormatProvider => _underlyingEncoder.FormatProvider;
 
-        public void Dispose() => Pool.Return(this);
-			
+        public void Dispose()
+        {
+            if(ReferenceEquals(this, Null)) return;
+            
+            Pool.Return(this);
+        }
+
         private class Policy : IInternalObjectPoolPolicy<TextEncoderWrapper>
         {
             public TextEncoderWrapper Create() => new TextEncoderWrapper();
 
             public bool Return(TextEncoderWrapper item)
             {
-                item.Enabled = false;
+                item._enabled = true;
                 item._underlyingEncoder = null;
 
                 return true;

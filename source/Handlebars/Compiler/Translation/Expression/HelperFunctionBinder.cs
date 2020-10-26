@@ -26,8 +26,8 @@ namespace HandlebarsDotNet.Compiler
             if(!pathInfo.IsValidHelperLiteral && !CompilationContext.Configuration.Compatibility.RelaxedHelperNaming) return Expression.Empty();
             
             var helperName = pathInfo.TrimmedPath;
-            var bindingContext = Arg<BindingContext>(CompilationContext.BindingContext);
-            var textWriter = Arg<EncodedTextWriter>(CompilationContext.EncodedWriter);
+            var bindingContext = CompilationContext.Args.BindingContext;
+            var textWriter = CompilationContext.Args.EncodedWriter;
             
             var contextValue = bindingContext.Property(o => o.Value);
             var args = FunctionBinderHelpers.CreateArguments(hex.Arguments, CompilationContext);

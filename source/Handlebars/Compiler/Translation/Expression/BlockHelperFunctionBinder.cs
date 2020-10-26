@@ -41,7 +41,7 @@ namespace HandlebarsDotNet.Compiler
             var isInlinePartial = bhex.HelperName == "#*inline";
             
             var pathInfo = CompilationContext.Configuration.PathInfoStore.GetOrAdd(bhex.HelperName);
-            var bindingContext = Arg<BindingContext>(CompilationContext.BindingContext);
+            var bindingContext = CompilationContext.Args.BindingContext;
             var context = isInlinePartial
                 ? bindingContext.As<object>()
                 : bindingContext.Property(o => o.Value);
@@ -99,19 +99,16 @@ namespace HandlebarsDotNet.Compiler
 
             Expression BindByRef(StrongBox<BlockHelperDescriptorBase> helperBox)
             {
-                var writer = Arg<EncodedTextWriter>(CompilationContext.EncodedWriter);
-                var helper = Arg(helperBox).Member(o => o.Value);
-
-                var inverseConstant = Expression.Constant(inverse);
-                var directConstant = Expression.Constant(direct);
+                var writer = CompilationContext.Args.EncodedWriter;
+                
                 var helperOptions = direction switch
                 {
-                    BlockHelperDirection.Inverse => Expression.New(HelperOptionsCtor, inverseConstant, directConstant, blockParams, bindingContext),
-                    BlockHelperDirection.Direct => Expression.New(HelperOptionsCtor, directConstant, inverseConstant, blockParams, bindingContext),
+                    BlockHelperDirection.Direct => New(() => new HelperOptions(direct, inverse, blockParams, bindingContext)),
+                    BlockHelperDirection.Inverse => New(() => new HelperOptions(inverse, direct, blockParams, bindingContext)),
                     _ => throw new HandlebarsCompilerException("Helper referenced with unknown prefix", readerContext)
                 };
-
-                return Expression.Call(helper, HelperInvokeMethodInfo, writer, helperOptions, context, args);
+                
+                return Call(() => helperBox.Value.Invoke(writer, helperOptions, context, args));
             }
         }
     }

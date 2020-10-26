@@ -29,7 +29,10 @@ namespace HandlebarsDotNet
         
         public ViewEngineFileSystem FileSystem { get; set; }
         
+        [Obsolete("Use `UnresolvedBindingFormat` instead.")]
 	    public string UnresolvedBindingFormatter { get; set; }
+        
+        public Func<UndefinedBindingResult, string> UnresolvedBindingFormat { get; set; }
         
         public bool ThrowOnUnresolvedBindingExpression { get; set; }
         

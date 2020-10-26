@@ -2,13 +2,15 @@
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
+using HandlebarsDotNet.Compiler;
 
 namespace HandlebarsDotNet
 {
 	public readonly struct EncodedTextWriter : IDisposable
 	{
 		private readonly TextWriter _underlyingWriter;
-		
+		private readonly Func<UndefinedBindingResult, string> _undefinedFormatter;
+
 		private readonly TextEncoderWrapper _encoder;
 		
 		public bool SuppressEncoding
@@ -21,9 +23,14 @@ namespace HandlebarsDotNet
 		}
 		
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public EncodedTextWriter(TextWriter writer, ITextEncoder encoder, bool suppressEncoding = false)
+		public EncodedTextWriter(
+			TextWriter writer, 
+			ITextEncoder encoder, 
+			Func<UndefinedBindingResult, string> undefinedFormatter, 
+			bool suppressEncoding = false)
 		{
 			_underlyingWriter = writer;
+			_undefinedFormatter = undefinedFormatter;
 
 			_encoder = encoder != null 
 				? TextEncoderWrapper.Create(encoder) 
@@ -32,8 +39,6 @@ namespace HandlebarsDotNet
 			SuppressEncoding = suppressEncoding;
 		}
 
-		public override string ToString() => _underlyingWriter.ToString();
-		
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public TextWriter CreateWrapper() => EncodedTextWriterWrapper.From(this);
 
@@ -93,6 +98,9 @@ namespace HandlebarsDotNet
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Write(UndefinedBindingResult undefined) => _underlyingWriter.Write(_undefinedFormatter(undefined));
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Write(int value) => _underlyingWriter.Write(value);
 		
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -128,6 +136,7 @@ namespace HandlebarsDotNet
 			switch (value)
 			{
 				case string v: Write(v); return;
+				case UndefinedBindingResult v: Write(v); return;
 				case bool v: Write(v); return;
 				case int v: Write(v); return;
 				case char v: Write(v); return;
@@ -156,5 +165,7 @@ namespace HandlebarsDotNet
 		}
 		
 		public void Dispose() => _encoder.Dispose();
+		
+		public override string ToString() => _underlyingWriter.ToString();
 	}
 }

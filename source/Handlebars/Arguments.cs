@@ -2,18 +2,17 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Compiler;
 
 namespace HandlebarsDotNet
 {
-    [DebuggerTypeProxy(typeof(DebugProxy))]
-    public readonly struct Arguments : IEquatable<Arguments>
+    /// <summary>
+    /// Mimics <see cref="Array"/> behavior however in most cases does not require memory allocation. 
+    /// </summary>
+    public readonly struct Arguments : IEquatable<Arguments>, IEnumerable<object>
     {
-        public static Arguments Empty => new Arguments();
-        
         private readonly object[] _array;
         private readonly bool _useArray;
 
@@ -26,8 +25,26 @@ namespace HandlebarsDotNet
         
         public readonly int Length;
 
+        /// <summary>
+        /// Ctor used to bypass struct limitations
+        /// </summary>
+        /// <param name="dummy">Should always by 0</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Arguments(object arg1)
+        internal Arguments(int dummy = 0) : this()
+        {
+            _useArray = false;
+            _array = null;
+            _element0 = null;
+            _element1 = null;
+            _element2 = null;
+            _element3 = null;
+            _element4 = null;
+            _element5 = null;
+            Length = dummy;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Arguments(object arg1) : this()
         {
             _useArray = false;
             _array = null;
@@ -41,7 +58,7 @@ namespace HandlebarsDotNet
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Arguments(object arg1, object arg2)
+        public Arguments(object arg1, object arg2) : this()
         {
             _useArray = false;
             _array = null;
@@ -55,7 +72,7 @@ namespace HandlebarsDotNet
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Arguments(object arg1, object arg2, object arg3)
+        public Arguments(object arg1, object arg2, object arg3) : this()
         {
             _useArray = false;
             _array = null;
@@ -69,7 +86,7 @@ namespace HandlebarsDotNet
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Arguments(object arg1, object arg2, object arg3, object arg4)
+        public Arguments(object arg1, object arg2, object arg3, object arg4) : this()
         {
             _useArray = false;
             _array = null;
@@ -83,7 +100,7 @@ namespace HandlebarsDotNet
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Arguments(object arg1, object arg2, object arg3, object arg4, object arg5)
+        public Arguments(object arg1, object arg2, object arg3, object arg4, object arg5) : this()
         {
             _useArray = false;
             _array = null;
@@ -97,7 +114,7 @@ namespace HandlebarsDotNet
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Arguments(object arg1, object arg2, object arg3, object arg4, object arg5, object arg6)
+        public Arguments(object arg1, object arg2, object arg3, object arg4, object arg5, object arg6) : this()
         {
             _useArray = false;
             _array = null;
@@ -111,7 +128,7 @@ namespace HandlebarsDotNet
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Arguments(object[] args)
+        public Arguments(object[] args) : this()
         {
             _useArray = true;
             _array = args;
@@ -126,16 +143,16 @@ namespace HandlebarsDotNet
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Enumerator GetEnumerator() => new Enumerator(this);
+        public IEnumerator<object> GetEnumerator() => Enumerator.Create(this);
 
-        public IEnumerable<object> AsEnumerable()
-        {
-            var enumerator = GetEnumerator();
-            while (enumerator.MoveNext())
-            {
-                yield return enumerator.Current;
-            }
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        
+        /// <summary>
+        /// Returns <see cref="IEnumerable{object}"/> without boxing 
+        /// </summary>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public IEnumerable<object> AsEnumerable() => new Enumerable(this);
 
         public HashParameterDictionary Hash
         {
@@ -275,22 +292,44 @@ namespace HandlebarsDotNet
             }
         }
 
-        public struct Enumerator
+        private class Enumerable : IEnumerable<object>
         {
             private readonly Arguments _arguments;
+            
+            public Enumerable(in Arguments arguments) => _arguments = arguments;
+
+            public IEnumerator<object> GetEnumerator() => Enumerator.Create(_arguments);
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+            
+        }
+        
+        public class Enumerator : IEnumerator<object>
+        {
+            private static readonly InternalObjectPool<Enumerator> Pool = new InternalObjectPool<Enumerator>(new Policy());
+
+            public static Enumerator Create(in Arguments arguments)
+            {
+                var enumerator = Pool.Get();
+                enumerator._index = -1;
+                enumerator._arguments = arguments;
+
+                return enumerator;
+            }
+            
+            private Arguments _arguments;
 
             private int _index;
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            internal Enumerator(in Arguments arguments)
+            
+            private Enumerator()
             {
-                _index = -1;
-                _arguments = arguments;
             }
             
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext() => ++_index < _arguments.Length;
-            
+
+            public void Reset() => _index = -1;
+
             public object Current
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -311,30 +350,19 @@ namespace HandlebarsDotNet
                     };
                 }
             }
-        }
-        
-        internal class DebugProxy : IReadOnlyList<object>
-        {
-            private readonly Arguments _arguments;
 
-            public DebugProxy(Arguments arguments)
+            public void Dispose()
             {
-                _arguments = arguments;
+                _arguments = new Arguments();
+                Pool.Return(this);
             }
-
-            public IEnumerator<object> GetEnumerator()
+            
+            private class Policy : IInternalObjectPoolPolicy<Enumerator>
             {
-                return _arguments.AsEnumerable().GetEnumerator();
+                public Enumerator Create() => new Enumerator();
+
+                public bool Return(Enumerator item) => true;
             }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return GetEnumerator();
-            }
-
-            public int Count => _arguments.Count;
-
-            public object this[int index] => _arguments[index];
         }
     }
 }

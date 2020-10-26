@@ -65,7 +65,7 @@ namespace HandlebarsDotNet.ValueProviders
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void CreateProperty(ChainSegment variable, out EntryIndex<ChainSegment> index)
         {
-            var value = variable.GetUndefinedBindingResult(Configuration);
+            var value = UndefinedBindingResult.Create(variable);
             _data.AddOrReplace(variable, value, out index);
             
             if (variable.WellKnownVariable != WellKnownVariable.None)

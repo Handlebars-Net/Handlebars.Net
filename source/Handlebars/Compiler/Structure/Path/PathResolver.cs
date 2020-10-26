@@ -1,60 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using HandlebarsDotNet.ObjectDescriptors;
-using HandlebarsDotNet.Polyfills;
 
 namespace HandlebarsDotNet.Compiler.Structure.Path
 {
-    internal static class PathResolver
+    public static class PathResolver
     {
-        public static PathInfo GetPathInfo(string path)
-        {
-            if (path == "null")
-                return new PathInfo(false, path, false, null);
-
-            var originalPath = path;
-
-            var isValidHelperLiteral = true;
-            var isVariable = path.StartsWith("@");
-            var isInversion = path.StartsWith("^");
-            var isBlockHelper = path.StartsWith("#");
-            if (isVariable || isBlockHelper || isInversion)
-            {
-                isValidHelperLiteral = isBlockHelper || isInversion;
-                path = path.Substring(1);
-            }
-
-            var segments = new List<PathSegment>();
-            var pathParts = path.Split('/');
-            if (pathParts.Length > 1) isValidHelperLiteral = false;
-            foreach (var segment in pathParts)
-            {
-                if (segment == "..")
-                {
-                    isValidHelperLiteral = false;
-                    segments.Add(new PathSegment(segment, ArrayEx.Empty<ChainSegment>()));
-                    continue;
-                }
-
-                if (segment == ".")
-                {
-                    isValidHelperLiteral = false;
-                    segments.Add(new PathSegment(segment, ArrayEx.Empty<ChainSegment>()));
-                    continue;
-                }
-
-                var segmentString = isVariable ? "@" + segment : segment;
-                var chainSegments = GetPathChain(segmentString).ToArray();
-                if (chainSegments.Length > 1) isValidHelperLiteral = false;
-
-                segments.Add(new PathSegment(segmentString, chainSegments));
-            }
-
-            return new PathInfo(true, originalPath, isValidHelperLiteral, segments.ToArray());
-        }
-        
         public static object ResolvePath(BindingContext context, PathInfo pathInfo)
         {
             if (!pathInfo.HasValue) return null;
@@ -89,7 +39,7 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
                 var chainSegment = pathChain[index];
                 instance = ResolveValue(context, instance, chainSegment);
 
-                if (!(instance is UndefinedBindingResult))
+                if (!(instance is UndefinedBindingResult undefined))
                 {
                     continue;
                 }
@@ -97,7 +47,7 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
                 if (hashParameters == null || hashParameters.ContainsKey(chainSegment) || context.ParentContext == null)
                 {
                     if (context.Configuration.ThrowOnUnresolvedBindingExpression) 
-                        throw new HandlebarsUndefinedBindingException(pathInfo, (instance as UndefinedBindingResult).Value);
+                        throw new HandlebarsUndefinedBindingException(pathInfo, undefined);
                     
                     return instance;
                 }
@@ -109,50 +59,14 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
                 }
 
                 if (context.Configuration.ThrowOnUnresolvedBindingExpression)
-                    throw new HandlebarsUndefinedBindingException(pathInfo, result.Value);
+                    throw new HandlebarsUndefinedBindingException(pathInfo, result);
                 
                 return instance;
             }
 
             return instance;
         }
-
-        private static IEnumerable<ChainSegment> GetPathChain(string segmentString)
-        {
-            var insideEscapeBlock = false;
-            var pathChainParts = segmentString.Split(new[] {'.'}, StringSplitOptions.RemoveEmptyEntries);
-            if (pathChainParts.Length == 0 && segmentString == ".") return new[] {ChainSegment.Create("this")};
-
-            var pathChain = pathChainParts.Aggregate(new List<ChainSegment>(), (list, next) =>
-            {
-                if (insideEscapeBlock)
-                {
-                    if (next.EndsWith("]"))
-                    {
-                        insideEscapeBlock = false;
-                    }
-
-                    list[list.Count - 1] = ChainSegment.Create($"{list[list.Count - 1]}.{next}");
-                    return list;
-                }
-
-                if (next.StartsWith("["))
-                {
-                    insideEscapeBlock = true;
-                }
-
-                if (next.EndsWith("]"))
-                {
-                    insideEscapeBlock = false;
-                }
-
-                list.Add(ChainSegment.Create(next));
-                return list;
-            });
-
-            return pathChain;
-        }
-
+        
         private static object ResolveValue(BindingContext context, object instance, ChainSegment chainSegment)
         {
             object resolvedValue;
@@ -160,7 +74,7 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
             {
                 return context.TryGetContextVariable(chainSegment, out resolvedValue)
                     ? resolvedValue
-                    : chainSegment.GetUndefinedBindingResult(context.Configuration);
+                    : UndefinedBindingResult.Create(chainSegment);
             }
 
             if (chainSegment.IsThis) return instance;
@@ -176,14 +90,14 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
                 return resolvedValue;
             }
 
-            return chainSegment.GetUndefinedBindingResult(context.Configuration);
+            return UndefinedBindingResult.Create(chainSegment);
         }
 
-        public static bool TryAccessMember(object instance, ChainSegment chainSegment, ICompiledHandlebarsConfiguration configuration, out object value)
+        internal static bool TryAccessMember(object instance, ChainSegment chainSegment, ICompiledHandlebarsConfiguration configuration, out object value)
         {
             if (instance == null)
             {
-                value = chainSegment.GetUndefinedBindingResult(configuration);
+                value = UndefinedBindingResult.Create(chainSegment);
                 return false;
             }
             

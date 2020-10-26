@@ -18,10 +18,8 @@ namespace HandlebarsDotNet
         public IList<IFeatureFactory> Features { get; } = new List<IFeatureFactory>
         {
             new BuildInHelpersFeatureFactory(),
-            new ClosureFeatureFactory(),
             new DefaultCompilerFeatureFactory(),
-            new MissingHelperFeatureFactory(),
-            new ExpressionOptimizerFeatureFactory()
+            new MissingHelperFeatureFactory()
         };
 
         /// <summary>

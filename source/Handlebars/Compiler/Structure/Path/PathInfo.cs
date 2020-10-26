@@ -80,26 +80,16 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
         internal readonly bool IsBlockClose;
         internal readonly bool HasContextChange;
         internal readonly int ContextChangeDepth;
-        private UndefinedBindingResult _undefinedBindingResult;
-        private readonly object _lock = new object();
+        
         private readonly int _hashCode;
         private readonly int _trimmedHashCode;
-        private int _comparerTag;
 
-        /// <summary>
-        /// Used for special handling of Relaxed Helper Names
-        /// </summary>
-        internal void TagComparer()
-        {
-            _comparerTag++;
-        }
-        
         /// <inheritdoc />
         public bool Equals(PathInfo other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return HasValue == other.HasValue && _path == other._path && _comparerTag == other._comparerTag;
+            return HasValue == other.HasValue && _path == other._path;
         }
 
         /// <inheritdoc />
@@ -122,20 +112,7 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
         /// <inheritdoc cref="ToString"/>
         public static implicit operator string(PathInfo pathInfo) => pathInfo._path;
         
-        internal UndefinedBindingResult GetUndefinedBindingResult(ICompiledHandlebarsConfiguration configuration)
-        {
-            if (_undefinedBindingResult != null) return _undefinedBindingResult;
-            lock (_lock)
-            {
-                return _undefinedBindingResult ??
-                       (_undefinedBindingResult = new UndefinedBindingResult(this, configuration));
-            }
-        }
-        
-        internal static IEqualityComparer<PathInfo> PlainPathComparer { get; } = new TrimmedPathEqualityComparer(false);
-        internal static IEqualityComparer<PathInfo> PlainPathWithPartsCountComparer { get; } = new TrimmedPathEqualityComparer();
-
-        private sealed class TrimmedPathEqualityComparer : IEqualityComparer<PathInfo>
+        internal sealed class TrimmedPathEqualityComparer : IEqualityComparer<PathInfo>
         {
             private readonly bool _countParts;
 
@@ -150,7 +127,7 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
                 if (ReferenceEquals(x, null)) return false;
                 if (ReferenceEquals(y, null)) return false;
                 
-                return x._comparerTag == y._comparerTag && (!_countParts || x.PathChain.Length == y.PathChain.Length) && string.Equals(x.TrimmedPath, y.TrimmedPath);
+                return (!_countParts || x.PathChain.Length == y.PathChain.Length) && string.Equals(x.TrimmedPath, y.TrimmedPath);
             }
 
             public int GetHashCode(PathInfo obj)

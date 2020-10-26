@@ -17,7 +17,7 @@ namespace HandlebarsDotNet.Compiler
         {
             if (!sex.IsEscaped)
             {
-                var writer = Arg<EncodedTextWriter>(CompilationContext.EncodedWriter);
+                var writer = CompilationContext.Args.EncodedWriter;
                 var suppressEncoding = writer.Property(o => o.SuppressEncoding);
                 
                 return Block()

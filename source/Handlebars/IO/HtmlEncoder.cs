@@ -15,6 +15,7 @@ namespace HandlebarsDotNet
     {
         public HtmlEncoder(IFormatProvider provider) => FormatProvider = provider;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool ShouldEncode(char c)
         {
             return c == '"'

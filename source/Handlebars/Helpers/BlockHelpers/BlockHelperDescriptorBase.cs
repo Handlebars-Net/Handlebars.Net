@@ -5,7 +5,7 @@ namespace HandlebarsDotNet.Helpers.BlockHelpers
 {
     public abstract class BlockHelperDescriptorBase : IHelperDescriptor
     {
-        protected BlockHelperDescriptorBase(string name) => Name = PathResolver.GetPathInfo(name);
+        protected BlockHelperDescriptorBase(string name) => Name = PathInfoStore.Shared.GetOrAdd(name);
 
         protected BlockHelperDescriptorBase(PathInfo name) => Name = name;
 

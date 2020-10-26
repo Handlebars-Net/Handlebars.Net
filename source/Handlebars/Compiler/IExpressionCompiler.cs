@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.Contracts;
 using System.Linq.Expressions;
 
 namespace HandlebarsDotNet
@@ -8,6 +9,7 @@ namespace HandlebarsDotNet
     /// </summary>
     public interface IExpressionCompiler
     {
-        T Compile<T>(Expression<T> expression) where T: class;
+        [Pure]
+        T Compile<T>(Expression<T> expression) where T: class, Delegate;
     }
 }

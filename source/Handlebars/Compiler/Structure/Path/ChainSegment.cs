@@ -25,29 +25,36 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
     public sealed class ChainSegment : IEquatable<ChainSegment>
     {
         private static readonly char[] TrimStart = {'@'};
-        private static readonly LookupSlim<string, ChainSegment> Lookup = new LookupSlim<string, ChainSegment>();
+        
+        // TODO: migrate to WeakReference?
+        private static readonly LookupSlim<string, SafeDeferredValue<CreationProperties, ChainSegment>> Lookup = new LookupSlim<string, SafeDeferredValue<CreationProperties, ChainSegment>>();
+        
+        private static readonly Func<string, WellKnownVariable, SafeDeferredValue<CreationProperties, ChainSegment>> ValueFactory = (s, v) =>
+        {
+            return new SafeDeferredValue<CreationProperties, ChainSegment>(new CreationProperties(s, v), properties => new ChainSegment(properties.String, properties.KnownVariable));
+        };
         
         public static ChainSegmentEqualityComparer EqualityComparer { get; } = new ChainSegmentEqualityComparer();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ChainSegment Create(string value) => Lookup.GetOrAdd(value, v => new ChainSegment(v));
+        public static ChainSegment Create(string value) => Lookup.GetOrAdd(value, ValueFactory, WellKnownVariable.None).Value;
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ChainSegment Create(object value)
+        {
+            if (value is ChainSegment segment) return segment;
+            return Lookup.GetOrAdd(value as string ?? value.ToString(), ValueFactory, WellKnownVariable.None).Value;
+        }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static ChainSegment Create(string value, WellKnownVariable variable, bool createVariable = false)
         {
             if (createVariable)
             {
-                Lookup.GetOrAdd($"@{value}", (s, v) => new ChainSegment(s, v), variable);
+                Lookup.GetOrAdd($"@{value}", ValueFactory, variable);
             }
             
-            return Lookup.GetOrAdd(value, (s, v) => new ChainSegment(s, v), variable);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ChainSegment Create(object value)
-        {
-            if (value is ChainSegment segment) return segment;
-            return Lookup.GetOrAdd(value as string ?? value.ToString(), v => new ChainSegment(v));
+            return Lookup.GetOrAdd(value, ValueFactory, variable).Value;
         }
 
         public static ChainSegment Index { get; } = Create(nameof(Index), WellKnownVariable.Index, true);
@@ -60,17 +67,11 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
         public static ChainSegment This { get; } = Create(nameof(This), WellKnownVariable.This);
         
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private readonly object _lock = new object();
-
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private readonly int _hashCode;
         
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private readonly string _value;
-        
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private UndefinedBindingResult _undefinedBindingResult;
-        
+
         /// <summary>
         ///  
         /// </summary>
@@ -88,9 +89,11 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
             LowerInvariant = segmentTrimmedValue.ToLowerInvariant();
             
             IsValue = LowerInvariant == "value";
-            IsKey = LowerInvariant == "key";
 
             _hashCode = GetHashCodeImpl();
+
+            if (IsThis) WellKnownVariable = WellKnownVariable.This;
+            if (IsValue) WellKnownVariable = WellKnownVariable.Value;
         }
 
         /// <summary>
@@ -110,7 +113,7 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
 
         internal readonly string LowerInvariant;
         internal readonly bool IsValue;
-        internal readonly bool IsKey;
+        
         internal readonly WellKnownVariable WellKnownVariable;
 
         /// <summary>
@@ -180,17 +183,7 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
 
             return key;
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal UndefinedBindingResult GetUndefinedBindingResult(ICompiledHandlebarsConfiguration configuration)
-        {
-            if (_undefinedBindingResult != null) return _undefinedBindingResult;
-            lock (_lock)
-            {
-                return _undefinedBindingResult ??= new UndefinedBindingResult(this, configuration);
-            }
-        }
-
+        
         public struct ChainSegmentEqualityComparer : IEqualityComparer<ChainSegment>
         {
             [DebuggerStepThrough]
@@ -207,6 +200,18 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public int GetHashCode(ChainSegment obj) => obj._hashCode;
+        }
+        
+        private readonly struct CreationProperties
+        {
+            public readonly string String;
+            public readonly WellKnownVariable KnownVariable;
+
+            public CreationProperties(string @string, WellKnownVariable knownVariable = WellKnownVariable.None)
+            {
+                String = @string;
+                KnownVariable = knownVariable;
+            }
         }
     }
 }
