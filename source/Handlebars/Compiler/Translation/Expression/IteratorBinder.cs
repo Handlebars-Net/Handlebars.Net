@@ -32,10 +32,11 @@ namespace HandlebarsDotNet.Compiler
         
         protected override Expression VisitIteratorExpression(IteratorExpression iex)
         {
-            var context = Arg<BindingContext>(CompilationContext.BindingContext);
+            var context = CompilationContext.Args.BindingContext;
+            var writer = CompilationContext.Args.EncodedWriter;
 
-            var template = FunctionBuilder.CompileCore(new[] {iex.Template}, CompilationContext.Configuration);
-            var ifEmpty = FunctionBuilder.CompileCore(new[] {iex.IfEmpty}, CompilationContext.Configuration);
+            var template = FunctionBuilder.Compile(new[] {iex.Template}, CompilationContext.Configuration);
+            var ifEmpty = FunctionBuilder.Compile(new[] {iex.IfEmpty}, CompilationContext.Configuration);
 
             if (iex.Sequence is PathExpression pathExpression)
             {
@@ -46,7 +47,7 @@ namespace HandlebarsDotNet.Compiler
             var blockParamsValues = CreateBlockParams();
 
             return Call(() =>
-                Iterator.Iterate(context, blockParamsValues, compiledSequence, template, ifEmpty)
+                Iterator.Iterate(context, writer, blockParamsValues, compiledSequence, template, ifEmpty)
             );
             
             ExpressionContainer<ChainSegment[]> CreateBlockParams()
@@ -64,22 +65,26 @@ namespace HandlebarsDotNet.Compiler
 
     internal static class Iterator
     {
-        public static void Iterate(BindingContext context,
+        public static void Iterate(
+            BindingContext context,
+            EncodedTextWriter writer,
             ChainSegment[] blockParamsVariables,
             object target,
-            Action<BindingContext, TextWriter, object> template,
-            Action<BindingContext, TextWriter, object> ifEmpty)
+            TemplateDelegate template,
+            TemplateDelegate ifEmpty)
         {
             if (!HandlebarsUtils.IsTruthy(target))
             {
-                ifEmpty(context, context.TextWriter, context.Value);
+                using var frame = context.CreateFrame(context.Value);
+                ifEmpty(writer, frame);
                 return;
             }
 
             var targetType = target.GetType();
             if (!context.Configuration.ObjectDescriptorProvider.TryGetDescriptor(targetType, out var descriptor))
             {
-                ifEmpty(context, context.TextWriter, context.Value);
+                using var frame = context.CreateFrame(context.Value);
+                ifEmpty(writer, frame);
                 return;
             }
 
@@ -88,33 +93,35 @@ namespace HandlebarsDotNet.Compiler
                 var properties = descriptor.GetProperties(descriptor, target);
                 if (properties is IList<ChainSegment> propertiesList)
                 {
-                    IterateObjectWithStaticProperties(context, blockParamsVariables, descriptor, target, propertiesList, targetType, template, ifEmpty);
+                    IterateObjectWithStaticProperties(context, writer, blockParamsVariables, descriptor, target, propertiesList, targetType, template, ifEmpty);
                     return;   
                 }
                 
-                IterateObject(context, descriptor, blockParamsVariables, target, properties, targetType, template, ifEmpty);
+                IterateObject(context, writer, descriptor, blockParamsVariables, target, properties, targetType, template, ifEmpty);
                 return;
             }
 
             if (target is IList list)
             {
-                IterateList(context, blockParamsVariables, list, template, ifEmpty);
+                IterateList(context, writer, blockParamsVariables, list, template, ifEmpty);
                 return;
             }
 
-            IterateEnumerable(context, blockParamsVariables, (IEnumerable) target, template, ifEmpty);
+            IterateEnumerable(context, writer, blockParamsVariables, (IEnumerable) target, template, ifEmpty);
         }
         
-        private static void IterateObject(BindingContext context,
+        private static void IterateObject(
+            BindingContext context,
+            EncodedTextWriter writer,
             ObjectDescriptor descriptor,
             ChainSegment[] blockParamsVariables,
             object target,
             IEnumerable properties,
             Type targetType,
-            Action<BindingContext, TextWriter, object> template,
-            Action<BindingContext, TextWriter, object> ifEmpty)
+            TemplateDelegate template,
+            TemplateDelegate ifEmpty)
         {
-            using var innerContext = context.CreateChildContext();
+            using var innerContext = context.CreateFrame();
             var iterator = new ObjectIteratorValues(innerContext);
             var blockParams = new BlockParamsValues(innerContext, blockParamsVariables);
             
@@ -146,23 +153,26 @@ namespace HandlebarsDotNet.Compiler
                 blockParams[_0] = iteratorValue;
                 blockParams[_1] = iteratorKey;
                 
-                template(context, context.TextWriter, innerContext);
+                template(writer, innerContext);
             }
 
             if (!enumerated)
             {
-                ifEmpty(context, context.TextWriter, context.Value);
+                innerContext.Value = context.Value;
+                ifEmpty(writer, innerContext);
             }
         }
 
-        private static void IterateObjectWithStaticProperties(BindingContext context,
+        private static void IterateObjectWithStaticProperties(
+            BindingContext context,
+            EncodedTextWriter writer,
             ChainSegment[] blockParamsVariables,
             ObjectDescriptor descriptor,
             object target,
             IList<ChainSegment> properties,
             Type targetType,
-            Action<BindingContext, TextWriter, object> template,
-            Action<BindingContext, TextWriter, object> ifEmpty)
+            TemplateDelegate template,
+            TemplateDelegate ifEmpty)
         {
             using var innerContext = context.CreateFrame();
             var iterator = new ObjectIteratorValues(innerContext);
@@ -196,20 +206,23 @@ namespace HandlebarsDotNet.Compiler
                 blockParams[_0] = iteratorValue;
                 blockParams[_1] = iteratorKey;
 
-                template(context, context.TextWriter, innerContext);
+                template(writer, innerContext);
             }
 
             if (iterationIndex == 0)
             {
-                ifEmpty(context, context.TextWriter, context.Value);
+                innerContext.Value = context.Value;
+                ifEmpty(writer, innerContext);
             }
         }
         
-        private static void IterateList(BindingContext context,
+        private static void IterateList(
+            BindingContext context,
+            EncodedTextWriter writer,
             ChainSegment[] blockParamsVariables,
             IList target,
-            Action<BindingContext, TextWriter, object> template,
-            Action<BindingContext, TextWriter, object> ifEmpty)
+            TemplateDelegate template,
+            TemplateDelegate ifEmpty)
         {
             using var innerContext = context.CreateFrame();
             var iterator = new IteratorValues(innerContext);
@@ -241,22 +254,25 @@ namespace HandlebarsDotNet.Compiler
                 
                 innerContext.Value = iteratorValue;
                 
-                template(context, context.TextWriter, innerContext);
+                template(writer, innerContext);
             }
 
             if (iterationIndex == 0)
             {
-                ifEmpty(context, context.TextWriter, context.Value);
+                innerContext.Value = context.Value;
+                ifEmpty(writer, innerContext);
             }
         }
         
-        private static void IterateEnumerable(BindingContext context,
+        private static void IterateEnumerable(
+            BindingContext context,
+            EncodedTextWriter writer,
             ChainSegment[] blockParamsVariables,
             IEnumerable target,
-            Action<BindingContext, TextWriter, object> template,
-            Action<BindingContext, TextWriter, object> ifEmpty)
+            TemplateDelegate template,
+            TemplateDelegate ifEmpty)
         {
-            using var innerContext = context.CreateChildContext();
+            using var innerContext = context.CreateFrame();
             var iterator = new IteratorValues(innerContext);
             var blockParams = new BlockParamsValues(innerContext, blockParamsVariables);
 
@@ -287,12 +303,13 @@ namespace HandlebarsDotNet.Compiler
                 
                 innerContext.Value = iteratorValue;
                 
-                template(context, context.TextWriter, innerContext);
+                template(writer, innerContext);
             }
 
             if (!enumerated)
             {
-                ifEmpty(context, context.TextWriter, context.Value);
+                innerContext.Value = context.Value;
+                ifEmpty(writer, innerContext);
             }
         }
     }

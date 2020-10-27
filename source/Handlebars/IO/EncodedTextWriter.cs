@@ -1,100 +1,171 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
+using HandlebarsDotNet.Compiler;
 
 namespace HandlebarsDotNet
 {
-	internal sealed class EncodedTextWriter : TextWriter
+	public readonly struct EncodedTextWriter : IDisposable
 	{
-		private static readonly EncodedTextWriterPool Pool = new EncodedTextWriterPool();
+		private readonly TextWriter _underlyingWriter;
+		private readonly Func<UndefinedBindingResult, string> _undefinedFormatter;
+
+		private readonly TextEncoderWrapper _encoder;
 		
-		private ITextEncoder _encoder;
-
-		public bool SuppressEncoding { get; set; }
-
-		private EncodedTextWriter()
+		public bool SuppressEncoding
 		{
-		}
-
-		public static EncodedTextWriter From(TextWriter writer, ITextEncoder encoder)
-		{
-			if (writer is EncodedTextWriter encodedTextWriter) return encodedTextWriter;
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get => !_encoder.Enabled;
 			
-			var textWriter = Pool.Get();
-			textWriter._encoder = encoder;
-			textWriter.UnderlyingWriter = writer;
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			set => _encoder.Enabled = !value;
+		}
+		
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public EncodedTextWriter(
+			TextWriter writer, 
+			ITextEncoder encoder, 
+			Func<UndefinedBindingResult, string> undefinedFormatter, 
+			bool suppressEncoding = false)
+		{
+			_underlyingWriter = writer;
+			_undefinedFormatter = undefinedFormatter;
 
-			return textWriter;
+			_encoder = encoder != null 
+				? TextEncoderWrapper.Create(encoder) 
+				: TextEncoderWrapper.Null;
+			
+			SuppressEncoding = suppressEncoding;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public TextWriter CreateWrapper() => EncodedTextWriterWrapper.From(this);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Write(string value, bool encode)
 		{
-			if(encode && !SuppressEncoding && (_encoder != null))
+			if(encode && !SuppressEncoding)
 			{
-				value = _encoder.Encode(value);
-			}
-
-			UnderlyingWriter.Write(value);
-		}
-
-		public override void Write(string value)
-		{
-			Write(value, true);
-		}
-
-		public override void Write(char value)
-		{
-			Write(value.ToString(), true);
-		}
-
-		public override void Write(object value)
-		{
-			if (value == null)
-			{
-				return;
-			}
-
-			if (value is ISafeString safeString)
-			{
-				Write(safeString.Value, false);
+				_encoder.Encode(value, _underlyingWriter);
 				return;
 			}
 			
-			var @string = value as string ?? value.ToString();
-			if(string.IsNullOrEmpty(@string)) return;
-			
-			Write(@string, true);
+			_underlyingWriter.Write(value);
 		}
 
-		public TextWriter UnderlyingWriter { get; private set; }
-
-		protected override void Dispose(bool disposing)
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Write(StringBuilder value, bool encode = true)
 		{
-			Pool.Return(this);
-		}
+			if(encode && !SuppressEncoding)
+			{
+				_encoder.Encode(value, _underlyingWriter);
+				return;
+			}
 
-		public override Encoding Encoding => UnderlyingWriter.Encoding;
+			for (int i = 0; i < value.Length; i++)
+			{
+				_underlyingWriter.Write(value[i]);
+			}
+		}
 		
-		private class EncodedTextWriterPool : InternalObjectPool<EncodedTextWriter>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Write(string value)
 		{
-			public EncodedTextWriterPool() : base(new Policy())
+			if(!SuppressEncoding)
 			{
+				_encoder.Encode(value, _underlyingWriter);
+				return;
 			}
-			
-			private class Policy : IInternalObjectPoolPolicy<EncodedTextWriter>
-			{
-				public EncodedTextWriter Create()
-				{
-					return new EncodedTextWriter();
-				}
 
-				public bool Return(EncodedTextWriter obj)
-				{
-					obj._encoder = null;
-					obj.UnderlyingWriter = null;
-					
-					return true;
-				}
+			_underlyingWriter.Write(value);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Write(string format, params object[] arguments) => Write(string.Format(format, arguments));
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Write(char value)
+		{
+			if (_encoder.ShouldEncode(value))
+			{
+				Write(value.ToString(), true);
+			}
+			else
+			{
+				_underlyingWriter.Write(value);
 			}
 		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Write(UndefinedBindingResult undefined) => _underlyingWriter.Write(_undefinedFormatter(undefined));
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Write(int value) => _underlyingWriter.Write(value);
+		
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Write(double value) => _underlyingWriter.Write(value);
+		
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Write(float value) => _underlyingWriter.Write(value);
+		
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Write(bool value) => _underlyingWriter.Write(value);
+		
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Write(decimal value) => _underlyingWriter.Write(value);
+		
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Write(short value) => _underlyingWriter.Write(value);
+		
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Write(long value) => _underlyingWriter.Write(value);
+		
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Write(ulong value) => _underlyingWriter.Write(value);
+		
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Write(uint value) => _underlyingWriter.Write(value);
+		
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Write(ushort value) => _underlyingWriter.Write(value);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Write(object value)
+		{
+			switch (value)
+			{
+				case string v: Write(v); return;
+				case UndefinedBindingResult v: Write(v); return;
+				case bool v: Write(v); return;
+				case int v: Write(v); return;
+				case char v: Write(v); return;
+				case float v: Write(v); return;
+				case double v: Write(v); return;
+				case long v: Write(v); return;
+				case short v: Write(v); return;
+				case uint v: Write(v); return;
+				case ulong v: Write(v); return;
+				case ushort v: Write(v); return;
+				case decimal v: Write(v); return;
+				
+				default:
+					var @string = value.ToString();
+					if(string.IsNullOrEmpty(@string)) return;
+			
+					Write(@string);
+					return;
+			}
+		}
+
+		public Encoding Encoding
+		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get => _underlyingWriter.Encoding;
+		}
+		
+		public void Dispose() => _encoder.Dispose();
+		
+		public override string ToString() => _underlyingWriter.ToString();
 	}
 }

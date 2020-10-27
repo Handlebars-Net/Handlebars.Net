@@ -15,23 +15,28 @@ namespace HandlebarsDotNet
         
         public IDictionary<string, BlockHelperDescriptorBase> BlockHelpers { get; }
         
-        public IDictionary<string, Action<TextWriter, object>> RegisteredTemplates { get; }
+        public IDictionary<string, HandlebarsTemplate<TextWriter, object, object>> RegisteredTemplates { get; }
         
         /// <inheritdoc cref="HandlebarsDotNet.Helpers.IHelperResolver"/>
         public IList<IHelperResolver> HelperResolvers { get; }
         
         public IExpressionNameResolver ExpressionNameResolver { get; set; }
         
-        public ITextEncoder TextEncoder { get; set; } = new HtmlEncoder();
+        public ITextEncoder TextEncoder { get; set; }
         
         /// <inheritdoc cref="IFormatProvider"/>
         public IFormatProvider FormatProvider { get; set; } = CultureInfo.CurrentCulture;
         
         public ViewEngineFileSystem FileSystem { get; set; }
         
+        [Obsolete("Use `UnresolvedBindingFormat` instead.")]
 	    public string UnresolvedBindingFormatter { get; set; }
         
+        public Func<UndefinedBindingResult, string> UnresolvedBindingFormat { get; set; }
+        
         public bool ThrowOnUnresolvedBindingExpression { get; set; }
+        
+        public bool NoEscape { get; set; }
 
         /// <summary>
         /// The resolver used for unregistered partials. Defaults
@@ -57,8 +62,9 @@ namespace HandlebarsDotNet
         {
             Helpers = new ObservableDictionary<string, HelperDescriptorBase>(comparer: StringComparer.OrdinalIgnoreCase);
             BlockHelpers = new ObservableDictionary<string, BlockHelperDescriptorBase>(comparer: StringComparer.OrdinalIgnoreCase);
-            RegisteredTemplates = new ObservableDictionary<string, Action<TextWriter, object>>(comparer: StringComparer.OrdinalIgnoreCase);
+            RegisteredTemplates = new ObservableDictionary<string, HandlebarsTemplate<TextWriter, object, object>>(comparer: StringComparer.OrdinalIgnoreCase);
             HelperResolvers = new ObservableList<IHelperResolver>();
+            TextEncoder = new HtmlEncoder(FormatProvider);
         }
     }
 }

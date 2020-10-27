@@ -1,56 +1,135 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.Compiler.Structure.Path;
+using HandlebarsDotNet.Polyfills;
 
 namespace HandlebarsDotNet
 {
     /// <summary>
     /// Provides access to path expressions in the template
     /// </summary>
-    public interface IPathInfoStore : IReadOnlyDictionary<string, PathInfo>
+    public interface IPathInfoStore
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
         PathInfo GetOrAdd(string path);
     }
     
-    internal class PathInfoStore : IPathInfoStore
+    public class PathInfoStore : IPathInfoStore
     {
-        private readonly Dictionary<string, PathInfo> _paths = new Dictionary<string, PathInfo>();
+        /*
+         * TODO: migrate to WeakReferences?
+         */
+        
+        private static readonly Lazy<PathInfoStore> Instance = new Lazy<PathInfoStore>(() => new PathInfoStore());
+
+        private static readonly Func<string, SafeDeferredValue<string, PathInfo>> ValueFactory = s =>
+        {
+            return new SafeDeferredValue<string, PathInfo>(s, pathString =>
+            {
+                return GetPathInfo(pathString);
+            });
+        };
+        
+        public static PathInfoStore Shared => Instance.Value;
+
+        private readonly LookupSlim<string, SafeDeferredValue<string, PathInfo>> _paths = new LookupSlim<string, SafeDeferredValue<string, PathInfo>>();
+
+        private PathInfoStore(){}
         
         public PathInfo GetOrAdd(string path)
         {
-            if (_paths.TryGetValue(path, out var pathInfo)) return pathInfo;
-            
-            pathInfo = PathResolver.GetPathInfo(path);
-            _paths.Add(path, pathInfo);
+            var pathInfo = _paths.GetOrAdd(path, ValueFactory).Value;
             
             var trimmedPath = pathInfo.TrimmedPath;
-            if ((pathInfo.IsBlockHelper || pathInfo.IsInversion) && !_paths.ContainsKey(trimmedPath))
+            if (pathInfo.IsBlockHelper || pathInfo.IsInversion)
             {
-                _paths.Add(trimmedPath, PathResolver.GetPathInfo(trimmedPath));
+                _paths.GetOrAdd(trimmedPath, ValueFactory);
             }
 
             return pathInfo;
         }
-
-        public IEnumerator<KeyValuePair<string, PathInfo>> GetEnumerator() => _paths.GetEnumerator();
         
-        IEnumerator IEnumerable.GetEnumerator() => _paths.GetEnumerator();
+        public static PathInfo GetPathInfo(string path)
+        {
+            if (path == "null")
+                return new PathInfo(false, path, false, null);
 
-        int IReadOnlyCollection<KeyValuePair<string, PathInfo>>.Count => _paths.Count;
+            var originalPath = path;
 
-        bool IReadOnlyDictionary<string, PathInfo>.ContainsKey(string key) => _paths.ContainsKey(key);
+            var isValidHelperLiteral = true;
+            var isVariable = path.StartsWith("@");
+            var isInversion = path.StartsWith("^");
+            var isBlockHelper = path.StartsWith("#");
+            if (isVariable || isBlockHelper || isInversion)
+            {
+                isValidHelperLiteral = isBlockHelper || isInversion;
+                path = path.Substring(1);
+            }
 
-        public bool TryGetValue(string key, out PathInfo value) => _paths.TryGetValue(key, out value);
+            var segments = new List<PathSegment>();
+            var pathParts = path.Split('/');
+            if (pathParts.Length > 1) isValidHelperLiteral = false;
+            foreach (var segment in pathParts)
+            {
+                if (segment == "..")
+                {
+                    isValidHelperLiteral = false;
+                    segments.Add(new PathSegment(segment, ArrayEx.Empty<ChainSegment>()));
+                    continue;
+                }
 
-        public PathInfo this[string key] => _paths[key];
+                if (segment == ".")
+                {
+                    isValidHelperLiteral = false;
+                    segments.Add(new PathSegment(segment, ArrayEx.Empty<ChainSegment>()));
+                    continue;
+                }
 
-        public IEnumerable<string> Keys => _paths.Keys;
+                var segmentString = isVariable ? "@" + segment : segment;
+                var chainSegments = GetPathChain(segmentString).ToArray();
+                if (chainSegments.Length > 1) isValidHelperLiteral = false;
 
-        public IEnumerable<PathInfo> Values => _paths.Values;
+                segments.Add(new PathSegment(segmentString, chainSegments));
+            }
+
+            return new PathInfo(true, originalPath, isValidHelperLiteral, segments.ToArray());
+        }
+        
+        private static IEnumerable<ChainSegment> GetPathChain(string segmentString)
+        {
+            var insideEscapeBlock = false;
+            var pathChainParts = segmentString.Split(new[] {'.'}, StringSplitOptions.RemoveEmptyEntries);
+            if (pathChainParts.Length == 0 && segmentString == ".") return new[] {ChainSegment.Create("this")};
+
+            var pathChain = pathChainParts.Aggregate(new List<ChainSegment>(), (list, next) =>
+            {
+                if (insideEscapeBlock)
+                {
+                    if (next.EndsWith("]"))
+                    {
+                        insideEscapeBlock = false;
+                    }
+
+                    list[list.Count - 1] = ChainSegment.Create($"{list[list.Count - 1]}.{next}");
+                    return list;
+                }
+
+                if (next.StartsWith("["))
+                {
+                    insideEscapeBlock = true;
+                }
+
+                if (next.EndsWith("]"))
+                {
+                    insideEscapeBlock = false;
+                }
+
+                list.Add(ChainSegment.Create(next));
+                return list;
+            });
+
+            return pathChain;
+        }
     }
 }

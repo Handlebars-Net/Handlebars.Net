@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -7,17 +6,15 @@ namespace HandlebarsDotNet.Compiler
     {
         private static readonly BindingContextPool Pool = new BindingContextPool();
 
-        internal static BindingContext Create(ICompiledHandlebarsConfiguration configuration, object value,
-            EncodedTextWriter writer, BindingContext parent, string templatePath)
+        internal static BindingContext Create(ICompiledHandlebarsConfiguration configuration, object value, string templatePath = null)
         {
-            return Pool.CreateContext(configuration, value, writer, parent, templatePath, null);
+            return Pool.CreateContext(configuration, value, null, templatePath, null);
         }
 
-        internal static BindingContext Create(ICompiledHandlebarsConfiguration configuration, object value,
-            EncodedTextWriter writer, BindingContext parent, string templatePath,
-            Action<BindingContext, TextWriter, object> partialBlockTemplate)
+        internal static BindingContext Create(ICompiledHandlebarsConfiguration configuration, object value, BindingContext parent, string templatePath,
+            TemplateDelegate partialBlockTemplate)
         {
-            return Pool.CreateContext(configuration, value, writer, parent, templatePath, partialBlockTemplate);
+            return Pool.CreateContext(configuration, value, parent, templatePath, partialBlockTemplate);
         }
         
         public void Dispose() => Pool.Return(this);
@@ -28,12 +25,11 @@ namespace HandlebarsDotNet.Compiler
             {
             }
             
-            public BindingContext CreateContext(ICompiledHandlebarsConfiguration configuration, object value, EncodedTextWriter writer, BindingContext parent, string templatePath, Action<BindingContext, TextWriter, object> partialBlockTemplate)
+            public BindingContext CreateContext(ICompiledHandlebarsConfiguration configuration, object value, BindingContext parent, string templatePath, TemplateDelegate partialBlockTemplate)
             {
                 var context = Get();
                 context.Configuration = configuration;
                 context.Value = value;
-                context.TextWriter = writer;
                 context.ParentContext = parent;
                 context.TemplatePath = templatePath;
                 context.PartialBlockTemplate = partialBlockTemplate;
@@ -53,10 +49,11 @@ namespace HandlebarsDotNet.Compiler
                     item.Value = null;
                     item.ParentContext = null;
                     item.TemplatePath = null;
-                    item.TextWriter = null;
                     item.PartialBlockTemplate = null;
                     item.InlinePartialTemplates.Clear();
 
+                    item.RootDataObject.Clear();
+                    item.Extensions.OptionalClear();
                     item.BlockParamsObject.OptionalClear();
                     item.ContextDataObject.OptionalClear();
                     

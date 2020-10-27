@@ -1,6 +1,6 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using HandlebarsDotNet.MemberAccessors;
 
 namespace HandlebarsDotNet.ObjectDescriptors
@@ -8,10 +8,11 @@ namespace HandlebarsDotNet.ObjectDescriptors
     /// <summary>
     /// Provides meta-information about <see cref="Type"/>
     /// </summary>
-    public class ObjectDescriptor : IEquatable<ObjectDescriptor>
+    public class ObjectDescriptor
     {
         public static readonly ObjectDescriptor Empty = new ObjectDescriptor();
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ObjectDescriptor Create(object from, ICompiledHandlebarsConfiguration configuration)
         {
             if (from == null) return null;
@@ -19,6 +20,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
             return descriptor;
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryCreate(object from, ICompiledHandlebarsConfiguration configuration, out ObjectDescriptor descriptor)
         {
             return configuration.ObjectDescriptorProvider.TryGetDescriptor(from.GetType(), out descriptor);

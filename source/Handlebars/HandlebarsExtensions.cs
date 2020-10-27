@@ -3,7 +3,6 @@ using System.IO;
 
 namespace HandlebarsDotNet
 {
-    
     public static class HandlebarsExtensions
     {
         /// <summary>
@@ -11,9 +10,9 @@ namespace HandlebarsDotNet
         /// </summary>
         /// <param name="writer"></param>
         /// <param name="value"></param>
-        public static void WriteSafeString(this TextWriter writer, string value)
+        public static void WriteSafeString(this in EncodedTextWriter writer, string value)
         {
-            writer.Write(new SafeString(value));
+            writer.Write(value, false);
         }
 
         /// <summary>
@@ -21,15 +20,15 @@ namespace HandlebarsDotNet
         /// </summary>
         /// <param name="writer"></param>
         /// <param name="value"></param>
-        public static void WriteSafeString(this TextWriter writer, object value)
+        public static void WriteSafeString(this in EncodedTextWriter writer, object value)
         {
             if (value is string str)
             {
-                writer.Write(new SafeString(str));
+                writer.Write(str, false);
                 return;
             }
             
-            writer.Write(new SafeString(value.ToString()));
+            writer.Write(value.ToString(), false);
         }
         
         /// <summary>
@@ -44,28 +43,6 @@ namespace HandlebarsDotNet
 
             return configuration;
         }
-        
-        public static object This(this HelperOptions options, object context, Func<HelperOptions, Action<TextWriter, object>> selector)
-        {
-            using var writer = ReusableStringWriter.Get(options.Configuration.FormatProvider);
-            selector(options)(writer, context);
-            return writer.ToString();
-        }
-    }
-
-    
-    public interface ISafeString
-    {
-        string Value { get; }
-    }
-    
-    public class SafeString : ISafeString
-    {
-        public string Value { get; }
-        
-        public SafeString(string value) => Value = value;
-
-        public override string ToString() => Value;
     }
 }
 

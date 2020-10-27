@@ -599,7 +599,7 @@ namespace HandlebarsDotNet.Test
 
         public class TestMissingPartialTemplateHandler : IMissingPartialTemplateHandler
         {
-            public void Handle(ICompiledHandlebarsConfiguration configuration, string partialName, TextWriter textWriter)
+            public void Handle(ICompiledHandlebarsConfiguration configuration, string partialName, in EncodedTextWriter textWriter)
             {
                 textWriter.Write($"Partial Not Found: {partialName}");
             }

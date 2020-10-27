@@ -19,7 +19,7 @@ namespace HandlebarsNet.Benchmark
         }
 
         [Benchmark]
-        public Func<object, string> Template()
+        public HandlebarsTemplate<object, object> Template()
         {
             const string template = @"
                 childCount={{level1.Count}}

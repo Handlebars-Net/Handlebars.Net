@@ -1,4 +1,3 @@
-using System.IO;
 using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.Compiler.Structure.Path;
@@ -24,8 +23,9 @@ namespace HandlebarsDotNet.Helpers.BlockHelpers
             _blockHelperMissing = _configuration.BlockHelpers[pathInfoStore.GetOrAdd("blockHelperMissing")];
         }
         
-        public override void Invoke(TextWriter output, HelperOptions options, object context, params object[] arguments)
+        public override void Invoke(in EncodedTextWriter output, in HelperOptions options, object context, in Arguments arguments)
         {
+            // TODO: add cache
             var helperResolvers = (ObservableList<IHelperResolver>)_configuration.HelperResolvers;
             if(helperResolvers.Count != 0)
             {

@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Globalization;
+using System.IO;
+using System.Text;
 using HandlebarsDotNet.Compiler.Resolvers;
 using Newtonsoft.Json;
 using Xunit;
@@ -61,10 +64,19 @@ namespace HandlebarsDotNet.Test
 
         private class JsonEncoder : ITextEncoder
         {
-            public string Encode(string value)
+            public void Encode(StringBuilder text, TextWriter target)
             {
-                return value != null ? JsonConvert.ToString(value, '"').Trim('"') : String.Empty;
+                target.Write(JsonConvert.ToString(text.ToString(), '"').Trim('"'));
             }
+
+            public void Encode(string text, TextWriter target)
+            {
+                target.Write(JsonConvert.ToString(text, '"').Trim('"'));
+            }
+
+            public bool ShouldEncode(char c) => true;
+
+            public IFormatProvider FormatProvider { get; } = CultureInfo.InvariantCulture;
         }
 
 

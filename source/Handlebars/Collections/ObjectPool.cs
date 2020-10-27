@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Concurrent;
 
 namespace HandlebarsDotNet
@@ -15,12 +14,10 @@ namespace HandlebarsDotNet
         where T: class
     {
         private readonly IInternalObjectPoolPolicy<T> _policy;
-        private ConcurrentQueue<T> _queue = new ConcurrentQueue<T>();
+        private readonly ConcurrentQueue<T> _queue = new ConcurrentQueue<T>();
 
         public InternalObjectPool(IInternalObjectPoolPolicy<T> policy)
         {
-            Handlebars.Disposables.Enqueue(new Disposer(this));
-            
             _policy = policy;
     
             for (var i = 0; i < 5; i++) Return(_policy.Create());
@@ -40,15 +37,6 @@ namespace HandlebarsDotNet
         {
             if (!_policy.Return(obj)) return;
             _queue.Enqueue(obj);
-        }
-    
-        private sealed class Disposer : IDisposable
-        {
-            private readonly InternalObjectPool<T> _target;
-    
-            public Disposer(InternalObjectPool<T> target) => _target = target;
-
-            public void Dispose() => _target._queue = new ConcurrentQueue<T>();
         }
     }
 

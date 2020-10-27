@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 
 namespace HandlebarsDotNet.Compiler
 {
-    internal abstract class HandlebarsExpressionVisitor : ExpressionVisitor
+    internal class HandlebarsExpressionVisitor : ExpressionVisitor
     {
         public override Expression Visit(Expression exp)
         {
@@ -59,7 +59,7 @@ namespace HandlebarsDotNet.Compiler
         protected virtual Expression VisitHelperExpression(HelperExpression hex)
         {
             var arguments = VisitExpressionList(hex.Arguments);
-            if (arguments != hex.Arguments)
+            if (!Equals(arguments, hex.Arguments))
             {
                 return HandlebarsExpression.Helper(hex.HelperName, hex.IsBlock, arguments, hex.IsRaw);
             }
@@ -149,35 +149,32 @@ namespace HandlebarsDotNet.Compiler
             return hpex;
         }
 
-        IEnumerable<Expression> VisitExpressionList(IEnumerable<Expression> original)
+        private IEnumerable<Expression> VisitExpressionList(IEnumerable<Expression> original)
         {
-            if (original == null)
-            {
-                return original;
-            }
+            if (original == null) return null;
 
             var originalAsList = original as IReadOnlyList<Expression> ?? original.ToArray();
             List<Expression> list = null;
-            for (int i = 0, n = originalAsList.Count; i < n; i++)
+            for (int index = 0; index < originalAsList.Count; index++)
             {
-                Expression p = Visit(originalAsList[i]);
+                var p = Visit(originalAsList[index]);
                 if (list != null)
                 {
                     list.Add(p);
+                    continue;
                 }
-                else if (p != originalAsList[i])
+
+                if (p == originalAsList[index]) continue;
+                
+                list = new List<Expression>(originalAsList.Count);
+                for (var j = 0; j < index; j++)
                 {
-                    list = new List<Expression>(n);
-                    for (int j = 0; j < i; j++)
-                    {
-                        list.Add(originalAsList[j]);
-                    }
-                    list.Add(p);
+                    list.Add(originalAsList[j]);
                 }
+                list.Add(p);
             }
-            if (list != null)
-                return list.ToArray();
-            return original;
+            
+            return list?.ToArray() ?? originalAsList;
         }
     }
 }

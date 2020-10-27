@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.IO;
+using HandlebarsDotNet.Compiler;
 using HandlebarsDotNet.Helpers;
 using HandlebarsDotNet.Helpers.BlockHelpers;
 
@@ -12,14 +13,14 @@ namespace HandlebarsDotNet
     /// <param name="output"></param>
     /// <param name="context"></param>
     /// <param name="arguments"></param>
-    public delegate void HandlebarsHelper(TextWriter output, dynamic context, params object[] arguments);
+    public delegate void HandlebarsHelper(EncodedTextWriter output, object context, Arguments arguments);
     
     /// <summary>
     /// InlineHelper: {{#helper arg1 arg2}}, supports <see cref="object"/> value return
     /// </summary>
     /// <param name="context"></param>
     /// <param name="arguments"></param>
-    public delegate object HandlebarsReturnHelper(dynamic context, params object[] arguments);
+    public delegate object HandlebarsReturnHelper(object context, Arguments arguments);
     
     /// <summary>
     /// BlockHelper: {{#helper}}..{{/helper}}
@@ -28,7 +29,7 @@ namespace HandlebarsDotNet
     /// <param name="options"></param>
     /// <param name="context"></param>
     /// <param name="arguments"></param>
-    public delegate void HandlebarsBlockHelper(TextWriter output, HelperOptions options, dynamic context, params object[] arguments);
+    public delegate void HandlebarsBlockHelper(EncodedTextWriter output, HelperOptions options, object context, Arguments arguments);
     
     /// <summary>
     /// BlockHelper: {{#helper}}..{{/helper}}
@@ -36,7 +37,7 @@ namespace HandlebarsDotNet
     /// <param name="options"></param>
     /// <param name="context"></param>
     /// <param name="arguments"></param>
-    public delegate object HandlebarsReturnBlockHelper(HelperOptions options, dynamic context, params object[] arguments);
+    public delegate object HandlebarsReturnBlockHelper(HelperOptions options, object context, Arguments arguments);
 
     
     public sealed class Handlebars
@@ -74,27 +75,27 @@ namespace HandlebarsDotNet
         /// </summary>
         /// <param name="template"></param>
         /// <returns></returns>
-        public static Action<TextWriter, object> Compile(TextReader template)
+        public static HandlebarsTemplate<TextWriter, object, object> Compile(TextReader template)
         {
             return Instance.Compile(template);
         }
         
-        public static Func<object, string> Compile(string template)
+        public static HandlebarsTemplate<object, object> Compile(string template)
         {
             return Instance.Compile(template);
         }
         
-        public static Func<object, string> CompileView(string templatePath)
+        public static HandlebarsTemplate<object, object> CompileView(string templatePath)
         {
             return Instance.CompileView(templatePath);
         }
         
-        public static Action<TextWriter, object> CompileView(string templatePath, ViewReaderFactory readerFactoryFactory)
+        public static HandlebarsTemplate<TextWriter, object, object> CompileView(string templatePath, ViewReaderFactory readerFactoryFactory)
         {
             return Instance.CompileView(templatePath, readerFactoryFactory);
         }
         
-        public static void RegisterTemplate(string templateName, Action<TextWriter, object> template)
+        public static void RegisterTemplate(string templateName, HandlebarsTemplate<TextWriter, object, object> template)
         {
             Instance.RegisterTemplate(templateName, template);
         }
@@ -166,18 +167,5 @@ namespace HandlebarsDotNet
         /// Expose the configuration in order to have access in all Helpers and Templates.
         /// </summary>
         public static HandlebarsConfiguration Configuration => Instance.Configuration;
-
-        /// <summary>
-        /// Allows to perform cleanup of internal static buffers
-        /// </summary>
-        public static void Cleanup()
-        {
-            while (Disposables.TryDequeue(out var disposable))
-            {
-                disposable.Dispose();
-            }
-        }
-        
-        internal static readonly ConcurrentQueue<IDisposable> Disposables = new ConcurrentQueue<IDisposable>();
     }
 }

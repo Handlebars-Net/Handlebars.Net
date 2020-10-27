@@ -8,7 +8,7 @@ namespace HandlebarsNet.Benchmark
 {
     public class Execution
     {
-        private readonly List<Action<TextWriter, object>> _templates = new List<Action<TextWriter, object>>();
+        private readonly List<HandlebarsTemplate<TextWriter, object, object>> _templates = new List<HandlebarsTemplate<TextWriter, object, object>>();
 
         [GlobalSetup]
         public void Setup()

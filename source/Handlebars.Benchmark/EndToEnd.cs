@@ -9,7 +9,7 @@ namespace HandlebarsNet.Benchmark
     public class EndToEnd
     {
         private object _data;
-        private Action<TextWriter, object> _default;
+        private HandlebarsTemplate<TextWriter, object, object> _default;
 
         [Params(5)]
         public int N { get; set; }

@@ -1,7 +1,6 @@
 ﻿using System;
 using HandlebarsDotNet.Compiler;
 using System.Collections;
-using System.Linq;
 
 namespace HandlebarsDotNet
 {
@@ -54,7 +53,7 @@ namespace HandlebarsDotNet
                 return true;
             }
 
-            return value is IEnumerable enumerable && !enumerable.OfType<object>().Any();
+            return value is IEnumerable enumerable && !enumerable.Any();
         }
 
         private static bool IsNumber(object value)

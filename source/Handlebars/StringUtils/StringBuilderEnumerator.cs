@@ -1,20 +1,21 @@
-using System.Collections;
-using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace HandlebarsDotNet.Compiler.Lexer
+namespace HandlebarsDotNet.StringUtils
 {
-    internal struct StringBuilderEnumerator : IEnumerator<char>
+    internal ref struct StringBuilderEnumerator
     {
         private readonly StringBuilder _stringBuilder;
         private int _index;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public StringBuilderEnumerator(StringBuilder stringBuilder) : this()
         {
             _stringBuilder = stringBuilder;
             _index = -1;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
             if (++_index >= _stringBuilder.Length) return false;
@@ -23,14 +24,9 @@ namespace HandlebarsDotNet.Compiler.Lexer
             return true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset() => _index = -1;
 
         public char Current { get; private set; }
-
-        object IEnumerator.Current => Current;
-        
-        public void Dispose()
-        {
-        }
     }
 }

@@ -5,7 +5,7 @@ using HandlebarsDotNet.Compiler.Structure.Path;
 
 namespace HandlebarsDotNet.ValueProviders
 {
-    public readonly struct DataValues
+    public readonly ref struct DataValues
     {
         private readonly BindingContext _context;
         private readonly EntryIndex<ChainSegment>[] _wellKnownVariables;
@@ -65,7 +65,7 @@ namespace HandlebarsDotNet.ValueProviders
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void CreateProperty(ChainSegment variable, out EntryIndex<ChainSegment> index)
         {
-            var value = variable.GetUndefinedBindingResult(Configuration);
+            var value = UndefinedBindingResult.Create(variable);
             _data.AddOrReplace(variable, value, out index);
             
             if (variable.WellKnownVariable != WellKnownVariable.None)

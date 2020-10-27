@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
@@ -6,6 +7,12 @@ namespace HandlebarsDotNet
 {
     internal static class EnumerableExtensions
     {
+        public static bool Any(this IEnumerable builder)
+        {
+            var enumerator = builder.GetEnumerator();
+            return enumerator.MoveNext();
+        }
+        
         public static bool IsOneOf<TSource, TExpected>(this IEnumerable<TSource> source)
             where TExpected : TSource
         {

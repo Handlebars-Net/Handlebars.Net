@@ -31,7 +31,6 @@ namespace HandlebarsDotNet.Collections
         private readonly int _bucketSize;
         
         private readonly Entry[] _entries;
-        private readonly Bucket[] _buckets;
         private readonly EntryIndex<TKey>[] _indexes; // required for fast cleanup and copy
 
         private readonly TComparer _comparer;
@@ -57,9 +56,6 @@ namespace HandlebarsDotNet.Collections
             _bucketMask = bucketsCount - 1;
             _bucketSize = FindClosestPrime(bucketSize);
             _version = 1;
-
-            _buckets = new Bucket[bucketsCount];
-            InitializeBuckets(_buckets);
 
             _entries = new Entry[bucketsCount * bucketSize];
             _indexes = new EntryIndex<TKey>[bucketsCount * bucketSize];
@@ -87,14 +83,6 @@ namespace HandlebarsDotNet.Collections
 
                 return HashHelper.Primes[HashHelper.Primes.Length - 1];
             }
-
-            static void InitializeBuckets(Bucket[] buckets)
-            {
-                for (var i = 0; i < buckets.Length; i++)
-                {
-                    buckets[i] = new Bucket(0);
-                }
-            }
         }
 
         public int Count => _count;
@@ -112,22 +100,22 @@ namespace HandlebarsDotNet.Collections
         /// <returns></returns>
         public bool TryGetIndex(TKey key, out EntryIndex<TKey> index)
         {
+            if (_count == 0)
+            {
+                index = default;
+                return false;
+            }
+            
             var hash = _comparer.GetHashCode(key);
             var bucketIndex = hash & _bucketMask;
 
             var inBucketEntryIndex = hash % _bucketSize;
             var entryIndex = bucketIndex * _bucketSize + Math.Abs(inBucketEntryIndex);
-
-            if (_buckets[bucketIndex].Version != _version)
-            {
-                index = new EntryIndex<TKey>(entryIndex, _version);
-                return true;
-            }
-
+            
             var entry = _entries[entryIndex];
             if (entry.Version != _version || hash == entry.Hash && _comparer.Equals(key, entry.Key))
             {
-                index = new EntryIndex<TKey>(entryIndex, _version);
+                index = new EntryIndex<TKey>(entryIndex, _version, this);
                 return true;
             }
 
@@ -138,7 +126,7 @@ namespace HandlebarsDotNet.Collections
                 if (!entry.IsNotDefault) break;
                 if (entry.Version == _version && (hash != entry.Hash || !_comparer.Equals(key, entry.Key))) continue;
 
-                index = new EntryIndex<TKey>(entry.Index, _version);
+                index = new EntryIndex<TKey>(entry.Index, _version, this);
                 return true;
             }
 
@@ -153,18 +141,18 @@ namespace HandlebarsDotNet.Collections
         {
             // No need to extract actual value. EntryIndex should be used only as part of it's issuer
             // and as collection is append only it's guarantied to have the value at particular index
-            return keyIndex.Version == _version;
+            return keyIndex.Version == _version && ReferenceEquals(keyIndex.Producer, this);
         }
 
         /// <summary>
         /// Checks key existence at best O(1) and worst O(m) where 'm' is number of collisions 
         /// </summary>
-        public bool ContainsKey(in TKey key)
+        public bool ContainsKey(TKey key)
         {
+            if (_count == 0) return false;
+
             var hash = _comparer.GetHashCode(key);
             var bucketIndex = hash & _bucketMask;
-
-            if (_buckets[bucketIndex].Version != _version) return false;
 
             var inBucketEntryIndex = hash % _bucketSize;
             var entryIndex = bucketIndex * _bucketSize + Math.Abs(inBucketEntryIndex);
@@ -195,7 +183,7 @@ namespace HandlebarsDotNet.Collections
         /// </summary>
         public bool TryGetValue(in EntryIndex<TKey> keyIndex, out TValue value)
         {
-            if (keyIndex.Version != _version)
+            if (_count == 0 || keyIndex.Version != _version || !ReferenceEquals(keyIndex.Producer, this))
             {
                 value = default;
                 return false;
@@ -217,15 +205,15 @@ namespace HandlebarsDotNet.Collections
         /// </summary>
         public bool TryGetValue(in TKey key, out TValue value)
         {
-            var hash = _comparer.GetHashCode(key);
-            var bucketIndex = hash & _bucketMask;
-
-            if (_buckets[bucketIndex].Version != _version)
+            if (_count == 0)
             {
                 value = default;
                 return false;
             }
-
+            
+            var hash = _comparer.GetHashCode(key);
+            var bucketIndex = hash & _bucketMask;
+            
             var inBucketEntryIndex = hash % _bucketSize;
             var entryIndex = bucketIndex * _bucketSize + Math.Abs(inBucketEntryIndex);
 
@@ -271,32 +259,22 @@ namespace HandlebarsDotNet.Collections
         {
             var hash = _comparer.GetHashCode(key);
             var bucketIndex = hash & _bucketMask;
-            ref var bucket = ref _buckets[bucketIndex];
-            
+
             var inBucketEntryIndex = hash % _bucketSize;
             var entryIndex = bucketIndex * _bucketSize + Math.Abs(inBucketEntryIndex);
             
-            if (bucket.Version != _version)
-            {
-                bucket.Version = _version;
-                _entries[entryIndex] = new Entry(hash, entryIndex, key, value, _version);
-                index = new EntryIndex<TKey>(entryIndex, _version);
-                _indexes[_count++] = index;
-                return;
-            }
-
             var entry = _entries[entryIndex];
             if (!entry.IsNotDefault || entry.Version != _version)
             {
                 _entries[entryIndex] = new Entry(hash, entryIndex, key, value, _version);
-                index = new EntryIndex<TKey>(entryIndex, _version);
+                index = new EntryIndex<TKey>(entryIndex, _version, this);
                 _indexes[_count++] = index;
                 return;
             }
 
             if (hash == entry.Hash && _comparer.Equals(key, entry.Key))
             {
-                index = new EntryIndex<TKey>(entryIndex, _version);
+                index = new EntryIndex<TKey>(entryIndex, _version, this);
                 _entries[entryIndex].Value = value;
                 return;
             }
@@ -308,14 +286,14 @@ namespace HandlebarsDotNet.Collections
                 if (entry.Version != _version)
                 {
                     _entries[entry.Index] = new Entry(hash, entry.Index, key, value, _version);
-                    index = new EntryIndex<TKey>(entry.Index, _version);
+                    index = new EntryIndex<TKey>(entry.Index, _version, this);
                     _indexes[_count++] = index;
                     return;
                 }
 
                 if (hash == entry.Hash && _comparer.Equals(key, entry.Key))
                 {
-                    index = new EntryIndex<TKey>(entry.Index, _version);
+                    index = new EntryIndex<TKey>(entry.Index, _version, this);
                     _entries[entry.Index].Value = value;
                     return;
                 }
@@ -334,7 +312,7 @@ namespace HandlebarsDotNet.Collections
 
                 entryReference.Next = entryIndex;
                 _entries[entryIndex] = new Entry(hash, entryIndex, key, value, _version);
-                index = new EntryIndex<TKey>(entryIndex, _version);
+                index = new EntryIndex<TKey>(entryIndex, _version, this);
                 _indexes[_count++] = index;
                 return;
             }
@@ -347,7 +325,7 @@ namespace HandlebarsDotNet.Collections
 
                 entryReference.Next = entryIndex;
                 _entries[entryIndex] = new Entry(hash, entryIndex, key, value, _version);
-                index = new EntryIndex<TKey>(entryIndex, _version);
+                index = new EntryIndex<TKey>(entryIndex, _version, this);
                 _indexes[_count++] = index;
                 return;
             }
@@ -364,14 +342,14 @@ namespace HandlebarsDotNet.Collections
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                if (entryIndex.Version != _version) return default;
+                if (entryIndex.Version != _version || !ReferenceEquals(entryIndex.Producer, this)) return default;
                 return _entries[entryIndex.Index].Value;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
-                if (entryIndex.Version != _version) return;
+                if (entryIndex.Version != _version || !ReferenceEquals(entryIndex.Producer, this)) return;
                 _entries[entryIndex.Index].Value = value;
             }
         }
@@ -386,25 +364,27 @@ namespace HandlebarsDotNet.Collections
             if (Capacity != destination.Capacity)
                 throw new ArgumentException(" capacity should be equal to source dictionary", nameof(destination));
 
-            destination._version = _version;
+            //destination._version++;
 
-            for (var index = 0; index < _buckets.Length; index++)
-            {
-                destination._buckets[index] = _buckets[index];
-            }
-
+            if(_count == 0) return;
+            
             for (var index = 0; index < _indexes.Length; index++)
             {
                 var idx = _indexes[index];
-                if(idx.Version != _version || !idx.IsNotEmpty) break;
+                if (idx.Version != _version || !idx.IsNotEmpty)
+                {
+                    destination._indexes[index] = new EntryIndex<TKey>(idx.Index, destination._version, destination);
+                    break;
+                }
                 
-                var entryIndex = _entries[idx.Index];
-                if(!entryIndex.IsNotDefault || entryIndex.Version != _version) continue;
+                var entry = _entries[idx.Index];
+                if(!entry.IsNotDefault || entry.Version != _version) continue;
 
-                destination._entries[idx.Index] = entryIndex;
-                destination[entryIndex.Index] = _entries[entryIndex.Index];
-                destination._indexes[index] = idx;
+                destination._indexes[index] = new EntryIndex<TKey>(idx.Index, destination._version, destination);
+                destination._entries[idx.Index] = new Entry(entry, destination._version);
             }
+            
+            destination._count = _count;
         }
 
         /// <summary>
@@ -457,12 +437,6 @@ namespace HandlebarsDotNet.Collections
             Reset();
         }
 
-        private Entry this[in int index]
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => _entries[index] = value;
-        }
-        
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
             for (var index = 0; index < _indexes.Length; index++)
@@ -477,8 +451,6 @@ namespace HandlebarsDotNet.Collections
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-        bool IReadOnlyDictionary<TKey, TValue>.ContainsKey(TKey key) => ContainsKey(key);
 
         bool IReadOnlyDictionary<TKey, TValue>.TryGetValue(TKey key, out TValue value) => TryGetValue(key, out value);
 
@@ -530,7 +502,7 @@ namespace HandlebarsDotNet.Collections
             public TValue Value;
             
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            internal Entry(in int hash, in int index, in TKey key, in TValue value, byte version)
+            internal Entry(in int hash, in int index, in TKey key, in TValue value, in byte version)
             {
                 Index = index;
                 Hash = hash;
@@ -540,17 +512,20 @@ namespace HandlebarsDotNet.Collections
                 IsNotDefault = true;
                 Next = -1;
             }
+            
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            internal Entry(Entry entry, byte version)
+            {
+                Index = entry.Index;
+                Hash = entry.Hash;
+                Key = entry.Key;
+                Value = entry.Value;
+                Version = version;
+                Next = entry.Next;
+                IsNotDefault = true;
+            }
 
             public override string ToString() => $"{Key}: {Value}";
-        }
-
-        private struct Bucket
-        {
-            public byte Version;
-
-            public Bucket(in byte version) => Version = version;
-
-            public override string ToString() => $"v{Version.ToString()}";
         }
     }
 
@@ -558,12 +533,14 @@ namespace HandlebarsDotNet.Collections
     {
         public readonly int Index;
         public readonly byte Version;
+        public readonly object Producer;
         public readonly bool IsNotEmpty;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal EntryIndex(in int index, in byte version)
+        internal EntryIndex(in int index, in byte version, object producer)
         {
             Version = version;
+            Producer = producer;
             Index = index;
             IsNotEmpty = true;
         }

@@ -1,4 +1,3 @@
-using System.IO;
 using HandlebarsDotNet.Compiler;
 using HandlebarsDotNet.Compiler.Structure.Path;
 
@@ -10,14 +9,14 @@ namespace HandlebarsDotNet.Helpers.BlockHelpers
         {
         }
 
-        public override void Invoke(TextWriter output, HelperOptions options, object context, params object[] arguments)
+        public override void Invoke(in EncodedTextWriter output, in HelperOptions options, object context, in Arguments arguments)
         {
             var pathInfo = options.GetValue<PathInfo>("path");
             if(arguments.Length > 0) throw new HandlebarsRuntimeException($"Template references a helper that cannot be resolved. BlockHelper '{pathInfo}'");
             
-            var bindingContext = options.BindingContext;
+            var bindingContext = options.Frame;
             var value = PathResolver.ResolvePath(bindingContext, pathInfo);
-            DeferredSectionBlockHelper.PlainHelper(bindingContext, value, options.OriginalTemplate, options.OriginalInverse);
+            DeferredSectionBlockHelper.PlainHelper(bindingContext, output, value, options.OriginalTemplate, options.OriginalInverse);
         }
     }
 }

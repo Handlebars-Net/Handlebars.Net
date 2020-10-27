@@ -7,6 +7,8 @@ using System.Linq;
 using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.Features;
 using HandlebarsDotNet.Helpers.BlockHelpers;
+using HandlebarsDotNet;
+using HandlebarsDotNet.Compiler;
 using HandlebarsDotNet.ValueProviders;
 
 namespace HandlebarsDotNet.Test
@@ -278,7 +280,7 @@ namespace HandlebarsDotNet.Test
                 .RegisterMissingHelperHook(
                     (context, arguments) =>
                     {
-                        var name = arguments.Last().ToString();
+                        var name = arguments[arguments.Length - 1].ToString();
                         return string.Format(format, name.Trim('[', ']'));
                     });
 
@@ -325,7 +327,7 @@ namespace HandlebarsDotNet.Test
             var format = "Missing helper: {0}";
             handlebars.RegisterHelper("helperMissing", (context, arguments) =>
             {
-                var name = arguments.Last().ToString();
+                var name = arguments[arguments.Length - 1].ToString();
                 return string.Format(format, name.Trim('[', ']'));
             });
 
@@ -495,11 +497,11 @@ namespace HandlebarsDotNet.Test
             Handlebars.RegisterHelper("ifCond", (writer, options, context, arguments) => {
                 if(arguments[0] == arguments[1])
                 {
-                    options.Template(writer, (object)context);
+                    options.Template(writer, context);
                 }
                 else
                 {
-                    options.Inverse(writer, (object)context);
+                    options.Inverse(writer, context);
                 }
             });
 
@@ -559,43 +561,43 @@ namespace HandlebarsDotNet.Test
                         case ">":
                             if (val1.Length > val2.Length)
                             {
-                                options.Template(writer, (object)context);
+                                options.Template(writer, context);
                             }
                             else
                             {
-                                options.Inverse(writer, (object)context);
+                                options.Inverse(writer, context);
                             }
                             break;
                         case "=":
                         case "==":
                             if (val1 == val2)
                             {
-                                options.Template(writer, (object)context);
+                                options.Template(writer, context);
                             }
                             else
                             {
-                                options.Inverse(writer, (object)context);
+                                options.Inverse(writer, context);
                             }
                             break;
                         case "<":
                             if (val1.Length < val2.Length)
                             {
-                                options.Template(writer, (object)context);
+                                options.Template(writer, context);
                             }
                             else
                             {
-                                options.Inverse(writer, (object)context);
+                                options.Inverse(writer, context);
                             }
                             break;
                         case "!=":
                         case "<>":
                             if (val1 != val2)
                             {
-                                options.Template(writer, (object)context);
+                                options.Template(writer, context);
                             }
                             else
                             {
-                                options.Inverse(writer, (object)context);
+                                options.Inverse(writer, context);
                             }
                             break;
                     }
@@ -610,43 +612,43 @@ namespace HandlebarsDotNet.Test
                         case ">":
                             if (val1 > val2)
                             {
-                                options.Template(writer, (object)context);
+                                options.Template(writer, context);
                             }
                             else
                             {
-                                options.Inverse(writer, (object)context);
+                                options.Inverse(writer, context);
                             }
                             break;
                         case "=":
                         case "==":
                             if (val1 == val2)
                             {
-                                options.Template(writer, (object)context);
+                                options.Template(writer, context);
                             }
                             else
                             {
-                                options.Inverse(writer, (object)context);
+                                options.Inverse(writer, context);
                             }
                             break;
                         case "<":
                             if (val1 < val2)
                             {
-                                options.Template(writer, (object)context);
+                                options.Template(writer, context);
                             }
                             else
                             {
-                                options.Inverse(writer, (object)context);
+                                options.Inverse(writer, context);
                             }
                             break;
                         case "!=":
                         case "<>":
                             if (val1 != val2)
                             {
-                                options.Template(writer, (object)context);
+                                options.Template(writer, context);
                             }
                             else
                             {
-                                options.Inverse(writer, (object)context);
+                                options.Inverse(writer, context);
                             }
                             break;
                     }
@@ -795,7 +797,7 @@ namespace HandlebarsDotNet.Test
             var source = "{{#ifCond}}{{else}}Inverse{{/ifCond}}";
 
             Handlebars.RegisterHelper("ifCond", (writer, options, context, arguments) => {
-                options.Inverse(writer, (object)context);
+                options.Inverse(writer, context);
             });
 
             var data = new
@@ -873,17 +875,17 @@ namespace HandlebarsDotNet.Test
             {
             }
 
-            public override void Invoke(TextWriter output, HelperOptions options, object context, params object[] arguments)
+            public override void Invoke(in EncodedTextWriter output, in HelperOptions options, object context, in Arguments arguments)
             {
                 using var frame = options.CreateFrame();
-                frame.Data.CreateProperty(ChainSegment.Index, out var index);
-                frame.Data.CreateProperty(ChainSegment.Value, null, out var value);
+                var data = new DataValues(frame);
+                data.CreateProperty(ChainSegment.Value, null, out var value);
 
                 var iterationIndex = 0;
                 foreach (var item in (IEnumerable) arguments[0])
                 {
-                    frame.Data[index] = iterationIndex;
-                    frame.Data[value] = item;
+                    data[ChainSegment.Index] = iterationIndex;
+                    data[value] = item;
                     frame.Value = item;
 
                     options.Template(output, frame);

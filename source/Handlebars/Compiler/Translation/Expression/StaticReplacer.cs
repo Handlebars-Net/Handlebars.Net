@@ -15,10 +15,10 @@ namespace HandlebarsDotNet.Compiler
         
         protected override Expression VisitStaticExpression(StaticExpression stex)
         {
-            var context = Arg<BindingContext>(CompilationContext.BindingContext);
+            var writer = CompilationContext.Args.EncodedWriter;
             var value = Arg(stex.Value);
             
-            return context.Call(o => o.TextWriter.Write(value, false));
+            return writer.Call(o => o.Write(value, false));
         }
     }
 }

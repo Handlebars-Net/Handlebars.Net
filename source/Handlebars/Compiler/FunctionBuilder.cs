@@ -1,20 +1,16 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using Expressions.Shortcuts;
+using static Expressions.Shortcuts.ExpressionShortcuts;
 
 namespace HandlebarsDotNet.Compiler
 {
     internal static class FunctionBuilder
     {
-        private static readonly Expression<Action<TextWriter, object>> EmptyLambda =
-            Expression.Lambda<Action<TextWriter, object>>(
-                Expression.Empty(),
-                Expression.Parameter(typeof(TextWriter)),
-                Expression.Parameter(typeof(object)));
-        
-        private static readonly Action<BindingContext, TextWriter, object> EmptyLambdaWithContext = (context, writer, arg3) => {};
+        private static readonly TemplateDelegate EmptyLambda = 
+            (in EncodedTextWriter writer, BindingContext context) => { };
 
         public static Expression Reduce(Expression expression, CompilationContext context)
         {
@@ -33,64 +29,44 @@ namespace HandlebarsDotNet.Compiler
             return expression;
         }
 
-        public static Action<BindingContext, TextWriter, object> CompileCore(IEnumerable<Expression> expressions, ICompiledHandlebarsConfiguration configuration, string templatePath = null)
+        public static ExpressionContainer<TemplateDelegate> CreateExpression(IEnumerable<Expression> expressions, ICompiledHandlebarsConfiguration configuration)
         {
             try
             {
-                if (!expressions.Any())
+                var enumerable = expressions as Expression[] ?? expressions.ToArray();
+                if (!enumerable.Any())
                 {
-                    return EmptyLambdaWithContext;
+                    return Arg(EmptyLambda);
                 }
-                if (expressions.IsOneOf<Expression, DefaultExpression>())
+                if (enumerable.IsOneOf<Expression, DefaultExpression>())
                 {
-                    return EmptyLambdaWithContext;
+                    return Arg(EmptyLambda);
                 }
                 
                 var context = new CompilationContext(configuration);
-                var expression = (Expression) Expression.Block(expressions);
+                var expression = (Expression) Expression.Block(enumerable);
                 expression = Reduce(expression, context);
 
-                var lambda = ContextBinder.Bind(context, expression, templatePath);
+                return Arg(ContextBinder.Bind(context, expression));
+            }
+            catch (Exception ex)
+            {
+                throw new HandlebarsCompilerException("An unhandled exception occurred while trying to compile the template", ex);
+            }
+        }
+
+        public static TemplateDelegate Compile(IEnumerable<Expression> expressions, ICompiledHandlebarsConfiguration configuration)
+        {
+            try
+            {
+                var expression = CreateExpression(expressions, configuration);
+                if (expression.Expression is ConstantExpression constantExpression)
+                {
+                    return (TemplateDelegate) constantExpression.Value;
+                }
+
+                var lambda = (Expression<TemplateDelegate>) expression.Expression;
                 return configuration.ExpressionCompiler.Compile(lambda);
-            }
-            catch (Exception ex)
-            {
-                throw new HandlebarsCompilerException("An unhandled exception occurred while trying to compile the template", ex);
-            }
-        }
-        
-        public static Expression<Action<TextWriter, object>> CompileCore(IEnumerable<Expression> expressions, Expression parentContext, ICompiledHandlebarsConfiguration configuration, string templatePath = null)
-        {
-            try
-            {
-                if (!expressions.Any())
-                {
-                    return EmptyLambda;
-                }
-                if (expressions.IsOneOf<Expression, DefaultExpression>())
-                {
-                    return EmptyLambda;
-                }
-                
-                var context = new CompilationContext(configuration);
-                var expression = (Expression) Expression.Block(expressions);
-                expression = Reduce(expression, context);
-
-                return ContextBinder.Bind(context, expression, parentContext, templatePath);
-            }
-            catch (Exception ex)
-            {
-                throw new HandlebarsCompilerException("An unhandled exception occurred while trying to compile the template", ex);
-            }
-        }
-
-        public static Action<TextWriter, object> Compile(IEnumerable<Expression> expressions, ICompiledHandlebarsConfiguration configuration, string templatePath = null)
-        {
-            try
-            {
-                var expression = CompileCore(expressions, null, configuration,  templatePath);
-
-                return configuration.ExpressionCompiler.Compile(expression);
             }
             catch (Exception ex)
             {

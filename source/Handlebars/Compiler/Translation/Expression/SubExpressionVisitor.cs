@@ -35,7 +35,7 @@ namespace HandlebarsDotNet.Compiler
         {
             var bindingContext = Arg<BindingContext>(helperCall.Arguments[0]);
             var context = Arg<object>(helperCall.Arguments[2]);
-            var arguments = Arg<object[]>(helperCall.Arguments[3]);
+            var arguments = Arg<Arguments>(helperCall.Arguments[3]);
             var helper = Arg<HelperDescriptorBase>(helperCall.Object);
             
             return helper.Call(o => o.ReturnInvoke(bindingContext, context, arguments));

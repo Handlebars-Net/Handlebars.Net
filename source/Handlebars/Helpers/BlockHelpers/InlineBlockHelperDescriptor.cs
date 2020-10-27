@@ -1,15 +1,14 @@
-using System.IO;
 using HandlebarsDotNet.Compiler;
 
 namespace HandlebarsDotNet.Helpers.BlockHelpers
 {
     internal sealed class InlineBlockHelperDescriptor : BlockHelperDescriptor
     {
-        public InlineBlockHelperDescriptor() : base("*inline")
+        public InlineBlockHelperDescriptor(ICompiledHandlebarsConfiguration configuration) : base(configuration.PathInfoStore.GetOrAdd("*inline"))
         {
         }
 
-        public override void Invoke(TextWriter output, HelperOptions options, object context, params object[] arguments)
+        public override void Invoke(in EncodedTextWriter output, in HelperOptions options, object context, in Arguments arguments)
         {
             if (arguments.Length != 1)
             {
@@ -32,7 +31,7 @@ namespace HandlebarsDotNet.Helpers.BlockHelpers
             //this helper will add the compiled partial to a dicionary
             //that is passed around in the context without fear of collisions.
             var template = options.OriginalTemplate;
-            bindingContext.InlinePartialTemplates.Add(key, (writer, o) => template(bindingContext, writer, o));
+            bindingContext.InlinePartialTemplates.Add(key, (writer, c) => template(writer, c));
         }
     }
 }

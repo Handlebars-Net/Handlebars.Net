@@ -1,4 +1,5 @@
 using System.IO;
+using HandlebarsDotNet.Compiler;
 using HandlebarsDotNet.Compiler.Structure.Path;
 
 namespace HandlebarsDotNet.Helpers
@@ -13,7 +14,7 @@ namespace HandlebarsDotNet.Helpers
         public DelegateHelperDescriptor(string name, HandlebarsHelper helper) : base(name) 
             => _helper = helper;
 
-        public override void Invoke(TextWriter output, object context, params object[] arguments) 
+        public override void Invoke(in EncodedTextWriter output, object context, in Arguments arguments) 
             => _helper(output, context, arguments);
     }
 }

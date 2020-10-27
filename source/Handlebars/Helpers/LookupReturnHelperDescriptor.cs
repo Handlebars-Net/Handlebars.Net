@@ -11,7 +11,7 @@ namespace HandlebarsDotNet.Helpers
             _configuration = configuration;
         }
 
-        public override object Invoke(object context, params object[] arguments)
+        public override object Invoke(object context, in Arguments arguments)
         {
             if (arguments.Length != 2)
             {
@@ -21,7 +21,7 @@ namespace HandlebarsDotNet.Helpers
             var segment = ChainSegment.Create(arguments[1]);
 
             return !PathResolver.TryAccessMember(arguments[0], segment, _configuration, out var value) 
-                ? segment.GetUndefinedBindingResult(_configuration)
+                ? UndefinedBindingResult.Create(segment)
                 : value;
         }
     }

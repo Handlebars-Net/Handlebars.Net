@@ -7,19 +7,17 @@ namespace HandlebarsDotNet
 {
     public class DynamicViewModel : DynamicObject
     {
-        public object[] Objects { get; set; }
-
-        private static readonly BindingFlags BindingFlags = BindingFlags.Public | BindingFlags.Instance |
-                                                            BindingFlags.IgnoreCase;
+        private readonly object[] _objects;
+        private static readonly BindingFlags BindingFlags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase;
 
         public DynamicViewModel(params object[] objects)
         {
-            Objects = objects;
+            _objects = objects;
         }
 
         public override IEnumerable<string> GetDynamicMemberNames()
         {
-            return Objects.Select(o => o.GetType())
+            return _objects.Select(o => o.GetType())
                 .SelectMany(t => t.GetMembers(BindingFlags))
                 .Select(m => m.Name);
         }
@@ -27,21 +25,19 @@ namespace HandlebarsDotNet
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
             result = null;
-            foreach (var target in Objects)
+            foreach (var target in _objects)
             {
-                var member = target.GetType()
-                    .GetMember(binder.Name, BindingFlags);
-
+                var member = target.GetType().GetMember(binder.Name, BindingFlags);
                 if (member.Length > 0)
                 {
                     if (member[0] is PropertyInfo)
                     {
-                        result = ((PropertyInfo) member[0]).GetValue(target, null);
+                        result = ((PropertyInfo)member[0]).GetValue(target, null);
                         return true;
                     }
                     if (member[0] is FieldInfo)
                     {
-                        result = ((FieldInfo) member[0]).GetValue(target);
+                        result = ((FieldInfo)member[0]).GetValue(target);
                         return true;
                     }
                 }

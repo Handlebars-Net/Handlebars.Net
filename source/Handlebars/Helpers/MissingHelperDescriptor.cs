@@ -10,18 +10,18 @@ namespace HandlebarsDotNet.Helpers
         {
         }
 
-        internal override object ReturnInvoke(BindingContext bindingContext, object context, object[] arguments)
+        internal override object ReturnInvoke(BindingContext bindingContext, object context, in Arguments arguments)
         {
-            var nameArgument = arguments.Last();
+            var nameArgument = arguments[arguments.Length - 1];
             if (arguments.Length > 1)
             {
                 throw new HandlebarsRuntimeException($"Template references a helper that cannot be resolved. Helper '{nameArgument}'");
             }
             
-            var name = bindingContext.Configuration.PathInfoStore.GetOrAdd(nameArgument as string ?? nameArgument.ToString());
-            return name.GetUndefinedBindingResult(bindingContext.Configuration);
+            var name = PathInfoStore.Shared.GetOrAdd(nameArgument as string ?? nameArgument.ToString());
+            return UndefinedBindingResult.Create(name);
         }
 
-        public override object Invoke(object context, params object[] arguments) => throw new NotSupportedException();
+        public override object Invoke(object context, in Arguments arguments) => throw new NotSupportedException();
     }
 }

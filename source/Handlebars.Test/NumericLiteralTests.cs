@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using HandlebarsDotNet.Compiler;
 using Xunit;
 
 namespace HandlebarsDotNet.Test
@@ -10,8 +11,8 @@ namespace HandlebarsDotNet.Test
         {
             Handlebars.RegisterHelper("numericLiteralAdd", (writer, context, args) =>
                 {
-                    args = args.Select(a => (object)int.Parse(a.ToString())).ToArray();
-                    writer.Write(args.Aggregate(0, (a, i) => a + (int)i));
+                    var arr = args.AsEnumerable().Select(a => (object)int.Parse(a.ToString()));
+                    writer.Write(arr.Aggregate(0, (a, i) => a + (int)i));
                 });
         }
 

@@ -16,12 +16,12 @@ namespace HandlebarsDotNet.Helpers
         
         public sealed override HelperType Type { get; } = HelperType.Return;
         
-        public abstract object Invoke(object context, params object[] arguments);
+        public abstract object Invoke(object context, in Arguments arguments);
 
-        internal override object ReturnInvoke(BindingContext bindingContext, object context, object[] arguments) => 
+        internal override object ReturnInvoke(BindingContext bindingContext, object context, in Arguments arguments) => 
             Invoke(context, arguments);
 
-        internal sealed override void WriteInvoke(BindingContext bindingContext, TextWriter output, object context, object[] arguments) => 
+        internal sealed override void WriteInvoke(BindingContext bindingContext, in EncodedTextWriter output, object context, in Arguments arguments) => 
             output.Write(ReturnInvoke(bindingContext, context, arguments));
     }
 }
