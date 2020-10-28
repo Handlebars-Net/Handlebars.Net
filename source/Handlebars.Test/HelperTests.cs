@@ -2,13 +2,9 @@ using Xunit;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.Features;
 using HandlebarsDotNet.Helpers.BlockHelpers;
-using HandlebarsDotNet;
-using HandlebarsDotNet.Compiler;
 using HandlebarsDotNet.ValueProviders;
 
 namespace HandlebarsDotNet.Test
@@ -33,6 +29,58 @@ namespace HandlebarsDotNet.Test
             var output = template(new { });
 
             var expected = "Here are some things: \nThing 1: foo\nThing 2: bar";
+
+            Assert.Equal(expected, output);
+        }
+        
+        [Fact]
+        public void HelperWithOptions()
+        {
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterHelper("myHelper",
+                (in EncodedTextWriter writer, in HelperOptions options, object context, in Arguments arguments) =>
+                {
+                    var i = options.Data.Value<int>("i");
+                    for (int j = 0; j < i; j++) writer.Write(j);
+                }
+            );
+
+            var source = "{{myHelper}}";
+
+            var template = handlebars.Compile(source);
+
+            var output = template(new { }, new { i = 5 });
+
+            var expected = "01234";
+
+            Assert.Equal(expected, output);
+        }
+        
+        [Fact]
+        public void ReturnHelperWithOptions()
+        {
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterHelper("myHelper",
+                (in HelperOptions options, object context, in Arguments arguments) =>
+                {
+                    var data = new DataValues(options.Frame);
+                    var i = data.Value<int>("i");
+                    return Enumerate(i);
+
+                    static IEnumerable<int> Enumerate(int count)
+                    {
+                        for (var j = 0; j < count; j++) yield return j;
+                    }
+                }
+            );
+
+            var source = "{{#each (myHelper)}}{{.}}{{/each}}";
+
+            var template = handlebars.Compile(source);
+
+            var output = template(new { }, new { i = 5 });
+
+            var expected = "01234";
 
             Assert.Equal(expected, output);
         }
@@ -82,7 +130,7 @@ namespace HandlebarsDotNet.Test
             handlebars.RegisterHelper("myHelper", (writer, options, context, args) =>
             {
                 using var frame = options.CreateFrame();
-                var blockParamsValues = new BlockParamsValues(frame, options.BlockParams);
+                var blockParamsValues = new BlockParamsValues(frame, options.BlockVariables);
                 blockParamsValues.CreateProperty(0, out var _0);
                 
                 for (var index = 0; index < args.Length; index++)
@@ -117,7 +165,7 @@ namespace HandlebarsDotNet.Test
             handlebars.RegisterHelper("myHelper", (writer, options, context, args) =>
             {
                 using var frame = options.CreateFrame();
-                var blockParamsValues = new BlockParamsValues(frame, options.BlockParams);
+                var blockParamsValues = new BlockParamsValues(frame, options.BlockVariables);
                 blockParamsValues.CreateProperty(0, out var _0);
                 
                 for (var index = 0; index < args.Length; index++)
@@ -149,7 +197,7 @@ namespace HandlebarsDotNet.Test
             Handlebars.RegisterHelper("myHelper", (writer, options, context, args) =>
             {
                 using var frame = options.CreateFrame();
-                var blockParamsValues = new BlockParamsValues(frame, options.BlockParams);
+                var blockParamsValues = new BlockParamsValues(frame, options.BlockVariables);
                 blockParamsValues.CreateProperty(0, out var _0);
                 
                 for (var index = 0; index < args.Length; index++)
@@ -875,17 +923,17 @@ namespace HandlebarsDotNet.Test
             {
             }
 
-            public override void Invoke(in EncodedTextWriter output, in HelperOptions options, object context, in Arguments arguments)
+            public override void Invoke(in EncodedTextWriter output, in BlockHelperOptions options, object context, in Arguments arguments)
             {
                 using var frame = options.CreateFrame();
                 var data = new DataValues(frame);
-                data.CreateProperty(ChainSegment.Value, null, out var value);
+                data.CreateProperty(ChainSegment.Value, null, out var valueIndex);
 
                 var iterationIndex = 0;
                 foreach (var item in (IEnumerable) arguments[0])
                 {
                     data[ChainSegment.Index] = iterationIndex;
-                    data[value] = item;
+                    data[valueIndex] = item;
                     frame.Value = item;
 
                     options.Template(output, frame);

@@ -9,7 +9,7 @@ namespace HandlebarsDotNet.Helpers.BlockHelpers
         {
         }
 
-        public override void Invoke(in EncodedTextWriter output, in HelperOptions options, object context, in Arguments arguments)
+        public override void Invoke(in EncodedTextWriter output, in BlockHelperOptions options, object context, in Arguments arguments)
         {
             var pathInfo = options.GetValue<PathInfo>("path");
             if(arguments.Length > 0) throw new HandlebarsRuntimeException($"Template references a helper that cannot be resolved. BlockHelper '{pathInfo}'");

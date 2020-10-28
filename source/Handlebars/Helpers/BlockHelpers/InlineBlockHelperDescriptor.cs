@@ -4,11 +4,11 @@ namespace HandlebarsDotNet.Helpers.BlockHelpers
 {
     internal sealed class InlineBlockHelperDescriptor : BlockHelperDescriptor
     {
-        public InlineBlockHelperDescriptor(ICompiledHandlebarsConfiguration configuration) : base(configuration.PathInfoStore.GetOrAdd("*inline"))
+        public InlineBlockHelperDescriptor() : base("*inline")
         {
         }
 
-        public override void Invoke(in EncodedTextWriter output, in HelperOptions options, object context, in Arguments arguments)
+        public override void Invoke(in EncodedTextWriter output, in BlockHelperOptions options, object context, in Arguments arguments)
         {
             if (arguments.Length != 1)
             {

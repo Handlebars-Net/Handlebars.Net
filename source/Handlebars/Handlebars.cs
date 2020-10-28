@@ -16,11 +16,28 @@ namespace HandlebarsDotNet
     public delegate void HandlebarsHelper(EncodedTextWriter output, object context, Arguments arguments);
     
     /// <summary>
+    /// InlineHelper: {{#helper arg1 arg2}}
+    /// </summary>
+    /// <param name="output"></param>
+    /// <param name="options"></param>
+    /// <param name="context"></param>
+    /// <param name="arguments"></param>
+    public delegate void HandlebarsHelperWithOptions(in EncodedTextWriter output, in HelperOptions options, object context, in Arguments arguments);
+    
+    /// <summary>
     /// InlineHelper: {{#helper arg1 arg2}}, supports <see cref="object"/> value return
     /// </summary>
     /// <param name="context"></param>
     /// <param name="arguments"></param>
     public delegate object HandlebarsReturnHelper(object context, Arguments arguments);
+    
+    /// <summary>
+    /// InlineHelper: {{#helper arg1 arg2}}, supports <see cref="object"/> value return
+    /// </summary>
+    /// <param name="options"></param>
+    /// <param name="context"></param>
+    /// <param name="arguments"></param>
+    public delegate object HandlebarsReturnWithOptionsHelper(in HelperOptions options, object context, in Arguments arguments);
     
     /// <summary>
     /// BlockHelper: {{#helper}}..{{/helper}}
@@ -29,7 +46,7 @@ namespace HandlebarsDotNet
     /// <param name="options"></param>
     /// <param name="context"></param>
     /// <param name="arguments"></param>
-    public delegate void HandlebarsBlockHelper(EncodedTextWriter output, HelperOptions options, object context, Arguments arguments);
+    public delegate void HandlebarsBlockHelper(EncodedTextWriter output, BlockHelperOptions options, object context, Arguments arguments);
     
     /// <summary>
     /// BlockHelper: {{#helper}}..{{/helper}}
@@ -37,7 +54,7 @@ namespace HandlebarsDotNet
     /// <param name="options"></param>
     /// <param name="context"></param>
     /// <param name="arguments"></param>
-    public delegate object HandlebarsReturnBlockHelper(HelperOptions options, object context, Arguments arguments);
+    public delegate object HandlebarsReturnBlockHelper(BlockHelperOptions options, object context, Arguments arguments);
 
     
     public sealed class Handlebars

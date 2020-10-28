@@ -159,10 +159,20 @@ namespace HandlebarsDotNet
         {
             Configuration.Helpers[helperName] = new DelegateHelperDescriptor(helperName, helperFunction);
         }
+        
+        public void RegisterHelper(string helperName, HandlebarsHelperWithOptions helperFunction)
+        {
+            Configuration.Helpers[helperName] = new DelegateHelperWithOptionsDescriptor(helperName, helperFunction);
+        }
             
         public void RegisterHelper(string helperName, HandlebarsReturnHelper helperFunction)
         {
             Configuration.Helpers[helperName] = new DelegateReturnHelperDescriptor(helperName, helperFunction);
+        }
+        
+        public void RegisterHelper(string helperName, HandlebarsReturnWithOptionsHelper helperFunction)
+        {
+            Configuration.Helpers[helperName] = new DelegateReturnHelperWithOptionsDescriptor(helperName, helperFunction);
         }
 
         public void RegisterHelper(string helperName, HandlebarsBlockHelper helperFunction)

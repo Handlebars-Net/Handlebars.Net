@@ -112,6 +112,8 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
         /// <inheritdoc cref="ToString"/>
         public static implicit operator string(PathInfo pathInfo) => pathInfo._path;
         
+        public static implicit operator PathInfo(string path) => PathInfoStore.Shared.GetOrAdd(path);
+        
         internal sealed class TrimmedPathEqualityComparer : IEqualityComparer<PathInfo>
         {
             private readonly bool _countParts;

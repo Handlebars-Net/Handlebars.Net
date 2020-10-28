@@ -1,7 +1,3 @@
-using System;
-using System.Linq;
-using HandlebarsDotNet.Compiler;
-
 namespace HandlebarsDotNet.Helpers
 {
     internal sealed class MissingHelperDescriptor : ReturnHelperDescriptor
@@ -10,7 +6,7 @@ namespace HandlebarsDotNet.Helpers
         {
         }
 
-        internal override object ReturnInvoke(BindingContext bindingContext, object context, in Arguments arguments)
+        protected override object Invoke(in HelperOptions options, object context, in Arguments arguments)
         {
             var nameArgument = arguments[arguments.Length - 1];
             if (arguments.Length > 1)
@@ -21,7 +17,5 @@ namespace HandlebarsDotNet.Helpers
             var name = PathInfoStore.Shared.GetOrAdd(nameArgument as string ?? nameArgument.ToString());
             return UndefinedBindingResult.Create(name);
         }
-
-        public override object Invoke(object context, in Arguments arguments) => throw new NotSupportedException();
     }
 }

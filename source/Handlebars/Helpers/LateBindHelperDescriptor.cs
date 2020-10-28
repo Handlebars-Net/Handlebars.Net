@@ -1,40 +1,31 @@
-using System;
 using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Collections;
-using HandlebarsDotNet.Compiler;
 using HandlebarsDotNet.Compiler.Structure.Path;
 
 namespace HandlebarsDotNet.Helpers
 {
     internal sealed class LateBindHelperDescriptor : ReturnHelperDescriptor
     {
-        private readonly ICompiledHandlebarsConfiguration _configuration;
         private readonly StrongBox<HelperDescriptorBase> _helperMissing;
+        private readonly ObservableList<IHelperResolver> _helperResolvers;
 
-        public LateBindHelperDescriptor(PathInfo name, ICompiledHandlebarsConfiguration configuration) : base(name)
+        public LateBindHelperDescriptor(string name, ICompiledHandlebarsConfiguration configuration) : base(name)
         {
-            _configuration = configuration;
-            var pathInfoStore = _configuration.PathInfoStore;
-            _helperMissing = _configuration.Helpers[pathInfoStore.GetOrAdd("helperMissing")];
-        }
-        
-        public LateBindHelperDescriptor(string name, ICompiledHandlebarsConfiguration configuration) : base(configuration.PathInfoStore.GetOrAdd(name))
-        {
-            _configuration = configuration;
-            var pathInfoStore = _configuration.PathInfoStore;
-            _helperMissing = _configuration.Helpers[pathInfoStore.GetOrAdd("helperMissing")];
+            _helperMissing = configuration.Helpers["helperMissing"];
+            _helperResolvers = (ObservableList<IHelperResolver>) configuration.HelperResolvers;
         }
 
-        internal override object ReturnInvoke(BindingContext bindingContext, object context, in Arguments arguments)
+        protected override object Invoke(in HelperOptions options, object context, in Arguments arguments)
         {
+            var bindingContext = options.Frame;
+            
             // TODO: add cache
-            var helperResolvers = (ObservableList<IHelperResolver>) _configuration.HelperResolvers;
-            if(helperResolvers.Count != 0)
+            if(_helperResolvers.Count != 0)
             {
                 var targetType = arguments.Length > 0 ? arguments[0].GetType() : null;
-                for (var index = 0; index < helperResolvers.Count; index++)
+                for (var index = 0; index < _helperResolvers.Count; index++)
                 {
-                    var resolver = helperResolvers[index];
+                    var resolver = _helperResolvers[index];
                     if (!resolver.TryResolveHelper(Name, targetType, out var helper)) continue;
 
                     return helper.ReturnInvoke(bindingContext, context, arguments);
@@ -46,11 +37,6 @@ namespace HandlebarsDotNet.Helpers
             
             var newArguments = arguments.Add(Name.TrimmedPath);
             return _helperMissing.Value.ReturnInvoke(bindingContext, context, newArguments);
-        }
-
-        public override object Invoke(object context, in Arguments arguments)
-        {
-            throw new NotImplementedException();
         }
     }
 }

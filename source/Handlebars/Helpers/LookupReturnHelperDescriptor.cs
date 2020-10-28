@@ -6,12 +6,12 @@ namespace HandlebarsDotNet.Helpers
     {
         private readonly ICompiledHandlebarsConfiguration _configuration;
 
-        public LookupReturnHelperDescriptor(ICompiledHandlebarsConfiguration configuration) : base(configuration.PathInfoStore.GetOrAdd("lookup"))
+        public LookupReturnHelperDescriptor(ICompiledHandlebarsConfiguration configuration) : base("lookup")
         {
             _configuration = configuration;
         }
 
-        public override object Invoke(object context, in Arguments arguments)
+        protected override object Invoke(in HelperOptions options, object context, in Arguments arguments)
         {
             if (arguments.Length != 2)
             {

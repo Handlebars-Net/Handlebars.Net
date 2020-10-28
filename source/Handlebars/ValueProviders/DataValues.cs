@@ -7,23 +7,17 @@ namespace HandlebarsDotNet.ValueProviders
 {
     public readonly ref struct DataValues
     {
-        private readonly BindingContext _context;
         private readonly EntryIndex<ChainSegment>[] _wellKnownVariables;
         private readonly FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer> _data;
-        
-        private ICompiledHandlebarsConfiguration Configuration
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _context.Configuration;
-        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public DataValues(BindingContext context)
         {
-            _context = context;
-            _data = _context.ContextDataObject;
+            _data = context.ContextDataObject;
             _wellKnownVariables = context.WellKnownVariables;
         }
+
+        public T Value<T>(ChainSegment segment) => (T) this[segment];
 
         public object this[ChainSegment segment]
         {
