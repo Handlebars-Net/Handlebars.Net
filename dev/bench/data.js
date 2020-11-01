@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1603787919593,
+  "lastUpdate": 1604191662152,
   "repoUrl": "https://github.com/Handlebars-Net/Handlebars.Net",
   "entries": {
     "Benchmark.Net Benchmark": [
@@ -1152,6 +1152,102 @@ window.BENCHMARK_DATA = {
             "value": 230165.66662597656,
             "unit": "ns",
             "range": "± 613.636274876524"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "zjklee@gmail.com",
+            "name": "Oleh Formaniuk",
+            "username": "zjklee"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4f239ba10482c9aec20736ebc4205f3d79d2e3d1",
+          "message": "Merge pull request #378 from zjklee/feature/helper-options\n\nIntroduce `HelperOptions` in Helper and ReturnHelper",
+          "timestamp": "2020-11-01T02:41:44+02:00",
+          "tree_id": "1bd84c0ad5421bf36e7cfb11d33aa14a6fa2c800",
+          "url": "https://github.com/Handlebars-Net/Handlebars.Net/commit/4f239ba10482c9aec20736ebc4205f3d79d2e3d1"
+        },
+        "date": 1604191661110,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "HandlebarsNet.Benchmark.Compilation.Template",
+            "value": 37123938.87142857,
+            "unit": "ns",
+            "range": "± 1613045.9086633173"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithoutParameters",
+            "value": 411.7348847389221,
+            "unit": "ns",
+            "range": "± 6.068146320564097"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithOneParameter",
+            "value": 409.96892093022666,
+            "unit": "ns",
+            "range": "± 15.965580484713643"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithTwoParameter",
+            "value": 414.5392350196838,
+            "unit": "ns",
+            "range": "± 5.502593982906607"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithoutParameters",
+            "value": 574.3198080796462,
+            "unit": "ns",
+            "range": "± 5.964412447590354"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithOneParameter",
+            "value": 417.63938630421956,
+            "unit": "ns",
+            "range": "± 6.613510478210782"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithTwoParameter",
+            "value": 400.63736292521156,
+            "unit": "ns",
+            "range": "± 8.75476946934173"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithoutParameters",
+            "value": 661.6791969812833,
+            "unit": "ns",
+            "range": "± 14.01414976974492"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithOneParameter",
+            "value": 651.2134197235107,
+            "unit": "ns",
+            "range": "± 24.79920038965599"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithTwoParameter",
+            "value": 677.8279979070028,
+            "unit": "ns",
+            "range": "± 6.737491809982804"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.EndToEnd.Default(N: 5, DataType: \"dictionary\")",
+            "value": 212156.9918682392,
+            "unit": "ns",
+            "range": "± 2977.1376699148336"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.EndToEnd.Default(N: 5, DataType: \"object\")",
+            "value": 229510.01220703125,
+            "unit": "ns",
+            "range": "± 5568.1790712641005"
           }
         ]
       }
