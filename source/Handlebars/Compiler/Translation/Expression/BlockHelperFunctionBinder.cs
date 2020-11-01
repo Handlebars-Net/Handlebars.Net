@@ -1,11 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using Expressions.Shortcuts;
-using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.Helpers.BlockHelpers;
 using HandlebarsDotNet.Polyfills;
@@ -15,13 +10,6 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class BlockHelperFunctionBinder : HandlebarsExpressionVisitor
     {
-        private static readonly LookupSlim<int, DeferredValue<Expression[], ConstructorInfo>> ArgumentsConstructorsMap = new LookupSlim<int, DeferredValue<Expression[], ConstructorInfo>>();
-        private static readonly MethodInfo HelperInvokeMethodInfo = typeof(BlockHelperDescriptorBase).GetMethod(nameof(BlockHelperDescriptorBase.Invoke));
-
-        private static readonly ConstructorInfo HelperOptionsCtor = typeof(HelperOptions)
-            .GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
-            .Single(o => o.GetParameters().Length > 0);
-
         private enum BlockHelperDirection { Direct, Inverse }
 
         private CompilationContext CompilationContext { get; }
@@ -103,8 +91,8 @@ namespace HandlebarsDotNet.Compiler
                 
                 var helperOptions = direction switch
                 {
-                    BlockHelperDirection.Direct => New(() => new HelperOptions(direct, inverse, blockParams, bindingContext)),
-                    BlockHelperDirection.Inverse => New(() => new HelperOptions(inverse, direct, blockParams, bindingContext)),
+                    BlockHelperDirection.Direct => New(() => new BlockHelperOptions(direct, inverse, blockParams, bindingContext)),
+                    BlockHelperDirection.Inverse => New(() => new BlockHelperOptions(inverse, direct, blockParams, bindingContext)),
                     _ => throw new HandlebarsCompilerException("Helper referenced with unknown prefix", readerContext)
                 };
                 

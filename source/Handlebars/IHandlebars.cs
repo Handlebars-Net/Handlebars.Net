@@ -39,8 +39,12 @@ namespace HandlebarsDotNet
         
         void RegisterHelper(string helperName, HandlebarsHelper helperFunction);
         
-        void RegisterHelper(string helperName, HandlebarsReturnHelper helperFunction);
+        void RegisterHelper(string helperName, HandlebarsHelperWithOptions helperFunction);
         
+        void RegisterHelper(string helperName, HandlebarsReturnHelper helperFunction);
+
+        void RegisterHelper(string helperName, HandlebarsReturnWithOptionsHelper helperFunction);
+
         void RegisterHelper(string helperName, HandlebarsBlockHelper helperFunction);
         
         void RegisterHelper(string helperName, HandlebarsReturnBlockHelper helperFunction);

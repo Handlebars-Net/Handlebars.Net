@@ -50,7 +50,7 @@ namespace HandlebarsDotNet
             return pathInfo;
         }
         
-        public static PathInfo GetPathInfo(string path)
+        private static PathInfo GetPathInfo(string path)
         {
             if (path == "null")
                 return new PathInfo(false, path, false, null);
@@ -72,18 +72,17 @@ namespace HandlebarsDotNet
             if (pathParts.Length > 1) isValidHelperLiteral = false;
             foreach (var segment in pathParts)
             {
-                if (segment == "..")
+                switch (segment)
                 {
-                    isValidHelperLiteral = false;
-                    segments.Add(new PathSegment(segment, ArrayEx.Empty<ChainSegment>()));
-                    continue;
-                }
-
-                if (segment == ".")
-                {
-                    isValidHelperLiteral = false;
-                    segments.Add(new PathSegment(segment, ArrayEx.Empty<ChainSegment>()));
-                    continue;
+                    case "..":
+                        isValidHelperLiteral = false;
+                        segments.Add(new PathSegment(segment, ArrayEx.Empty<ChainSegment>()));
+                        continue;
+                    
+                    case ".":
+                        isValidHelperLiteral = false;
+                        segments.Add(new PathSegment(segment, ArrayEx.Empty<ChainSegment>()));
+                        continue;
                 }
 
                 var segmentString = isVariable ? "@" + segment : segment;

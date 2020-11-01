@@ -64,6 +64,8 @@ namespace HandlebarsDotNet
         
         public static implicit operator PathInfoLight(PathInfo pathInfo) => new PathInfoLight(pathInfo);
         
+        public static implicit operator PathInfoLight(string path) => new PathInfoLight(PathInfoStore.Shared.GetOrAdd(path));
+        
         public static implicit operator PathInfo(PathInfoLight pathInfo) => pathInfo.PathInfo;
         
         private sealed class EqualityComparer : IEqualityComparer<PathInfoLight>

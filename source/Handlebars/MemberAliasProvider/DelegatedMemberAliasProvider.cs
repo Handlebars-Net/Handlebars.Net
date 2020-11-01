@@ -9,7 +9,7 @@ namespace HandlebarsDotNet
     /// <summary>
     /// Provides simple interface for adding member aliases
     /// </summary>
-    public class DelegatedMemberAliasProvider : IMemberAliasProvider
+    public sealed class DelegatedMemberAliasProvider : IMemberAliasProvider
     {
         private readonly Dictionary<Type, Dictionary<string, Func<object, object>>> _aliases 
             = new Dictionary<Type, Dictionary<string, Func<object, object>>>();

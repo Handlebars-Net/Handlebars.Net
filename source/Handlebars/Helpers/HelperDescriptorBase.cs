@@ -6,8 +6,6 @@ namespace HandlebarsDotNet.Helpers
     public abstract class HelperDescriptorBase : IHelperDescriptor
     {
         protected HelperDescriptorBase(string name) => Name = PathInfoStore.Shared.GetOrAdd(name);
-        
-        protected HelperDescriptorBase(PathInfo name) => Name = name;
 
         public PathInfo Name { get; }
         public abstract HelperType Type { get; }
