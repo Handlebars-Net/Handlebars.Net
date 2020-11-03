@@ -84,7 +84,7 @@ jobs:
           SONAR_TOKEN: 22a5e1c1df52b7200ac14fc139ed1dfbe53dda4d
         shell: powershell
         run: |
-          .\.sonar\scanner\dotnet-sonarscanner begin /k:"Handlebars-Net_Handlebars.Net" /o:"handlebars-net" /d:sonar.login="${{ env.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths="**/*.opencover.xml" /d:sonar.cs.vstest.reportsPaths="**/*.trx" /d:sonar.coverage.exclusions="**/*.md;source/Handlebars.Benchmark/**/*.*" /d:sonar.pullrequest.key=${{ github.event.number }} /d:sonar.pullrequest.branch=${{ github.event.pull_request.head.ref }} /d:sonar.pullrequest.base=${{ github.event.pull_request.base.ref }}
+          .\.sonar\scanner\dotnet-sonarscanner begin /k:"Handlebars-Net_Handlebars.Net" /o:"handlebars-net" /d:sonar.login="${{ env.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths="**/*.opencover.xml" /d:sonar.cs.vstest.reportsPaths="**/*.trx" /d:sonar.coverage.exclusions="**/*.md;source/Handlebars.Benchmark/**/*.*" /d:sonar.cpd.exclusions="source/Handlebars/Iterators/**/*.*" /d:sonar.pullrequest.key=${{ github.event.number }} /d:sonar.pullrequest.branch=${{ github.event.pull_request.head.ref }} /d:sonar.pullrequest.base=${{ github.event.pull_request.base.ref }}
           dotnet build source/Handlebars.sln -c Release
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ env.SONAR_TOKEN }}"
 
