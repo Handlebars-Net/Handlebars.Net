@@ -13,20 +13,21 @@ namespace HandlebarsDotNet.Compiler
         private Expression _currentCondition;
         private List<Expression> _bodyBuffer = new List<Expression>();
         
-        public string BlockName { get; }
+        public sealed override string BlockName { get; protected set; }
 
         public ConditionalBlockAccumulatorContext(Expression startingNode)
             : base(startingNode)
         {
             startingNode = UnwrapStatement(startingNode);
-            BlockName = ((HelperExpression)startingNode).HelperName.Replace("#", "");
+            var helperExpression = (HelperExpression)startingNode;
+            BlockName = helperExpression.HelperName.Replace("#", "");
             if (!ValidHelperNames.Contains(BlockName))
             {
                 throw new HandlebarsCompilerException(string.Format(
                         "Tried to convert {0} expression to conditional block", BlockName));
             }
             var testType = BlockName == "if";
-            var argument = HandlebarsExpression.Boolish(((HelperExpression)startingNode).Arguments.Single());
+            var argument = HandlebarsExpression.Boolish(helperExpression.Arguments.Single());
             _currentCondition = testType ? (Expression)argument : Expression.Not(argument);
         }
 

@@ -8,9 +8,10 @@ namespace HandlebarsDotNet.Compiler
     internal class PartialBlockAccumulatorContext : BlockAccumulatorContext
     {
         private readonly PartialExpression _startingNode;
-        private string _blockName;
-        private List<Expression> _body = new List<Expression>();
+        private readonly List<Expression> _body = new List<Expression>();
 
+        public sealed override string BlockName { get; protected set; }
+        
         public PartialBlockAccumulatorContext(Expression startingNode)
             : base(startingNode)
         {
@@ -19,7 +20,7 @@ namespace HandlebarsDotNet.Compiler
 
         public override void HandleElement(Expression item)
         {
-            _body.Add((Expression)item);
+            _body.Add(item);
         }
 
         public override Expression GetAccumulatedBlock()
@@ -38,40 +39,47 @@ namespace HandlebarsDotNet.Compiler
 
         private bool IsClosingNode(Expression item)
         {
-            return item is PathExpression && ((PathExpression)item).Path == "/" + _blockName;
+            return item is PathExpression && ((PathExpression)item).Path == "/" + BlockName;
         }
 
         private PartialExpression ConvertToPartialExpression(Expression expression)
         {
-            if (expression is PathExpression)
+            if (expression is PathExpression pathExpression)
             {
-                var pathExpression = (PathExpression)expression;
-                _blockName = pathExpression.Path.Replace ("#>", "");
-                return HandlebarsExpression.Partial(Expression.Constant(_blockName));
-            } 
-            else if (expression is HelperExpression)
+                BlockName = pathExpression.Path.Replace("#>", "");
+                return HandlebarsExpression.Partial(Expression.Constant(BlockName));
+            }
+
+            if (!(expression is HelperExpression helperExpression))
+                throw new HandlebarsCompilerException($"Cannot convert '{expression}' to a partial expression");
+            
+            BlockName = helperExpression.HelperName.Replace("#>", "");
+            var argumentsCount = helperExpression.Arguments.Count();
+            if (string.IsNullOrEmpty(BlockName))
             {
-                var helperExpression = (HelperExpression)expression;
-                _blockName = helperExpression.HelperName.Replace ("#>", "");
-                if (helperExpression.Arguments.Count() == 0)
+                switch (argumentsCount)
                 {
-                    return HandlebarsExpression.Partial(Expression.Constant(_blockName));
-                }
-                else if (helperExpression.Arguments.Count() == 1)
-                {
-                    return HandlebarsExpression.Partial(
-                        Expression.Constant(_blockName),
-                        helperExpression.Arguments.First());
-                }
-                else
-                {
-                    throw new InvalidOperationException("Cannot convert a multi-argument helper expression to a partial expression");
+                    case 0:
+                        throw new HandlebarsCompilerException("Partial expression misses the name", helperExpression.Context);
+                    case 1:
+                        BlockName = helperExpression.Arguments.First().As<PathExpression>().Path;
+                        return HandlebarsExpression.Partial(Expression.Constant(BlockName));
+                    case 2:
+                        BlockName = helperExpression.Arguments.First().As<PathExpression>().Path;
+                        return HandlebarsExpression.Partial(Expression.Constant(BlockName), helperExpression.Arguments.Last());
+                    default:
+                        throw new InvalidOperationException(
+                            "Cannot convert a multi-argument helper expression to a partial expression");
                 }
             }
-            else
+
+            return argumentsCount switch
             {
-                throw new InvalidOperationException(string.Format("Cannot convert '{0}' to a partial expression", expression));
-            }
+                0 => HandlebarsExpression.Partial(Expression.Constant(BlockName)),
+                1 => HandlebarsExpression.Partial(Expression.Constant(BlockName),
+                    helperExpression.Arguments.First()),
+                _ => throw new HandlebarsCompilerException("Cannot convert a multi-argument helper expression to a partial expression", helperExpression.Context)
+            };
         }
     }
 }

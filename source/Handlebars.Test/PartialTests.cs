@@ -28,6 +28,28 @@ namespace HandlebarsDotNet.Test
             var result = template(data);
             Assert.Equal("Hello, Marc!", result);
         }
+        
+        [Fact]
+        public void BasicPartialWithWhiteSpace()
+        {
+            string source = "Hello, {{> person }}!";
+
+            var template = Handlebars.Compile(source);
+
+            var data = new {
+                name = "Marc"
+            };
+
+            var partialSource = "{{name}}";
+            using(var reader = new StringReader(partialSource))
+            {
+                var partialTemplate = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("person", partialTemplate);
+            }
+
+            var result = template(data);
+            Assert.Equal("Hello, Marc!", result);
+        }
 
         [Fact]
         public void BasicStringOnlyPartial()
@@ -463,7 +485,8 @@ namespace HandlebarsDotNet.Test
         {
             string source = "Hello, {{#>person1}}friend{{/person1}}!";
 
-            var template = Handlebars.Compile(source);
+            var handlebars = Handlebars.Create();
+            var template = handlebars.Compile(source);
 
             var data = new {
                 firstName = "Pete",
@@ -475,8 +498,34 @@ namespace HandlebarsDotNet.Test
 
             var partialSource = "{{firstName}} {{lastName}}";
             using (var reader = new StringReader(partialSource)) {
-                var partialTemplate = Handlebars.Compile(reader);
-                Handlebars.RegisterTemplate("person1", partialTemplate);
+                var partialTemplate = handlebars.Compile(reader);
+                handlebars.RegisterTemplate("person1", partialTemplate);
+            }
+
+            var result2 = template(data);
+            Assert.Equal("Hello, Pete Jones!", result2);
+        }
+        
+        [Fact]
+        public void BasicBlockPartialWithWhitespace()
+        {
+            string source = "Hello, {{#> person1 }}friend{{/person1}}!";
+
+            var handlebars = Handlebars.Create();
+            var template = handlebars.Compile(source);
+
+            var data = new {
+                firstName = "Pete",
+                lastName = "Jones"
+            };
+
+            var result1 = template(data);
+            Assert.Equal ("Hello, friend!", result1);
+
+            var partialSource = "{{firstName}} {{lastName}}";
+            using (var reader = new StringReader(partialSource)) {
+                var partialTemplate = handlebars.Compile(reader);
+                handlebars.RegisterTemplate("person1", partialTemplate);
             }
 
             var result2 = template(data);
@@ -488,7 +537,8 @@ namespace HandlebarsDotNet.Test
         {
             string source = "Hello, {{#>person2 arg='Todd'}}friend{{/person2}}!";
 
-            var template = Handlebars.Compile (source);
+            var handlebars = Handlebars.Create();
+            var template = handlebars.Compile (source);
 
             var data = new {
                 firstName = "Pete",
@@ -500,8 +550,34 @@ namespace HandlebarsDotNet.Test
 
             var partialSource = "{{arg}}";
             using (var reader = new StringReader (partialSource)) {
-                var partialTemplate = Handlebars.Compile (reader);
-                Handlebars.RegisterTemplate ("person2", partialTemplate);
+                var partialTemplate = handlebars.Compile (reader);
+                handlebars.RegisterTemplate ("person2", partialTemplate);
+            }
+
+            var result2 = template (data);
+            Assert.Equal ("Hello, Todd!", result2);
+        }
+        
+        [Fact]
+        public void BasicBlockPartialWithArgumentAndWhitespace()
+        {
+            string source = "Hello, {{#> person2 arg='Todd'}}friend{{/person2}}!";
+
+            var handlebars = Handlebars.Create();
+            var template = handlebars.Compile (source);
+
+            var data = new {
+                firstName = "Pete",
+                lastName = "Jones"
+            };
+
+            var result1 = template (data);
+            Assert.Equal ("Hello, friend!", result1);
+
+            var partialSource = "{{arg}}";
+            using (var reader = new StringReader (partialSource)) {
+                var partialTemplate = handlebars.Compile (reader);
+                handlebars.RegisterTemplate ("person2", partialTemplate);
             }
 
             var result2 = template (data);
