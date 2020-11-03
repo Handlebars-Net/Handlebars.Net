@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1604191662152,
+  "lastUpdate": 1604444025152,
   "repoUrl": "https://github.com/Handlebars-Net/Handlebars.Net",
   "entries": {
     "Benchmark.Net Benchmark": [
@@ -1248,6 +1248,102 @@ window.BENCHMARK_DATA = {
             "value": 229510.01220703125,
             "unit": "ns",
             "range": "± 5568.1790712641005"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "zjklee@gmail.com",
+            "name": "Oleh Formaniuk",
+            "username": "zjklee"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "575488d13e62dcbddbb03f48e50334412aef01f4",
+          "message": "Merge pull request #382 from zjklee/issues/217\n\nFix whitespace support for partials",
+          "timestamp": "2020-11-04T00:47:58+02:00",
+          "tree_id": "3d9b725d7a22c331a0397815a9b5b3e501b77640",
+          "url": "https://github.com/Handlebars-Net/Handlebars.Net/commit/575488d13e62dcbddbb03f48e50334412aef01f4"
+        },
+        "date": 1604444022018,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "HandlebarsNet.Benchmark.Compilation.Template",
+            "value": 36552730.13333334,
+            "unit": "ns",
+            "range": "± 567127.2976141133"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithoutParameters",
+            "value": 394.5375050385793,
+            "unit": "ns",
+            "range": "± 4.87674705757617"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithOneParameter",
+            "value": 406.1298780759176,
+            "unit": "ns",
+            "range": "± 7.449846048844877"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithTwoParameter",
+            "value": 427.7546645800273,
+            "unit": "ns",
+            "range": "± 9.086424632599417"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithoutParameters",
+            "value": 573.5755173819406,
+            "unit": "ns",
+            "range": "± 10.136062247311587"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithOneParameter",
+            "value": 412.9993065765926,
+            "unit": "ns",
+            "range": "± 8.6141764916838"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithTwoParameter",
+            "value": 406.9154349395207,
+            "unit": "ns",
+            "range": "± 8.584512599545015"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithoutParameters",
+            "value": 648.7821333067758,
+            "unit": "ns",
+            "range": "± 9.536225822359233"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithOneParameter",
+            "value": 648.8216787746975,
+            "unit": "ns",
+            "range": "± 8.036522554192729"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithTwoParameter",
+            "value": 652.4849908192953,
+            "unit": "ns",
+            "range": "± 10.065910962258377"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.EndToEnd.Default(N: 5, DataType: \"dictionary\")",
+            "value": 205189.05963134766,
+            "unit": "ns",
+            "range": "± 2120.004764019527"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.EndToEnd.Default(N: 5, DataType: \"object\")",
+            "value": 231404.65865885417,
+            "unit": "ns",
+            "range": "± 5934.813375092127"
           }
         ]
       }
