@@ -19,7 +19,7 @@ namespace HandlebarsDotNet.Iterators
             in EncodedTextWriter writer, 
             BindingContext context,
             ChainSegment[] blockParamsVariables,
-            object target,
+            object input,
             TemplateDelegate template,
             TemplateDelegate ifEmpty
         )
@@ -31,14 +31,14 @@ namespace HandlebarsDotNet.Iterators
             blockParamsValues.CreateProperty(0, out var _0);
             blockParamsValues.CreateProperty(1, out var _1);
             
-            var properties = (ChainSegment[]) _descriptor.GetProperties(_descriptor, target);
+            var properties = (ChainSegment[]) _descriptor.GetProperties(_descriptor, input);
             
             iterator.First = BoxedValues.True;
             iterator.Last = BoxedValues.False;
 
             var index = 0;
             var lastIndex = properties.Length - 1;
-            var accessor = new ObjectAccessor(target, _descriptor);
+            var accessor = new ObjectAccessor(input, _descriptor);
             for(; index < properties.Length; index++)
             {
                 var iteratorKey = properties[index];

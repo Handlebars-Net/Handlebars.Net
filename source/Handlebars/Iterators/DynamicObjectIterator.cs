@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.Compiler;
@@ -24,7 +22,7 @@ namespace HandlebarsDotNet.Iterators
             in EncodedTextWriter writer, 
             BindingContext context,
             ChainSegment[] blockParamsVariables,
-            object target,
+            object input,
             TemplateDelegate template,
             TemplateDelegate ifEmpty
         )
@@ -36,14 +34,14 @@ namespace HandlebarsDotNet.Iterators
             blockParamsValues.CreateProperty(0, out var _0);
             blockParamsValues.CreateProperty(1, out var _1);
             
-            var properties = _descriptor.GetProperties(_descriptor, target).Cast<ChainSegment>();
+            var properties = _descriptor.GetProperties(_descriptor, input).Cast<ChainSegment>();
             var enumerator = new ExtendedEnumerator<ChainSegment, IEnumerator<ChainSegment>>(properties.GetEnumerator());
 
             iterator.First = BoxedValues.True;
             iterator.Last = BoxedValues.False;
 
             int index = 0;
-            var accessor = new ObjectAccessor(target, _descriptor);
+            var accessor = new ObjectAccessor(input, _descriptor);
             while (enumerator.MoveNext())
             {
                 var current = enumerator.Current;

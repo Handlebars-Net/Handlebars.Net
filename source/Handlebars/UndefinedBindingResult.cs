@@ -7,7 +7,7 @@ using HandlebarsDotNet.Runtime;
 namespace HandlebarsDotNet
 {
 	[DebuggerDisplay("undefined")]
-	public class UndefinedBindingResult : IEquatable<UndefinedBindingResult>
+	public sealed class UndefinedBindingResult : IEquatable<UndefinedBindingResult>
     {
 	    private static readonly LookupSlim<string, GcDeferredValue<string, UndefinedBindingResult>, StringEqualityComparer> Cache 
 		    = new LookupSlim<string, GcDeferredValue<string, UndefinedBindingResult>, StringEqualityComparer>(new StringEqualityComparer(StringComparison.Ordinal));

@@ -31,12 +31,12 @@ namespace HandlebarsDotNet.Pools
                 return new StringBuilder(InitialCapacity);
             }
 
-            public bool Return(StringBuilder obj)
+            public bool Return(StringBuilder item)
             {
-                if (obj.Capacity > MaximumRetainedCapacity)
+                if (item.Capacity > MaximumRetainedCapacity)
                     return false;
                 
-                obj.Clear();
+                item.Clear();
                 return true;
             }
         }

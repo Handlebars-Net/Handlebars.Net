@@ -9,7 +9,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
     internal class ObjectDescriptorFactory : IObjectDescriptorProvider
     {
         private readonly List<IObjectDescriptorProvider> _providers;
-        private readonly LookupSlim<Type, DeferredValue<Type, ObjectDescriptor>, TypeEqualityComparer> _descriptorsCache = new LookupSlim<Type, DeferredValue<Type, ObjectDescriptor>, TypeEqualityComparer>(new TypeEqualityComparer());
+        private readonly LookupSlim<Type, DeferredValue<Type, ObjectDescriptor>, ReferenceEqualityComparer<Type>> _descriptorsCache = new LookupSlim<Type, DeferredValue<Type, ObjectDescriptor>, ReferenceEqualityComparer<Type>>(new ReferenceEqualityComparer<Type>());
 
         private static readonly Func<Type, List<IObjectDescriptorProvider>, DeferredValue<Type, ObjectDescriptor>> ValueFactory = (key, providers) => new DeferredValue<Type, ObjectDescriptor>(key, t =>
         {

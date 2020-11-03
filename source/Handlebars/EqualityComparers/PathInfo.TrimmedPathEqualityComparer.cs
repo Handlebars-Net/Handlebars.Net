@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace HandlebarsDotNet.Compiler.Structure.Path
 {
-    public partial class PathInfo
+    public sealed partial class PathInfo
     {
         internal readonly struct TrimmedPathEqualityComparer : IEqualityComparer<PathInfo>
         {

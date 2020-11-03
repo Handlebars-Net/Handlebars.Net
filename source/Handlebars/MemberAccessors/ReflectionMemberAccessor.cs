@@ -11,8 +11,8 @@ namespace HandlebarsDotNet.MemberAccessors
 {
     public sealed class ReflectionMemberAccessor : IMemberAccessor
     {
-        private readonly LookupSlim<Type, DeferredValue<Type, RawObjectTypeDescriptor>, TypeEqualityComparer> _descriptors =
-            new LookupSlim<Type, DeferredValue<Type, RawObjectTypeDescriptor>, TypeEqualityComparer>(new TypeEqualityComparer());
+        private readonly LookupSlim<Type, DeferredValue<Type, RawObjectTypeDescriptor>, ReferenceEqualityComparer<Type>> _descriptors =
+            new LookupSlim<Type, DeferredValue<Type, RawObjectTypeDescriptor>, ReferenceEqualityComparer<Type>>(new ReferenceEqualityComparer<Type>());
 
         private static readonly Func<Type, DeferredValue<Type, RawObjectTypeDescriptor>> DescriptorsValueFactory =
             key => new DeferredValue<Type, RawObjectTypeDescriptor>(key, type => new RawObjectTypeDescriptor(type));

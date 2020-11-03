@@ -1,5 +1,3 @@
-using HandlebarsDotNet.Compiler;
-
 namespace HandlebarsDotNet.Helpers
 {
     public abstract class HelperDescriptor : HelperDescriptorBase

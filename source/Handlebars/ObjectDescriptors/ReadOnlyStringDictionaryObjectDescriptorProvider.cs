@@ -17,7 +17,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
         private static readonly MethodInfo CreateClassDescriptorMethodInfo = typeof(ReadOnlyStringDictionaryObjectDescriptorProvider)
             .GetMethod(nameof(CreateDescriptor), BindingFlags.NonPublic | BindingFlags.Static);
 
-        private readonly LookupSlim<Type, DeferredValue<Type, Type>, TypeEqualityComparer> _typeCache = new LookupSlim<Type, DeferredValue<Type, Type>, TypeEqualityComparer>(new TypeEqualityComparer());
+        private readonly LookupSlim<Type, DeferredValue<Type, Type>, ReferenceEqualityComparer<Type>> _typeCache = new LookupSlim<Type, DeferredValue<Type, Type>, ReferenceEqualityComparer<Type>>(new ReferenceEqualityComparer<Type>());
 
         public bool TryGetDescriptor(Type type, out ObjectDescriptor value)
         {

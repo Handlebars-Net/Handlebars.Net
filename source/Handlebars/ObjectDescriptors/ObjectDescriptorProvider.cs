@@ -19,7 +19,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
         private static readonly DynamicObjectDescriptor DynamicObjectDescriptor = new DynamicObjectDescriptor();
         
         private readonly Type _dynamicMetaObjectProviderType = typeof(IDynamicMetaObjectProvider);
-        private readonly LookupSlim<Type, DeferredValue<Type, ChainSegment[]>, TypeEqualityComparer> _membersCache = new LookupSlim<Type, DeferredValue<Type, ChainSegment[]>, TypeEqualityComparer>(new TypeEqualityComparer());
+        private readonly LookupSlim<Type, DeferredValue<Type, ChainSegment[]>, ReferenceEqualityComparer<Type>> _membersCache = new LookupSlim<Type, DeferredValue<Type, ChainSegment[]>, ReferenceEqualityComparer<Type>>(new ReferenceEqualityComparer<Type>());
         private readonly ReflectionMemberAccessor _reflectionMemberAccessor;
 
         public ObjectDescriptorProvider(ICompiledHandlebarsConfiguration configuration)
@@ -84,7 +84,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
 
         private static readonly Func<ObjectDescriptor, object, IEnumerable<object>> GetProperties = (descriptor, o) =>
         {
-            var cache = (LookupSlim<Type, DeferredValue<Type, ChainSegment[]>, TypeEqualityComparer>) descriptor.Dependencies[0];
+            var cache = (LookupSlim<Type, DeferredValue<Type, ChainSegment[]>, ReferenceEqualityComparer<Type>>) descriptor.Dependencies[0];
             return cache.GetOrAdd(descriptor.DescribedType, DescriptorValueFactory).Value;
         };
 

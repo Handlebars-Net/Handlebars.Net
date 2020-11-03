@@ -7,7 +7,7 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
     /// <summary>
     /// Represents path expression
     /// </summary>
-    public partial class PathInfo : IEquatable<PathInfo>
+    public sealed partial class PathInfo : IEquatable<PathInfo>
     {
         private readonly string _path;
         
