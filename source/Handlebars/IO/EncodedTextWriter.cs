@@ -2,16 +2,17 @@
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
-using HandlebarsDotNet.Compiler;
 
 namespace HandlebarsDotNet
 {
 	public readonly struct EncodedTextWriter : IDisposable
 	{
 		private readonly TextWriter _underlyingWriter;
-		private readonly Func<UndefinedBindingResult, string> _undefinedFormatter;
+		private readonly Formatter<UndefinedBindingResult> _undefinedFormatter;
 
 		private readonly TextEncoderWrapper _encoder;
+
+		public ITextEncoder Encoder => _encoder;
 		
 		public bool SuppressEncoding
 		{
@@ -26,7 +27,7 @@ namespace HandlebarsDotNet
 		public EncodedTextWriter(
 			TextWriter writer, 
 			ITextEncoder encoder, 
-			Func<UndefinedBindingResult, string> undefinedFormatter, 
+			in Formatter<UndefinedBindingResult> undefinedFormatter, 
 			bool suppressEncoding = false)
 		{
 			_underlyingWriter = writer;
@@ -85,20 +86,10 @@ namespace HandlebarsDotNet
 		public void Write(string format, params object[] arguments) => Write(string.Format(format, arguments));
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Write(char value)
-		{
-			if (_encoder.ShouldEncode(value))
-			{
-				Write(value.ToString(), true);
-			}
-			else
-			{
-				_underlyingWriter.Write(value);
-			}
-		}
+		public void Write(char value) => Write(value.ToString(), true);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Write(UndefinedBindingResult undefined) => _underlyingWriter.Write(_undefinedFormatter(undefined));
+		public void Write(UndefinedBindingResult undefined) => _undefinedFormatter.Format(undefined, _underlyingWriter);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Write(int value) => _underlyingWriter.Write(value);
@@ -133,6 +124,12 @@ namespace HandlebarsDotNet
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Write(object value)
 		{
+			Write<object>(value);
+		}
+		
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		public void Write<T>(T value)
+		{
 			switch (value)
 			{
 				case string v: Write(v); return;
@@ -148,6 +145,7 @@ namespace HandlebarsDotNet
 				case ulong v: Write(v); return;
 				case ushort v: Write(v); return;
 				case decimal v: Write(v); return;
+				case StringBuilder v: Write(v, true); return;
 				
 				default:
 					var @string = value.ToString();

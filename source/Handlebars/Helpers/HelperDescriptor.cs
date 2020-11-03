@@ -16,7 +16,7 @@ namespace HandlebarsDotNet.Helpers
         {
             var configuration = bindingContext.Configuration;
             using var writer = ReusableStringWriter.Get(configuration.FormatProvider);
-            using var encodedTextWriter = new EncodedTextWriter(writer, configuration.TextEncoder, configuration.UnresolvedBindingFormat, configuration.NoEscape);
+            using var encodedTextWriter = new EncodedTextWriter(writer, configuration.TextEncoder, configuration.UnresolvedBindingFormatter, configuration.NoEscape);
             WriteInvoke(bindingContext, encodedTextWriter, context, arguments);
             return writer.ToString();
         }

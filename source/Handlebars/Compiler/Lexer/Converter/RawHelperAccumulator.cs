@@ -2,6 +2,7 @@ using HandlebarsDotNet.Compiler.Lexer;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using HandlebarsDotNet.Pools;
 
 namespace HandlebarsDotNet.Compiler
 {

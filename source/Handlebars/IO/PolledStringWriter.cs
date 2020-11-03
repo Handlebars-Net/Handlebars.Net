@@ -1,12 +1,13 @@
 using System;
 using System.Globalization;
 using System.IO;
+using HandlebarsDotNet.Pools;
 
 namespace HandlebarsDotNet
 {
     internal class ReusableStringWriter : StringWriter
     {
-        private static readonly InternalObjectPool<ReusableStringWriter> Pool = new InternalObjectPool<ReusableStringWriter>(new Policy());
+        private static readonly InternalObjectPool<ReusableStringWriter, Policy> Pool = new InternalObjectPool<ReusableStringWriter, Policy>(new Policy(16));
         
         private IFormatProvider _formatProvider;
 
@@ -29,19 +30,18 @@ namespace HandlebarsDotNet
             Pool.Return(this);
         }
 
-        private class Policy : IInternalObjectPoolPolicy<ReusableStringWriter>
+        private readonly struct Policy : IInternalObjectPoolPolicy<ReusableStringWriter>
         {
-            private readonly StringBuilderPool.StringBuilderPooledObjectPolicy _policy = new StringBuilderPool.StringBuilderPooledObjectPolicy();
-                
-            public ReusableStringWriter Create()
+            private readonly StringBuilderPool.StringBuilderPooledObjectPolicy _policy;
+
+            public Policy(int initialCapacity, int maximumRetainedCapacity = 4096)
             {
-                return new ReusableStringWriter();
+                _policy = new StringBuilderPool.StringBuilderPooledObjectPolicy(initialCapacity, maximumRetainedCapacity);
             }
 
-            public bool Return(ReusableStringWriter item)
-            {
-                return _policy.Return(item.GetStringBuilder());
-            }
+            public ReusableStringWriter Create() => new ReusableStringWriter();
+
+            public bool Return(ReusableStringWriter item) => _policy.Return(item.GetStringBuilder());
         }
     }
 }

@@ -27,18 +27,7 @@ namespace HandlebarsDotNet
             PathInfoStore = _pathInfoStore = HandlebarsDotNet.PathInfoStore.Shared;
             ObjectDescriptorProvider = CreateObjectDescriptorProvider();
             AliasProviders = new ObservableList<IMemberAliasProvider>(UnderlingConfiguration.AliasProviders);
-            UnresolvedBindingFormat = configuration.UnresolvedBindingFormat ?? (undefined =>
-            {
-                var formatter = UnresolvedBindingFormatter;
-                if (formatter == null)
-                {
-                    if(string.IsNullOrEmpty(undefined.Value)) return string.Empty;
-                    formatter = string.Empty;
-                }
-	        
-                return string.Format( formatter, undefined.Value );
-            });
-            
+
             ExpressionMiddlewares = new ObservableList<IExpressionMiddleware>(UnderlingConfiguration.CompileTimeConfiguration.ExpressionMiddleware)
             {
                 new ExpressionOptimizerMiddleware()
@@ -58,9 +47,7 @@ namespace HandlebarsDotNet
         public ITextEncoder TextEncoder => UnderlingConfiguration.TextEncoder;
         public IFormatProvider FormatProvider => UnderlingConfiguration.FormatProvider;
         public ViewEngineFileSystem FileSystem => UnderlingConfiguration.FileSystem;
-#pragma warning disable 618
-        public string UnresolvedBindingFormatter => UnderlingConfiguration.UnresolvedBindingFormatter;
-#pragma warning restore 618
+        public Formatter<UndefinedBindingResult> UnresolvedBindingFormatter => UnderlingConfiguration.UnresolvedBindingFormatter;
         public bool ThrowOnUnresolvedBindingExpression => UnderlingConfiguration.ThrowOnUnresolvedBindingExpression;
         public IPartialTemplateResolver PartialTemplateResolver => UnderlingConfiguration.PartialTemplateResolver;
         public IMissingPartialTemplateHandler MissingPartialTemplateHandler => UnderlingConfiguration.MissingPartialTemplateHandler;
@@ -74,7 +61,6 @@ namespace HandlebarsDotNet
         public IReadOnlyList<IFeature> Features { get; }
         public IPathInfoStore PathInfoStore { get; }
         
-        public Func<UndefinedBindingResult, string> UnresolvedBindingFormat { get; }
         public IDictionary<PathInfoLight, StrongBox<HelperDescriptorBase>> Helpers { get; private set; }
         public IDictionary<PathInfoLight, StrongBox<BlockHelperDescriptorBase>> BlockHelpers { get; private set; }
         public IList<IHelperResolver> HelperResolvers { get; }
@@ -155,9 +141,10 @@ namespace HandlebarsDotNet
             var providers = new List<IObjectDescriptorProvider>(UnderlingConfiguration.CompileTimeConfiguration.ObjectDescriptorProviders)
             {
                 new StringDictionaryObjectDescriptorProvider(),
+                new ReadOnlyStringDictionaryObjectDescriptorProvider(),
                 new GenericDictionaryObjectDescriptorProvider(),
+                new ReadOnlyGenericDictionaryObjectDescriptorProvider(),
                 new DictionaryObjectDescriptor(),
-                new CollectionObjectDescriptor(objectDescriptorProvider),
                 new EnumerableObjectDescriptor(objectDescriptorProvider),
                 objectDescriptorProvider,
                 new DynamicObjectDescriptor()

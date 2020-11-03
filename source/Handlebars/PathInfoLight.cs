@@ -6,7 +6,7 @@ using HandlebarsDotNet.Compiler.Structure.Path;
 
 namespace HandlebarsDotNet
 {
-    public readonly struct PathInfoLight : 
+    public readonly partial struct PathInfoLight : 
         IEquatable<PathInfoLight>, 
         IEquatable<PathInfo>
     {
@@ -26,9 +26,9 @@ namespace HandlebarsDotNet
             _comparerTag = comparerTag;
         }
 
-        internal static IEqualityComparer<PathInfoLight> PlainPathComparer { get; } = new EqualityComparer(false);
+        internal static IEqualityComparer<PathInfoLight> PlainPathComparer { get; } = new PathInfoLightEqualityComparer(false);
 
-        internal static IEqualityComparer<PathInfoLight> PlainPathWithPartsCountComparer { get; } = new EqualityComparer();
+        internal static IEqualityComparer<PathInfoLight> PlainPathWithPartsCountComparer { get; } = new PathInfoLightEqualityComparer();
         
         /// <summary>
         /// Used for special handling of Relaxed Helper Names
@@ -67,25 +67,5 @@ namespace HandlebarsDotNet
         public static implicit operator PathInfoLight(string path) => new PathInfoLight(PathInfoStore.Shared.GetOrAdd(path));
         
         public static implicit operator PathInfo(PathInfoLight pathInfo) => pathInfo.PathInfo;
-        
-        private sealed class EqualityComparer : IEqualityComparer<PathInfoLight>
-        {
-            private readonly PathInfo.TrimmedPathEqualityComparer _comparer;
-
-            public EqualityComparer(bool countParts = true)
-            {
-                _comparer = new PathInfo.TrimmedPathEqualityComparer(countParts);
-            }
-            
-            public bool Equals(PathInfoLight x, PathInfoLight y)
-            {
-                return x._comparerTag == y._comparerTag && _comparer.Equals(x.PathInfo, y.PathInfo);
-            }
-
-            public int GetHashCode(PathInfoLight obj)
-            {
-                return _comparer.GetHashCode(obj.PathInfo);
-            }
-        }
     }
 }

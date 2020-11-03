@@ -1,16 +1,48 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Reflection;
+using HandlebarsDotNet.Iterators;
 using HandlebarsDotNet.MemberAccessors;
 using HandlebarsDotNet.MemberAccessors.EnumerableAccessors;
 
 namespace HandlebarsDotNet.ObjectDescriptors
 {
-    internal class EnumerableObjectDescriptor : IObjectDescriptorProvider
+    public sealed class EnumerableObjectDescriptor : IObjectDescriptorProvider
     {
-        private readonly IObjectDescriptorProvider _descriptorProvider;
         private static readonly Type Type = typeof(IEnumerable);
         private static readonly Type StringType = typeof(string);
+        private static readonly Type EnumerableObjectDescriptorType = typeof(EnumerableObjectDescriptor);
+        private static readonly BindingFlags BindingFlags = BindingFlags.NonPublic | BindingFlags.Static;
+
+        private static readonly MethodInfo ArrayObjectDescriptorFactoryMethodInfo = EnumerableObjectDescriptorType
+            .GetMethod(nameof(ArrayObjectDescriptorFactory), BindingFlags);
+        
+        private static readonly MethodInfo ListObjectDescriptorFactoryMethodInfo = EnumerableObjectDescriptorType
+            .GetMethod(nameof(ListObjectDescriptorFactory), BindingFlags);
+        
+        private static readonly MethodInfo ReadOnlyListObjectDescriptorFactoryMethodInfo = EnumerableObjectDescriptorType
+            .GetMethod(nameof(ReadOnlyListObjectDescriptorFactory), BindingFlags);
+        
+        private static readonly MethodInfo NonGenericListObjectDescriptorFactoryMethodInfo = EnumerableObjectDescriptorType
+            .GetMethod(nameof(NonGenericListObjectDescriptorFactory), BindingFlags);
+        
+        private static readonly MethodInfo CollectionObjectDescriptorFactoryMethodInfo = EnumerableObjectDescriptorType
+            .GetMethod(nameof(CollectionObjectDescriptorFactory), BindingFlags);
+        
+        private static readonly MethodInfo ReadOnlyCollectionObjectDescriptorFactoryMethodInfo = EnumerableObjectDescriptorType
+            .GetMethod(nameof(ReadOnlyCollectionObjectDescriptorFactory), BindingFlags);
+        
+        private static readonly MethodInfo NonGenericCollectionObjectDescriptorFactoryMethodInfo = EnumerableObjectDescriptorType
+            .GetMethod(nameof(NonGenericCollectionObjectDescriptorFactory), BindingFlags);
+        
+        private static readonly MethodInfo EnumerableObjectDescriptorFactoryMethodInfo = EnumerableObjectDescriptorType
+            .GetMethod(nameof(EnumerableObjectDescriptorFactory), BindingFlags);
+        
+        private static readonly MethodInfo NonGenericEnumerableObjectDescriptorFactoryMethodInfo = EnumerableObjectDescriptorType
+            .GetMethod(nameof(NonGenericEnumerableObjectDescriptorFactory), BindingFlags);
+
+        private readonly IObjectDescriptorProvider _descriptorProvider;
 
         public EnumerableObjectDescriptor(IObjectDescriptorProvider descriptorProvider)
         {
@@ -33,9 +65,115 @@ namespace HandlebarsDotNet.ObjectDescriptors
             
             var enumerableMemberAccessor = EnumerableMemberAccessor.Create(type);
             var mergedMemberAccessor = new MergedMemberAccessor(enumerableMemberAccessor, value.MemberAccessor);
-            value = new ObjectDescriptor(value.DescribedType, mergedMemberAccessor, value.GetProperties, true);
-            
-            return true;
+
+            var parameters = new object[]{ mergedMemberAccessor, value };
+            return TryCreateArrayDescriptor(type, parameters, out value)
+                   || TryCreateDescriptorFromOpenGeneric(type, typeof(IList<>), parameters, ListObjectDescriptorFactoryMethodInfo, out value)
+                   || TryCreateDescriptorFromOpenGeneric(type, typeof(IReadOnlyList<>), parameters, ReadOnlyListObjectDescriptorFactoryMethodInfo, out value)
+                   || TryCreateDescriptorFromOpenGeneric(type, typeof(ICollection<>), parameters, CollectionObjectDescriptorFactoryMethodInfo, out value)
+                   || TryCreateDescriptorFromOpenGeneric(type, typeof(IReadOnlyCollection<>), parameters, ReadOnlyCollectionObjectDescriptorFactoryMethodInfo, out value)
+                   || TryCreateDescriptorFromOpenGeneric(type, typeof(IEnumerable<>), parameters, EnumerableObjectDescriptorFactoryMethodInfo, out value)
+                   || TryCreateDescriptor(type, typeof(IList), parameters, NonGenericListObjectDescriptorFactoryMethodInfo, out value)
+                   || TryCreateDescriptor(type, typeof(ICollection), parameters, NonGenericCollectionObjectDescriptorFactoryMethodInfo, out value)
+                   || TryCreateDescriptor(type, typeof(IEnumerable), parameters, NonGenericEnumerableObjectDescriptorFactoryMethodInfo, out value);
+        }
+
+        private static bool TryCreateArrayDescriptor(Type type, object[] parameters, out ObjectDescriptor value)
+        {
+            if (type.IsArray)
+            {
+                value = (ObjectDescriptor) ArrayObjectDescriptorFactoryMethodInfo
+                    .MakeGenericMethod(type.GetElementType())
+                    .Invoke(null, parameters);
+
+                return true;
+            }
+
+            value = null;
+            return false;
+        }
+
+        private static bool TryCreateDescriptorFromOpenGeneric(Type type, Type openGenericType, object[] parameters, MethodInfo method, out ObjectDescriptor descriptor)
+        {
+            if (type.IsAssignableToGenericType(openGenericType, out var genericType))
+            {
+                descriptor = (ObjectDescriptor) method
+                    .MakeGenericMethod(type, genericType.GenericTypeArguments[0])
+                    .Invoke(null, parameters);
+
+                return true;
+            }
+
+            descriptor = null;
+            return false;
+        }
+        
+        private static bool TryCreateDescriptor(Type type, Type targetType, object[] parameters, MethodInfo method, out ObjectDescriptor descriptor)
+        {
+            if (targetType.IsAssignableFrom(type))
+            {
+                descriptor = (ObjectDescriptor) method
+                    .MakeGenericMethod(type)
+                    .Invoke(null, parameters);
+
+                return true;
+            }
+
+            descriptor = null;
+            return false;
+        }
+
+        private static ObjectDescriptor ArrayObjectDescriptorFactory<TValue>(IMemberAccessor accessor, ObjectDescriptor descriptor)
+        {
+            return new ObjectDescriptor(typeof(TValue[]), accessor, descriptor.GetProperties, self => new ArrayIterator<TValue>());
+        }
+        
+        private static ObjectDescriptor ListObjectDescriptorFactory<T, TValue>(IMemberAccessor accessor, ObjectDescriptor descriptor) 
+            where T : class, IList<TValue>
+        {
+            return new ObjectDescriptor(typeof(T), accessor, descriptor.GetProperties, self => new ListIterator<T, TValue>());
+        }
+        
+        private static ObjectDescriptor ReadOnlyListObjectDescriptorFactory<T, TValue>(IMemberAccessor accessor, ObjectDescriptor descriptor) 
+            where T : class, IReadOnlyList<TValue>
+        {
+            return new ObjectDescriptor(typeof(T), accessor, descriptor.GetProperties, self => new ReadOnlyListIterator<T, TValue>());
+        }
+        
+        private static ObjectDescriptor NonGenericListObjectDescriptorFactory<T>(IMemberAccessor accessor, ObjectDescriptor descriptor) 
+            where T : class, IList
+        {
+            return new ObjectDescriptor(typeof(T), accessor, descriptor.GetProperties, self => new ListIterator<T>());
+        }
+        
+        private static ObjectDescriptor CollectionObjectDescriptorFactory<T, TValue>(IMemberAccessor accessor, ObjectDescriptor descriptor) 
+            where T : class, ICollection<TValue>
+        {
+            return new ObjectDescriptor(typeof(T), accessor, descriptor.GetProperties, self => new CollectionIterator<T, TValue>());
+        }
+        
+        private static ObjectDescriptor ReadOnlyCollectionObjectDescriptorFactory<T, TValue>(IMemberAccessor accessor, ObjectDescriptor descriptor) 
+            where T : class, IReadOnlyCollection<TValue>
+        {
+            return new ObjectDescriptor(typeof(T), accessor, descriptor.GetProperties, self => new ReadOnlyCollectionIterator<T, TValue>());
+        }
+        
+        private static ObjectDescriptor NonGenericCollectionObjectDescriptorFactory<T>(IMemberAccessor accessor, ObjectDescriptor descriptor) 
+            where T : class, ICollection
+        {
+            return new ObjectDescriptor(typeof(T), accessor, descriptor.GetProperties, self => new CollectionIterator<T>());
+        }
+        
+        private static ObjectDescriptor EnumerableObjectDescriptorFactory<T, TValue>(IMemberAccessor accessor, ObjectDescriptor descriptor) 
+            where T : class, IEnumerable<TValue>
+        {
+            return new ObjectDescriptor(typeof(T), accessor, descriptor.GetProperties, self => new EnumerableIterator<T, TValue>());
+        }
+        
+        private static ObjectDescriptor NonGenericEnumerableObjectDescriptorFactory<T>(IMemberAccessor accessor, ObjectDescriptor descriptor) 
+            where T : class, IEnumerable
+        {
+            return new ObjectDescriptor(typeof(T), accessor, descriptor.GetProperties, self => new EnumerableIterator<T>());
         }
     }
 }

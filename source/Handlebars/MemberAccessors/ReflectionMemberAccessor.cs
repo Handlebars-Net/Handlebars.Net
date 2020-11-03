@@ -4,13 +4,15 @@ using System.Linq;
 using System.Reflection;
 using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.Compiler.Structure.Path;
+using HandlebarsDotNet.EqualityComparers;
+using HandlebarsDotNet.Runtime;
 
 namespace HandlebarsDotNet.MemberAccessors
 {
-    internal sealed class ReflectionMemberAccessor : IMemberAccessor
+    public sealed class ReflectionMemberAccessor : IMemberAccessor
     {
-        private readonly LookupSlim<Type, DeferredValue<Type, RawObjectTypeDescriptor>> _descriptors =
-            new LookupSlim<Type, DeferredValue<Type, RawObjectTypeDescriptor>>();
+        private readonly LookupSlim<Type, DeferredValue<Type, RawObjectTypeDescriptor>, TypeEqualityComparer> _descriptors =
+            new LookupSlim<Type, DeferredValue<Type, RawObjectTypeDescriptor>, TypeEqualityComparer>(new TypeEqualityComparer());
 
         private static readonly Func<Type, DeferredValue<Type, RawObjectTypeDescriptor>> DescriptorsValueFactory =
             key => new DeferredValue<Type, RawObjectTypeDescriptor>(key, type => new RawObjectTypeDescriptor(type));
@@ -60,8 +62,8 @@ namespace HandlebarsDotNet.MemberAccessors
             private static readonly Func<ChainSegment, Type, DeferredValue<KeyValuePair<ChainSegment, Type>, Func<object, object>>>
                 ValueFactory = (key, state) => new DeferredValue<KeyValuePair<ChainSegment, Type>, Func<object, object>>(new KeyValuePair<ChainSegment, Type>(key, state), ValueGetterFactory);
 
-            private readonly LookupSlim<ChainSegment, DeferredValue<KeyValuePair<ChainSegment, Type>, Func<object, object>>>
-                _accessors = new LookupSlim<ChainSegment, DeferredValue<KeyValuePair<ChainSegment, Type>, Func<object, object>>>();
+            private readonly LookupSlim<ChainSegment, DeferredValue<KeyValuePair<ChainSegment, Type>, Func<object, object>>, ChainSegment.ChainSegmentEqualityComparer>
+                _accessors = new LookupSlim<ChainSegment, DeferredValue<KeyValuePair<ChainSegment, Type>, Func<object, object>>, ChainSegment.ChainSegmentEqualityComparer>(new ChainSegment.ChainSegmentEqualityComparer());
 
             private Type Type { get; }
 

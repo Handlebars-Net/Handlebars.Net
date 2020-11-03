@@ -5,18 +5,20 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Expressions.Shortcuts;
 using HandlebarsDotNet.Collections;
+using HandlebarsDotNet.EqualityComparers;
+using HandlebarsDotNet.Runtime;
 using static Expressions.Shortcuts.ExpressionShortcuts;
 
 namespace HandlebarsDotNet.Compiler
 {
     internal static class FunctionBinderHelpers
     {
-        private static readonly LookupSlim<int, DeferredValue<int, ConstructorInfo>> ArgumentsConstructorsMap 
-            = new LookupSlim<int, DeferredValue<int, ConstructorInfo>>();
+        private static readonly LookupSlim<int, GcDeferredValue<int, ConstructorInfo>, IntegerEqualityComparer> ArgumentsConstructorsMap 
+            = new LookupSlim<int, GcDeferredValue<int, ConstructorInfo>, IntegerEqualityComparer>(new IntegerEqualityComparer());
 
-        private static readonly Func<int, DeferredValue<int, ConstructorInfo>> CtorFactory = i =>
+        private static readonly Func<int, GcDeferredValue<int, ConstructorInfo>> CtorFactory = i =>
         {
-            return new DeferredValue<int, ConstructorInfo>(i, count =>
+            return new GcDeferredValue<int, ConstructorInfo>(i, count =>
             {
                 var objectType = typeof(object);
                 var argumentTypes = new Type[count];

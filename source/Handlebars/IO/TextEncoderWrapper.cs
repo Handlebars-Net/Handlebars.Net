@@ -1,13 +1,14 @@
 using System;
 using System.IO;
 using System.Text;
+using HandlebarsDotNet.Pools;
 
 namespace HandlebarsDotNet
 {
     internal class TextEncoderWrapper : ITextEncoder, IDisposable
     {
-        private static readonly InternalObjectPool<TextEncoderWrapper> Pool 
-            = new InternalObjectPool<TextEncoderWrapper>(new Policy());
+        private static readonly InternalObjectPool<TextEncoderWrapper, Policy> Pool 
+            = new InternalObjectPool<TextEncoderWrapper, Policy>(new Policy());
 
         private ITextEncoder _underlyingEncoder;
         private bool _enabled;
@@ -47,11 +48,6 @@ namespace HandlebarsDotNet
             _underlyingEncoder.Encode(text, target);
         }
 
-        public bool ShouldEncode(char c)
-        {
-            return Enabled && _underlyingEncoder.ShouldEncode(c);
-        }
-
         public IFormatProvider FormatProvider => _underlyingEncoder.FormatProvider;
 
         public void Dispose()
@@ -61,7 +57,7 @@ namespace HandlebarsDotNet
             Pool.Return(this);
         }
 
-        private class Policy : IInternalObjectPoolPolicy<TextEncoderWrapper>
+        private struct Policy : IInternalObjectPoolPolicy<TextEncoderWrapper>
         {
             public TextEncoderWrapper Create() => new TextEncoderWrapper();
 

@@ -1,21 +1,25 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
 using System.Reflection;
 using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.Compiler.Structure.Path;
+using HandlebarsDotNet.EqualityComparers;
+using HandlebarsDotNet.Iterators;
 using HandlebarsDotNet.MemberAccessors;
+using HandlebarsDotNet.Runtime;
 
 namespace HandlebarsDotNet.ObjectDescriptors
 {
-    internal class ObjectDescriptorProvider : IObjectDescriptorProvider
+    public sealed class ObjectDescriptorProvider : IObjectDescriptorProvider
     {
         private static readonly Type StringType = typeof(string);
         private static readonly DynamicObjectDescriptor DynamicObjectDescriptor = new DynamicObjectDescriptor();
         
         private readonly Type _dynamicMetaObjectProviderType = typeof(IDynamicMetaObjectProvider);
-        private readonly LookupSlim<Type, DeferredValue<Type, ChainSegment[]>> _membersCache = new LookupSlim<Type, DeferredValue<Type, ChainSegment[]>>();
+        private readonly LookupSlim<Type, DeferredValue<Type, ChainSegment[]>, TypeEqualityComparer> _membersCache = new LookupSlim<Type, DeferredValue<Type, ChainSegment[]>, TypeEqualityComparer>(new TypeEqualityComparer());
         private readonly ReflectionMemberAccessor _reflectionMemberAccessor;
 
         public ObjectDescriptorProvider(ICompiledHandlebarsConfiguration configuration)
@@ -38,16 +42,9 @@ namespace HandlebarsDotNet.ObjectDescriptors
                     var mergedMemberAccessor = new MergedMemberAccessor(_reflectionMemberAccessor, dynamicDescriptor.MemberAccessor);
                     value = new ObjectDescriptor(type, 
                         mergedMemberAccessor, 
-                        (descriptor, o) =>
-                        {
-                            var dynamicDescriptorGetProperties = dynamicDescriptor.GetProperties(descriptor, o)
-                                .OfType<ChainSegment>();
-                            
-                            return GetProperties(descriptor, o)
-                                .OfType<ChainSegment>()
-                                .Concat(dynamicDescriptorGetProperties);
-                        }, 
-                        dependencies: _membersCache
+                        GetPropertiesDynamic, 
+                        self => new DynamicObjectIterator(self), 
+                        _membersCache, dynamicDescriptor
                     );
 
                     return true;
@@ -57,7 +54,13 @@ namespace HandlebarsDotNet.ObjectDescriptors
                 return false;
             }
             
-            value = new ObjectDescriptor(type, _reflectionMemberAccessor, GetProperties, dependencies: _membersCache);
+            value = new ObjectDescriptor(
+                type, 
+                _reflectionMemberAccessor, 
+                GetProperties, 
+                self => new ObjectIterator(self), 
+                dependencies: _membersCache
+            );
 
             return true;
         }
@@ -81,8 +84,20 @@ namespace HandlebarsDotNet.ObjectDescriptors
 
         private static readonly Func<ObjectDescriptor, object, IEnumerable<object>> GetProperties = (descriptor, o) =>
         {
-            var cache = (LookupSlim<Type, DeferredValue<Type, ChainSegment[]>>) descriptor.Dependencies[0];
+            var cache = (LookupSlim<Type, DeferredValue<Type, ChainSegment[]>, TypeEqualityComparer>) descriptor.Dependencies[0];
             return cache.GetOrAdd(descriptor.DescribedType, DescriptorValueFactory).Value;
+        };
+
+        private static readonly Func<ObjectDescriptor, object, IEnumerable> GetPropertiesDynamic = (descriptor, o) =>
+        {
+            var localDynamicDescriptor = (ObjectDescriptor) descriptor.Dependencies[1];
+            var dynamicDescriptorGetProperties = localDynamicDescriptor
+                .GetProperties(descriptor, o)
+                .OfType<ChainSegment>();
+                            
+            return GetProperties(descriptor, o)
+                .OfType<ChainSegment>()
+                .Concat(dynamicDescriptorGetProperties);
         };
     }
 }

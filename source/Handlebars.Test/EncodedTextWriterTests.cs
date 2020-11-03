@@ -26,9 +26,8 @@ namespace HandlebarsDotNet.Test
         public void Write(object value)
         {
             var stringWriter = new StringWriter();
-            static string Formatter(UndefinedBindingResult undefined) => undefined.ToString();
-            
-            using var writer = new EncodedTextWriter(stringWriter, null, Formatter);
+
+            using var writer = new EncodedTextWriter(stringWriter, null, new Formatter<UndefinedBindingResult>(undefined => undefined.ToString()));
             
             writer.Write(value);
             

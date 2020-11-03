@@ -23,7 +23,7 @@ namespace HandlebarsDotNet.Compiler
             var writer = CompilationContext.Args.EncodedWriter;
             
             var value = Arg<object>(Visit(sex.Body));
-            return writer.Call(o => o.Write(value));
+            return writer.Call(o => o.Write<object>(value));
         }
 
         protected override Expression VisitPathExpression(PathExpression pex)

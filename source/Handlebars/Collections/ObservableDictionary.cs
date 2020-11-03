@@ -7,14 +7,14 @@ namespace HandlebarsDotNet.Collections
 {
     internal class ObservableDictionary<TKey, TValue> : IObservable<ObservableEvent<TValue>>, IDictionary<TKey, TValue>, IObserver<ObservableEvent<TValue>>
     {
-        private readonly HashedCollection<IObserver<ObservableEvent<TValue>>> _observers;
+        private readonly List<IObserver<ObservableEvent<TValue>>> _observers;
         private readonly Dictionary<TKey, TValue> _inner;
 
         public ObservableDictionary(IDictionary<TKey, TValue> outer = null, IEqualityComparer<TKey> comparer = null)
         {
             comparer ??= EqualityComparer<TKey>.Default;
             _inner = outer != null ? new Dictionary<TKey, TValue>(outer, comparer) : new Dictionary<TKey, TValue>(comparer);
-            _observers = new HashedCollection<IObserver<ObservableEvent<TValue>>>();
+            _observers = new List<IObserver<ObservableEvent<TValue>>>();
             if (outer is ObservableDictionary<TKey, TValue> observableDictionary)
             {
                 observableDictionary.Subscribe(this);

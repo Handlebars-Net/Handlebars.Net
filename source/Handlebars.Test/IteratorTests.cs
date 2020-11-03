@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using NSubstitute;
 using Xunit;
 
 namespace HandlebarsDotNet.Test
@@ -292,6 +296,90 @@ namespace HandlebarsDotNet.Test
             };
             var result = template(data);
             Assert.Equal("001122", result);
+        }
+
+        [Theory]
+        [InlineData(typeof(IEnumerable))]
+        [InlineData(typeof(IList))]
+        [InlineData(typeof(IDictionary))]
+        [InlineData(typeof(ICollection))]
+        [InlineData(typeof(ICollection<int>))]
+        [InlineData(typeof(IEnumerable<int>))]
+        [InlineData(typeof(IReadOnlyCollection<int>))]
+        [InlineData(typeof(IReadOnlyList<int>))]
+        [InlineData(typeof(IDictionary<int, int>))]
+        [InlineData(typeof(IReadOnlyDictionary<int, int>))]
+        [InlineData(typeof(IDictionary<string, int>))]
+        [InlineData(typeof(IReadOnlyDictionary<string, int>))]
+        public void SimpleCollectionsTest(Type collectionType)
+        {
+            var factory = GetType()
+                .GetMethod(nameof(CreateObject), BindingFlags.Static | BindingFlags.NonPublic)!
+                .MakeGenericMethod(collectionType);
+            
+            var source = "{{#each data}}{{.}}{{/each}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                data = factory.Invoke(null, new object[0])
+            };
+            var result = template(data);
+            Assert.Equal("01234", result);
+        }
+        
+        private static IEnumerable CreateObject<T>()
+            where T: class, IEnumerable
+        {
+            int count = 5;
+            var range = Enumerable.Range(0, count);
+            var sub = Substitute.For<T>();
+            sub.GetEnumerator().Returns(range.GetEnumerator());
+
+            if (sub is IEnumerable<int> enumerable) enumerable.GetEnumerator().Returns(range.GetEnumerator());
+            
+            if (sub is IReadOnlyCollection<int> readOnlyCollection) readOnlyCollection.Count.Returns(count);
+            
+            if (sub is IReadOnlyList<int> readOnlyList) readOnlyList[Arg.Any<int>()].Returns(info => info.ArgAt<int>(0));
+            
+            if (sub is ICollection collection) collection.Count.Returns(count);
+
+            if (sub is IList list) list[Arg.Any<int>()].Returns(info => info.ArgAt<int>(0));
+
+            if (sub is IDictionary dictionary)
+            {
+                dictionary.Keys.Returns(range.ToArray());
+                dictionary[Arg.Any<object>()].Returns(info => info.ArgAt<int>(0));
+            }
+            
+            if (sub is IDictionary<int, int> dictionary2)
+            {
+                dictionary2.GetEnumerator().Returns(range.Select(o => new KeyValuePair<int, int>(o, o)).GetEnumerator());
+                dictionary2.Keys.Returns(range.ToArray());
+                dictionary2[Arg.Any<int>()].Returns(info => info.ArgAt<int>(0));
+            }
+            
+            if (sub is IReadOnlyDictionary<int, int> readOnlyDictionary)
+            {
+                readOnlyDictionary.GetEnumerator().Returns(range.Select(o => new KeyValuePair<int, int>(o, o)).GetEnumerator());
+                readOnlyDictionary.Keys.Returns(range.ToArray());
+                readOnlyDictionary[Arg.Any<int>()].Returns(info => info.ArgAt<int>(0));
+            }
+            
+            if (sub is IDictionary<string, int> sdictionary2)
+            {
+                sdictionary2.GetEnumerator().Returns(range.Select(o => new KeyValuePair<string, int>(o.ToString(), o)).GetEnumerator());
+                sdictionary2.Keys.Returns(range.Select(o => o.ToString()).ToArray());
+                sdictionary2[Arg.Any<string>()].Returns(info => info.ArgAt<int>(0));
+            }
+            
+            if (sub is IReadOnlyDictionary<string, int> sreadOnlyDictionary)
+            {
+                sreadOnlyDictionary.GetEnumerator().Returns(range.Select(o => new KeyValuePair<string, int>(o.ToString(), o)).GetEnumerator());
+                sreadOnlyDictionary.Keys.Returns(range.Select(o => o.ToString()).ToArray());
+                sreadOnlyDictionary[Arg.Any<string>()].Returns(info => info.ArgAt<int>(0));
+            }
+
+            return sub;
         }
     }
 }
