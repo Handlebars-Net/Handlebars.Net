@@ -10,7 +10,7 @@ namespace HandlebarsDotNet
 	public class UndefinedBindingResult : IEquatable<UndefinedBindingResult>
     {
 	    private static readonly LookupSlim<string, GcDeferredValue<string, UndefinedBindingResult>, StringEqualityComparer> Cache 
-		    = new LookupSlim<string, GcDeferredValue<string, UndefinedBindingResult>, StringEqualityComparer>(new StringEqualityComparer(StringComparison.OrdinalIgnoreCase));
+		    = new LookupSlim<string, GcDeferredValue<string, UndefinedBindingResult>, StringEqualityComparer>(new StringEqualityComparer(StringComparison.Ordinal));
 
 	    public static UndefinedBindingResult Create(string value) => Cache.GetOrAdd(value, ValueFactory).Value;
 	    
