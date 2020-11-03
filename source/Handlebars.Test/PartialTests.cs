@@ -697,6 +697,26 @@ namespace HandlebarsDotNet.Test
 
             Assert.Equal("Missing template should not throw exception: Partial Not Found: missing", result);
         }
+        
+        [Fact]
+        public void SubExpressionPartial()
+        {
+            const string source = "Hello, {{> (partialNameHelper)}}!";
+            
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterHelper("partialNameHelper", (context, args) => "partialName");
+            
+            using (var reader = new StringReader("world"))
+            {
+                var partial = handlebars.Compile(reader);
+                handlebars.RegisterTemplate("partialName", partial);
+            }
+            
+            var template = handlebars.Compile(source);
+            var data = new {};
+            var result = template(data);
+            Assert.Equal("Hello, world!", result);
+        }
     }
 }
 
