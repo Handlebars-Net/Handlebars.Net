@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Collections.Generic;
@@ -17,7 +18,11 @@ namespace HandlebarsDotNet.Compiler
             _startingNode = (HelperExpression)startingNode;
         }
 
-        public string BlockName => _startingNode.HelperName;
+        public sealed override string BlockName
+        {
+            get => _startingNode.HelperName;
+            protected set => throw new NotSupportedException();
+        }
 
         public override void HandleElement(Expression item)
         {

@@ -29,23 +29,7 @@ namespace HandlebarsDotNet.Compiler
             return context;
         }
 
-        public string Name
-        {
-            get
-            {
-                var type = GetType();
-                if (type == typeof(BlockHelperAccumulatorContext))
-                    return ((BlockHelperAccumulatorContext)this).HelperName;
-
-                if (type == typeof(ConditionalBlockAccumulatorContext))
-                    return ((ConditionalBlockAccumulatorContext)this).BlockName;
-
-                if (type == typeof(IteratorBlockAccumulatorContext))
-                    return ((IteratorBlockAccumulatorContext)this).BlockName;
-
-                return null;
-            }
-        }
+        public abstract string BlockName { get; protected set; }
 
         private static bool IsConditionalBlock(Expression item)
         {
