@@ -1,18 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace HandlebarsDotNet.Collections
 {
-    internal static class HashHelper
-    {
-        public static readonly int[] Primes = {
-            2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103,
-            107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199
-        };
-    }
-    
     /// <summary>
     /// Append-only data structure of a fixed size that provides dictionary-like lookup capabilities.
     /// <para>Performance of <see cref="AddOrReplace"/>, <see cref="ContainsKey(in TKey)"/> and <see cref="TryGetValue(in TKey, out TValue)"/>
@@ -363,9 +356,7 @@ namespace HandlebarsDotNet.Collections
         {
             if (Capacity != destination.Capacity)
                 throw new ArgumentException(" capacity should be equal to source dictionary", nameof(destination));
-
-            //destination._version++;
-
+            
             if(_count == 0) return;
             
             for (var index = 0; index < _indexes.Length; index++)
@@ -529,6 +520,7 @@ namespace HandlebarsDotNet.Collections
         }
     }
 
+    [DebuggerDisplay("{Index}")]
     public readonly struct EntryIndex<TKey> : IEquatable<EntryIndex<TKey>>
     {
         public readonly int Index;
@@ -544,9 +536,7 @@ namespace HandlebarsDotNet.Collections
             Index = index;
             IsNotEmpty = true;
         }
-
-        public override string ToString() => Index.ToString();
-
+        
         public bool Equals(EntryIndex<TKey> other) 
             => IsNotEmpty == other.IsNotEmpty && Version == other.Version && Index == other.Index;
 

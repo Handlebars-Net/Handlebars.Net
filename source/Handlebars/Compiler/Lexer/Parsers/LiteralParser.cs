@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using HandlebarsDotNet.Pools;
 
 namespace HandlebarsDotNet.Compiler.Lexer
 {

@@ -4,7 +4,7 @@ using HandlebarsDotNet.Compiler.Structure.Path;
 
 namespace HandlebarsDotNet.MemberAccessors
 {
-    internal class DictionaryMemberAccessor : IMemberAccessor
+    public sealed class DictionaryMemberAccessor : IMemberAccessor
     {
         public bool TryGetValue(object instance, ChainSegment memberName, out object value)
         {

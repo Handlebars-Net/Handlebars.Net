@@ -1,8 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Collections;
+using HandlebarsDotNet.EqualityComparers;
+using HandlebarsDotNet.Runtime;
 
 namespace HandlebarsDotNet.Compiler.Structure.Path
 {
@@ -22,16 +23,16 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
     /// <summary>
     /// Represents parts of single <see cref="PathSegment"/> separated with dots.
     /// </summary>
-    public sealed class ChainSegment : IEquatable<ChainSegment>
+    public sealed partial class ChainSegment : IEquatable<ChainSegment>
     {
+        private const string ThisValue = "this";
         private static readonly char[] TrimStart = {'@'};
+
+        private static readonly LookupSlim<string, GcDeferredValue<CreationProperties, ChainSegment>, StringEqualityComparer> Lookup = new LookupSlim<string, GcDeferredValue<CreationProperties, ChainSegment>, StringEqualityComparer>(new StringEqualityComparer(StringComparison.Ordinal));
         
-        // TODO: migrate to WeakReference?
-        private static readonly LookupSlim<string, SafeDeferredValue<CreationProperties, ChainSegment>> Lookup = new LookupSlim<string, SafeDeferredValue<CreationProperties, ChainSegment>>();
-        
-        private static readonly Func<string, WellKnownVariable, SafeDeferredValue<CreationProperties, ChainSegment>> ValueFactory = (s, v) =>
+        private static readonly Func<string, WellKnownVariable, GcDeferredValue<CreationProperties, ChainSegment>> ValueFactory = (s, v) =>
         {
-            return new SafeDeferredValue<CreationProperties, ChainSegment>(new CreationProperties(s, v), properties => new ChainSegment(properties.String, properties.KnownVariable));
+            return new GcDeferredValue<CreationProperties, ChainSegment>(new CreationProperties(s, v), properties => new ChainSegment(properties.String, properties.KnownVariable));
         };
         
         public static ChainSegmentEqualityComparer EqualityComparer { get; } = new ChainSegmentEqualityComparer();
@@ -78,13 +79,14 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
         private ChainSegment(string value, WellKnownVariable wellKnownVariable = WellKnownVariable.None)
         {
             WellKnownVariable = wellKnownVariable;
-            
-            var segmentValue = string.IsNullOrEmpty(value) ? "this" : value.TrimStart(TrimStart);
+
+            var isNullOrEmpty = string.IsNullOrEmpty(value);
+            var segmentValue = isNullOrEmpty ? ThisValue : value.TrimStart(TrimStart);
             var segmentTrimmedValue = TrimSquareBrackets(segmentValue);
 
             _value = segmentValue;
-            IsThis = string.IsNullOrEmpty(value) || string.Equals(value, "this", StringComparison.OrdinalIgnoreCase);
-            IsVariable = !string.IsNullOrEmpty(value) && value.StartsWith("@");
+            IsThis = isNullOrEmpty || string.Equals(value, ThisValue, StringComparison.OrdinalIgnoreCase);
+            IsVariable = !isNullOrEmpty && value.StartsWith("@");
             TrimmedValue = segmentTrimmedValue;
             LowerInvariant = segmentTrimmedValue.ToLowerInvariant();
             
@@ -134,14 +136,15 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != GetType()) return false;
-            return EqualsImpl((ChainSegment) obj);
+            if (!(obj is ChainSegment segment)) return false;
+            return EqualsImpl(segment);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool EqualsImpl(ChainSegment other)
         {
-            return IsThis == other.IsThis
+            return _hashCode == other._hashCode 
+                   && IsThis == other.IsThis 
                    && LowerInvariant == other.LowerInvariant;
         }
 
@@ -159,10 +162,10 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
         }
 
         /// <inheritdoc cref="Equals(HandlebarsDotNet.Compiler.Structure.Path.ChainSegment)"/>
-        public static bool operator ==(ChainSegment a, ChainSegment b) => a.Equals(b);
+        public static bool operator ==(ChainSegment a, ChainSegment b) => Equals(a, b);
 
         /// <inheritdoc cref="Equals(HandlebarsDotNet.Compiler.Structure.Path.ChainSegment)"/>
-        public static bool operator !=(ChainSegment a, ChainSegment b) => !a.Equals(b);
+        public static bool operator !=(ChainSegment a, ChainSegment b) => !Equals(a, b);
 
         /// <inheritdoc cref="ToString"/>
         public static implicit operator string(ChainSegment segment) => segment._value;
@@ -183,25 +186,7 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
 
             return key;
         }
-        
-        public struct ChainSegmentEqualityComparer : IEqualityComparer<ChainSegment>
-        {
-            [DebuggerStepThrough]
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public bool Equals(ChainSegment x, ChainSegment y)
-            {
-                if (ReferenceEquals(x, y)) return true;
-                if (ReferenceEquals(x, null)) return false;
-                if (ReferenceEquals(y, null)) return false;
-                
-                return x._hashCode == y._hashCode && x.IsThis == y.IsThis && x.LowerInvariant == y.LowerInvariant;
-            }
 
-            [DebuggerStepThrough]
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public int GetHashCode(ChainSegment obj) => obj._hashCode;
-        }
-        
         private readonly struct CreationProperties
         {
             public readonly string String;

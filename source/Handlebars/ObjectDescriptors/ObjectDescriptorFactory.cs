@@ -1,15 +1,17 @@
 using System;
 using System.Collections.Generic;
 using HandlebarsDotNet.Collections;
+using HandlebarsDotNet.EqualityComparers;
+using HandlebarsDotNet.Runtime;
 
 namespace HandlebarsDotNet.ObjectDescriptors
 {
     internal class ObjectDescriptorFactory : IObjectDescriptorProvider
     {
-        private readonly IList<IObjectDescriptorProvider> _providers;
-        private readonly LookupSlim<Type, DeferredValue<Type, ObjectDescriptor>> _descriptorsCache = new LookupSlim<Type, DeferredValue<Type, ObjectDescriptor>>();
+        private readonly List<IObjectDescriptorProvider> _providers;
+        private readonly LookupSlim<Type, DeferredValue<Type, ObjectDescriptor>, ReferenceEqualityComparer<Type>> _descriptorsCache = new LookupSlim<Type, DeferredValue<Type, ObjectDescriptor>, ReferenceEqualityComparer<Type>>(new ReferenceEqualityComparer<Type>());
 
-        private static readonly Func<Type, IList<IObjectDescriptorProvider>, DeferredValue<Type, ObjectDescriptor>> ValueFactory = (key, providers) => new DeferredValue<Type, ObjectDescriptor>(key, t =>
+        private static readonly Func<Type, List<IObjectDescriptorProvider>, DeferredValue<Type, ObjectDescriptor>> ValueFactory = (key, providers) => new DeferredValue<Type, ObjectDescriptor>(key, t =>
         {
             for (var index = 0; index < providers.Count; index++)
             {
@@ -21,7 +23,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
             return ObjectDescriptor.Empty;
         });
 
-        public ObjectDescriptorFactory(IList<IObjectDescriptorProvider> providers)
+        public ObjectDescriptorFactory(List<IObjectDescriptorProvider> providers)
         {
             _providers = providers;
         }

@@ -5,11 +5,12 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using HandlebarsDotNet.Compiler.Structure.Path;
+using HandlebarsDotNet.Iterators;
 using HandlebarsDotNet.MemberAccessors;
 
 namespace HandlebarsDotNet.ObjectDescriptors
 {
-    internal class DynamicObjectDescriptor : IObjectDescriptorProvider
+    public sealed class DynamicObjectDescriptor : IObjectDescriptorProvider
     {
         private static readonly DynamicMemberAccessor DynamicMemberAccessor = new DynamicMemberAccessor();
         private static readonly Func<ObjectDescriptor, object, IEnumerable<object>> GetProperties = (descriptor, o) =>
@@ -25,11 +26,15 @@ namespace HandlebarsDotNet.ObjectDescriptors
         {
             if (!Type.IsAssignableFrom(type))
             {
-                value = ObjectDescriptor.Empty;;
+                value = ObjectDescriptor.Empty;
                 return false;
             }
             
-            value = new ObjectDescriptor(type, DynamicMemberAccessor, GetProperties);
+            value = new ObjectDescriptor(
+                type, 
+                DynamicMemberAccessor, 
+                GetProperties,
+                self => new DynamicObjectIterator(self));
 
             return true;
         }

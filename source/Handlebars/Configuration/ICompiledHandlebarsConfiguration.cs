@@ -41,10 +41,7 @@ namespace HandlebarsDotNet
         /// </summary>
         IFormatProvider FormatProvider { get; }
         
-        [Obsolete("Use `UnresolvedBindingFormat` instead")]
-        string UnresolvedBindingFormatter { get; }
-        
-        Func<UndefinedBindingResult, string> UnresolvedBindingFormat { get; }
+        Formatter<UndefinedBindingResult> UnresolvedBindingFormatter { get; }
         
         /// <summary>
         /// 

@@ -1,8 +1,8 @@
-﻿using System;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.Compiler;
 using HandlebarsDotNet.Compiler.Structure.Path;
+using HandlebarsDotNet.EqualityComparers;
 using HandlebarsDotNet.ValueProviders;
 
 namespace HandlebarsDotNet
@@ -12,7 +12,7 @@ namespace HandlebarsDotNet
     /// </summary>
     public readonly struct BlockHelperOptions
     {
-        private readonly FixedSizeDictionary<string, object, StringComparer> _extensions;
+        private readonly FixedSizeDictionary<string, object, StringEqualityComparer> _extensions;
         
         internal readonly TemplateDelegate OriginalTemplate;
         internal readonly TemplateDelegate OriginalInverse;

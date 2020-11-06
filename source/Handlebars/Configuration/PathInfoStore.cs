@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.Compiler.Structure.Path;
+using HandlebarsDotNet.EqualityComparers;
 using HandlebarsDotNet.Polyfills;
+using HandlebarsDotNet.Runtime;
 
 namespace HandlebarsDotNet
 {
@@ -17,15 +19,11 @@ namespace HandlebarsDotNet
     
     public class PathInfoStore : IPathInfoStore
     {
-        /*
-         * TODO: migrate to WeakReferences?
-         */
-        
         private static readonly Lazy<PathInfoStore> Instance = new Lazy<PathInfoStore>(() => new PathInfoStore());
 
-        private static readonly Func<string, SafeDeferredValue<string, PathInfo>> ValueFactory = s =>
+        private static readonly Func<string, GcDeferredValue<string, PathInfo>> ValueFactory = s =>
         {
-            return new SafeDeferredValue<string, PathInfo>(s, pathString =>
+            return new GcDeferredValue<string, PathInfo>(s, pathString =>
             {
                 return GetPathInfo(pathString);
             });
@@ -33,7 +31,8 @@ namespace HandlebarsDotNet
         
         public static PathInfoStore Shared => Instance.Value;
 
-        private readonly LookupSlim<string, SafeDeferredValue<string, PathInfo>> _paths = new LookupSlim<string, SafeDeferredValue<string, PathInfo>>();
+        private readonly LookupSlim<string, GcDeferredValue<string, PathInfo>, StringEqualityComparer> _paths 
+            = new LookupSlim<string, GcDeferredValue<string, PathInfo>, StringEqualityComparer>(new StringEqualityComparer(StringComparison.Ordinal));
 
         private PathInfoStore(){}
         
@@ -72,19 +71,13 @@ namespace HandlebarsDotNet
             if (pathParts.Length > 1) isValidHelperLiteral = false;
             foreach (var segment in pathParts)
             {
-                switch (segment)
+                if (segment == ".." || segment == ".")
                 {
-                    case "..":
-                        isValidHelperLiteral = false;
-                        segments.Add(new PathSegment(segment, ArrayEx.Empty<ChainSegment>()));
-                        continue;
-                    
-                    case ".":
-                        isValidHelperLiteral = false;
-                        segments.Add(new PathSegment(segment, ArrayEx.Empty<ChainSegment>()));
-                        continue;
+                    isValidHelperLiteral = false;
+                    segments.Add(new PathSegment(segment, ArrayEx.Empty<ChainSegment>()));
+                    continue;
                 }
-
+                
                 var segmentString = isVariable ? "@" + segment : segment;
                 var chainSegments = GetPathChain(segmentString).ToArray();
                 if (chainSegments.Length > 1) isValidHelperLiteral = false;

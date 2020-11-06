@@ -3,20 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using HandlebarsDotNet.Collections;
+using HandlebarsDotNet.EqualityComparers;
+using HandlebarsDotNet.Iterators;
 using HandlebarsDotNet.MemberAccessors.DictionaryAccessors;
 using HandlebarsDotNet.Polyfills;
+using HandlebarsDotNet.Runtime;
 
 namespace HandlebarsDotNet.ObjectDescriptors
 {
-    internal sealed class StringDictionaryObjectDescriptorProvider : IObjectDescriptorProvider
+    public sealed class StringDictionaryObjectDescriptorProvider : IObjectDescriptorProvider
     {
         private static readonly object[] EmptyArray = ArrayEx.Empty<object>();
         private static readonly MethodInfo CreateClassDescriptorMethodInfo = typeof(StringDictionaryObjectDescriptorProvider)
-            .GetMethod(nameof(CreateClassDescriptor), BindingFlags.NonPublic | BindingFlags.Static);
-        private static readonly MethodInfo CreateStructDescriptorMethodInfo = typeof(StringDictionaryObjectDescriptorProvider)
-            .GetMethod(nameof(CreateStructDescriptor), BindingFlags.NonPublic | BindingFlags.Static);
-        
-        private readonly LookupSlim<Type, DeferredValue<Type, Type>> _typeCache = new LookupSlim<Type, DeferredValue<Type, Type>>();
+            .GetMethod(nameof(CreateDescriptor), BindingFlags.NonPublic | BindingFlags.Static);
+
+        private readonly LookupSlim<Type, DeferredValue<Type, Type>, ReferenceEqualityComparer<Type>> _typeCache = new LookupSlim<Type, DeferredValue<Type, Type>, ReferenceEqualityComparer<Type>>(new ReferenceEqualityComparer<Type>());
 
         public bool TryGetDescriptor(Type type, out ObjectDescriptor value)
         {
@@ -28,9 +29,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
             }
 
             var typeArgument = interfaceType.GetGenericArguments()[1];
-            var factory = typeArgument.GetTypeInfo().IsClass
-                ? CreateClassDescriptorMethodInfo
-                : CreateStructDescriptorMethodInfo;
+            var factory = CreateClassDescriptorMethodInfo;
             
             var descriptorCreator = factory
                 .MakeGenericMethod(type, typeArgument);
@@ -48,25 +47,14 @@ namespace HandlebarsDotNet.ObjectDescriptors
                         i.GetGenericArguments()[0] == typeof(string));
             });
 
-        private static ObjectDescriptor CreateClassDescriptor<T, TV>() 
-            where T : IDictionary<string, TV>
-            where TV: class
+        private static ObjectDescriptor CreateDescriptor<T, TV>() 
+            where T : class, IDictionary<string, TV>
         {
             return new ObjectDescriptor(
                 typeof(IDictionary<string, TV>),
-                new StringClassDictionaryAccessor<T, TV>(),
-                (descriptor, o) => ((T) o).Keys
-            );
-        }
-        
-        private static ObjectDescriptor CreateStructDescriptor<T, TV>()
-            where T : IDictionary<string, TV>
-            where TV: struct
-        {
-            return new ObjectDescriptor(
-                typeof(IDictionary<string, TV>),
-                new StringStructDictionaryAccessor<T, TV>(),
-                (descriptor, o) => ((T) o).Keys
+                new StringDictionaryAccessor<T, TV>(),
+                (descriptor, o) => ((T) o).Keys,
+                self => new DictionaryIterator<T, string, TV>()
             );
         }
     }

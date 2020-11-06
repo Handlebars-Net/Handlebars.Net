@@ -1,6 +1,5 @@
 using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Collections;
-using HandlebarsDotNet.Compiler;
 using HandlebarsDotNet.Compiler.Structure.Path;
 
 namespace HandlebarsDotNet.ValueProviders

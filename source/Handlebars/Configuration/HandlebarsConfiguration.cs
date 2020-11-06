@@ -29,10 +29,7 @@ namespace HandlebarsDotNet
         
         public ViewEngineFileSystem FileSystem { get; set; }
         
-        [Obsolete("Use `UnresolvedBindingFormat` instead.")]
-	    public string UnresolvedBindingFormatter { get; set; }
-        
-        public Func<UndefinedBindingResult, string> UnresolvedBindingFormat { get; set; }
+	    public Formatter<UndefinedBindingResult> UnresolvedBindingFormatter { get; set; }
         
         public bool ThrowOnUnresolvedBindingExpression { get; set; }
         
@@ -65,6 +62,7 @@ namespace HandlebarsDotNet
             RegisteredTemplates = new ObservableDictionary<string, HandlebarsTemplate<TextWriter, object, object>>(comparer: StringComparer.OrdinalIgnoreCase);
             HelperResolvers = new ObservableList<IHelperResolver>();
             TextEncoder = new HtmlEncoder(FormatProvider);
+            UnresolvedBindingFormatter = new Formatter<UndefinedBindingResult>(undef => string.Empty);
         }
     }
 }

@@ -1,13 +1,14 @@
+using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
-using HandlebarsDotNet.Compiler;
+using HandlebarsDotNet.Pools;
 
 namespace HandlebarsDotNet
 {
     internal sealed class EncodedTextWriterWrapper : TextWriter
     {
-        private static readonly EncodedTextWriterPool Pool = new EncodedTextWriterPool();
+        private static readonly InternalObjectPool<EncodedTextWriterWrapper, Policy> Pool = new InternalObjectPool<EncodedTextWriterWrapper, Policy>(new Policy());
 		
         public EncodedTextWriter UnderlyingWriter { get; private set; }
 		
@@ -18,6 +19,8 @@ namespace HandlebarsDotNet
 			
             return textWriter;
         }
+
+        public override IFormatProvider FormatProvider => UnderlyingWriter.Encoder.FormatProvider;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Write(string value, bool encode) => UnderlyingWriter.Write(value, encode);
@@ -62,27 +65,16 @@ namespace HandlebarsDotNet
         public override Encoding Encoding => UnderlyingWriter.Encoding;
 
         protected override void Dispose(bool disposing) => Pool.Return(this);
-
-        private class EncodedTextWriterPool : InternalObjectPool<EncodedTextWriterWrapper>
+        
+        private readonly struct Policy : IInternalObjectPoolPolicy<EncodedTextWriterWrapper>
         {
-            public EncodedTextWriterPool() : base(new Policy())
-            {
-            }
-			
-            private class Policy : IInternalObjectPoolPolicy<EncodedTextWriterWrapper>
-            {
-                public EncodedTextWriterWrapper Create()
-                {
-                    return new EncodedTextWriterWrapper();
-                }
-		
-                public bool Return(EncodedTextWriterWrapper obj)
-                {
-                    obj.UnderlyingWriter = default;
-					
-                    return true;
-                }
-            }
+	        public EncodedTextWriterWrapper Create() => new EncodedTextWriterWrapper();
+
+	        public bool Return(EncodedTextWriterWrapper obj)
+	        {
+		        obj.UnderlyingWriter = default;
+		        return true;
+	        }
         }
     }
 }

@@ -74,8 +74,6 @@ namespace HandlebarsDotNet.Test
                 target.Write(JsonConvert.ToString(text, '"').Trim('"'));
             }
 
-            public bool ShouldEncode(char c) => true;
-
             public IFormatProvider FormatProvider { get; } = CultureInfo.InvariantCulture;
         }
 

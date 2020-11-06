@@ -59,7 +59,7 @@ namespace HandlebarsDotNet.Compiler
             {
                 var config = context.Configuration;
                 using var innerWriter = ReusableStringWriter.Get(config.FormatProvider);
-                using var textWriter = new EncodedTextWriter(innerWriter, config.TextEncoder, config.UnresolvedBindingFormat, true);
+                using var textWriter = new EncodedTextWriter(innerWriter, config.TextEncoder, config.UnresolvedBindingFormatter, true);
                 compiledView(textWriter, context);
                 var inner = innerWriter.ToString();
 

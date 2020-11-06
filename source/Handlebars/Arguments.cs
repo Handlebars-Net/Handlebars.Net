@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Compiler;
+using HandlebarsDotNet.Pools;
 
 namespace HandlebarsDotNet
 {
@@ -314,7 +315,7 @@ namespace HandlebarsDotNet
         
         private sealed class Enumerator : IEnumerator<object>
         {
-            private static readonly InternalObjectPool<Enumerator> Pool = new InternalObjectPool<Enumerator>(new Policy());
+            private static readonly InternalObjectPool<Enumerator, Policy> Pool = new InternalObjectPool<Enumerator, Policy>(new Policy());
 
             public static Enumerator Create(in Arguments arguments)
             {
@@ -365,7 +366,7 @@ namespace HandlebarsDotNet
                 Pool.Return(this);
             }
             
-            private class Policy : IInternalObjectPoolPolicy<Enumerator>
+            private struct Policy : IInternalObjectPoolPolicy<Enumerator>
             {
                 public Enumerator Create() => new Enumerator();
 

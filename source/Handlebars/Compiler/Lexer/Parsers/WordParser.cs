@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text;
+using HandlebarsDotNet.Pools;
 using HandlebarsDotNet.StringUtils;
 
 namespace HandlebarsDotNet.Compiler.Lexer
@@ -76,15 +77,8 @@ namespace HandlebarsDotNet.Compiler.Lexer
 
         private static bool CanBreakAtSpace(StringBuilder buffer)
         {
-            CalculateBraces(buffer, out var left, out var right);
-
-            return left == 0 || left == right;
-        }
-
-        private static void CalculateBraces(StringBuilder buffer, out int left, out int right)
-        {
-            left = 0;
-            right = 0;
+            var left = 0;
+            var right = 0;
             
             var enumerator = new StringBuilderEnumerator(buffer);
             while (enumerator.MoveNext())
@@ -100,6 +94,8 @@ namespace HandlebarsDotNet.Compiler.Lexer
                         break;
                 }
             }
+
+            return left == 0 || left == right;
         }
     }
 }

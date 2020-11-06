@@ -1,38 +1,38 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Reflection;
+using HandlebarsDotNet.Iterators;
 using HandlebarsDotNet.MemberAccessors;
+using HandlebarsDotNet.Polyfills;
 
 namespace HandlebarsDotNet.ObjectDescriptors
 {
-    internal class DictionaryObjectDescriptor : IObjectDescriptorProvider
+    public sealed class DictionaryObjectDescriptor : IObjectDescriptorProvider
     {
-        private static readonly DictionaryMemberAccessor DictionaryMemberAccessor = new DictionaryMemberAccessor();
-
-        private static readonly Func<ObjectDescriptor, object, IEnumerable<object>> GetProperties = (descriptor, arg) =>
-        {
-            return Enumerate((IDictionary) arg);
-
-            static IEnumerable<object> Enumerate(IDictionary dictionary)
-            {
-                foreach (var key in dictionary.Keys) yield return key;
-            }
-        };
-
         private static readonly Type Type = typeof(IDictionary);
+        private static readonly MethodInfo Factory = typeof(DictionaryObjectDescriptor)
+            .GetMethod(nameof(ObjectDescriptorFactory), BindingFlags.Static | BindingFlags.NonPublic);
+        
+        private static readonly DictionaryMemberAccessor DictionaryMemberAccessor = new DictionaryMemberAccessor();
+        
+        private static readonly Func<ObjectDescriptor, object, IEnumerable> GetProperties = (descriptor, arg) => ((IDictionary) arg).Keys;
 
         public bool TryGetDescriptor(Type type, out ObjectDescriptor value)
         {
             if (!Type.IsAssignableFrom(type))
             {
-                value = ObjectDescriptor.Empty;;
+                value = ObjectDescriptor.Empty;
                 return false;
             }
             
-            value = new ObjectDescriptor(type, DictionaryMemberAccessor, GetProperties);
-
+            value = (ObjectDescriptor) Factory.MakeGenericMethod(type).Invoke(null, ArrayEx.Empty<object>());
             return true;
+        }
+
+        private static ObjectDescriptor ObjectDescriptorFactory<T>()
+            where T : class, IDictionary
+        {
+            return new ObjectDescriptor(typeof(T), DictionaryMemberAccessor, GetProperties, self => new DictionaryIterator<T>());
         }
     }
 }

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using HandlebarsDotNet.Polyfills;
 
@@ -8,7 +7,7 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
     /// <summary>
     /// Represents path expression
     /// </summary>
-    public class PathInfo : IEquatable<PathInfo>
+    public sealed partial class PathInfo : IEquatable<PathInfo>
     {
         private readonly string _path;
         
@@ -113,29 +112,5 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
         public static implicit operator string(PathInfo pathInfo) => pathInfo._path;
         
         public static implicit operator PathInfo(string path) => PathInfoStore.Shared.GetOrAdd(path);
-        
-        internal sealed class TrimmedPathEqualityComparer : IEqualityComparer<PathInfo>
-        {
-            private readonly bool _countParts;
-
-            public TrimmedPathEqualityComparer(bool countParts = true)
-            {
-                _countParts = countParts;
-            }
-            
-            public bool Equals(PathInfo x, PathInfo y)
-            {
-                if (ReferenceEquals(x, y)) return true;
-                if (ReferenceEquals(x, null)) return false;
-                if (ReferenceEquals(y, null)) return false;
-                
-                return (!_countParts || x.PathChain.Length == y.PathChain.Length) && string.Equals(x.TrimmedPath, y.TrimmedPath);
-            }
-
-            public int GetHashCode(PathInfo obj)
-            {
-                return obj._trimmedHashCode;
-            }
-        }
     }
 }

@@ -14,7 +14,5 @@ namespace HandlebarsDotNet
         void Encode(StringBuilder text, TextWriter target);
 
         void Encode(string text, TextWriter target);
-
-        bool ShouldEncode(char c);
     }
 }

@@ -2,21 +2,18 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using HandlebarsDotNet.Compiler.Structure.Path;
 
 namespace HandlebarsDotNet.MemberAccessors.EnumerableAccessors
 {
-    internal class EnumerableMemberAccessor : IMemberAccessor
+    public class EnumerableMemberAccessor : IMemberAccessor
     {
         public static EnumerableMemberAccessor Create(Type type)
         {
             if (type.IsAssignableToGenericType(typeof(IList<>), out var genericType))
             {
                 var typeArgument = genericType.GenericTypeArguments[0];
-                var accessorType = typeArgument.GetTypeInfo().IsClass 
-                    ? typeof(ListMemberAccessor<,>).MakeGenericType(genericType, typeArgument) 
-                    : typeof(StructListMemberAccessor<,>).MakeGenericType(genericType, typeArgument);
+                var accessorType = typeof(ListMemberAccessor<,>).MakeGenericType(genericType, typeArgument);
 
                 return (EnumerableMemberAccessor) Activator.CreateInstance(accessorType);
             }
@@ -24,9 +21,7 @@ namespace HandlebarsDotNet.MemberAccessors.EnumerableAccessors
             if (type.IsAssignableToGenericType(typeof(IReadOnlyList<>), out genericType))
             {
                 var typeArgument = genericType.GenericTypeArguments[0];
-                var accessorType = typeArgument.GetTypeInfo().IsClass
-                    ? typeof(ReadOnlyListMemberAccessor<,>).MakeGenericType(genericType, typeArgument)
-                    : typeof(StructReadOnlyListMemberAccessor<,>).MakeGenericType(genericType, typeArgument);
+                var accessorType = typeof(ReadOnlyListMemberAccessor<,>).MakeGenericType(genericType, typeArgument);
 
                 return (EnumerableMemberAccessor) Activator.CreateInstance(accessorType);
             }
@@ -34,9 +29,7 @@ namespace HandlebarsDotNet.MemberAccessors.EnumerableAccessors
             if (type.IsAssignableToGenericType(typeof(IEnumerable<>), out genericType))
             {
                 var typeArgument = genericType.GenericTypeArguments[0];
-                var accessorType = typeArgument.GetTypeInfo().IsClass
-                    ? typeof(ClassEnumerableMemberAccessor<,>).MakeGenericType(genericType, typeArgument)
-                    : typeof(StructEnumerableMemberAccessor<,>).MakeGenericType(genericType, typeArgument);
+                var accessorType = typeof(EnumerableMemberAccessor<,>).MakeGenericType(genericType, typeArgument);
 
                 return (EnumerableMemberAccessor) Activator.CreateInstance(accessorType);
             }
