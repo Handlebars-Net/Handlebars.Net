@@ -2,6 +2,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Helpers;
 using HandlebarsDotNet.Helpers.BlockHelpers;
+using HandlebarsDotNet.Runtime;
 
 namespace HandlebarsDotNet.Features
 {
@@ -97,7 +98,7 @@ namespace HandlebarsDotNet.Features
             {
                 var helper = _helper ?? new MissingHelperDescriptor();
                 configuration.Helpers.AddOrUpdate(helperMissingPathInfo, 
-                    h => new StrongBox<HelperDescriptorBase>(h), 
+                    h => new Ref<HelperDescriptorBase>(h), 
                     (h, o) => o.Value = h, 
                     helper);
             }
@@ -107,7 +108,7 @@ namespace HandlebarsDotNet.Features
             {
                 var blockHelper = _blockHelper ?? new MissingBlockHelperDescriptor();
                 configuration.BlockHelpers.AddOrUpdate(blockHelperMissingKeyPathInfo, 
-                    h => new StrongBox<BlockHelperDescriptorBase>(h), 
+                    h => new Ref<BlockHelperDescriptorBase>(h), 
                     (h, o) => o.Value = h, 
                     blockHelper);
             }

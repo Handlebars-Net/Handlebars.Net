@@ -1,12 +1,13 @@
 using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.Compiler.Structure.Path;
+using HandlebarsDotNet.Runtime;
 
 namespace HandlebarsDotNet.Helpers
 {
     internal sealed class LateBindHelperDescriptor : ReturnHelperDescriptor
     {
-        private readonly StrongBox<HelperDescriptorBase> _helperMissing;
+        private readonly Ref<HelperDescriptorBase> _helperMissing;
         private readonly ObservableList<IHelperResolver> _helperResolvers;
 
         public LateBindHelperDescriptor(string name, ICompiledHandlebarsConfiguration configuration) : base(name)

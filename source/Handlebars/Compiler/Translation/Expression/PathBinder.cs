@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using Expressions.Shortcuts;
 using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.Helpers;
+using HandlebarsDotNet.Runtime;
 using static Expressions.Shortcuts.ExpressionShortcuts;
 
 namespace HandlebarsDotNet.Compiler
@@ -41,7 +42,7 @@ namespace HandlebarsDotNet.Compiler
             var pathInfoLight = new PathInfoLight(pathInfo);
             if (!configuration.Helpers.TryGetValue(pathInfoLight, out var helper))
             {
-                helper = new StrongBox<HelperDescriptorBase>(new LateBindHelperDescriptor(pathInfo, configuration));
+                helper = new  Ref<HelperDescriptorBase>(new LateBindHelperDescriptor(pathInfo, configuration));
                 configuration.Helpers.Add(pathInfoLight, helper);
             }
             else if (configuration.Compatibility.RelaxedHelperNaming)
@@ -49,7 +50,7 @@ namespace HandlebarsDotNet.Compiler
                 pathInfoLight = pathInfoLight.TagComparer();
                 if (!configuration.Helpers.ContainsKey(pathInfoLight))
                 {
-                    helper = new StrongBox<HelperDescriptorBase>(new LateBindHelperDescriptor(pathInfo, configuration));
+                    helper = new  Ref<HelperDescriptorBase>(new LateBindHelperDescriptor(pathInfo, configuration));
                     configuration.Helpers.Add(pathInfoLight, helper);
                 }
             }

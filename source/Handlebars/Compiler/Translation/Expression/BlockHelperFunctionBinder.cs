@@ -4,6 +4,7 @@ using Expressions.Shortcuts;
 using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.Helpers.BlockHelpers;
 using HandlebarsDotNet.Polyfills;
+using HandlebarsDotNet.Runtime;
 using static Expressions.Shortcuts.ExpressionShortcuts;
 
 namespace HandlebarsDotNet.Compiler
@@ -56,14 +57,14 @@ namespace HandlebarsDotNet.Compiler
                 var resolver = helperResolvers[index];
                 if (!resolver.TryResolveBlockHelper(helperName, out var resolvedDescriptor)) continue;
 
-                descriptor = new StrongBox<BlockHelperDescriptorBase>(resolvedDescriptor);
+                descriptor = new Ref<BlockHelperDescriptorBase>(resolvedDescriptor);
                 blockHelpers.Add(pathInfo, descriptor);
                 
                 return BindByRef(descriptor);
             }
             
             var lateBindBlockHelperDescriptor = new LateBindBlockHelperDescriptor(pathInfo, CompilationContext.Configuration);
-            var lateBindBlockHelperRef = new StrongBox<BlockHelperDescriptorBase>(lateBindBlockHelperDescriptor);
+            var lateBindBlockHelperRef = new Ref<BlockHelperDescriptorBase>(lateBindBlockHelperDescriptor);
             blockHelpers.Add(pathInfo, lateBindBlockHelperRef);
 
             return BindByRef(lateBindBlockHelperRef);
@@ -85,7 +86,7 @@ namespace HandlebarsDotNet.Compiler
                 return FunctionBuilder.Compile(blockExpression.Expressions, CompilationContext.Configuration);
             }
 
-            Expression BindByRef(StrongBox<BlockHelperDescriptorBase> helperBox)
+            Expression BindByRef(Ref<BlockHelperDescriptorBase> helperBox)
             {
                 var writer = CompilationContext.Args.EncodedWriter;
                 
