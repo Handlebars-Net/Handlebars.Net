@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1604446374997,
+  "lastUpdate": 1604683501006,
   "repoUrl": "https://github.com/Handlebars-Net/Handlebars.Net",
   "entries": {
     "Benchmark.Net Benchmark": [
@@ -1440,6 +1440,102 @@ window.BENCHMARK_DATA = {
             "value": 245065.77696940105,
             "unit": "ns",
             "range": "± 2512.6777003973725"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "zjklee@gmail.com",
+            "name": "Oleh Formaniuk",
+            "username": "zjklee"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "93625bf2f8e18ba1af0a1f720c3ab2e1dad371f2",
+          "message": "Merge pull request #381 from zjklee/feature/iterators\n\nIntroduce `IIterator` + structure reorganisation",
+          "timestamp": "2020-11-06T19:19:46+02:00",
+          "tree_id": "d859180d0e7a574707f97bb15b71af7daa43eb10",
+          "url": "https://github.com/Handlebars-Net/Handlebars.Net/commit/93625bf2f8e18ba1af0a1f720c3ab2e1dad371f2"
+        },
+        "date": 1604683497629,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "HandlebarsNet.Benchmark.Compilation.Template",
+            "value": 8001045.96875,
+            "unit": "ns",
+            "range": "± 59723.55483058003"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithoutParameters",
+            "value": 365.046790940421,
+            "unit": "ns",
+            "range": "± 1.1589626450915"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithOneParameter",
+            "value": 365.10151859692166,
+            "unit": "ns",
+            "range": "± 2.9094907005612654"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithTwoParameter",
+            "value": 379.09357522328696,
+            "unit": "ns",
+            "range": "± 4.75735520594715"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithoutParameters",
+            "value": 537.8893058640616,
+            "unit": "ns",
+            "range": "± 2.714767956320843"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithOneParameter",
+            "value": 366.0700233532832,
+            "unit": "ns",
+            "range": "± 2.279631248917551"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithTwoParameter",
+            "value": 370.9645134485685,
+            "unit": "ns",
+            "range": "± 1.7402318003198771"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithoutParameters",
+            "value": 591.5990870793661,
+            "unit": "ns",
+            "range": "± 4.075673646791099"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithOneParameter",
+            "value": 608.4044011189387,
+            "unit": "ns",
+            "range": "± 4.642973385318162"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithTwoParameter",
+            "value": 607.123424911499,
+            "unit": "ns",
+            "range": "± 3.9093984307506133"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.EndToEnd.Default(N: 5, DataType: \"dictionary\")",
+            "value": 194676.30477469307,
+            "unit": "ns",
+            "range": "± 855.1184580608164"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.EndToEnd.Default(N: 5, DataType: \"object\")",
+            "value": 205912.28867885045,
+            "unit": "ns",
+            "range": "± 1067.8276426967147"
           }
         ]
       }
