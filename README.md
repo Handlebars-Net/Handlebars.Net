@@ -93,8 +93,9 @@ var result = template(data);
 ### Registering Helpers
 
 ```c#
-Handlebars.RegisterHelper("link_to", (writer, context, parameters) => {
-  writer.WriteSafeString("<a href='" + context.url + "'>" + context.text + "</a>");
+Handlebars.RegisterHelper("link_to", (writer, context, parameters) => 
+{
+    writer.WriteSafeString($"<a href='{context["url"]}'>{context["text"]}</a>");
 });
 
 string source = @"Click here: {{link_to}}";
