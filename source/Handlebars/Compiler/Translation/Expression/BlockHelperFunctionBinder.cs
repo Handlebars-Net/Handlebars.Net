@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using Expressions.Shortcuts;
 using HandlebarsDotNet.Compiler.Structure.Path;
+using HandlebarsDotNet.Helpers;
 using HandlebarsDotNet.Helpers.BlockHelpers;
 using HandlebarsDotNet.Polyfills;
 using HandlebarsDotNet.Runtime;
@@ -57,14 +58,14 @@ namespace HandlebarsDotNet.Compiler
                 var resolver = helperResolvers[index];
                 if (!resolver.TryResolveBlockHelper(helperName, out var resolvedDescriptor)) continue;
 
-                descriptor = new Ref<BlockHelperDescriptorBase>(resolvedDescriptor);
+                descriptor = new Ref<IHelperDescriptor<BlockHelperOptions>>(resolvedDescriptor);
                 blockHelpers.Add(pathInfo, descriptor);
                 
                 return BindByRef(descriptor);
             }
             
-            var lateBindBlockHelperDescriptor = new LateBindBlockHelperDescriptor(pathInfo, CompilationContext.Configuration);
-            var lateBindBlockHelperRef = new Ref<BlockHelperDescriptorBase>(lateBindBlockHelperDescriptor);
+            var lateBindBlockHelperDescriptor = new LateBindBlockHelperDescriptor(pathInfo);
+            var lateBindBlockHelperRef = new Ref<IHelperDescriptor<BlockHelperOptions>>(lateBindBlockHelperDescriptor);
             blockHelpers.Add(pathInfo, lateBindBlockHelperRef);
 
             return BindByRef(lateBindBlockHelperRef);
@@ -72,10 +73,7 @@ namespace HandlebarsDotNet.Compiler
             ExpressionContainer<ChainSegment[]> CreateBlockParams()
             {
                 var parameters = bhex.BlockParams?.BlockParam?.Parameters;
-                if (parameters == null)
-                {
-                    parameters = ArrayEx.Empty<ChainSegment>();
-                }
+                parameters ??= ArrayEx.Empty<ChainSegment>();
 
                 return Arg(parameters);
             }
@@ -86,7 +84,7 @@ namespace HandlebarsDotNet.Compiler
                 return FunctionBuilder.Compile(blockExpression.Expressions, CompilationContext.Configuration);
             }
 
-            Expression BindByRef(Ref<BlockHelperDescriptorBase> helperBox)
+            Expression BindByRef(Ref<IHelperDescriptor<BlockHelperOptions>> helperBox)
             {
                 var writer = CompilationContext.Args.EncodedWriter;
                 
@@ -96,8 +94,9 @@ namespace HandlebarsDotNet.Compiler
                     BlockHelperDirection.Inverse => New(() => new BlockHelperOptions(inverse, direct, blockParams, bindingContext)),
                     _ => throw new HandlebarsCompilerException("Helper referenced with unknown prefix", readerContext)
                 };
-                
-                return Call(() => helperBox.Value.Invoke(writer, helperOptions, context, args));
+
+                var callContext = New(() => new Context(bindingContext, context));
+                return Call(() => helperBox.Value.Invoke(writer, helperOptions, callContext, args));
             }
         }
     }

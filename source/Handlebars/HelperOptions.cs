@@ -1,12 +1,11 @@
 using System.Runtime.CompilerServices;
-using HandlebarsDotNet.Compiler;
 using HandlebarsDotNet.ValueProviders;
 
 namespace HandlebarsDotNet
 {
-    public readonly struct HelperOptions
+    public readonly struct HelperOptions : IHelperOptions
     {
-        public readonly BindingContext Frame;
+        public BindingContext Frame { get; }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public HelperOptions(BindingContext frame) => Frame = frame;

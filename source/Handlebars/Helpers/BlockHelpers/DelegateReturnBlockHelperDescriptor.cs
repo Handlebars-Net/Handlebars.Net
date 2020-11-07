@@ -1,11 +1,27 @@
+using HandlebarsDotNet.Compiler.Structure.Path;
+
 namespace HandlebarsDotNet.Helpers.BlockHelpers
 {
-    public sealed class DelegateReturnBlockHelperDescriptor : ReturnBlockHelperDescriptor
+    public sealed class DelegateReturnBlockHelperDescriptor : IHelperDescriptor<BlockHelperOptions>
     {
         private readonly HandlebarsReturnBlockHelper _helper;
 
-        public DelegateReturnBlockHelperDescriptor(string name, HandlebarsReturnBlockHelper helper) : base(name) => _helper = helper;
+        public DelegateReturnBlockHelperDescriptor(string name, HandlebarsReturnBlockHelper helper)
+        {
+            _helper = helper;
+            Name = name;
+        }
+        
+        public PathInfo Name { get; }
 
-        protected override object Invoke(in BlockHelperOptions options, object context, in Arguments arguments) => _helper(options, context, arguments);
+        public object Invoke(in BlockHelperOptions options, in Context context, in Arguments arguments)
+        {
+            return _helper(options, context, arguments);
+        }
+
+        public void Invoke(in EncodedTextWriter output, in BlockHelperOptions options, in Context context, in Arguments arguments)
+        {
+            output.Write(_helper(options, context, arguments));
+        }
     }
 }

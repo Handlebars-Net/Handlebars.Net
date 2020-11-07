@@ -13,7 +13,7 @@ namespace HandlebarsDotNet
     {
         internal readonly EntryIndex<ChainSegment>[] WellKnownVariables = new EntryIndex<ChainSegment>[8];
         
-        private readonly DeferredValue<BindingContext, ObjectDescriptor> _objectDescriptor;
+        internal readonly DeferredValue<BindingContext, ObjectDescriptor> ObjectDescriptor;
 
         private BindingContext()
         {
@@ -24,7 +24,7 @@ namespace HandlebarsDotNet
             ContextDataObject = new FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer>(16, 7, ChainSegment.EqualityComparer);
             BlockParamsObject = new FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer>(16, 7, ChainSegment.EqualityComparer);
             
-            _objectDescriptor = new DeferredValue<BindingContext, ObjectDescriptor>(this, context => ObjectDescriptor.Create(context.Value, context.Configuration));
+            ObjectDescriptor = new DeferredValue<BindingContext, ObjectDescriptor>(this, context => ObjectDescriptors.ObjectDescriptor.Create(context.Value, context.Configuration));
         }
         
         internal FixedSizeDictionary<string, object, StringEqualityComparer> Extensions { get; }
@@ -36,7 +36,7 @@ namespace HandlebarsDotNet
         {
             if(data == null) return;
             
-            var objectDescriptor = ObjectDescriptor.Create(data, Configuration);
+            var objectDescriptor = ObjectDescriptors.ObjectDescriptor.Create(data, Configuration);
             var objectAccessor = new ObjectAccessor(data, objectDescriptor);
 
             foreach (var property in objectAccessor.Properties)
@@ -108,11 +108,11 @@ namespace HandlebarsDotNet
             {
                 var wellKnownVariable = WellKnownVariables[(int) segment.WellKnownVariable];
                 return BlockParamsObject.TryGetValue(wellKnownVariable, out value) 
-                       || (_objectDescriptor.Value?.MemberAccessor.TryGetValue(Value, segment, out value) ?? false);
+                       || (ObjectDescriptor.Value?.MemberAccessor.TryGetValue(Value, segment, out value) ?? false);
             }
             
             return BlockParamsObject.TryGetValue(segment, out value) 
-                   || (_objectDescriptor.Value?.MemberAccessor.TryGetValue(Value, segment, out value) ?? false);
+                   || (ObjectDescriptor.Value?.MemberAccessor.TryGetValue(Value, segment, out value) ?? false);
         }
         
         internal bool TryGetContextVariable(ChainSegment segment, out object value)
@@ -141,7 +141,7 @@ namespace HandlebarsDotNet
 
         private static void PopulateHash(HashParameterDictionary hash, object from, ICompiledHandlebarsConfiguration configuration)
         {
-            var descriptor = ObjectDescriptor.Create(from, configuration);
+            var descriptor = ObjectDescriptors.ObjectDescriptor.Create(from, configuration);
             var accessor = descriptor.MemberAccessor;
             var properties = descriptor.GetProperties(descriptor, from);
             var enumerator = properties.GetEnumerator();

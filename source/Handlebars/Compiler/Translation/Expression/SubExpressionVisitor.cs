@@ -5,7 +5,6 @@ using static Expressions.Shortcuts.ExpressionShortcuts;
 
 namespace HandlebarsDotNet.Compiler
 {
-    // will be significantly improved in next iterations
     internal class SubExpressionVisitor : HandlebarsExpressionVisitor
     {
         private CompilationContext CompilationContext { get; }
@@ -33,12 +32,12 @@ namespace HandlebarsDotNet.Compiler
 
         private static Expression HandleMethodCallExpression(MethodCallExpression helperCall)
         {
-            var bindingContext = Arg<BindingContext>(helperCall.Arguments[0]);
-            var context = Arg<object>(helperCall.Arguments[2]);
+            var options = Arg<HelperOptions>(helperCall.Arguments[1]);
+            var context = Arg<Context>(helperCall.Arguments[2]);
             var arguments = Arg<Arguments>(helperCall.Arguments[3]);
-            var helper = Arg<HelperDescriptorBase>(helperCall.Object);
-            
-            return helper.Call(o => o.ReturnInvoke(bindingContext, context, arguments));
+            var helper = Arg<IHelperDescriptor<HelperOptions>>(helperCall.Object);
+
+            return helper.Call(o => o.Invoke(options, context, arguments));
         }
     }
 }

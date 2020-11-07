@@ -5,7 +5,12 @@ namespace HandlebarsDotNet.Helpers
     public interface IHelperDescriptor
     {
         PathInfo Name { get; }
-        
-        HelperType Type { get; }
+    }
+    
+    public interface IHelperDescriptor<TOptions> : IHelperDescriptor
+        where TOptions: struct, IHelperOptions
+    {
+        object Invoke(in TOptions options, in Context context, in Arguments arguments);
+        void Invoke(in EncodedTextWriter output, in TOptions options, in Context context, in Arguments arguments);
     }
 }

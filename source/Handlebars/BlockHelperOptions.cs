@@ -7,17 +7,23 @@ using HandlebarsDotNet.ValueProviders;
 
 namespace HandlebarsDotNet
 {
+    public interface IHelperOptions
+    {
+        BindingContext Frame { get; }
+        DataValues Data { get; }
+    }
+
     /// <summary>
     /// Contains properties accessible withing <see cref="HandlebarsBlockHelper"/> function 
     /// </summary>
-    public readonly struct BlockHelperOptions
+    public readonly struct BlockHelperOptions : IHelperOptions
     {
         private readonly FixedSizeDictionary<string, object, StringEqualityComparer> _extensions;
         
         internal readonly TemplateDelegate OriginalTemplate;
         internal readonly TemplateDelegate OriginalInverse;
         
-        public readonly BindingContext Frame;
+        public BindingContext Frame { get; }
         
         public readonly ChainSegment[] BlockVariables;
 
@@ -60,6 +66,12 @@ namespace HandlebarsDotNet
         /// BlockHelper body
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Template(in EncodedTextWriter writer, in Context context) => Template(writer, context.Value);
+        
+        /// <summary>
+        /// BlockHelper body
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Template(in EncodedTextWriter writer, BindingContext context) => OriginalTemplate(writer, context);
 
         /// <summary>
@@ -77,6 +89,12 @@ namespace HandlebarsDotNet
             using var frame = Frame.CreateFrame(context);
             OriginalInverse(writer, frame);
         }
+
+        /// <summary>
+        /// BlockHelper body
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Inverse(in EncodedTextWriter writer, in Context context) => Inverse(writer, context.Value);
         
         /// <summary>
         /// BlockHelper body
@@ -86,6 +104,9 @@ namespace HandlebarsDotNet
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BindingContext CreateFrame(object value = null) => Frame.CreateFrame(value);
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public BindingContext CreateFrame(Context value) => Frame.CreateFrame(value.Value);
 
         /// <summary>
         /// Provides access to dynamic options

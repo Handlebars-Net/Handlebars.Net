@@ -1,5 +1,4 @@
 using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
 using Expressions.Shortcuts;
 using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.Helpers;
@@ -29,11 +28,11 @@ namespace HandlebarsDotNet.Compiler
 
         protected override Expression VisitPathExpression(PathExpression pex)
         {
-            var context = CompilationContext.Args.BindingContext;
+            var bindingContext = CompilationContext.Args.BindingContext;
             var configuration = CompilationContext.Configuration;
             var pathInfo = configuration.PathInfoStore.GetOrAdd(pex.Path);
 
-            var resolvePath = Call(() => PathResolver.ResolvePath(context, pathInfo));
+            var resolvePath = Call(() => PathResolver.ResolvePath(bindingContext, pathInfo));
             
             if (pex.Context == PathExpression.ResolutionContext.Parameter) return resolvePath;
             if (pathInfo.IsVariable || pathInfo.IsThis) return resolvePath;
@@ -42,7 +41,8 @@ namespace HandlebarsDotNet.Compiler
             var pathInfoLight = new PathInfoLight(pathInfo);
             if (!configuration.Helpers.TryGetValue(pathInfoLight, out var helper))
             {
-                helper = new  Ref<HelperDescriptorBase>(new LateBindHelperDescriptor(pathInfo, configuration));
+                var lateBindHelperDescriptor = new LateBindHelperDescriptor(pathInfo);
+                helper = new Ref<IHelperDescriptor<HelperOptions>>(lateBindHelperDescriptor);
                 configuration.Helpers.Add(pathInfoLight, helper);
             }
             else if (configuration.Compatibility.RelaxedHelperNaming)
@@ -50,13 +50,16 @@ namespace HandlebarsDotNet.Compiler
                 pathInfoLight = pathInfoLight.TagComparer();
                 if (!configuration.Helpers.ContainsKey(pathInfoLight))
                 {
-                    helper = new  Ref<HelperDescriptorBase>(new LateBindHelperDescriptor(pathInfo, configuration));
+                    var lateBindHelperDescriptor = new LateBindHelperDescriptor(pathInfo);
+                    helper = new Ref<IHelperDescriptor<HelperOptions>>(lateBindHelperDescriptor);
                     configuration.Helpers.Add(pathInfoLight, helper);
                 }
             }
 
+            var options = New(() => new HelperOptions(bindingContext));
+            var context = New(() => new Context(bindingContext));
             var argumentsArg = New(() => new Arguments(0));
-            return context.Call(o => helper.Value.ReturnInvoke(o, o.Value, argumentsArg));
+            return Call(() => helper.Value.Invoke(options, context, argumentsArg));
         }
     }
 }

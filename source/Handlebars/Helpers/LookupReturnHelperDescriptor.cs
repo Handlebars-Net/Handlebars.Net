@@ -2,16 +2,11 @@ using HandlebarsDotNet.Compiler.Structure.Path;
 
 namespace HandlebarsDotNet.Helpers
 {
-    internal sealed class LookupReturnHelperDescriptor : ReturnHelperDescriptor
+    public sealed class LookupReturnHelperDescriptor : IHelperDescriptor<HelperOptions>
     {
-        private readonly ICompiledHandlebarsConfiguration _configuration;
+        public PathInfo Name { get; } = "lookup";
 
-        public LookupReturnHelperDescriptor(ICompiledHandlebarsConfiguration configuration) : base("lookup")
-        {
-            _configuration = configuration;
-        }
-
-        protected override object Invoke(in HelperOptions options, object context, in Arguments arguments)
+        public object Invoke(in HelperOptions options, in Context context, in Arguments arguments)
         {
             if (arguments.Length != 2)
             {
@@ -20,9 +15,15 @@ namespace HandlebarsDotNet.Helpers
             
             var segment = ChainSegment.Create(arguments[1]);
 
-            return !PathResolver.TryAccessMember(arguments[0], segment, _configuration, out var value) 
+            var configuration = options.Frame.Configuration;
+            return !PathResolver.TryAccessMember(arguments[0], segment, configuration, out var value) 
                 ? UndefinedBindingResult.Create(segment)
                 : value;
+        }
+
+        public void Invoke(in EncodedTextWriter output, in HelperOptions options, in Context context, in Arguments arguments)
+        {
+            output.Write(Invoke(options, context, arguments));
         }
     }
 }

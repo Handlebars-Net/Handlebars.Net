@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.Features;
+using HandlebarsDotNet.Helpers;
 using HandlebarsDotNet.Helpers.BlockHelpers;
 using HandlebarsDotNet.ValueProviders;
 
@@ -38,7 +39,7 @@ namespace HandlebarsDotNet.Test
         {
             var handlebars = Handlebars.Create();
             handlebars.RegisterHelper("myHelper",
-                (in EncodedTextWriter writer, in HelperOptions options, object context, in Arguments arguments) =>
+                (in EncodedTextWriter writer, in HelperOptions options, in Context context, in Arguments arguments) =>
                 {
                     var i = options.Data.Value<int>("i");
                     for (int j = 0; j < i; j++) writer.Write(j);
@@ -61,7 +62,7 @@ namespace HandlebarsDotNet.Test
         {
             var handlebars = Handlebars.Create();
             handlebars.RegisterHelper("myHelper",
-                (in HelperOptions options, object context, in Arguments arguments) =>
+                (in HelperOptions options, in Context context, in Arguments arguments) =>
                 {
                     var data = new DataValues(options.Frame);
                     var i = data.Value<int>("i");
@@ -917,13 +918,16 @@ namespace HandlebarsDotNet.Test
             Assert.Equal("one's index is 0 two's index is 1 ", result);
         }
         
-        private class CustomEachBlockHelper : BlockHelperDescriptor
+        private class CustomEachBlockHelper : IHelperDescriptor<BlockHelperOptions>
         {
-            public CustomEachBlockHelper() : base("customEach")
+            public PathInfo Name { get; } = "customEach";
+        
+            public object Invoke(in BlockHelperOptions options, in Context context, in Arguments arguments)
             {
+                throw new NotImplementedException();
             }
 
-            public override void Invoke(in EncodedTextWriter output, in BlockHelperOptions options, object context, in Arguments arguments)
+            public void Invoke(in EncodedTextWriter output, in BlockHelperOptions options, in Context context, in Arguments arguments)
             {
                 using var frame = options.CreateFrame();
                 var data = new DataValues(frame);

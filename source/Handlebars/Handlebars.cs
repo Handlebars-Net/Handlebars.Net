@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.IO;
 using HandlebarsDotNet.Compiler;
 using HandlebarsDotNet.Helpers;
-using HandlebarsDotNet.Helpers.BlockHelpers;
 
 namespace HandlebarsDotNet
 {
@@ -13,7 +12,7 @@ namespace HandlebarsDotNet
     /// <param name="output"></param>
     /// <param name="context"></param>
     /// <param name="arguments"></param>
-    public delegate void HandlebarsHelper(EncodedTextWriter output, object context, Arguments arguments);
+    public delegate void HandlebarsHelper(EncodedTextWriter output, Context context, Arguments arguments);
     
     /// <summary>
     /// InlineHelper: {{#helper arg1 arg2}}
@@ -22,14 +21,14 @@ namespace HandlebarsDotNet
     /// <param name="options"></param>
     /// <param name="context"></param>
     /// <param name="arguments"></param>
-    public delegate void HandlebarsHelperWithOptions(in EncodedTextWriter output, in HelperOptions options, object context, in Arguments arguments);
+    public delegate void HandlebarsHelperWithOptions(in EncodedTextWriter output, in HelperOptions options, in Context context, in Arguments arguments);
     
     /// <summary>
     /// InlineHelper: {{#helper arg1 arg2}}, supports <see cref="object"/> value return
     /// </summary>
     /// <param name="context"></param>
     /// <param name="arguments"></param>
-    public delegate object HandlebarsReturnHelper(object context, Arguments arguments);
+    public delegate object HandlebarsReturnHelper(Context context, Arguments arguments);
     
     /// <summary>
     /// InlineHelper: {{#helper arg1 arg2}}, supports <see cref="object"/> value return
@@ -37,7 +36,7 @@ namespace HandlebarsDotNet
     /// <param name="options"></param>
     /// <param name="context"></param>
     /// <param name="arguments"></param>
-    public delegate object HandlebarsReturnWithOptionsHelper(in HelperOptions options, object context, in Arguments arguments);
+    public delegate object HandlebarsReturnWithOptionsHelper(in HelperOptions options, in Context context, in Arguments arguments);
     
     /// <summary>
     /// BlockHelper: {{#helper}}..{{/helper}}
@@ -46,7 +45,7 @@ namespace HandlebarsDotNet
     /// <param name="options"></param>
     /// <param name="context"></param>
     /// <param name="arguments"></param>
-    public delegate void HandlebarsBlockHelper(EncodedTextWriter output, BlockHelperOptions options, object context, Arguments arguments);
+    public delegate void HandlebarsBlockHelper(EncodedTextWriter output, BlockHelperOptions options, Context context, Arguments arguments);
     
     /// <summary>
     /// BlockHelper: {{#helper}}..{{/helper}}
@@ -54,7 +53,7 @@ namespace HandlebarsDotNet
     /// <param name="options"></param>
     /// <param name="context"></param>
     /// <param name="arguments"></param>
-    public delegate object HandlebarsReturnBlockHelper(BlockHelperOptions options, object context, Arguments arguments);
+    public delegate object HandlebarsReturnBlockHelper(BlockHelperOptions options, Context context, Arguments arguments);
 
     
     public sealed class Handlebars
@@ -166,18 +165,18 @@ namespace HandlebarsDotNet
         /// Registers new <see cref="HelperDescriptorBase"/>
         /// </summary>
         /// <param name="helperObject"></param>
-        public static void RegisterHelper(HelperDescriptorBase helperObject)
+        public static void RegisterHelper(IHelperDescriptor<HelperOptions> helperObject)
         {
-            Instance.RegisterHelper((HelperDescriptor) helperObject);
+            Instance.RegisterHelper(helperObject);
         }
         
         /// <summary>
         /// Registers new <see cref="BlockHelperDescriptorBase"/>
         /// </summary>
         /// <param name="helperObject"></param>
-        public static void RegisterHelper(BlockHelperDescriptorBase helperObject)
+        public static void RegisterHelper(IHelperDescriptor<BlockHelperOptions> helperObject)
         {
-            Instance.RegisterHelper((BlockHelperDescriptor) helperObject);
+            Instance.RegisterHelper(helperObject);
         }
 
         /// <summary>

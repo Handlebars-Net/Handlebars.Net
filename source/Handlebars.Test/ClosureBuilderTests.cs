@@ -4,7 +4,6 @@ using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Compiler;
 using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.Helpers;
-using HandlebarsDotNet.Helpers.BlockHelpers;
 using HandlebarsDotNet.Runtime;
 using Xunit;
 
@@ -83,12 +82,12 @@ namespace HandlebarsDotNet.Test
             return others;
         }
         
-        private static List<Ref<BlockHelperDescriptorBase>> GenerateBlockHelpers(ClosureBuilder builder, int count)
+        private static List<Ref<IHelperDescriptor<BlockHelperOptions>>> GenerateBlockHelpers(ClosureBuilder builder, int count)
         {
-            var blockHelpers = new List<Ref<BlockHelperDescriptorBase>>();
+            var blockHelpers = new List<Ref<IHelperDescriptor<BlockHelperOptions>>>();
             for (int i = 0; i < count; i++)
             {
-                var blockHelper = new Ref<BlockHelperDescriptorBase>();
+                var blockHelper = new Ref<IHelperDescriptor<BlockHelperOptions>>();
                 builder.Add(Const(blockHelper));
                 blockHelpers.Add(blockHelper);
             }
@@ -96,12 +95,12 @@ namespace HandlebarsDotNet.Test
             return blockHelpers;
         }
 
-        private static List<Ref<HelperDescriptorBase>> GenerateHelpers(ClosureBuilder builder, int count)
+        private static List<Ref<IHelperDescriptor<HelperOptions>>> GenerateHelpers(ClosureBuilder builder, int count)
         {
-            var helpers = new List<Ref<HelperDescriptorBase>>();
+            var helpers = new List<Ref<IHelperDescriptor<HelperOptions>>>();
             for (int i = 0; i < count; i++)
             {
-                var helper = new Ref<HelperDescriptorBase>();
+                var helper = new Ref<IHelperDescriptor<HelperOptions>>();
                 builder.Add(Const(helper));
                 helpers.Add(helper);
             }

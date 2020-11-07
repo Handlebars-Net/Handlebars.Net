@@ -1,14 +1,17 @@
-using HandlebarsDotNet.Compiler;
+using HandlebarsDotNet.Compiler.Structure.Path;
 
 namespace HandlebarsDotNet.Helpers.BlockHelpers
 {
-    internal sealed class InlineBlockHelperDescriptor : BlockHelperDescriptor
+    internal sealed class InlineBlockHelperDescriptor : IHelperDescriptor<BlockHelperOptions>
     {
-        public InlineBlockHelperDescriptor() : base("*inline")
+        public PathInfo Name { get; } = "*inline";
+
+        public object Invoke(in BlockHelperOptions options, in Context context, in Arguments arguments)
         {
+            return this.ReturnInvoke(options, context, arguments);
         }
 
-        public override void Invoke(in EncodedTextWriter output, in BlockHelperOptions options, object context, in Arguments arguments)
+        public void Invoke(in EncodedTextWriter output, in BlockHelperOptions options, in Context context, in Arguments arguments)
         {
             if (arguments.Length != 1)
             {
@@ -19,7 +22,7 @@ namespace HandlebarsDotNet.Helpers.BlockHelpers
             //data { firstName: "todd" }. The full BindingContext is needed for registering the partial templates.
             //This magic happens in BlockHelperFunctionBinder.VisitBlockHelperExpression
 
-            if (!(context is BindingContext bindingContext))
+            if (!(context.Value is BindingContext bindingContext))
             {
                 throw new HandlebarsException("{{*inline}} helper must receiving the full BindingContext");
             }

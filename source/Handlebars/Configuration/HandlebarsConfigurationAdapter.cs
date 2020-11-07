@@ -62,8 +62,8 @@ namespace HandlebarsDotNet
         public IReadOnlyList<IFeature> Features { get; }
         public IPathInfoStore PathInfoStore { get; }
         
-        public IDictionary<PathInfoLight, Ref<HelperDescriptorBase>> Helpers { get; private set; }
-        public IDictionary<PathInfoLight, Ref<BlockHelperDescriptorBase>> BlockHelpers { get; private set; }
+        public IDictionary<PathInfoLight, Ref<IHelperDescriptor<HelperOptions>>> Helpers { get; private set; }
+        public IDictionary<PathInfoLight, Ref<IHelperDescriptor<BlockHelperOptions>>> BlockHelpers { get; private set; }
         public IList<IHelperResolver> HelperResolvers { get; }
         public IDictionary<string, HandlebarsTemplate<TextWriter, object, object>> RegisteredTemplates { get; }
         
@@ -71,34 +71,34 @@ namespace HandlebarsDotNet
         {
             var existingHelpers = UnderlingConfiguration.Helpers.ToDictionary(
                 o => new PathInfoLight(_pathInfoStore.GetOrAdd($"[{o.Key}]")), 
-                o => new Ref<HelperDescriptorBase>(o.Value)
+                o => new Ref<IHelperDescriptor<HelperOptions>>(o.Value)
             );
 
-            Helpers = new ObservableDictionary<PathInfoLight, Ref<HelperDescriptorBase>>(existingHelpers, Compatibility.RelaxedHelperNaming ? PathInfoLight.PlainPathComparer : PathInfoLight.PlainPathWithPartsCountComparer);
+            Helpers = new ObservableDictionary<PathInfoLight, Ref<IHelperDescriptor<HelperOptions>>>(existingHelpers, Compatibility.RelaxedHelperNaming ? PathInfoLight.PlainPathComparer : PathInfoLight.PlainPathWithPartsCountComparer);
             
-            var helpersObserver = new ObserverBuilder<ObservableEvent<HelperDescriptorBase>>()
-                .OnEvent<ObservableDictionary<string, HelperDescriptorBase>.ReplacedObservableEvent>(
+            var helpersObserver = new ObserverBuilder<ObservableEvent<IHelperDescriptor<HelperOptions>>>()
+                .OnEvent<ObservableDictionary<string, IHelperDescriptor<HelperOptions>>.ReplacedObservableEvent>(
                     @event => Helpers[_pathInfoStore.GetOrAdd($"[{@event.Key}]")].Value = @event.Value
                     )
-                .OnEvent<ObservableDictionary<string, HelperDescriptorBase>.AddedObservableEvent>(
+                .OnEvent<ObservableDictionary<string, IHelperDescriptor<HelperOptions>>.AddedObservableEvent>(
                     @event =>
                     {
                         Helpers.AddOrUpdate(_pathInfoStore.GetOrAdd($"[{@event.Key}]"), 
-                            h => new Ref<HelperDescriptorBase>(h), 
+                            h => new Ref<IHelperDescriptor<HelperOptions>>(h), 
                             (h, o) => o.Value = h, 
                             @event.Value);
                     })
-                .OnEvent<ObservableDictionary<string, HelperDescriptorBase>.RemovedObservableEvent>(@event =>
+                .OnEvent<ObservableDictionary<string, IHelperDescriptor<HelperOptions>>.RemovedObservableEvent>(@event =>
                 {
                     if (Helpers.TryGetValue(_pathInfoStore.GetOrAdd($"[{@event.Key}]"), out var helperToRemove))
                     {
-                        helperToRemove.Value = new LateBindHelperDescriptor(@event.Key, this);
+                        helperToRemove.Value = new LateBindHelperDescriptor(@event.Key);
                     }
                 })
                 .Build();
 
             UnderlingConfiguration.Helpers
-                .As<ObservableDictionary<string, HelperDescriptorBase>>()
+                .As<ObservableDictionary<string, IHelperDescriptor<HelperOptions>>>()
                 .Subscribe(helpersObserver);
         }
 
@@ -106,33 +106,33 @@ namespace HandlebarsDotNet
         {
             var existingBlockHelpers = UnderlingConfiguration.BlockHelpers.ToDictionary(
                 o => (PathInfoLight)_pathInfoStore.GetOrAdd($"[{o.Key}]"),
-                o => new Ref<BlockHelperDescriptorBase>(o.Value)
+                o => new Ref<IHelperDescriptor<BlockHelperOptions>>(o.Value)
             );
 
-            BlockHelpers = new ObservableDictionary<PathInfoLight, Ref<BlockHelperDescriptorBase>>(existingBlockHelpers, Compatibility.RelaxedHelperNaming ? PathInfoLight.PlainPathComparer : PathInfoLight.PlainPathWithPartsCountComparer);
+            BlockHelpers = new ObservableDictionary<PathInfoLight, Ref<IHelperDescriptor<BlockHelperOptions>>>(existingBlockHelpers, Compatibility.RelaxedHelperNaming ? PathInfoLight.PlainPathComparer : PathInfoLight.PlainPathWithPartsCountComparer);
 
-            var blockHelpersObserver = new ObserverBuilder<ObservableEvent<BlockHelperDescriptorBase>>()
-                .OnEvent<ObservableDictionary<string, BlockHelperDescriptorBase>.ReplacedObservableEvent>(
+            var blockHelpersObserver = new ObserverBuilder<ObservableEvent<IHelperDescriptor<BlockHelperOptions>>>()
+                .OnEvent<ObservableDictionary<string, IHelperDescriptor<BlockHelperOptions>>.ReplacedObservableEvent>(
                     @event => BlockHelpers[_pathInfoStore.GetOrAdd($"[{@event.Key}]")].Value = @event.Value)
-                .OnEvent<ObservableDictionary<string, BlockHelperDescriptorBase>.AddedObservableEvent>(
+                .OnEvent<ObservableDictionary<string, IHelperDescriptor<BlockHelperOptions>>.AddedObservableEvent>(
                     @event =>
                     {
                         BlockHelpers.AddOrUpdate(_pathInfoStore.GetOrAdd($"[{@event.Key}]"), 
-                            h => new Ref<BlockHelperDescriptorBase>(h), 
+                            h => new Ref<IHelperDescriptor<BlockHelperOptions>>(h), 
                             (h, o) => o.Value = h, 
                             @event.Value);
                     })
-                .OnEvent<ObservableDictionary<string, BlockHelperDescriptorBase>.RemovedObservableEvent>(@event =>
+                .OnEvent<ObservableDictionary<string, IHelperDescriptor<BlockHelperOptions>>.RemovedObservableEvent>(@event =>
                 {
                     if (BlockHelpers.TryGetValue(_pathInfoStore.GetOrAdd($"[{@event.Key}]"), out var helperToRemove))
                     {
-                        helperToRemove.Value = new LateBindBlockHelperDescriptor(@event.Key, this);
+                        helperToRemove.Value = new LateBindBlockHelperDescriptor(@event.Key);
                     }
                 })
                 .Build();
 
             UnderlingConfiguration.BlockHelpers
-                .As<ObservableDictionary<string, BlockHelperDescriptorBase>>()
+                .As<ObservableDictionary<string, IHelperDescriptor<BlockHelperOptions>>>()
                 .Subscribe(blockHelpersObserver);
         }
 

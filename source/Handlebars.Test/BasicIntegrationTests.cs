@@ -11,7 +11,6 @@ using HandlebarsDotNet.Helpers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using HandlebarsDotNet.Features;
-using HandlebarsDotNet.Helpers.BlockHelpers;
 using Xunit.Abstractions;
 
 namespace HandlebarsDotNet.Test
@@ -1861,7 +1860,7 @@ false
 
         private class StringHelperResolver : IHelperResolver
         {
-            public bool TryResolveHelper(string name, Type targetType, out HelperDescriptorBase helper)
+            public bool TryResolveHelper(string name, Type targetType, out IHelperDescriptor<HelperOptions> helper)
             {
                 if (targetType == typeof(string))
                 {
@@ -1874,7 +1873,7 @@ false
                         return false;
                     }
 
-                    object Helper(object context, Arguments arguments) => method.Invoke(arguments[0], arguments.AsEnumerable().Skip(1).ToArray());
+                    object Helper(Context context, Arguments arguments) => method.Invoke(arguments[0], arguments.AsEnumerable().Skip(1).ToArray());
                     helper = new DelegateReturnHelperDescriptor(name, Helper);
                     return true;
                 }
@@ -1883,7 +1882,7 @@ false
                 return false;
             }
 
-            public bool TryResolveBlockHelper(string name, out BlockHelperDescriptorBase helper)
+            public bool TryResolveBlockHelper(string name, out IHelperDescriptor<BlockHelperOptions> helper)
             {
                 helper = null;
                 return false;

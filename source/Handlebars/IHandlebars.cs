@@ -1,6 +1,5 @@
 using System.IO;
 using HandlebarsDotNet.Helpers;
-using HandlebarsDotNet.Helpers.BlockHelpers;
 
 namespace HandlebarsDotNet
 {
@@ -49,13 +48,9 @@ namespace HandlebarsDotNet
         
         void RegisterHelper(string helperName, HandlebarsReturnBlockHelper helperFunction);
         
-        void RegisterHelper(BlockHelperDescriptor helperObject);
+        void RegisterHelper(IHelperDescriptor<BlockHelperOptions> helperObject);
         
-        void RegisterHelper(HelperDescriptor helperObject);
-        
-        void RegisterHelper(ReturnBlockHelperDescriptor helperObject);
-        
-        void RegisterHelper(ReturnHelperDescriptor helperObject);
+        void RegisterHelper(IHelperDescriptor<HelperOptions> helperObject);
     }
     
     internal interface ICompiledHandlebars
