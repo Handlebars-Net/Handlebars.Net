@@ -124,14 +124,17 @@ Views\{Controller}\{Action}\partials\somepartial.hbs
 ### Registering Block Helpers
 
 ```c#
-Handlebars.RegisterHelper("StringEqualityBlockHelper", (TextWriter output, HelperOptions options, dynamic context, object[] arguments) => 
+Handlebars.RegisterHelper("StringEqualityBlockHelper", (output, options, context, arguments) => 
 {
-    if (arguments.Length != 2) throw new HandlebarsException("{{StringEqualityBlockHelper}} helper must have exactly two argument");
-    
-    var left = arguments[0] as string;
+    if (arguments.Length != 2)
+    {
+        throw new HandlebarsException("{{#StringEqualityBlockHelper}} helper must have exactly two arguments");
+    }
+
+    var left = arguments.At<string>(0);
     var right = arguments[1] as string;
-    if (left == right) options.Template(output, null);
-    else options.Inverse(output, null);
+    if (left == right) options.Template(output, context);
+    else options.Inverse(output, context);
 });
 
 var animals = new Dictionary<string, string>() 
@@ -141,8 +144,8 @@ var animals = new Dictionary<string, string>()
 	{"Chewy", "hamster" }
 };
 
-string template = "{{#each this}}The animal, {{@key}}, {{#StringEqualityBlockHelper @value 'dog'}}is a dog{{else}}is not a dog{{/StringEqualityBlockHelper}}.\r\n{{/each}}";
-Func<object, string> compiledTemplate = Handlebars.Compile(template);
+var template = "{{#each this}}The animal, {{@key}}, {{#StringEqualityBlockHelper @value 'dog'}}is a dog{{else}}is not a dog{{/StringEqualityBlockHelper}}.\r\n{{/each}}";
+var compiledTemplate = Handlebars.Compile(template);
 string templateOutput = compiledTemplate(animals);
 
 /* Would render
