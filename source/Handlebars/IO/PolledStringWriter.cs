@@ -5,7 +5,7 @@ using HandlebarsDotNet.Pools;
 
 namespace HandlebarsDotNet
 {
-    internal class ReusableStringWriter : StringWriter
+    public class ReusableStringWriter : StringWriter
     {
         private static readonly InternalObjectPool<ReusableStringWriter, Policy> Pool = new InternalObjectPool<ReusableStringWriter, Policy>(new Policy(16));
         

@@ -1,14 +1,18 @@
+using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.ValueProviders;
 
 namespace HandlebarsDotNet.Helpers.BlockHelpers
 {
-    internal sealed class WithBlockHelperDescriptor : BlockHelperDescriptor
+    public sealed class WithBlockHelperDescriptor : IHelperDescriptor<BlockHelperOptions>
     {
-        public WithBlockHelperDescriptor() : base("with")
+        public PathInfo Name { get; } = "with";
+    
+        public object Invoke(in BlockHelperOptions options, in Context context, in Arguments arguments)
         {
+            return this.ReturnInvoke(options, context, arguments);
         }
 
-        public override void Invoke(in EncodedTextWriter output, in BlockHelperOptions options, object context, in Arguments arguments)
+        public void Invoke(in EncodedTextWriter output, in BlockHelperOptions options, in Context context, in Arguments arguments)
         {
             if (arguments.Length != 1)
             {

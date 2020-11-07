@@ -5,7 +5,6 @@ using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Compiler.Resolvers;
 using HandlebarsDotNet.Features;
 using HandlebarsDotNet.Helpers;
-using HandlebarsDotNet.Helpers.BlockHelpers;
 using HandlebarsDotNet.ObjectDescriptors;
 using HandlebarsDotNet.Runtime;
 
@@ -62,12 +61,12 @@ namespace HandlebarsDotNet
         /// <summary>
         /// 
         /// </summary>
-        IDictionary<PathInfoLight, Ref<HelperDescriptorBase>> Helpers { get; }
+        IDictionary<PathInfoLight, Ref<IHelperDescriptor<HelperOptions>>> Helpers { get; }
         
         /// <summary>
         /// 
         /// </summary>
-        IDictionary<PathInfoLight, Ref<BlockHelperDescriptorBase>> BlockHelpers { get; }
+        IDictionary<PathInfoLight, Ref<IHelperDescriptor<BlockHelperOptions>>> BlockHelpers { get; }
         
         /// <summary>
         /// 

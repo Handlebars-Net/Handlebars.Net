@@ -58,7 +58,7 @@ namespace HandlebarsDotNet
                     item.BlockParamsObject.OptionalClear();
                     item.ContextDataObject.OptionalClear();
                     
-                    item._objectDescriptor.Reset();
+                    item.ObjectDescriptor.Reset();
 
                     return true;
                 }

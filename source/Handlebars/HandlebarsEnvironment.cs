@@ -185,22 +185,12 @@ namespace HandlebarsDotNet
             Configuration.BlockHelpers[helperName] = new DelegateReturnBlockHelperDescriptor(helperName, helperFunction);
         }
 
-        public void RegisterHelper(BlockHelperDescriptor helperObject)
+        public void RegisterHelper(IHelperDescriptor<BlockHelperOptions> helperObject)
         {
             Configuration.BlockHelpers[helperObject.Name] = helperObject;
         }
         
-        public void RegisterHelper(ReturnBlockHelperDescriptor helperObject)
-        {
-            Configuration.BlockHelpers[helperObject.Name] = helperObject;
-        }
-
-        public void RegisterHelper(HelperDescriptor helperObject)
-        {
-            Configuration.Helpers[helperObject.Name] = helperObject;
-        }
-        
-        public void RegisterHelper(ReturnHelperDescriptor helperObject)
+        public void RegisterHelper(IHelperDescriptor<HelperOptions> helperObject)
         {
             Configuration.Helpers[helperObject.Name] = helperObject;
         }

@@ -1,28 +1,29 @@
-using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Collections;
-using HandlebarsDotNet.Runtime;
+using HandlebarsDotNet.Compiler.Structure.Path;
 
 namespace HandlebarsDotNet.Helpers.BlockHelpers
 {
-    internal sealed class LateBindBlockHelperDescriptor : BlockHelperDescriptor
+    public sealed class LateBindBlockHelperDescriptor : IHelperDescriptor<BlockHelperOptions>
     {
-        private readonly  Ref<BlockHelperDescriptorBase> _blockHelperMissing;
-        private readonly ObservableList<IHelperResolver> _helperResolvers;
+        public LateBindBlockHelperDescriptor(string name) => Name = name;
 
-        public LateBindBlockHelperDescriptor(string name, ICompiledHandlebarsConfiguration configuration) : base(configuration.PathInfoStore.GetOrAdd(name))
+        public PathInfo Name { get; }
+
+        public object Invoke(in BlockHelperOptions options, in Context context, in Arguments arguments)
         {
-            _helperResolvers = (ObservableList<IHelperResolver>) configuration.HelperResolvers;
-            _blockHelperMissing = configuration.BlockHelpers["blockHelperMissing"];
+            return this.ReturnInvoke(options, context, arguments);
         }
-        
-        public override void Invoke(in EncodedTextWriter output, in BlockHelperOptions options, object context, in Arguments arguments)
+
+        public void Invoke(in EncodedTextWriter output, in BlockHelperOptions options, in Context context, in Arguments arguments)
         {
             // TODO: add cache
-            if(_helperResolvers.Count != 0)
+            var configuration = options.Frame.Configuration;
+            var helperResolvers = (ObservableList<IHelperResolver>) configuration.HelperResolvers;
+            if(helperResolvers.Count != 0)
             {
-                for (var index = 0; index < _helperResolvers.Count; index++)
+                for (var index = 0; index < helperResolvers.Count; index++)
                 {
-                    if (!_helperResolvers[index].TryResolveBlockHelper(Name, out var descriptor)) continue;
+                    if (!helperResolvers[index].TryResolveBlockHelper(Name, out var descriptor)) continue;
 
                     descriptor.Invoke(output, options, context, arguments);
                     return;
@@ -31,7 +32,8 @@ namespace HandlebarsDotNet.Helpers.BlockHelpers
 
             options["name"] = Name.TrimmedPath;
             options["path"] = Name;
-            _blockHelperMissing.Value.Invoke(output, options, context, arguments);
+            configuration.BlockHelpers["blockHelperMissing"].Value
+                .Invoke(output, options, context, arguments);
         }
     }
 }

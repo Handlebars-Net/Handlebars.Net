@@ -1,6 +1,4 @@
 using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
-using Expressions.Shortcuts;
 using HandlebarsDotNet.Helpers;
 using HandlebarsDotNet.Runtime;
 using static Expressions.Shortcuts.ExpressionShortcuts;
@@ -28,15 +26,16 @@ namespace HandlebarsDotNet.Compiler
             
             var helperName = pathInfo.TrimmedPath;
             var bindingContext = CompilationContext.Args.BindingContext;
+            var options = New(() => new HelperOptions(bindingContext));
             var textWriter = CompilationContext.Args.EncodedWriter;
-            
-            var contextValue = bindingContext.Property(o => o.Value);
+
+            var contextValue = New(() => new Context(bindingContext));
             var args = FunctionBinderHelpers.CreateArguments(hex.Arguments, CompilationContext);
 
             var configuration = CompilationContext.Configuration;
             if (configuration.Helpers.TryGetValue(pathInfo, out var helper))
             {
-                return Call(() => helper.Value.WriteInvoke(bindingContext, textWriter, contextValue, args));
+                return Call(() => helper.Value.Invoke(textWriter, options, contextValue, args));
             }
             
             for (var index = 0; index < configuration.HelperResolvers.Count; index++)
@@ -44,16 +43,16 @@ namespace HandlebarsDotNet.Compiler
                 var resolver = configuration.HelperResolvers[index];
                 if (resolver.TryResolveHelper(helperName, typeof(object), out var resolvedHelper))
                 {
-                    helper = new Ref<HelperDescriptorBase>(resolvedHelper);
+                    helper = new Ref<IHelperDescriptor<HelperOptions>>(resolvedHelper);
                     configuration.Helpers.Add(pathInfo, helper);
-                    return Call(() => resolvedHelper.WriteInvoke(bindingContext, textWriter, contextValue, args));
+                    return Call(() => resolvedHelper.Invoke(textWriter, options, contextValue, args));
                 }
             }
 
-            var lateBindDescriptor = new Ref<HelperDescriptorBase>(new LateBindHelperDescriptor(pathInfo, configuration));
+            var lateBindDescriptor = new Ref<IHelperDescriptor<HelperOptions>>(new LateBindHelperDescriptor(pathInfo));
             configuration.Helpers.Add(pathInfo, lateBindDescriptor);
             
-            return Call(() => lateBindDescriptor.Value.WriteInvoke(bindingContext, textWriter, contextValue, args));
+            return Call(() => lateBindDescriptor.Value.Invoke(textWriter, options, contextValue, args));
         }
     }
 }

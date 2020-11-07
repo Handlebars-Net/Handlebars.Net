@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.Helpers;
-using HandlebarsDotNet.Helpers.BlockHelpers;
 using HandlebarsDotNet.Runtime;
 
 namespace HandlebarsDotNet.Compiler
@@ -16,8 +15,8 @@ namespace HandlebarsDotNet.Compiler
         private readonly List<KeyValuePair<ConstantExpression, PathInfo>> _pathInfos = new List<KeyValuePair<ConstantExpression, PathInfo>>();
         private readonly List<KeyValuePair<ConstantExpression, TemplateDelegate>> _templateDelegates = new List<KeyValuePair<ConstantExpression, TemplateDelegate>>();
         private readonly List<KeyValuePair<ConstantExpression, ChainSegment[]>> _blockParams = new List<KeyValuePair<ConstantExpression, ChainSegment[]>>();
-        private readonly List<KeyValuePair<ConstantExpression, Ref<HelperDescriptorBase>>> _helpers = new List<KeyValuePair<ConstantExpression, Ref<HelperDescriptorBase>>>();
-        private readonly List<KeyValuePair<ConstantExpression, Ref<BlockHelperDescriptorBase>>> _blockHelpers = new List<KeyValuePair<ConstantExpression, Ref<BlockHelperDescriptorBase>>>();
+        private readonly List<KeyValuePair<ConstantExpression, Ref<IHelperDescriptor<HelperOptions>>>> _helpers = new List<KeyValuePair<ConstantExpression, Ref<IHelperDescriptor<HelperOptions>>>>();
+        private readonly List<KeyValuePair<ConstantExpression, Ref<IHelperDescriptor<BlockHelperOptions>>>> _blockHelpers = new List<KeyValuePair<ConstantExpression, Ref<IHelperDescriptor<BlockHelperOptions>>>>();
         private readonly List<KeyValuePair<ConstantExpression, object>> _other = new List<KeyValuePair<ConstantExpression, object>>();
         
         public void Add(ConstantExpression constantExpression)
@@ -26,13 +25,13 @@ namespace HandlebarsDotNet.Compiler
             {
                 _pathInfos.Add(new KeyValuePair<ConstantExpression, PathInfo>(constantExpression, (PathInfo) constantExpression.Value));
             }
-            else if (constantExpression.Type == typeof(Ref<HelperDescriptorBase>))
+            else if (constantExpression.Type == typeof(Ref<IHelperDescriptor<HelperOptions>>))
             {
-                _helpers.Add(new KeyValuePair<ConstantExpression, Ref<HelperDescriptorBase>>(constantExpression, (Ref<HelperDescriptorBase>) constantExpression.Value));
+                _helpers.Add(new KeyValuePair<ConstantExpression, Ref<IHelperDescriptor<HelperOptions>>>(constantExpression, (Ref<IHelperDescriptor<HelperOptions>>) constantExpression.Value));
             }
-            else if (constantExpression.Type == typeof(Ref<BlockHelperDescriptorBase>))
+            else if (constantExpression.Type == typeof(Ref<IHelperDescriptor<BlockHelperOptions>>))
             {
-                _blockHelpers.Add(new KeyValuePair<ConstantExpression, Ref<BlockHelperDescriptorBase>>(constantExpression, (Ref<BlockHelperDescriptorBase>) constantExpression.Value));
+                _blockHelpers.Add(new KeyValuePair<ConstantExpression, Ref<IHelperDescriptor<BlockHelperOptions>>>(constantExpression, (Ref<IHelperDescriptor<BlockHelperOptions>>) constantExpression.Value));
             }
             else if (constantExpression.Type == typeof(TemplateDelegate))
             {
@@ -127,17 +126,17 @@ namespace HandlebarsDotNet.Compiler
         public readonly PathInfo PI3;
         public readonly PathInfo[] PIA;
         
-        public readonly Ref<HelperDescriptorBase> HD0;
-        public readonly Ref<HelperDescriptorBase> HD1;
-        public readonly Ref<HelperDescriptorBase> HD2;
-        public readonly Ref<HelperDescriptorBase> HD3;
-        public readonly Ref<HelperDescriptorBase>[] HDA;
+        public readonly Ref<IHelperDescriptor<HelperOptions>> HD0;
+        public readonly Ref<IHelperDescriptor<HelperOptions>> HD1;
+        public readonly Ref<IHelperDescriptor<HelperOptions>> HD2;
+        public readonly Ref<IHelperDescriptor<HelperOptions>> HD3;
+        public readonly Ref<IHelperDescriptor<HelperOptions>>[] HDA;
         
-        public readonly Ref<BlockHelperDescriptorBase> BHD0;
-        public readonly Ref<BlockHelperDescriptorBase> BHD1;
-        public readonly Ref<BlockHelperDescriptorBase> BHD2;
-        public readonly Ref<BlockHelperDescriptorBase> BHD3;
-        public readonly Ref<BlockHelperDescriptorBase>[] BHDA;
+        public readonly Ref<IHelperDescriptor<BlockHelperOptions>> BHD0;
+        public readonly Ref<IHelperDescriptor<BlockHelperOptions>> BHD1;
+        public readonly Ref<IHelperDescriptor<BlockHelperOptions>> BHD2;
+        public readonly Ref<IHelperDescriptor<BlockHelperOptions>> BHD3;
+        public readonly Ref<IHelperDescriptor<BlockHelperOptions>>[] BHDA;
         
         public readonly TemplateDelegate TD0;
         public readonly TemplateDelegate TD1;
@@ -150,7 +149,7 @@ namespace HandlebarsDotNet.Compiler
 
         public readonly object[] A;
 
-        internal Closure(PathInfo pi0, PathInfo pi1, PathInfo pi2, PathInfo pi3, PathInfo[] pia, Ref<HelperDescriptorBase> hd0, Ref<HelperDescriptorBase> hd1, Ref<HelperDescriptorBase> hd2, Ref<HelperDescriptorBase> hd3, Ref<HelperDescriptorBase>[] hda, Ref<BlockHelperDescriptorBase> bhd0, Ref<BlockHelperDescriptorBase> bhd1, Ref<BlockHelperDescriptorBase> bhd2, Ref<BlockHelperDescriptorBase> bhd3, Ref<BlockHelperDescriptorBase>[] bhda, TemplateDelegate td0, TemplateDelegate td1, TemplateDelegate td2, TemplateDelegate td3, TemplateDelegate[] tda, ChainSegment[] bp0, ChainSegment[][] bpa, object[] a)
+        internal Closure(PathInfo pi0, PathInfo pi1, PathInfo pi2, PathInfo pi3, PathInfo[] pia, Ref<IHelperDescriptor<HelperOptions>> hd0, Ref<IHelperDescriptor<HelperOptions>> hd1, Ref<IHelperDescriptor<HelperOptions>> hd2, Ref<IHelperDescriptor<HelperOptions>> hd3, Ref<IHelperDescriptor<HelperOptions>>[] hda, Ref<IHelperDescriptor<BlockHelperOptions>> bhd0, Ref<IHelperDescriptor<BlockHelperOptions>> bhd1, Ref<IHelperDescriptor<BlockHelperOptions>> bhd2, Ref<IHelperDescriptor<BlockHelperOptions>> bhd3, Ref<IHelperDescriptor<BlockHelperOptions>>[] bhda, TemplateDelegate td0, TemplateDelegate td1, TemplateDelegate td2, TemplateDelegate td3, TemplateDelegate[] tda, ChainSegment[] bp0, ChainSegment[][] bpa, object[] a)
         {
             PI0 = pi0;
             PI1 = pi1;

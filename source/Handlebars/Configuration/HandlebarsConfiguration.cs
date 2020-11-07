@@ -5,15 +5,14 @@ using System.Globalization;
 using System.IO;
 using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.Helpers;
-using HandlebarsDotNet.Helpers.BlockHelpers;
 
 namespace HandlebarsDotNet
 {
     public sealed class HandlebarsConfiguration : IHandlebarsTemplateRegistrations
     {
-        public IDictionary<string, HelperDescriptorBase> Helpers { get; }
+        public IDictionary<string, IHelperDescriptor<HelperOptions>> Helpers { get; }
         
-        public IDictionary<string, BlockHelperDescriptorBase> BlockHelpers { get; }
+        public IDictionary<string, IHelperDescriptor<BlockHelperOptions>> BlockHelpers { get; }
         
         public IDictionary<string, HandlebarsTemplate<TextWriter, object, object>> RegisteredTemplates { get; }
         
@@ -57,8 +56,8 @@ namespace HandlebarsDotNet
         
         public HandlebarsConfiguration()
         {
-            Helpers = new ObservableDictionary<string, HelperDescriptorBase>(comparer: StringComparer.OrdinalIgnoreCase);
-            BlockHelpers = new ObservableDictionary<string, BlockHelperDescriptorBase>(comparer: StringComparer.OrdinalIgnoreCase);
+            Helpers = new ObservableDictionary<string, IHelperDescriptor<HelperOptions>>(comparer: StringComparer.OrdinalIgnoreCase);
+            BlockHelpers = new ObservableDictionary<string, IHelperDescriptor<BlockHelperOptions>>(comparer: StringComparer.OrdinalIgnoreCase);
             RegisteredTemplates = new ObservableDictionary<string, HandlebarsTemplate<TextWriter, object, object>>(comparer: StringComparer.OrdinalIgnoreCase);
             HelperResolvers = new ObservableList<IHelperResolver>();
             TextEncoder = new HtmlEncoder(FormatProvider);
