@@ -5,6 +5,7 @@ using HandlebarsDotNet.Compiler;
 using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.Helpers;
 using HandlebarsDotNet.Helpers.BlockHelpers;
+using HandlebarsDotNet.Runtime;
 using Xunit;
 
 namespace HandlebarsDotNet.Test
@@ -82,12 +83,12 @@ namespace HandlebarsDotNet.Test
             return others;
         }
         
-        private static List<StrongBox<BlockHelperDescriptorBase>> GenerateBlockHelpers(ClosureBuilder builder, int count)
+        private static List<Ref<BlockHelperDescriptorBase>> GenerateBlockHelpers(ClosureBuilder builder, int count)
         {
-            var blockHelpers = new List<StrongBox<BlockHelperDescriptorBase>>();
+            var blockHelpers = new List<Ref<BlockHelperDescriptorBase>>();
             for (int i = 0; i < count; i++)
             {
-                var blockHelper = new StrongBox<BlockHelperDescriptorBase>();
+                var blockHelper = new Ref<BlockHelperDescriptorBase>();
                 builder.Add(Const(blockHelper));
                 blockHelpers.Add(blockHelper);
             }
@@ -95,12 +96,12 @@ namespace HandlebarsDotNet.Test
             return blockHelpers;
         }
 
-        private static List<StrongBox<HelperDescriptorBase>> GenerateHelpers(ClosureBuilder builder, int count)
+        private static List<Ref<HelperDescriptorBase>> GenerateHelpers(ClosureBuilder builder, int count)
         {
-            var helpers = new List<StrongBox<HelperDescriptorBase>>();
+            var helpers = new List<Ref<HelperDescriptorBase>>();
             for (int i = 0; i < count; i++)
             {
-                var helper = new StrongBox<HelperDescriptorBase>();
+                var helper = new Ref<HelperDescriptorBase>();
                 builder.Add(Const(helper));
                 helpers.Add(helper);
             }

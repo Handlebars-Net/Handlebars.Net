@@ -7,6 +7,7 @@ using HandlebarsDotNet.Features;
 using HandlebarsDotNet.Helpers;
 using HandlebarsDotNet.Helpers.BlockHelpers;
 using HandlebarsDotNet.ObjectDescriptors;
+using HandlebarsDotNet.Runtime;
 
 namespace HandlebarsDotNet
 {
@@ -61,12 +62,12 @@ namespace HandlebarsDotNet
         /// <summary>
         /// 
         /// </summary>
-        IDictionary<PathInfoLight, StrongBox<HelperDescriptorBase>> Helpers { get; }
+        IDictionary<PathInfoLight, Ref<HelperDescriptorBase>> Helpers { get; }
         
         /// <summary>
         /// 
         /// </summary>
-        IDictionary<PathInfoLight, StrongBox<BlockHelperDescriptorBase>> BlockHelpers { get; }
+        IDictionary<PathInfoLight, Ref<BlockHelperDescriptorBase>> BlockHelpers { get; }
         
         /// <summary>
         /// 

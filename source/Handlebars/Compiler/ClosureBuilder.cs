@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.Helpers;
 using HandlebarsDotNet.Helpers.BlockHelpers;
+using HandlebarsDotNet.Runtime;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -15,8 +16,8 @@ namespace HandlebarsDotNet.Compiler
         private readonly List<KeyValuePair<ConstantExpression, PathInfo>> _pathInfos = new List<KeyValuePair<ConstantExpression, PathInfo>>();
         private readonly List<KeyValuePair<ConstantExpression, TemplateDelegate>> _templateDelegates = new List<KeyValuePair<ConstantExpression, TemplateDelegate>>();
         private readonly List<KeyValuePair<ConstantExpression, ChainSegment[]>> _blockParams = new List<KeyValuePair<ConstantExpression, ChainSegment[]>>();
-        private readonly List<KeyValuePair<ConstantExpression, StrongBox<HelperDescriptorBase>>> _helpers = new List<KeyValuePair<ConstantExpression, StrongBox<HelperDescriptorBase>>>();
-        private readonly List<KeyValuePair<ConstantExpression, StrongBox<BlockHelperDescriptorBase>>> _blockHelpers = new List<KeyValuePair<ConstantExpression, StrongBox<BlockHelperDescriptorBase>>>();
+        private readonly List<KeyValuePair<ConstantExpression, Ref<HelperDescriptorBase>>> _helpers = new List<KeyValuePair<ConstantExpression, Ref<HelperDescriptorBase>>>();
+        private readonly List<KeyValuePair<ConstantExpression, Ref<BlockHelperDescriptorBase>>> _blockHelpers = new List<KeyValuePair<ConstantExpression, Ref<BlockHelperDescriptorBase>>>();
         private readonly List<KeyValuePair<ConstantExpression, object>> _other = new List<KeyValuePair<ConstantExpression, object>>();
         
         public void Add(ConstantExpression constantExpression)
@@ -25,13 +26,13 @@ namespace HandlebarsDotNet.Compiler
             {
                 _pathInfos.Add(new KeyValuePair<ConstantExpression, PathInfo>(constantExpression, (PathInfo) constantExpression.Value));
             }
-            else if (constantExpression.Type == typeof(StrongBox<HelperDescriptorBase>))
+            else if (constantExpression.Type == typeof(Ref<HelperDescriptorBase>))
             {
-                _helpers.Add(new KeyValuePair<ConstantExpression, StrongBox<HelperDescriptorBase>>(constantExpression, (StrongBox<HelperDescriptorBase>) constantExpression.Value));
+                _helpers.Add(new KeyValuePair<ConstantExpression, Ref<HelperDescriptorBase>>(constantExpression, (Ref<HelperDescriptorBase>) constantExpression.Value));
             }
-            else if (constantExpression.Type == typeof(StrongBox<BlockHelperDescriptorBase>))
+            else if (constantExpression.Type == typeof(Ref<BlockHelperDescriptorBase>))
             {
-                _blockHelpers.Add(new KeyValuePair<ConstantExpression, StrongBox<BlockHelperDescriptorBase>>(constantExpression, (StrongBox<BlockHelperDescriptorBase>) constantExpression.Value));
+                _blockHelpers.Add(new KeyValuePair<ConstantExpression, Ref<BlockHelperDescriptorBase>>(constantExpression, (Ref<BlockHelperDescriptorBase>) constantExpression.Value));
             }
             else if (constantExpression.Type == typeof(TemplateDelegate))
             {
@@ -126,17 +127,17 @@ namespace HandlebarsDotNet.Compiler
         public readonly PathInfo PI3;
         public readonly PathInfo[] PIA;
         
-        public readonly StrongBox<HelperDescriptorBase> HD0;
-        public readonly StrongBox<HelperDescriptorBase> HD1;
-        public readonly StrongBox<HelperDescriptorBase> HD2;
-        public readonly StrongBox<HelperDescriptorBase> HD3;
-        public readonly StrongBox<HelperDescriptorBase>[] HDA;
+        public readonly Ref<HelperDescriptorBase> HD0;
+        public readonly Ref<HelperDescriptorBase> HD1;
+        public readonly Ref<HelperDescriptorBase> HD2;
+        public readonly Ref<HelperDescriptorBase> HD3;
+        public readonly Ref<HelperDescriptorBase>[] HDA;
         
-        public readonly StrongBox<BlockHelperDescriptorBase> BHD0;
-        public readonly StrongBox<BlockHelperDescriptorBase> BHD1;
-        public readonly StrongBox<BlockHelperDescriptorBase> BHD2;
-        public readonly StrongBox<BlockHelperDescriptorBase> BHD3;
-        public readonly StrongBox<BlockHelperDescriptorBase>[] BHDA;
+        public readonly Ref<BlockHelperDescriptorBase> BHD0;
+        public readonly Ref<BlockHelperDescriptorBase> BHD1;
+        public readonly Ref<BlockHelperDescriptorBase> BHD2;
+        public readonly Ref<BlockHelperDescriptorBase> BHD3;
+        public readonly Ref<BlockHelperDescriptorBase>[] BHDA;
         
         public readonly TemplateDelegate TD0;
         public readonly TemplateDelegate TD1;
@@ -149,7 +150,7 @@ namespace HandlebarsDotNet.Compiler
 
         public readonly object[] A;
 
-        internal Closure(PathInfo pi0, PathInfo pi1, PathInfo pi2, PathInfo pi3, PathInfo[] pia, StrongBox<HelperDescriptorBase> hd0, StrongBox<HelperDescriptorBase> hd1, StrongBox<HelperDescriptorBase> hd2, StrongBox<HelperDescriptorBase> hd3, StrongBox<HelperDescriptorBase>[] hda, StrongBox<BlockHelperDescriptorBase> bhd0, StrongBox<BlockHelperDescriptorBase> bhd1, StrongBox<BlockHelperDescriptorBase> bhd2, StrongBox<BlockHelperDescriptorBase> bhd3, StrongBox<BlockHelperDescriptorBase>[] bhda, TemplateDelegate td0, TemplateDelegate td1, TemplateDelegate td2, TemplateDelegate td3, TemplateDelegate[] tda, ChainSegment[] bp0, ChainSegment[][] bpa, object[] a)
+        internal Closure(PathInfo pi0, PathInfo pi1, PathInfo pi2, PathInfo pi3, PathInfo[] pia, Ref<HelperDescriptorBase> hd0, Ref<HelperDescriptorBase> hd1, Ref<HelperDescriptorBase> hd2, Ref<HelperDescriptorBase> hd3, Ref<HelperDescriptorBase>[] hda, Ref<BlockHelperDescriptorBase> bhd0, Ref<BlockHelperDescriptorBase> bhd1, Ref<BlockHelperDescriptorBase> bhd2, Ref<BlockHelperDescriptorBase> bhd3, Ref<BlockHelperDescriptorBase>[] bhda, TemplateDelegate td0, TemplateDelegate td1, TemplateDelegate td2, TemplateDelegate td3, TemplateDelegate[] tda, ChainSegment[] bp0, ChainSegment[][] bpa, object[] a)
         {
             PI0 = pi0;
             PI1 = pi1;

@@ -11,6 +11,7 @@ using HandlebarsDotNet.Features;
 using HandlebarsDotNet.Helpers;
 using HandlebarsDotNet.Helpers.BlockHelpers;
 using HandlebarsDotNet.ObjectDescriptors;
+using HandlebarsDotNet.Runtime;
 
 namespace HandlebarsDotNet
 {
@@ -61,8 +62,8 @@ namespace HandlebarsDotNet
         public IReadOnlyList<IFeature> Features { get; }
         public IPathInfoStore PathInfoStore { get; }
         
-        public IDictionary<PathInfoLight, StrongBox<HelperDescriptorBase>> Helpers { get; private set; }
-        public IDictionary<PathInfoLight, StrongBox<BlockHelperDescriptorBase>> BlockHelpers { get; private set; }
+        public IDictionary<PathInfoLight, Ref<HelperDescriptorBase>> Helpers { get; private set; }
+        public IDictionary<PathInfoLight, Ref<BlockHelperDescriptorBase>> BlockHelpers { get; private set; }
         public IList<IHelperResolver> HelperResolvers { get; }
         public IDictionary<string, HandlebarsTemplate<TextWriter, object, object>> RegisteredTemplates { get; }
         
@@ -70,10 +71,10 @@ namespace HandlebarsDotNet
         {
             var existingHelpers = UnderlingConfiguration.Helpers.ToDictionary(
                 o => new PathInfoLight(_pathInfoStore.GetOrAdd($"[{o.Key}]")), 
-                o => new StrongBox<HelperDescriptorBase>(o.Value)
+                o => new Ref<HelperDescriptorBase>(o.Value)
             );
 
-            Helpers = new ObservableDictionary<PathInfoLight, StrongBox<HelperDescriptorBase>>(existingHelpers, Compatibility.RelaxedHelperNaming ? PathInfoLight.PlainPathComparer : PathInfoLight.PlainPathWithPartsCountComparer);
+            Helpers = new ObservableDictionary<PathInfoLight, Ref<HelperDescriptorBase>>(existingHelpers, Compatibility.RelaxedHelperNaming ? PathInfoLight.PlainPathComparer : PathInfoLight.PlainPathWithPartsCountComparer);
             
             var helpersObserver = new ObserverBuilder<ObservableEvent<HelperDescriptorBase>>()
                 .OnEvent<ObservableDictionary<string, HelperDescriptorBase>.ReplacedObservableEvent>(
@@ -83,7 +84,7 @@ namespace HandlebarsDotNet
                     @event =>
                     {
                         Helpers.AddOrUpdate(_pathInfoStore.GetOrAdd($"[{@event.Key}]"), 
-                            h => new StrongBox<HelperDescriptorBase>(h), 
+                            h => new Ref<HelperDescriptorBase>(h), 
                             (h, o) => o.Value = h, 
                             @event.Value);
                     })
@@ -105,10 +106,10 @@ namespace HandlebarsDotNet
         {
             var existingBlockHelpers = UnderlingConfiguration.BlockHelpers.ToDictionary(
                 o => (PathInfoLight)_pathInfoStore.GetOrAdd($"[{o.Key}]"),
-                o => new StrongBox<BlockHelperDescriptorBase>(o.Value)
+                o => new Ref<BlockHelperDescriptorBase>(o.Value)
             );
 
-            BlockHelpers = new ObservableDictionary<PathInfoLight, StrongBox<BlockHelperDescriptorBase>>(existingBlockHelpers, Compatibility.RelaxedHelperNaming ? PathInfoLight.PlainPathComparer : PathInfoLight.PlainPathWithPartsCountComparer);
+            BlockHelpers = new ObservableDictionary<PathInfoLight, Ref<BlockHelperDescriptorBase>>(existingBlockHelpers, Compatibility.RelaxedHelperNaming ? PathInfoLight.PlainPathComparer : PathInfoLight.PlainPathWithPartsCountComparer);
 
             var blockHelpersObserver = new ObserverBuilder<ObservableEvent<BlockHelperDescriptorBase>>()
                 .OnEvent<ObservableDictionary<string, BlockHelperDescriptorBase>.ReplacedObservableEvent>(
@@ -117,7 +118,7 @@ namespace HandlebarsDotNet
                     @event =>
                     {
                         BlockHelpers.AddOrUpdate(_pathInfoStore.GetOrAdd($"[{@event.Key}]"), 
-                            h => new StrongBox<BlockHelperDescriptorBase>(h), 
+                            h => new Ref<BlockHelperDescriptorBase>(h), 
                             (h, o) => o.Value = h, 
                             @event.Value);
                     })

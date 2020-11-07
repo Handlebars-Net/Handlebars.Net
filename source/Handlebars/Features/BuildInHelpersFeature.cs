@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Helpers;
 using HandlebarsDotNet.Helpers.BlockHelpers;
+using HandlebarsDotNet.Runtime;
 
 namespace HandlebarsDotNet.Features
 {
@@ -14,9 +15,9 @@ namespace HandlebarsDotNet.Features
     {
         public void OnCompiling(ICompiledHandlebarsConfiguration configuration)
         {
-            configuration.BlockHelpers["with"] = new StrongBox<BlockHelperDescriptorBase>(new WithBlockHelperDescriptor());
-            configuration.BlockHelpers["*inline"] = new StrongBox<BlockHelperDescriptorBase>(new InlineBlockHelperDescriptor());
-            configuration.Helpers["lookup"] = new StrongBox<HelperDescriptorBase>(new LookupReturnHelperDescriptor(configuration));
+            configuration.BlockHelpers["with"] = new Ref<BlockHelperDescriptorBase>(new WithBlockHelperDescriptor());
+            configuration.BlockHelpers["*inline"] = new Ref<BlockHelperDescriptorBase>(new InlineBlockHelperDescriptor());
+            configuration.Helpers["lookup"] = new Ref<HelperDescriptorBase>(new LookupReturnHelperDescriptor(configuration));
         }
 
         public void CompilationCompleted()

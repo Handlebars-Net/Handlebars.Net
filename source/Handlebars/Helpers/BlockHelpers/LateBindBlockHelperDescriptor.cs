@@ -1,11 +1,12 @@
 using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Collections;
+using HandlebarsDotNet.Runtime;
 
 namespace HandlebarsDotNet.Helpers.BlockHelpers
 {
     internal sealed class LateBindBlockHelperDescriptor : BlockHelperDescriptor
     {
-        private readonly StrongBox<BlockHelperDescriptorBase> _blockHelperMissing;
+        private readonly  Ref<BlockHelperDescriptorBase> _blockHelperMissing;
         private readonly ObservableList<IHelperResolver> _helperResolvers;
 
         public LateBindBlockHelperDescriptor(string name, ICompiledHandlebarsConfiguration configuration) : base(configuration.PathInfoStore.GetOrAdd(name))

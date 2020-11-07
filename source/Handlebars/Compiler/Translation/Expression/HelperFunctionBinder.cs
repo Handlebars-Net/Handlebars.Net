@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using Expressions.Shortcuts;
 using HandlebarsDotNet.Helpers;
+using HandlebarsDotNet.Runtime;
 using static Expressions.Shortcuts.ExpressionShortcuts;
 
 namespace HandlebarsDotNet.Compiler
@@ -43,13 +44,13 @@ namespace HandlebarsDotNet.Compiler
                 var resolver = configuration.HelperResolvers[index];
                 if (resolver.TryResolveHelper(helperName, typeof(object), out var resolvedHelper))
                 {
-                    helper = new StrongBox<HelperDescriptorBase>(resolvedHelper);
+                    helper = new Ref<HelperDescriptorBase>(resolvedHelper);
                     configuration.Helpers.Add(pathInfo, helper);
                     return Call(() => resolvedHelper.WriteInvoke(bindingContext, textWriter, contextValue, args));
                 }
             }
 
-            var lateBindDescriptor = new StrongBox<HelperDescriptorBase>(new LateBindHelperDescriptor(pathInfo, configuration));
+            var lateBindDescriptor = new Ref<HelperDescriptorBase>(new LateBindHelperDescriptor(pathInfo, configuration));
             configuration.Helpers.Add(pathInfo, lateBindDescriptor);
             
             return Call(() => lateBindDescriptor.Value.WriteInvoke(bindingContext, textWriter, contextValue, args));
