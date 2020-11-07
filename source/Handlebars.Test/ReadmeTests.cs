@@ -40,5 +40,28 @@ namespace HandlebarsDotNet.Test
                 templateOutput
             );
         }
+        
+        [Fact]
+        public void RegisterHelper()
+        {
+            var source = @"Click here: {{link_to}}";
+            
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterHelper("link_to", (writer, context, parameters) =>
+            {
+                writer.WriteSafeString($"<a href='{context["url"]}'>{context["text"]}</a>");
+            });
+            
+            var template = handlebars.Compile(source);
+
+            var data = new {
+                url = "https://github.com/rexm/handlebars.net",
+                text = "Handlebars.Net"
+            };
+
+            var result = template(data);
+            
+            Assert.Equal($"Click here: <a href='{data.url}'>{data.text}</a>", result);
+        }
     }
 }
