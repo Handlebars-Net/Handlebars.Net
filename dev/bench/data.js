@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1604776064659,
+  "lastUpdate": 1604778042349,
   "repoUrl": "https://github.com/Handlebars-Net/Handlebars.Net",
   "entries": {
     "Benchmark.Net Benchmark": [
@@ -1728,6 +1728,102 @@ window.BENCHMARK_DATA = {
             "value": 217486.7310546875,
             "unit": "ns",
             "range": "± 3615.117634289309"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "41167595+probot-auto-merge[bot]@users.noreply.github.com",
+            "name": "probot-auto-merge[bot]",
+            "username": "probot-auto-merge[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4c97ac918a20424f50da988f19ab0b23f655299a",
+          "message": "Merge pull request #356 from perlun/patch-1\n\nREADME.md: Add explicit casting in Handlebars.RegisterHelper",
+          "timestamp": "2020-11-07T19:35:06Z",
+          "tree_id": "69631b4507d888f1bd1eb500f59ed84ba3592f58",
+          "url": "https://github.com/Handlebars-Net/Handlebars.Net/commit/4c97ac918a20424f50da988f19ab0b23f655299a"
+        },
+        "date": 1604778041760,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "HandlebarsNet.Benchmark.Compilation.Template",
+            "value": 11219588.760044644,
+            "unit": "ns",
+            "range": "± 185389.2554516825"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithoutParameters",
+            "value": 381.6916502157847,
+            "unit": "ns",
+            "range": "± 6.551577105921435"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithOneParameter",
+            "value": 399.36676082611086,
+            "unit": "ns",
+            "range": "± 18.198661171611285"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithTwoParameter",
+            "value": 404.35497873624166,
+            "unit": "ns",
+            "range": "± 6.108198886818831"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithoutParameters",
+            "value": 564.7705254554749,
+            "unit": "ns",
+            "range": "± 6.619629014264427"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithOneParameter",
+            "value": 431.48929195404054,
+            "unit": "ns",
+            "range": "± 18.04243524220333"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithTwoParameter",
+            "value": 399.9814504623413,
+            "unit": "ns",
+            "range": "± 4.370231951150221"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithoutParameters",
+            "value": 616.7209432601928,
+            "unit": "ns",
+            "range": "± 10.48500078239668"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithOneParameter",
+            "value": 662.2042280197144,
+            "unit": "ns",
+            "range": "± 18.81115829246476"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithTwoParameter",
+            "value": 674.5099058787029,
+            "unit": "ns",
+            "range": "± 12.021986599373003"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.EndToEnd.Default(N: 5, DataType: \"dictionary\")",
+            "value": 193835.22934570312,
+            "unit": "ns",
+            "range": "± 3968.5312792365517"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.EndToEnd.Default(N: 5, DataType: \"object\")",
+            "value": 203127.39358723958,
+            "unit": "ns",
+            "range": "± 4539.193418747925"
           }
         ]
       }
