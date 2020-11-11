@@ -75,7 +75,7 @@ namespace HandlebarsDotNet.Compiler
                     return false;
                 }
 
-                context.PartialBlockTemplate(writer, context);
+                context.PartialBlockTemplate(writer, context.ParentContext);
                 return true;
             }
 
