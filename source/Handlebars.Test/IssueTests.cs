@@ -105,5 +105,48 @@ namespace HandlebarsDotNet.Test
             Assert.Equal("empty", template(new { otherInput = 1 }));
             Assert.Equal("not empty", template(new { input = 1 }));
         }
+
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/383
+        [Fact]
+        public void TestNestedPartials()
+        {
+            var innerPartial = @"{{#>outer-partial}}<br />
+        Begin inner partial<br />
+            Begin inner partial block<br />
+                {{>@partial-block}}
+            End  inner partial block<br />
+        End inner partial<br />
+        {{/outer-partial}}";
+
+            var outerPartial = @"Begin outer partial<br />
+            Begin outer partial block
+                {{>@partial-block}}
+            End outer partial block<br />
+        End outer partial";
+
+            var view = @"{{#>inner-partial}}
+          View<br />
+        {{/inner-partial}}";
+
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterTemplate("outer-partial", outerPartial);
+            handlebars.RegisterTemplate("inner-partial", innerPartial);
+
+            var callback = handlebars.Compile(view);
+            string result = callback(new object());
+
+            const string expected = @"Begin outer partial<br />
+            Begin outer partial block
+<br />
+        Begin inner partial<br />
+            Begin inner partial block<br />
+          View<br />
+            End  inner partial block<br />
+        End inner partial<br />
+            End outer partial block<br />
+        End outer partial";
+            
+            Assert.Equal(expected, result);
+        }
     }
 }
