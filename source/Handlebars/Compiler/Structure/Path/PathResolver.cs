@@ -19,7 +19,7 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
                     if (context == null)
                     {
                         if (!pathInfo.IsVariable)
-                            throw new HandlebarsCompilerException("Path expression tried to reference parent of root");
+                            throw new HandlebarsRuntimeException("Path expression tried to reference parent of root");
                         
                         return string.Empty;
                     }
@@ -37,7 +37,7 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
             for (var index = 0; index < pathChain.Length; index++)
             {
                 var chainSegment = pathChain[index];
-                instance = ResolveValue(context, instance, chainSegment);
+                instance = ResolveValue(index == 0 && pathInfo.IsVariable, context, instance, chainSegment);
 
                 if (!(instance is UndefinedBindingResult undefined))
                 {
@@ -52,7 +52,7 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
                     return instance;
                 }
 
-                instance = ResolveValue(context.ParentContext, context.ParentContext.Value, chainSegment);
+                instance = ResolveValue(index == 0 && pathInfo.IsVariable, context.ParentContext, context.ParentContext.Value, chainSegment);
                 if (!(instance is UndefinedBindingResult result))
                 {
                     continue;
@@ -67,10 +67,10 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
             return instance;
         }
         
-        private static object ResolveValue(BindingContext context, object instance, ChainSegment chainSegment)
+        private static object ResolveValue(bool isVariable, BindingContext context, object instance, ChainSegment chainSegment)
         {
             object resolvedValue;
-            if (chainSegment.IsVariable)
+            if (isVariable)
             {
                 return context.TryGetContextVariable(chainSegment, out resolvedValue)
                     ? resolvedValue
@@ -104,7 +104,7 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
             chainSegment = ResolveMemberName(instance, chainSegment, configuration);
 
             value = null;
-            return ObjectDescriptor.TryCreate(instance, configuration, out var descriptor) 
+            return ObjectDescriptor.TryCreate(instance, configuration.ObjectDescriptorProvider, out var descriptor) 
                    && descriptor.MemberAccessor.TryGetValue(instance, chainSegment, out value);
         }
 

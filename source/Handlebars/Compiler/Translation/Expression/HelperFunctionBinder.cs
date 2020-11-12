@@ -21,7 +21,7 @@ namespace HandlebarsDotNet.Compiler
         
         protected override Expression VisitHelperExpression(HelperExpression hex)
         {
-            var pathInfo = CompilationContext.Configuration.PathInfoStore.GetOrAdd(hex.HelperName);
+            var pathInfo = PathInfoStore.Shared.GetOrAdd(hex.HelperName);
             if(!pathInfo.IsValidHelperLiteral && !CompilationContext.Configuration.Compatibility.RelaxedHelperNaming) return Expression.Empty();
             
             var helperName = pathInfo.TrimmedPath;
@@ -44,13 +44,13 @@ namespace HandlebarsDotNet.Compiler
                 if (resolver.TryResolveHelper(helperName, typeof(object), out var resolvedHelper))
                 {
                     helper = new Ref<IHelperDescriptor<HelperOptions>>(resolvedHelper);
-                    configuration.Helpers.Add(pathInfo, helper);
+                    configuration.Helpers.AddOrReplace(pathInfo, helper);
                     return Call(() => resolvedHelper.Invoke(textWriter, options, contextValue, args));
                 }
             }
 
             var lateBindDescriptor = new Ref<IHelperDescriptor<HelperOptions>>(new LateBindHelperDescriptor(pathInfo));
-            configuration.Helpers.Add(pathInfo, lateBindDescriptor);
+            configuration.Helpers.AddOrReplace(pathInfo, lateBindDescriptor);
             
             return Call(() => lateBindDescriptor.Value.Invoke(textWriter, options, contextValue, args));
         }

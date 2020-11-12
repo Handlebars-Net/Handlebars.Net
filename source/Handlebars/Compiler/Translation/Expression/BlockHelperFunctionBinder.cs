@@ -1,5 +1,4 @@
 using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
 using Expressions.Shortcuts;
 using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.Helpers;
@@ -30,7 +29,7 @@ namespace HandlebarsDotNet.Compiler
         {
             var isInlinePartial = bhex.HelperName == "#*inline";
             
-            var pathInfo = CompilationContext.Configuration.PathInfoStore.GetOrAdd(bhex.HelperName);
+            var pathInfo = PathInfoStore.Shared.GetOrAdd(bhex.HelperName);
             var bindingContext = CompilationContext.Args.BindingContext;
             var context = isInlinePartial
                 ? bindingContext.As<object>()
@@ -59,14 +58,14 @@ namespace HandlebarsDotNet.Compiler
                 if (!resolver.TryResolveBlockHelper(helperName, out var resolvedDescriptor)) continue;
 
                 descriptor = new Ref<IHelperDescriptor<BlockHelperOptions>>(resolvedDescriptor);
-                blockHelpers.Add(pathInfo, descriptor);
+                blockHelpers.AddOrReplace(pathInfo, descriptor);
                 
                 return BindByRef(descriptor);
             }
             
             var lateBindBlockHelperDescriptor = new LateBindBlockHelperDescriptor(pathInfo);
             var lateBindBlockHelperRef = new Ref<IHelperDescriptor<BlockHelperOptions>>(lateBindBlockHelperDescriptor);
-            blockHelpers.Add(pathInfo, lateBindBlockHelperRef);
+            blockHelpers.AddOrReplace(pathInfo, lateBindBlockHelperRef);
 
             return BindByRef(lateBindBlockHelperRef);
             

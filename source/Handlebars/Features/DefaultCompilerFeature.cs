@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using HandlebarsDotNet.Compiler.Middlewares;
 
 namespace HandlebarsDotNet.Features
 {
@@ -15,7 +14,6 @@ namespace HandlebarsDotNet.Features
     {
         public void OnCompiling(ICompiledHandlebarsConfiguration configuration)
         {
-            configuration.ExpressionMiddlewares.Insert(0, new ClosureExpressionMiddleware());
             configuration.ExpressionCompiler = new DefaultExpressionCompiler(configuration);
         }
 
@@ -26,7 +24,7 @@ namespace HandlebarsDotNet.Features
 
         private class DefaultExpressionCompiler : IExpressionCompiler
         {
-            private readonly IList<IExpressionMiddleware> _expressionMiddleware;
+            private readonly IReadOnlyList<IExpressionMiddleware> _expressionMiddleware;
             
             public DefaultExpressionCompiler(ICompiledHandlebarsConfiguration configuration)
             {

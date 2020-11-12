@@ -16,7 +16,15 @@ namespace HandlebarsDotNet.Runtime
             _state = state;
             _factory = factory;
         }
-        
+
+        public override string ToString()
+        {
+            if (!_isValueCreated) return "Not yet created";
+            if (!_value.TryGetTarget(out var value)) return "GC collected";
+            
+            return value.ToString();
+        }
+
         public T Value
         {
             get

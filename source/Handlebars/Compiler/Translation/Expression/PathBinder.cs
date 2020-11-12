@@ -30,7 +30,7 @@ namespace HandlebarsDotNet.Compiler
         {
             var bindingContext = CompilationContext.Args.BindingContext;
             var configuration = CompilationContext.Configuration;
-            var pathInfo = configuration.PathInfoStore.GetOrAdd(pex.Path);
+            var pathInfo = PathInfoStore.Shared.GetOrAdd(pex.Path);
 
             var resolvePath = Call(() => PathResolver.ResolvePath(bindingContext, pathInfo));
             
@@ -43,7 +43,7 @@ namespace HandlebarsDotNet.Compiler
             {
                 var lateBindHelperDescriptor = new LateBindHelperDescriptor(pathInfo);
                 helper = new Ref<IHelperDescriptor<HelperOptions>>(lateBindHelperDescriptor);
-                configuration.Helpers.Add(pathInfoLight, helper);
+                configuration.Helpers.AddOrReplace(pathInfoLight, helper);
             }
             else if (configuration.Compatibility.RelaxedHelperNaming)
             {
@@ -52,7 +52,7 @@ namespace HandlebarsDotNet.Compiler
                 {
                     var lateBindHelperDescriptor = new LateBindHelperDescriptor(pathInfo);
                     helper = new Ref<IHelperDescriptor<HelperOptions>>(lateBindHelperDescriptor);
-                    configuration.Helpers.Add(pathInfoLight, helper);
+                    configuration.Helpers.AddOrReplace(pathInfoLight, helper);
                 }
             }
 

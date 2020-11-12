@@ -65,8 +65,8 @@ namespace HandlebarsDotNet.Compiler
                 ifEmpty(writer, frame);
                 return;
             }
-            
-            if (!ObjectDescriptor.TryCreate(target, context.Configuration, out var descriptor))
+
+            if (!ObjectDescriptor.TryCreate(target, context.Configuration.ObjectDescriptorProvider, out var descriptor))
             {
                 throw new HandlebarsRuntimeException($"Cannot create ObjectDescriptor for type {descriptor.DescribedType}");
             }

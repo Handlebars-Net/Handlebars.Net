@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Collections.Generic;
@@ -68,8 +67,7 @@ namespace HandlebarsDotNet.Compiler
                         BlockName = helperExpression.Arguments.First().As<PathExpression>().Path;
                         return HandlebarsExpression.Partial(Expression.Constant(BlockName), helperExpression.Arguments.Last());
                     default:
-                        throw new InvalidOperationException(
-                            "Cannot convert a multi-argument helper expression to a partial expression");
+                        throw new HandlebarsCompilerException("Cannot convert a multi-argument helper expression to a partial expression", helperExpression.Context);
                 }
             }
 

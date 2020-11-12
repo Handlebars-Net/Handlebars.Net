@@ -1,23 +1,24 @@
 ﻿using HandlebarsDotNet.Compiler.Resolvers;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using HandlebarsDotNet.Collections;
+using HandlebarsDotNet.EqualityComparers;
 using HandlebarsDotNet.Helpers;
+using HandlebarsDotNet.ObjectDescriptors;
 
 namespace HandlebarsDotNet
 {
     public sealed class HandlebarsConfiguration : IHandlebarsTemplateRegistrations
     {
-        public IDictionary<string, IHelperDescriptor<HelperOptions>> Helpers { get; }
+        public IIndexed<string, IHelperDescriptor<HelperOptions>> Helpers { get; }
         
-        public IDictionary<string, IHelperDescriptor<BlockHelperOptions>> BlockHelpers { get; }
+        public IIndexed<string, IHelperDescriptor<BlockHelperOptions>> BlockHelpers { get; }
         
-        public IDictionary<string, HandlebarsTemplate<TextWriter, object, object>> RegisteredTemplates { get; }
+        public IIndexed<string, HandlebarsTemplate<TextWriter, object, object>> RegisteredTemplates { get; }
         
         /// <inheritdoc cref="HandlebarsDotNet.Helpers.IHelperResolver"/>
-        public IList<IHelperResolver> HelperResolvers { get; }
+        public IAppendOnlyList<IHelperResolver> HelperResolvers { get; }
         
         public IExpressionNameResolver ExpressionNameResolver { get; set; }
         
@@ -46,19 +47,23 @@ namespace HandlebarsDotNet
         public IMissingPartialTemplateHandler MissingPartialTemplateHandler { get; set; }
         
         /// <inheritdoc cref="IMemberAliasProvider"/>
-        public IList<IMemberAliasProvider> AliasProviders { get; internal set; } = new List<IMemberAliasProvider>();
+        public IAppendOnlyList<IMemberAliasProvider> AliasProviders { get; internal set; } = new ObservableList<IMemberAliasProvider>();
 
         /// <inheritdoc cref="HandlebarsDotNet.Compatibility"/>
         public Compatibility Compatibility { get; } = new Compatibility();
 
         /// <inheritdoc cref="HandlebarsDotNet.CompileTimeConfiguration"/>
         public CompileTimeConfiguration CompileTimeConfiguration { get; } = new CompileTimeConfiguration();
-        
+
+        public IAppendOnlyList<IObjectDescriptorProvider> ObjectDescriptorProviders { get; } = new ObservableList<IObjectDescriptorProvider>();
+
         public HandlebarsConfiguration()
         {
-            Helpers = new ObservableDictionary<string, IHelperDescriptor<HelperOptions>>(comparer: StringComparer.OrdinalIgnoreCase);
-            BlockHelpers = new ObservableDictionary<string, IHelperDescriptor<BlockHelperOptions>>(comparer: StringComparer.OrdinalIgnoreCase);
-            RegisteredTemplates = new ObservableDictionary<string, HandlebarsTemplate<TextWriter, object, object>>(comparer: StringComparer.OrdinalIgnoreCase);
+            var stringEqualityComparer = new StringEqualityComparer(StringComparison.OrdinalIgnoreCase);
+            Helpers = new ObservableIndex<string, IHelperDescriptor<HelperOptions>, StringEqualityComparer>(stringEqualityComparer);
+            BlockHelpers = new ObservableIndex<string, IHelperDescriptor<BlockHelperOptions>, StringEqualityComparer>(stringEqualityComparer);
+            RegisteredTemplates = new ObservableIndex<string, HandlebarsTemplate<TextWriter, object, object>, StringEqualityComparer>(stringEqualityComparer);
+            
             HelperResolvers = new ObservableList<IHelperResolver>();
             TextEncoder = new HtmlEncoder(FormatProvider);
             UnresolvedBindingFormatter = new Formatter<UndefinedBindingResult>(undef => string.Empty);

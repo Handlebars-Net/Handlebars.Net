@@ -16,12 +16,12 @@ namespace HandlebarsDotNet.MemberAccessors
 
         private static readonly Func<Type, DeferredValue<Type, RawObjectTypeDescriptor>> DescriptorsValueFactory =
             key => new DeferredValue<Type, RawObjectTypeDescriptor>(key, type => new RawObjectTypeDescriptor(type));
-        
-        private readonly ICompiledHandlebarsConfiguration _configuration;
 
-        public ReflectionMemberAccessor(ICompiledHandlebarsConfiguration configuration)
+        private readonly IReadOnlyList<IMemberAliasProvider> _aliasProviders;
+
+        public ReflectionMemberAccessor(IReadOnlyList<IMemberAliasProvider> aliasProviders)
         {
-            _configuration = configuration;
+            _aliasProviders = aliasProviders;
         }
 
         public bool TryGetValue(object instance, ChainSegment memberName, out object value)
@@ -29,10 +29,9 @@ namespace HandlebarsDotNet.MemberAccessors
             var instanceType = instance.GetType();
             if (TryGetValueImpl(instance, instanceType, memberName, out value)) return true;
 
-            var aliasProviders = _configuration.AliasProviders;
-            for (var index = 0; index < aliasProviders.Count; index++)
+            for (var index = 0; index < _aliasProviders.Count; index++)
             {
-                if (aliasProviders[index].TryGetMemberByAlias(instance, instanceType, memberName, out value))
+                if (_aliasProviders[index].TryGetMemberByAlias(instance, instanceType, memberName, out value))
                     return true;
             }
 

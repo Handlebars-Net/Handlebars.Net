@@ -15,7 +15,13 @@ namespace HandlebarsDotNet.Runtime
             _state = state;
             _factory = factory;
         }
-        
+
+        public override string ToString()
+        {
+            if (!_isValueCreated) return "Not yet created";
+            return _value.ToString();
+        }
+
         public T Value
         {
             get

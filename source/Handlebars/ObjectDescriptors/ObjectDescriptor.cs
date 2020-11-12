@@ -14,17 +14,29 @@ namespace HandlebarsDotNet.ObjectDescriptors
         public static readonly ObjectDescriptor Empty = new ObjectDescriptor();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ObjectDescriptor Create(object from, ICompiledHandlebarsConfiguration configuration)
+        public static ObjectDescriptor Create(object from, IObjectDescriptorProvider objectDescriptorProvider)
+        {
+            return Create(from?.GetType(), objectDescriptorProvider);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ObjectDescriptor Create(Type from, IObjectDescriptorProvider objectDescriptorProvider)
         {
             if (from == null) return null;
-            if (!configuration.ObjectDescriptorProvider.TryGetDescriptor(@from.GetType(), out var descriptor)) return null;
+            if (!objectDescriptorProvider.TryGetDescriptor(@from, out var descriptor)) return null;
             return descriptor;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryCreate(object from, ICompiledHandlebarsConfiguration configuration, out ObjectDescriptor descriptor)
+        public static bool TryCreate(object @from, IObjectDescriptorProvider objectDescriptorProvider, out ObjectDescriptor descriptor)
         {
-            return configuration.ObjectDescriptorProvider.TryGetDescriptor(from.GetType(), out descriptor);
+            return TryCreate(from?.GetType(), objectDescriptorProvider, out descriptor);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool TryCreate(Type @from, IObjectDescriptorProvider objectDescriptorProvider, out ObjectDescriptor descriptor)
+        {
+            return objectDescriptorProvider.TryGetDescriptor(from, out descriptor);
         }
 
         /// <summary>

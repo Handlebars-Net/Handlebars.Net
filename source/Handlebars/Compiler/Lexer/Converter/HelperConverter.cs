@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using HandlebarsDotNet.Compiler.Lexer;
 using System.Linq.Expressions;
+using HandlebarsDotNet.Compiler.Structure.Path;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -71,7 +72,7 @@ namespace HandlebarsDotNet.Compiler
 
         private bool IsRegisteredHelperName(string name)
         {
-            var pathInfo = _configuration.PathInfoStore.GetOrAdd(name);
+            var pathInfo = PathInfo.Parse(name);
             if (!pathInfo.IsValidHelperLiteral && !_configuration.Compatibility.RelaxedHelperNaming) return false;
             if (pathInfo.IsBlockHelper || pathInfo.IsInversion || pathInfo.IsBlockClose || pathInfo.IsThis) return false;
             name = pathInfo.TrimmedPath;
@@ -81,7 +82,7 @@ namespace HandlebarsDotNet.Compiler
 
         private bool IsRegisteredBlockHelperName(string name, bool isRaw)
         {
-            var pathInfo = _configuration.PathInfoStore.GetOrAdd(name);
+            var pathInfo = PathInfo.Parse(name);
             if (!pathInfo.IsValidHelperLiteral && !_configuration.Compatibility.RelaxedHelperNaming) return false;
             if (!isRaw && !(pathInfo.IsBlockHelper || pathInfo.IsInversion)) return false;
             if (pathInfo.IsBlockClose) return false;
@@ -94,7 +95,7 @@ namespace HandlebarsDotNet.Compiler
         
         private bool IsUnregisteredBlockHelperName(string name, bool isRaw, IEnumerable<object> sequence)
         {
-            var pathInfo = _configuration.PathInfoStore.GetOrAdd(name);
+            var pathInfo = PathInfo.Parse(name);
             if (!pathInfo.IsValidHelperLiteral && !_configuration.Compatibility.RelaxedHelperNaming) return false;
             
             if (!isRaw && !(pathInfo.IsBlockHelper || pathInfo.IsInversion)) return false;

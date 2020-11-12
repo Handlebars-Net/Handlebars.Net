@@ -1,5 +1,4 @@
 using System.Linq;
-using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Helpers;
 using HandlebarsDotNet.Helpers.BlockHelpers;
 using HandlebarsDotNet.Runtime;
@@ -91,26 +90,30 @@ namespace HandlebarsDotNet.Features
 
         public void OnCompiling(ICompiledHandlebarsConfiguration configuration)
         {
-            var pathInfoStore = configuration.PathInfoStore;
-
-            var helperMissingPathInfo = pathInfoStore.GetOrAdd(HelperMissingKey);
+            var helperMissingPathInfo = PathInfoStore.Shared.GetOrAdd(HelperMissingKey);
             if(!configuration.Helpers.ContainsKey(helperMissingPathInfo))
             {
                 var helper = _helper ?? new MissingHelperDescriptor();
-                configuration.Helpers.AddOrUpdate(helperMissingPathInfo, 
-                    h => new Ref<IHelperDescriptor<HelperOptions>>(h), 
-                    (h, o) => o.Value = h, 
-                    helper);
+                if (configuration.Helpers.TryGetValue(helperMissingPathInfo, out var existingHelper))
+                {
+                    existingHelper.Value = helper;
+                    return;
+                }
+                
+                configuration.Helpers.AddOrReplace(helperMissingPathInfo, new Ref<IHelperDescriptor<HelperOptions>>(helper));
             }
 
-            var blockHelperMissingKeyPathInfo = pathInfoStore.GetOrAdd(BlockHelperMissingKey);
+            var blockHelperMissingKeyPathInfo = PathInfoStore.Shared.GetOrAdd(BlockHelperMissingKey);
             if(!configuration.BlockHelpers.ContainsKey(blockHelperMissingKeyPathInfo))
             {
                 var blockHelper = _blockHelper ?? new MissingBlockHelperDescriptor();
-                configuration.BlockHelpers.AddOrUpdate(blockHelperMissingKeyPathInfo, 
-                    h => new Ref<IHelperDescriptor<BlockHelperOptions>>(h), 
-                    (h, o) => o.Value = h, 
-                    blockHelper);
+                if (configuration.BlockHelpers.TryGetValue(blockHelperMissingKeyPathInfo, out var existingHelper))
+                {
+                    existingHelper.Value = blockHelper;
+                    return;
+                }
+                
+                configuration.BlockHelpers.AddOrReplace(blockHelperMissingKeyPathInfo, new Ref<IHelperDescriptor<BlockHelperOptions>>(blockHelper));
             }
         }
 

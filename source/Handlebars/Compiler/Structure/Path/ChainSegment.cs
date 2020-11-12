@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.EqualityComparers;
 using HandlebarsDotNet.Runtime;
+using HandlebarsDotNet.StringUtils;
 
 namespace HandlebarsDotNet.Compiler.Structure.Path
 {
@@ -25,9 +26,6 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
     /// </summary>
     public sealed partial class ChainSegment : IEquatable<ChainSegment>
     {
-        private const string ThisValue = "this";
-        private static readonly char[] TrimStart = {'@'};
-
         private static readonly LookupSlim<string, GcDeferredValue<CreationProperties, ChainSegment>, StringEqualityComparer> Lookup = new LookupSlim<string, GcDeferredValue<CreationProperties, ChainSegment>, StringEqualityComparer>(new StringEqualityComparer(StringComparison.Ordinal));
         
         private static readonly Func<string, WellKnownVariable, GcDeferredValue<CreationProperties, ChainSegment>> ValueFactory = (s, v) =>
@@ -48,23 +46,18 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static ChainSegment Create(string value, WellKnownVariable variable, bool createVariable = false)
+        private static ChainSegment Create(string value, WellKnownVariable variable)
         {
-            if (createVariable)
-            {
-                Lookup.GetOrAdd($"@{value}", ValueFactory, variable);
-            }
-            
             return Lookup.GetOrAdd(value, ValueFactory, variable).Value;
         }
 
-        public static ChainSegment Index { get; } = Create(nameof(Index), WellKnownVariable.Index, true);
-        public static ChainSegment First { get; } = Create(nameof(First), WellKnownVariable.First, true);
-        public static ChainSegment Last { get; } = Create(nameof(Last), WellKnownVariable.Last, true);
-        public static ChainSegment Value { get; } = Create(nameof(Value), WellKnownVariable.Value, true);
-        public static ChainSegment Key { get; } = Create(nameof(Key), WellKnownVariable.Key, true);
-        public static ChainSegment Root { get; } = Create(nameof(Root), WellKnownVariable.Root, true);
-        public static ChainSegment Parent { get; } = Create(nameof(Parent), WellKnownVariable.Parent, true);
+        public static ChainSegment Index { get; } = Create(nameof(Index), WellKnownVariable.Index);
+        public static ChainSegment First { get; } = Create(nameof(First), WellKnownVariable.First);
+        public static ChainSegment Last { get; } = Create(nameof(Last), WellKnownVariable.Last);
+        public static ChainSegment Value { get; } = Create(nameof(Value), WellKnownVariable.Value);
+        public static ChainSegment Key { get; } = Create(nameof(Key), WellKnownVariable.Key);
+        public static ChainSegment Root { get; } = Create(nameof(Root), WellKnownVariable.Root);
+        public static ChainSegment Parent { get; } = Create(nameof(Parent), WellKnownVariable.Parent);
         public static ChainSegment This { get; } = Create(nameof(This), WellKnownVariable.This);
         
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -81,14 +74,13 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
             WellKnownVariable = wellKnownVariable;
 
             var isNullOrEmpty = string.IsNullOrEmpty(value);
-            var segmentValue = isNullOrEmpty ? ThisValue : value.TrimStart(TrimStart);
+            var segmentValue = isNullOrEmpty ? new Substring("this") : new Substring(value);
             var segmentTrimmedValue = TrimSquareBrackets(segmentValue);
 
-            _value = segmentValue;
-            IsThis = isNullOrEmpty || string.Equals(value, ThisValue, StringComparison.OrdinalIgnoreCase);
-            IsVariable = !isNullOrEmpty && value.StartsWith("@");
-            TrimmedValue = segmentTrimmedValue;
-            LowerInvariant = segmentTrimmedValue.ToLowerInvariant();
+            _value = value;
+            IsThis = isNullOrEmpty || string.Equals(value, "this", StringComparison.OrdinalIgnoreCase);
+            TrimmedValue = segmentTrimmedValue.ToString();
+            LowerInvariant = TrimmedValue.ToLowerInvariant();
             
             IsValue = LowerInvariant == "value";
 
@@ -102,11 +94,6 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
         /// Value with trimmed '[' and ']'
         /// </summary>
         public readonly string TrimmedValue;
-        
-        /// <summary>
-        /// Indicates whether <see cref="ChainSegment"/> is part of <c>@</c> variable
-        /// </summary>
-        public readonly bool IsVariable;
         
         /// <summary>
         /// Indicates whether <see cref="ChainSegment"/> is <c>this</c> or <c>.</c>
@@ -176,12 +163,12 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
         
         public static implicit operator ChainSegment(string segment) => Create(segment);
 
-        private static string TrimSquareBrackets(string key)
+        private static Substring TrimSquareBrackets(Substring key)
         {
             //Only trim a single layer of brackets.
-            if (key.StartsWith("[") && key.EndsWith("]"))
+            if (key.StartsWith('[') && key.EndsWith(']'))
             {
-                return key.Substring(1, key.Length - 2);
+                return new Substring(key, 1, key.Length - 2);
             }
 
             return key;
