@@ -80,7 +80,7 @@ namespace HandlebarsDotNet.Compiler
             TemplateDelegate Compile(Expression expression)
             {
                 var blockExpression = (BlockExpression) expression;
-                return FunctionBuilder.Compile(blockExpression.Expressions, CompilationContext.Configuration);
+                return FunctionBuilder.Compile(blockExpression.Expressions, new CompilationContext(CompilationContext));
             }
 
             Expression BindByRef(Ref<IHelperDescriptor<BlockHelperOptions>> helperBox)

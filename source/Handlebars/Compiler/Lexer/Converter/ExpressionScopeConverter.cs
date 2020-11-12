@@ -8,9 +8,11 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class ExpressionScopeConverter : TokenConverter
     {
+        private static readonly ExpressionScopeConverter Converter = new ExpressionScopeConverter();
+
         public static IEnumerable<object> Convert(IEnumerable<object> sequence)
         {
-            return new ExpressionScopeConverter().ConvertTokens(sequence).ToList();
+            return Converter.ConvertTokens(sequence).ToList();
         }
 
         private ExpressionScopeConverter()

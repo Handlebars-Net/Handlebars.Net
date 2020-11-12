@@ -62,8 +62,9 @@ namespace HandlebarsDotNet
             {
                 createdFeatures[index].OnCompiling(configuration);
             }
-            
-            var compiledView = HandlebarsCompiler.CompileView(readerFactoryFactory, templatePath, configuration);
+
+            var compilationContext = new CompilationContext(configuration);
+            var compiledView = HandlebarsCompiler.CompileView(readerFactoryFactory, templatePath, compilationContext);
     
             for (var index = 0; index < createdFeatures.Count; index++)
             {
@@ -74,13 +75,15 @@ namespace HandlebarsDotNet
             {
                 if (context is BindingContext bindingContext)
                 {
+                    bindingContext.Extensions["templatePath"] = templatePath; 
                     var config = bindingContext.Configuration;
                     using var encodedTextWriter = new EncodedTextWriter(writer, config.TextEncoder, config.UnresolvedBindingFormatter, config.NoEscape);
                     compiledView(encodedTextWriter, bindingContext);
                 }
                 else
                 {
-                    using var newBindingContext = BindingContext.Create(configuration, context, templatePath);
+                    using var newBindingContext = BindingContext.Create(configuration, context);
+                    newBindingContext.Extensions["templatePath"] = templatePath;
                     newBindingContext.SetDataObject(data);
                 
                     using var encodedTextWriter = new EncodedTextWriter(writer, configuration.TextEncoder, configuration.UnresolvedBindingFormatter, configuration.NoEscape);
@@ -92,8 +95,9 @@ namespace HandlebarsDotNet
         public HandlebarsTemplate<TextWriter, object, object> Compile(TextReader template)
         {
             var configuration = CompiledConfiguration ?? new HandlebarsConfigurationAdapter(Configuration);
+            var compilationContext = new CompilationContext(configuration);
             using var reader = new ExtendedStringReader(template);
-            var compiledTemplate = HandlebarsCompiler.Compile(reader, configuration);
+            var compiledTemplate = HandlebarsCompiler.Compile(reader, compilationContext);
             return (writer, context, data) =>
             {
                 if (writer is EncodedTextWriterWrapper encodedTextWriterWrapper)

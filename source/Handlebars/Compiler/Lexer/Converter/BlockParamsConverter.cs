@@ -7,9 +7,11 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class BlockParamsConverter : TokenConverter
     {
+        private static readonly BlockParamsConverter Converter = new BlockParamsConverter();
+
         public static IEnumerable<object> Convert(IEnumerable<object> sequence)
         {
-            return new BlockParamsConverter().ConvertTokens(sequence);
+            return Converter.ConvertTokens(sequence);
         }
 
         private BlockParamsConverter()
@@ -27,7 +29,7 @@ namespace HandlebarsDotNet.Compiler
                     if(foundBlockParams) throw new HandlebarsCompilerException("multiple blockParams expressions are not supported", blockParameterToken.Context);
                     
                     foundBlockParams = true;
-                    if(!(result.Last() is PathExpression pathExpression)) throw new HandlebarsCompilerException("blockParams definition has incorrect syntax", blockParameterToken.Context);
+                    if(!(result[result.Count - 1] is PathExpression pathExpression)) throw new HandlebarsCompilerException("blockParams definition has incorrect syntax", blockParameterToken.Context);
                     if(!string.Equals("as", pathExpression.Path, StringComparison.OrdinalIgnoreCase)) throw new HandlebarsCompilerException("blockParams definition has incorrect syntax", blockParameterToken.Context);
                     
                     result[result.Count - 1] = HandlebarsExpression.BlockParams(pathExpression.Path, blockParameterToken.Value);

@@ -7,15 +7,15 @@ namespace HandlebarsDotNet
     {
         private static readonly BindingContextPool Pool = new BindingContextPool();
 
-        internal static BindingContext Create(ICompiledHandlebarsConfiguration configuration, object value, string templatePath = null)
+        internal static BindingContext Create(ICompiledHandlebarsConfiguration configuration, object value)
         {
-            return Pool.CreateContext(configuration, value, null, templatePath, null);
+            return Pool.CreateContext(configuration, value, null, null);
         }
 
-        internal static BindingContext Create(ICompiledHandlebarsConfiguration configuration, object value, BindingContext parent, string templatePath,
+        internal static BindingContext Create(ICompiledHandlebarsConfiguration configuration, object value, BindingContext parent,
             TemplateDelegate partialBlockTemplate)
         {
-            return Pool.CreateContext(configuration, value, parent, templatePath, partialBlockTemplate);
+            return Pool.CreateContext(configuration, value, parent, partialBlockTemplate);
         }
         
         public void Dispose() => Pool.Return(this);
@@ -26,13 +26,12 @@ namespace HandlebarsDotNet
             {
             }
             
-            public BindingContext CreateContext(ICompiledHandlebarsConfiguration configuration, object value, BindingContext parent, string templatePath, TemplateDelegate partialBlockTemplate)
+            public BindingContext CreateContext(ICompiledHandlebarsConfiguration configuration, object value, BindingContext parent, TemplateDelegate partialBlockTemplate)
             {
                 var context = Get();
                 context.Configuration = configuration;
                 context.Value = value;
                 context.ParentContext = parent;
-                context.TemplatePath = templatePath;
                 context.PartialBlockTemplate = partialBlockTemplate;
 
                 context.Initialize();
@@ -49,12 +48,11 @@ namespace HandlebarsDotNet
                     item.Root = null;
                     item.Value = null;
                     item.ParentContext = null;
-                    item.TemplatePath = null;
                     item.PartialBlockTemplate = null;
                     item.InlinePartialTemplates.Clear();
+                    item.Bag.Clear();
 
                     item.RootDataObject.Clear();
-                    item.Extensions.OptionalClear();
                     item.BlockParamsObject.OptionalClear();
                     item.ContextDataObject.OptionalClear();
                     

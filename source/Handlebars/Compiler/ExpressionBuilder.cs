@@ -4,18 +4,11 @@ using System.Linq.Expressions;
 
 namespace HandlebarsDotNet.Compiler
 {
-    internal class ExpressionBuilder
+    internal static class ExpressionBuilder
     {
-        private readonly ICompiledHandlebarsConfiguration _configuration;
-
-        public ExpressionBuilder(ICompiledHandlebarsConfiguration configuration)
+        public static IEnumerable<Expression> ConvertTokensToExpressions(IEnumerable<object> tokens, ICompiledHandlebarsConfiguration configuration)
         {
-            _configuration = configuration;
-        }
-
-        public IEnumerable<Expression> ConvertTokensToExpressions(IEnumerable<object> tokens)
-        {
-            tokens = HelperConverter.Convert(tokens, _configuration);
+            tokens = HelperConverter.Convert(tokens, configuration);
             tokens = RawHelperAccumulator.Accumulate(tokens);
             tokens = CommentAndLayoutConverter.Convert(tokens);
             tokens = LiteralConverter.Convert(tokens);
@@ -29,7 +22,7 @@ namespace HandlebarsDotNet.Compiler
             tokens = ExpressionScopeConverter.Convert(tokens);
             tokens = WhitespaceRemover.Remove(tokens);
             tokens = StaticConverter.Convert(tokens);
-            tokens = BlockAccumulator.Accumulate(tokens, _configuration);
+            tokens = BlockAccumulator.Accumulate(tokens, configuration);
             return tokens.Cast<Expression>();
         }
     }

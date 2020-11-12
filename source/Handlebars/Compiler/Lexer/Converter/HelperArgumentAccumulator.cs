@@ -7,9 +7,11 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class HelperArgumentAccumulator : TokenConverter
     {
+        private static readonly HelperArgumentAccumulator Accumulator = new HelperArgumentAccumulator();
+
         public static IEnumerable<object> Accumulate(IEnumerable<object> sequence)
         {
-            return new HelperArgumentAccumulator().ConvertTokens(sequence).ToList();
+            return Accumulator.ConvertTokens(sequence).ToList();
         }
 
         private HelperArgumentAccumulator()

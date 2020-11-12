@@ -8,26 +8,28 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class WhitespaceRemover : TokenConverter
     {
-        private static readonly Regex MatchLastStartsWithWhitespace = new Regex(@"^[ \t]*(\r?\n|$)");
-        private static readonly Regex MatchStartsWithWhitespace = new Regex(@"^[ \t]*\r?\n");
-        private static readonly Regex TrimStartRegex = new Regex(@"^[ \t]*\r?\n?");
-        private static readonly Regex MatchFirstEndsWithWhitespace = new Regex(@"(^|\r?\n)\s*?$");
+        private static readonly Regex MatchLastStartsWithWhitespace = new Regex(@"^[ \t]*(\r?\n|$)", RegexOptions.Compiled);
+        private static readonly Regex MatchStartsWithWhitespace = new Regex(@"^[ \t]*\r?\n", RegexOptions.Compiled);
+        private static readonly Regex TrimStartRegex = new Regex(@"^[ \t]*\r?\n?", RegexOptions.Compiled);
+        private static readonly Regex MatchFirstEndsWithWhitespace = new Regex(@"(^|\r?\n)\s*?$", RegexOptions.Compiled);
         private static readonly Regex MatchEndsWithWhitespace = new Regex(@"\r?\n\s*?$");
-        private static readonly Regex TrimEndRegex = new Regex(@"[ \t]+\z");
+        private static readonly Regex TrimEndRegex = new Regex(@"[ \t]+\z", RegexOptions.Compiled);
+        
+        private static readonly WhitespaceRemover Remover = new WhitespaceRemover();
 
         public static IEnumerable<object> Remove(IEnumerable<object> sequence)
         {
-            return new WhitespaceRemover().ConvertTokens(sequence);
+            return Remover.ConvertTokens(sequence);
         }
 
         private WhitespaceRemover()
         {
         }
 
-        private static List<object> ToList(IEnumerable<object> sequence)
+        private static IList<object> ToList(IEnumerable<object> sequence)
         {
-            //it's already List<object> but let's pretend we don't know.
-            return sequence as List<object> ?? sequence.ToList();
+            //it's already IList<object> but let's pretend we don't know.
+            return sequence as IList<object> ?? sequence.ToArray();
         }
 
         public override IEnumerable<object> ConvertTokens(IEnumerable<object> sequence)
@@ -97,9 +99,7 @@ namespace HandlebarsDotNet.Compiler
                 return;
             }
 
-            var next = list[index + 1] as StaticToken;
-
-            if (next == null)
+            if (!(list[index + 1] is StaticToken next))
             {
                 return;
             }
@@ -123,9 +123,7 @@ namespace HandlebarsDotNet.Compiler
                 return true;
             }
 
-            var prev = list[index - 1] as StaticToken;
-
-            if (prev == null)
+            if (!(list[index - 1] is StaticToken prev))
             {
                 return false;
             }
@@ -144,9 +142,7 @@ namespace HandlebarsDotNet.Compiler
                 return;
             }
 
-            var prev = list[index - 1] as StaticToken;
-
-            if (prev == null)
+            if (!(list[index - 1] is StaticToken prev))
             {
                 return;
             }
@@ -185,7 +181,7 @@ namespace HandlebarsDotNet.Compiler
         {
             if (helperExpression == null) return false;
 
-            return helperExpression.HelperName.StartsWith("#") || (helperExpression.HelperName == "else");
+            return helperExpression.HelperName.StartsWith("#") || helperExpression.HelperName.StartsWith("^") || (helperExpression.HelperName == "else");
         }
     }
 }

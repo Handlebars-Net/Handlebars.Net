@@ -9,18 +9,18 @@ namespace HandlebarsDotNet.Compiler
     
     internal static class HandlebarsCompiler
     {
-        public static TemplateDelegate Compile(ExtendedStringReader source, ICompiledHandlebarsConfiguration configuration)
+        public static TemplateDelegate Compile(ExtendedStringReader source, CompilationContext compilationContext)
         {
+            var configuration = compilationContext.Configuration;
             var createdFeatures = configuration.Features;
             for (var index = 0; index < createdFeatures.Count; index++)
             {
                 createdFeatures[index].OnCompiling(configuration);
             }
             
-            var expressionBuilder = new ExpressionBuilder(configuration);
-            var tokens = Tokenizer.Tokenize(source).ToList();
-            var expressions = expressionBuilder.ConvertTokensToExpressions(tokens);
-            var action = FunctionBuilder.Compile(expressions, configuration);
+            var tokens = Tokenizer.Tokenize(source).ToArray();
+            var expressions = ExpressionBuilder.ConvertTokensToExpressions(tokens, configuration);
+            var action = FunctionBuilder.Compile(expressions, compilationContext);
             
             for (var index = 0; index < createdFeatures.Count; index++)
             {
@@ -30,22 +30,22 @@ namespace HandlebarsDotNet.Compiler
             return action;
         }
 
-        internal static TemplateDelegate CompileView(ViewReaderFactory readerFactoryFactory, string templatePath, ICompiledHandlebarsConfiguration configuration)
+        internal static TemplateDelegate CompileView(ViewReaderFactory readerFactoryFactory, string templatePath, CompilationContext compilationContext)
         {
+            var configuration = compilationContext.Configuration;
             IEnumerable<object> tokens;
             using (var sr = readerFactoryFactory(configuration, templatePath))
             {
                 using (var reader = new ExtendedStringReader(sr))
                 {
-                    tokens = Tokenizer.Tokenize(reader).ToList();
+                    tokens = Tokenizer.Tokenize(reader).ToArray();
                 }
             }
 
             var layoutToken = tokens.OfType<LayoutToken>().SingleOrDefault();
-
-            var expressionBuilder = new ExpressionBuilder(configuration);
-            var expressions = expressionBuilder.ConvertTokensToExpressions(tokens);
-            var compiledView = FunctionBuilder.Compile(expressions, configuration);
+            
+            var expressions = ExpressionBuilder.ConvertTokensToExpressions(tokens, configuration);
+            var compiledView = FunctionBuilder.Compile(expressions, compilationContext);
             if (layoutToken == null) return compiledView;
 
             var fs = configuration.FileSystem;
@@ -53,7 +53,7 @@ namespace HandlebarsDotNet.Compiler
             if (layoutPath == null)
                 throw new InvalidOperationException($"Cannot find layout '{layoutToken.Value}' for template '{templatePath}'");
 
-            var compiledLayout = CompileView(readerFactoryFactory, layoutPath, configuration);
+            var compiledLayout = CompileView(readerFactoryFactory, layoutPath, new CompilationContext(compilationContext));
             
             return (in EncodedTextWriter writer, BindingContext context) =>
             {

@@ -6,9 +6,11 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class CommentAndLayoutConverter : TokenConverter
     {
+        private static readonly CommentAndLayoutConverter Converter = new CommentAndLayoutConverter();
+
         public static IEnumerable<object> Convert(IEnumerable<object> sequence)
         {
-            return new CommentAndLayoutConverter().ConvertTokens(sequence).ToList();
+            return Converter.ConvertTokens(sequence).ToList();
         }
 
         private CommentAndLayoutConverter()
@@ -17,7 +19,7 @@ namespace HandlebarsDotNet.Compiler
 
         public override IEnumerable<object> ConvertTokens(IEnumerable<object> sequence)
         {
-            return sequence.Select(Convert);
+            return sequence.Select(o => Convert(o));
         }
 
         private static object Convert(object item)
