@@ -127,7 +127,7 @@ namespace HandlebarsDotNet.Collections
                 {
                     // The chain of entries forms a loop; which means a concurrent update has happened.
                     // Break out of the loop and throw, rather than looping forever.
-                    throw new InvalidOperationException("ConcurrentOperationsNotSupported");
+                    Throw.ConcurrentOperationsNotSupported();
                 }
                 collisionCount++;
             }
@@ -158,7 +158,7 @@ namespace HandlebarsDotNet.Collections
                 {
                     // The chain of entries forms a loop; which means a concurrent update has happened.
                     // Break out of the loop and throw, rather than looping forever.
-                    throw new InvalidOperationException("ConcurrentOperationsNotSupported");
+                    Throw.ConcurrentOperationsNotSupported();
                 }
                 collisionCount++;
             }
@@ -188,7 +188,7 @@ namespace HandlebarsDotNet.Collections
                 {
                     // The chain of entries forms a loop; which means a concurrent update has happened.
                     // Break out of the loop and throw, rather than looping forever.
-                    throw new InvalidOperationException("ConcurrentOperationsNotSupported");
+                    Throw.ConcurrentOperationsNotSupported();
                 }
                 collisionCount++;
             }
@@ -312,6 +312,12 @@ namespace HandlebarsDotNet.Collections
             /// Dispose the enumerator
             /// </summary>
             public void Dispose() { }
+        }
+        
+        private static class Throw
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static void ConcurrentOperationsNotSupported() => throw new InvalidOperationException("ConcurrentOperationsNotSupported");
         }
     }
 }

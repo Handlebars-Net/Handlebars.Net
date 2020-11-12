@@ -6,11 +6,17 @@ using System.Runtime.CompilerServices;
 
 namespace HandlebarsDotNet.Collections
 {
+    /// <summary>
+    /// Allows to create chains of <see cref="IIndexed{TKey,TValue}"/> collections
+    /// </summary>
+    /// <typeparam name="TKey"></typeparam>
+    /// <typeparam name="TValue"></typeparam>
+    /// <typeparam name="TComparer"></typeparam>
     [DebuggerDisplay("Count = {Count}")]
-    internal class CascadeIndex<TKey, TValue, TComparer> : IIndexed<TKey, TValue> 
+    public class CascadeIndex<TKey, TValue, TComparer> : IIndexed<TKey, TValue> 
         where TComparer : IEqualityComparer<TKey>
     {
-        public IIndexed<TKey, TValue> Outer { get; set; }
+        public IReadOnlyIndexed<TKey, TValue> Outer { get; set; }
         private readonly DictionarySlim<TKey, TValue, TComparer> _inner;
 
         public CascadeIndex(TComparer comparer)

@@ -13,7 +13,7 @@ namespace HandlebarsDotNet.Collections
     /// <para><see cref="TryGetValue(in EntryIndex(TKey), out TValue)"/> and <see cref="ContainsKey(in EntryIndex(TKey)"/> always performs at constant time.</para>
     /// </summary>
     [DebuggerDisplay("Count = {Count}")]
-    internal class FixedSizeDictionary<TKey, TValue, TComparer> :
+    public class FixedSizeDictionary<TKey, TValue, TComparer> :
         IIndexed<TKey, TValue>,
         IReadOnlyDictionary<TKey, TValue> 
         where TKey : notnull

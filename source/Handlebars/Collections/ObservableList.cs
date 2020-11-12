@@ -8,7 +8,7 @@ using HandlebarsDotNet.Runtime;
 namespace HandlebarsDotNet.Collections
 {
     [DebuggerDisplay("Count = {Count}")]
-    internal class ObservableList<T> : 
+    public class ObservableList<T> : 
         IAppendOnlyList<T>, 
         IObservable<ObservableEvent<T>>, 
         IObserver<ObservableEvent<T>>
@@ -136,7 +136,7 @@ namespace HandlebarsDotNet.Collections
         }
     }
 
-    internal class AddedObservableEvent<T> : ObservableEvent<T>
+    public class AddedObservableEvent<T> : ObservableEvent<T>
     {
         public AddedObservableEvent(T value) : base(value)
         {

@@ -7,7 +7,7 @@ namespace HandlebarsDotNet.StringUtils
     /// <summary>
     /// Allows to perform substring-related manipulations without memory overhead
     /// </summary>
-    internal readonly struct Substring
+    public readonly struct Substring
     {
         private readonly string _str;
 

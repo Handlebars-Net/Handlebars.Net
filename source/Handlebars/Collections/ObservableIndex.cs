@@ -9,7 +9,7 @@ using HandlebarsDotNet.Runtime;
 namespace HandlebarsDotNet.Collections
 {
     [DebuggerDisplay("Count = {Count}")]
-    internal class ObservableIndex<TKey, TValue, TComparer> : 
+    public class ObservableIndex<TKey, TValue, TComparer> : 
         IObservable<ObservableEvent<TValue>>,
         IObserver<ObservableEvent<TValue>>,
         IIndexed<TKey, TValue>
@@ -154,12 +154,5 @@ namespace HandlebarsDotNet.Collections
         public TKey Key { get; }
 
         public DictionaryAddedObservableEvent(TKey key, TValue value) : base(value) => Key = key;
-    }
-
-    internal abstract class ObservableEvent<T>
-    {
-        public T Value { get; }
-
-        public ObservableEvent(T value) => Value = value;
     }
 }

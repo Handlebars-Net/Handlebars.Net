@@ -69,9 +69,5 @@
   <ItemGroup Condition="'$(ContinuousIntegrationBuild)' == 'true'">
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
-
-  <ItemGroup Condition="'$(Configuration)' == 'Release'">
-    <Compile Remove="Friends.cs" />
-  </ItemGroup>
-
+  
 </Project>
