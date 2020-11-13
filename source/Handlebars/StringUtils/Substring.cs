@@ -7,7 +7,7 @@ namespace HandlebarsDotNet.StringUtils
     /// <summary>
     /// Allows to perform substring-related manipulations without memory overhead
     /// </summary>
-    public readonly struct Substring
+    public readonly struct Substring : IEquatable<Substring>, IEquatable<string>
     {
         private readonly string _str;
 
@@ -104,13 +104,8 @@ namespace HandlebarsDotNet.StringUtils
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Substring(string str, int start)
-            : this()
+            : this(str, start, str.Length - start)
         {
-            if(string.IsNullOrEmpty(str)) Throw.ArgumentNullException(nameof(str));
-                
-            _str = str;
-            _start = start;
-            Length = str!.Length - start;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -155,21 +150,18 @@ namespace HandlebarsDotNet.StringUtils
             if (Length != other?.Length) return false;
             return string.CompareOrdinal(_str, _start, other, 0, Length) == 0;
         }
+        
+        public override bool Equals(object obj) => obj is Substring other && Equals(other);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override int GetHashCode()
         {
             unchecked
             {
-                var hashCode = _str.GetHashCode();
-                hashCode = (hashCode * 397) ^ Length;
-                
-                return hashCode;
+                return (_str.GetHashCode() * 397) ^ Length;
             }
         }
-        
-        public override bool Equals(object obj) => obj is Substring other && Equals(other);
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(Substring a, Substring b) => a.Equals(b);
 

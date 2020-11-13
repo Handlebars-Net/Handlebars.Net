@@ -44,14 +44,14 @@ namespace HandlebarsDotNet.Collections
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public void Add(T item)
+        public void Add(T value)
         {
             using (_itemsLock.WriteLock())
             {
-                _inner.Add(item);
+                _inner.Add(value);
             }
             
-            Publish(new AddedObservableEvent<T>(item));
+            Publish(new AddedObservableEvent<T>(value));
         }
         
         public int Count
@@ -98,10 +98,12 @@ namespace HandlebarsDotNet.Collections
 
         public void OnCompleted()
         {
+            // nothing to do here
         }
 
         public void OnError(Exception error)
         {
+            // nothing to do here
         }
 
         public void OnNext(ObservableEvent<T> value)

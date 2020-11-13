@@ -120,7 +120,7 @@ namespace HandlebarsDotNet.Collections
                 array = _inner.ToArray();
             }
 
-            for (int index = 0; index < array.Length; index++)
+            for (var index = 0; index < array.Length; index++)
             {
                 yield return array[index];
             }
@@ -130,10 +130,12 @@ namespace HandlebarsDotNet.Collections
 
         public void OnCompleted()
         {
+            // nothing to do here
         }
 
         public void OnError(Exception error)
         {
+            // nothing to do here
         }
 
         public void OnNext(ObservableEvent<TValue> value)

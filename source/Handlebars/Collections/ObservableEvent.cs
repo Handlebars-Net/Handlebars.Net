@@ -4,6 +4,6 @@ namespace HandlebarsDotNet.Collections
     {
         public T Value { get; }
 
-        public ObservableEvent(T value) => Value = value;
+        protected ObservableEvent(T value) => Value = value;
     }
 }

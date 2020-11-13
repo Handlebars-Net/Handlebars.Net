@@ -36,7 +36,7 @@ namespace HandlebarsDotNet
                 .OrderBy(o => o.GetType().GetTypeInfo().GetCustomAttribute<FeatureOrderAttribute>()?.Order ?? 100)
                 .ToList();
             
-            Helpers = CreateHelpersSubscription(configuration.Helpers);;
+            Helpers = CreateHelpersSubscription(configuration.Helpers);
             BlockHelpers = CreateHelpersSubscription(configuration.BlockHelpers);
         }
 
