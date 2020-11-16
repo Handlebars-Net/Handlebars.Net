@@ -5,19 +5,15 @@ using Xunit;
 
 namespace HandlebarsDotNet.Test.Collections
 {
-    public struct ObjectComparer : IEqualityComparer<object>
-    {
-        public new bool Equals(object x, object y) => ReferenceEquals(x, y);
-
-        public int GetHashCode(object obj) => obj.GetHashCode();
-    }
-    
     public class FixedSizeDictionaryTests : IDisposable
     {
-        private static readonly FixedSizeDictionary<object, object, ObjectComparer> FixedSizeDictionary;
+        private static readonly FixedSizeDictionary<object, object, EqualityComparers.ReferenceEqualityComparer<object>> FixedSizeDictionary;
 
-        static FixedSizeDictionaryTests() 
-            => FixedSizeDictionary = new FixedSizeDictionary<object, object, ObjectComparer>(15, 17, new ObjectComparer());
+        static FixedSizeDictionaryTests()
+        {
+            var referenceEqualityComparer = new EqualityComparers.ReferenceEqualityComparer<object>();
+            FixedSizeDictionary = new FixedSizeDictionary<object, object, EqualityComparers.ReferenceEqualityComparer<object>>(15, 17, referenceEqualityComparer);
+        }
 
         [Fact]
         public void AddOrReplace()
@@ -103,7 +99,7 @@ namespace HandlebarsDotNet.Test.Collections
                 Assert.Equal(value, actualValue);
             }
 
-            var destination = new FixedSizeDictionary<object, object, ObjectComparer>(15, 17, new ObjectComparer());
+            var destination = new FixedSizeDictionary<object, object, EqualityComparers.ReferenceEqualityComparer<object>>(15, 17, new EqualityComparers.ReferenceEqualityComparer<object>());
             FixedSizeDictionary.CopyTo(destination);
             FixedSizeDictionary.Clear();
             

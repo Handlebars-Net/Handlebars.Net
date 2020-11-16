@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
+using HandlebarsDotNet.Compiler.Structure.Path;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -43,7 +44,7 @@ namespace HandlebarsDotNet.Compiler
             if (item is HelperExpression hitem)
             {
                 var helperName = hitem.HelperName;
-                var helperPathInfo = configuration.PathInfoStore.GetOrAdd(helperName);
+                var helperPathInfo = PathInfo.Parse(helperName);
                 return hitem.IsBlock || !configuration.Helpers.ContainsKey(helperPathInfo) && configuration.BlockHelpers.ContainsKey(helperPathInfo);
             }
             return false;

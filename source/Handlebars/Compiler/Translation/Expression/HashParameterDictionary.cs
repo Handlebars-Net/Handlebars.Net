@@ -5,7 +5,7 @@ namespace HandlebarsDotNet.Compiler
 {
     public class HashParameterDictionary : Dictionary<string, object>
     {
-        internal static readonly HashParameterDictionary Empty = new HashParameterDictionary();
+        internal static readonly IReadOnlyDictionary<string, object> Empty = new HashParameterDictionary();
         
         public HashParameterDictionary()
             :base(StringComparer.OrdinalIgnoreCase)

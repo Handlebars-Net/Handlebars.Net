@@ -25,7 +25,7 @@ namespace HandlebarsDotNet
                 var compiled = env
                     .CompileView(partialPath);
 
-                handlebarsTemplateRegistrations.RegisteredTemplates.Add(partialName, (writer, o, data) =>
+                handlebarsTemplateRegistrations.RegisteredTemplates.AddOrReplace(partialName, (writer, o, data) =>
                 {
                     writer.Write(compiled(o, data));
                 });

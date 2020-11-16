@@ -12,7 +12,9 @@ namespace HandlebarsDotNet.Collections
     /// starts to degrade as number of items comes closer to <see cref="Capacity"/>.</para>
     /// <para><see cref="TryGetValue(in EntryIndex(TKey), out TValue)"/> and <see cref="ContainsKey(in EntryIndex(TKey)"/> always performs at constant time.</para>
     /// </summary>
+    [DebuggerDisplay("Count = {Count}")]
     public class FixedSizeDictionary<TKey, TValue, TComparer> :
+        IIndexed<TKey, TValue>,
         IReadOnlyDictionary<TKey, TValue> 
         where TKey : notnull
         where TValue : notnull
@@ -44,38 +46,14 @@ namespace HandlebarsDotNet.Collections
             if (bucketSize > HashHelper.Primes[HashHelper.Primes.Length - 1]) throw new ArgumentException($" cannot be greater then {HashHelper.Primes[HashHelper.Primes.Length - 1]}", nameof(bucketSize));
 
             // size is always ^2.
-            bucketsCount = AlignSize(bucketsCount);
+            bucketsCount = HashHelper.AlignBy2(bucketsCount);
             _comparer = comparer;
             _bucketMask = bucketsCount - 1;
-            _bucketSize = FindClosestPrime(bucketSize);
+            _bucketSize = HashHelper.FindClosestPrime(bucketSize);
             _version = 1;
 
             _entries = new Entry[bucketsCount * bucketSize];
             _indexes = new EntryIndex<TKey>[bucketsCount * bucketSize];
-
-            static int AlignSize(int size)
-            {
-                size--;
-                size |= size >> 1;
-                size |= size >> 2;
-                size |= size >> 4;
-                size |= size >> 8;
-                size |= size >> 16;
-                size++;
-
-                return size;
-            }
-
-            static int FindClosestPrime(int bucketSize)
-            {
-                for (int i = 0; i < HashHelper.Primes.Length; i++)
-                {
-                    int prime = HashHelper.Primes[i];
-                    if (prime >= bucketSize) return prime;
-                }
-
-                return HashHelper.Primes[HashHelper.Primes.Length - 1];
-            }
         }
 
         public int Count => _count;
@@ -140,7 +118,7 @@ namespace HandlebarsDotNet.Collections
         /// <summary>
         /// Checks key existence at best O(1) and worst O(m) where 'm' is number of collisions 
         /// </summary>
-        public bool ContainsKey(TKey key)
+        public bool ContainsKey(in TKey key)
         {
             if (_count == 0) return false;
 
@@ -170,6 +148,8 @@ namespace HandlebarsDotNet.Collections
 
             return false;
         }
+        
+        bool IReadOnlyDictionary<TKey, TValue>.ContainsKey(TKey key) => ContainsKey(key);
 
         /// <summary>
         /// Performs lookup at guarantied O(1) ignoring actual key comparison
@@ -244,6 +224,17 @@ namespace HandlebarsDotNet.Collections
             return false;
         }
 
+        public TValue this[in TKey key]
+        {
+            get => TryGetValue(key, out var value) ? value : default;
+            set => AddOrReplace(key, value, out _);
+        }
+
+        void IIndexed<TKey, TValue>.AddOrReplace(in TKey key, in TValue value)
+        {
+            AddOrReplace(key, value, out _);
+        }
+        
         /// <summary>
         /// Adds or replaces an item at best O(1) and worst O(m) where 'm' is number of collisions
         /// </summary>

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.CompilerServices;
+using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.Compiler.Resolvers;
 using HandlebarsDotNet.Features;
 using HandlebarsDotNet.Helpers;
@@ -12,7 +12,7 @@ namespace HandlebarsDotNet
 {
     public interface IHandlebarsTemplateRegistrations
     {
-        IDictionary<string, HandlebarsTemplate<TextWriter, object, object>> RegisteredTemplates { get; }
+        IIndexed<string, HandlebarsTemplate<TextWriter, object, object>> RegisteredTemplates { get; }
         ViewEngineFileSystem FileSystem { get; }
     }
     
@@ -61,17 +61,17 @@ namespace HandlebarsDotNet
         /// <summary>
         /// 
         /// </summary>
-        IDictionary<PathInfoLight, Ref<IHelperDescriptor<HelperOptions>>> Helpers { get; }
+        IIndexed<PathInfoLight, Ref<IHelperDescriptor<HelperOptions>>> Helpers { get; }
         
         /// <summary>
         /// 
         /// </summary>
-        IDictionary<PathInfoLight, Ref<IHelperDescriptor<BlockHelperOptions>>> BlockHelpers { get; }
+        IIndexed<PathInfoLight, Ref<IHelperDescriptor<BlockHelperOptions>>> BlockHelpers { get; }
         
         /// <summary>
         /// 
         /// </summary>
-        IList<IHelperResolver> HelperResolvers { get; }
+        IAppendOnlyList<IHelperResolver> HelperResolvers { get; }
         
         /// <inheritdoc cref="Compatibility"/>
         Compatibility Compatibility { get; }
@@ -80,10 +80,10 @@ namespace HandlebarsDotNet
         IObjectDescriptorProvider ObjectDescriptorProvider { get; }
         
         /// <inheritdoc cref="IExpressionMiddleware"/>
-        IList<IExpressionMiddleware> ExpressionMiddlewares { get; }
+        IAppendOnlyList<IExpressionMiddleware> ExpressionMiddlewares { get; }
         
         /// <inheritdoc cref="IMemberAliasProvider"/>
-        IList<IMemberAliasProvider> AliasProviders { get; }
+        IAppendOnlyList<IMemberAliasProvider> AliasProviders { get; }
         
         /// <inheritdoc cref="IExpressionCompiler"/>
         IExpressionCompiler ExpressionCompiler { get; set; }
@@ -92,9 +92,6 @@ namespace HandlebarsDotNet
         /// List of associated <see cref="IFeature"/>s
         /// </summary>
         IReadOnlyList<IFeature> Features { get; }
-        
-        /// <inheritdoc cref="IPathInfoStore"/>
-        IPathInfoStore PathInfoStore { get; }
         
         bool NoEscape { get; }
     }

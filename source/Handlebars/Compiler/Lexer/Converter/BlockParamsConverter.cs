@@ -24,11 +24,11 @@ namespace HandlebarsDotNet.Compiler
             {
                 if (item is BlockParameterToken blockParameterToken)
                 {
-                    if(foundBlockParams) throw new HandlebarsCompilerException("multiple blockParams expressions are not supported");
+                    if(foundBlockParams) throw new HandlebarsCompilerException("multiple blockParams expressions are not supported", blockParameterToken.Context);
                     
                     foundBlockParams = true;
-                    if(!(result.Last() is PathExpression pathExpression)) throw new HandlebarsCompilerException("blockParams definition has incorrect syntax");
-                    if(!string.Equals("as", pathExpression.Path, StringComparison.OrdinalIgnoreCase)) throw new HandlebarsCompilerException("blockParams definition has incorrect syntax");
+                    if(!(result.Last() is PathExpression pathExpression)) throw new HandlebarsCompilerException("blockParams definition has incorrect syntax", blockParameterToken.Context);
+                    if(!string.Equals("as", pathExpression.Path, StringComparison.OrdinalIgnoreCase)) throw new HandlebarsCompilerException("blockParams definition has incorrect syntax", blockParameterToken.Context);
                     
                     result[result.Count - 1] = HandlebarsExpression.BlockParams(pathExpression.Path, blockParameterToken.Value);
                 }

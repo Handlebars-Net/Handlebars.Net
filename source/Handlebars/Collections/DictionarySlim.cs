@@ -11,8 +11,7 @@ using System.Runtime.CompilerServices;
 namespace HandlebarsDotNet.Collections
 {
     [DebuggerDisplay("Count = {Count}")]
-    internal class DictionarySlim<TKey, TValue, TComparer> : 
-        IReadOnlyCollection<KeyValuePair<TKey, TValue>>,
+    internal class DictionarySlim<TKey, TValue, TComparer> :
         IIndexed<TKey, TValue>
         where TComparer: IEqualityComparer<TKey>
     {
@@ -52,9 +51,29 @@ namespace HandlebarsDotNet.Collections
             _entries = InitialEntries;
         }
         
-        /// <summary>
-        /// Construct with default capacity.
-        /// </summary>
+        public DictionarySlim(int capacity, TComparer comparer)
+        {
+            if (capacity < 0)
+                throw new ArgumentException(nameof(capacity));
+           
+            if (capacity < 2)
+                capacity = 2; // 1 would indicate the dummy array
+            
+            _comparer = comparer;
+            capacity = HashHelper.PowerOf2(capacity);
+            _buckets = new int[capacity];
+            _entries = new Entry[capacity];
+        }
+
+        public DictionarySlim(IReadOnlyIndexed<TKey, TValue> other, TComparer comparer)
+            :this(other.Count, comparer)
+        {
+            foreach (var pair in other)
+            {
+                AddOrReplace(pair.Key, pair.Value);
+            }
+        }
+        
         public DictionarySlim(DictionarySlim<TKey, TValue, TComparer> other)
         {
             _comparer = other._comparer;
@@ -93,7 +112,7 @@ namespace HandlebarsDotNet.Collections
         /// </summary>
         /// <param name="key">Key to look for</param>
         /// <returns>true if the key is present, otherwise false</returns>
-        public bool ContainsKey(TKey key)
+        public bool ContainsKey(in TKey key)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
             var entries = _entries;
@@ -108,7 +127,7 @@ namespace HandlebarsDotNet.Collections
                 {
                     // The chain of entries forms a loop; which means a concurrent update has happened.
                     // Break out of the loop and throw, rather than looping forever.
-                    throw new InvalidOperationException("ConcurrentOperationsNotSupported");
+                    Throw.ConcurrentOperationsNotSupported();
                 }
                 collisionCount++;
             }
@@ -139,7 +158,7 @@ namespace HandlebarsDotNet.Collections
                 {
                     // The chain of entries forms a loop; which means a concurrent update has happened.
                     // Break out of the loop and throw, rather than looping forever.
-                    throw new InvalidOperationException("ConcurrentOperationsNotSupported");
+                    Throw.ConcurrentOperationsNotSupported();
                 }
                 collisionCount++;
             }
@@ -147,8 +166,14 @@ namespace HandlebarsDotNet.Collections
             value = default;
             return false;
         }
-        
-        public void AddOrReplace(TKey key, TValue value)
+
+        public TValue this[in TKey key]
+        {
+            get => TryGetValue(key, out var value) ? value : throw new KeyNotFoundException($"{key}");
+            set => AddOrReplace(key, value);
+        }
+
+        public void AddOrReplace(in TKey key, in TValue value)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
             var entries = _entries;
@@ -163,7 +188,7 @@ namespace HandlebarsDotNet.Collections
                 {
                     // The chain of entries forms a loop; which means a concurrent update has happened.
                     // Break out of the loop and throw, rather than looping forever.
-                    throw new InvalidOperationException("ConcurrentOperationsNotSupported");
+                    Throw.ConcurrentOperationsNotSupported();
                 }
                 collisionCount++;
             }
@@ -222,8 +247,10 @@ namespace HandlebarsDotNet.Collections
 
             return entries;
         }
-        
-        public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() => new Enumerator(this);
+
+        public Enumerator GetEnumerator() => new Enumerator(this);
+
+        IEnumerator<KeyValuePair<TKey, TValue>> IEnumerable<KeyValuePair<TKey, TValue>>.GetEnumerator() => new Enumerator(this);
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
@@ -285,6 +312,12 @@ namespace HandlebarsDotNet.Collections
             /// Dispose the enumerator
             /// </summary>
             public void Dispose() { }
+        }
+        
+        private static class Throw
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static void ConcurrentOperationsNotSupported() => throw new InvalidOperationException("ConcurrentOperationsNotSupported");
         }
     }
 }

@@ -24,7 +24,7 @@ namespace HandlebarsDotNet
             ContextDataObject = new FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer>(16, 7, ChainSegment.EqualityComparer);
             BlockParamsObject = new FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer>(16, 7, ChainSegment.EqualityComparer);
             
-            ObjectDescriptor = new DeferredValue<BindingContext, ObjectDescriptor>(this, context => ObjectDescriptors.ObjectDescriptor.Create(context.Value, context.Configuration));
+            ObjectDescriptor = new DeferredValue<BindingContext, ObjectDescriptor>(this, context => ObjectDescriptors.ObjectDescriptor.Create(context.Value, context.Configuration.ObjectDescriptorProvider));
         }
         
         internal FixedSizeDictionary<string, object, StringEqualityComparer> Extensions { get; }
@@ -36,7 +36,7 @@ namespace HandlebarsDotNet
         {
             if(data == null) return;
             
-            var objectDescriptor = ObjectDescriptors.ObjectDescriptor.Create(data, Configuration);
+            var objectDescriptor = ObjectDescriptors.ObjectDescriptor.Create(data, Configuration.ObjectDescriptorProvider);
             var objectAccessor = new ObjectAccessor(data, objectDescriptor);
 
             foreach (var property in objectAccessor.Properties)
@@ -72,8 +72,6 @@ namespace HandlebarsDotNet
             );
             
             ParentContext.BlockParamsObject.CopyTo(BlockParamsObject);
-            
-            TemplatePath = ParentContext.TemplatePath ?? TemplatePath;
 
             //Inline partials cannot use the Handlebars.RegisteredTemplate method
             //because it pollutes the static dictionary and creates collisions
@@ -141,7 +139,7 @@ namespace HandlebarsDotNet
 
         private static void PopulateHash(HashParameterDictionary hash, object from, ICompiledHandlebarsConfiguration configuration)
         {
-            var descriptor = ObjectDescriptors.ObjectDescriptor.Create(from, configuration);
+            var descriptor = HandlebarsDotNet.ObjectDescriptors.ObjectDescriptor.Create(from, configuration.ObjectDescriptorProvider);
             var accessor = descriptor.MemberAccessor;
             var properties = descriptor.GetProperties(descriptor, from);
             var enumerator = properties.GetEnumerator();

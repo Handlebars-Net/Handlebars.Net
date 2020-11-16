@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using HandlebarsDotNet.Collections;
 
 namespace HandlebarsDotNet
 {
@@ -50,6 +51,28 @@ namespace HandlebarsDotNet
             }
 
             to.Add(at, add(context));
+        }
+
+        public static IIndexed<TKey, TValue> ToIndexed<T, TKey, TValue, TComparer>(
+            this IEnumerable<T> enumerable,
+            Func<T, TKey> keySelector,
+            Func<T, TValue> valueSelector,
+            TComparer comparer
+        ) where TComparer : IEqualityComparer<TKey>
+        {
+            var dictionary = new DictionarySlim<TKey, TValue, TComparer>(comparer);
+            foreach (var item in enumerable)
+            {
+                dictionary.AddOrReplace(keySelector(item), valueSelector(item));
+            }
+
+            return dictionary;
+        }
+
+        public static TValue Optional<TKey, TValue>(this IReadOnlyIndexed<TKey, TValue> indexed, in TKey key)
+        {
+            indexed.TryGetValue(key, out var value);
+            return value;
         }
     }
 }

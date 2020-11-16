@@ -23,8 +23,7 @@ namespace HandlebarsDotNet.Compiler
             BlockName = helperExpression.HelperName.Replace("#", "");
             if (!ValidHelperNames.Contains(BlockName))
             {
-                throw new HandlebarsCompilerException(string.Format(
-                        "Tried to convert {0} expression to conditional block", BlockName));
+                throw new HandlebarsCompilerException($"Tried to convert {BlockName} expression to conditional block", helperExpression.Context);
             }
             var testType = BlockName == "if";
             var argument = HandlebarsExpression.Boolish(helperExpression.Arguments.Single());

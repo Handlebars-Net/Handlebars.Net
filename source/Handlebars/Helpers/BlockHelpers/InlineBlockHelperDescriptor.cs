@@ -34,7 +34,7 @@ namespace HandlebarsDotNet.Helpers.BlockHelpers
             //this helper will add the compiled partial to a dicionary
             //that is passed around in the context without fear of collisions.
             var template = options.OriginalTemplate;
-            bindingContext.InlinePartialTemplates.Add(key, (writer, c) => template(writer, c));
+            bindingContext.InlinePartialTemplates.AddOrReplace(key, (writer, c) => template(writer, c));
         }
     }
 }

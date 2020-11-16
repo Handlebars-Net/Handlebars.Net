@@ -22,9 +22,9 @@ namespace HandlebarsDotNet.ObjectDescriptors
         private readonly LookupSlim<Type, DeferredValue<Type, ChainSegment[]>, ReferenceEqualityComparer<Type>> _membersCache = new LookupSlim<Type, DeferredValue<Type, ChainSegment[]>, ReferenceEqualityComparer<Type>>(new ReferenceEqualityComparer<Type>());
         private readonly ReflectionMemberAccessor _reflectionMemberAccessor;
 
-        public ObjectDescriptorProvider(ICompiledHandlebarsConfiguration configuration)
+        public ObjectDescriptorProvider(IReadOnlyList<IMemberAliasProvider> aliasProviders)
         {
-            _reflectionMemberAccessor = new ReflectionMemberAccessor(configuration);
+            _reflectionMemberAccessor = new ReflectionMemberAccessor(aliasProviders);
         }
         
         public bool TryGetDescriptor(Type type, out ObjectDescriptor value)

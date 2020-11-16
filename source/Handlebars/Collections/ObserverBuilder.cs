@@ -22,6 +22,22 @@ namespace HandlebarsDotNet.Collections
 
             return this;
         }
+        
+        public ObserverBuilder<T> OnEvent<TEvent, TState>(TState state, Action<TEvent, TState> handler, Func<TEvent, bool> predicate = null) where TEvent: T
+        {
+            if (!_handlers.TryGetValue(typeof(TEvent), out var handlers))
+            {
+                handlers = new List<Action<T>>();
+                _handlers.Add(typeof(TEvent), handlers);
+            }
+            
+            handlers.Add(@event =>
+            {
+                if(predicate?.Invoke((TEvent) @event) ?? true) handler((TEvent) @event, state);
+            });
+
+            return this;
+        }
 
         public IObserver<T> Build() => new Observer(_handlers);
 

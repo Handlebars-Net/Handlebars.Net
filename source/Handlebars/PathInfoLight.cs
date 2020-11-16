@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Compiler.Structure.Path;
 
 namespace HandlebarsDotNet
@@ -61,7 +60,9 @@ namespace HandlebarsDotNet
                 return (_comparerTag * 397) ^ (PathInfo != null ? PathInfo.GetHashCode() : 0);
             }
         }
-        
+
+        public override string ToString() => PathInfo.ToString();
+
         public static implicit operator PathInfoLight(PathInfo pathInfo) => new PathInfoLight(pathInfo);
         
         public static implicit operator PathInfoLight(string path) => new PathInfoLight(PathInfoStore.Shared.GetOrAdd(path));

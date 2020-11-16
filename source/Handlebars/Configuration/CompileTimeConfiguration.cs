@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using HandlebarsDotNet.Features;
-using HandlebarsDotNet.ObjectDescriptors;
 
 namespace HandlebarsDotNet
 {
@@ -9,9 +8,6 @@ namespace HandlebarsDotNet
     /// </summary>
     public class CompileTimeConfiguration
     {
-        /// <inheritdoc cref="ObjectDescriptor"/>
-        public IList<IObjectDescriptorProvider> ObjectDescriptorProviders { get; } = new List<IObjectDescriptorProvider>();
-        
         public IList<IExpressionMiddleware> ExpressionMiddleware { get; } = new List<IExpressionMiddleware>();
         
         /// <inheritdoc cref="IFeature"/>
