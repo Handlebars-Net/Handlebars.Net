@@ -3,11 +3,20 @@ using Expressions.Shortcuts;
 
 namespace HandlebarsDotNet.Compiler
 {
-    internal sealed class CompilationContext
+    public sealed class CompilationContext
     {
         public CompilationContext(ICompiledHandlebarsConfiguration configuration)
         {
             Configuration = configuration;
+            BindingContext = Expression.Parameter(typeof(BindingContext), "context");
+            EncodedWriter = Expression.Parameter(typeof(EncodedTextWriter).MakeByRefType(), "writer");
+            
+            Args = new CompilationContextArgs(this);
+        }
+        
+        public CompilationContext(CompilationContext context)
+        {
+            Configuration = context.Configuration;
             BindingContext = Expression.Parameter(typeof(BindingContext), "context");
             EncodedWriter = Expression.Parameter(typeof(EncodedTextWriter).MakeByRefType(), "writer");
             
@@ -20,9 +29,9 @@ namespace HandlebarsDotNet.Compiler
         
         public ParameterExpression EncodedWriter { get; }
         
-        public CompilationContextArgs Args { get; }
+        internal CompilationContextArgs Args { get; }
         
-        internal class CompilationContextArgs
+        internal readonly struct CompilationContextArgs
         {
             public CompilationContextArgs(CompilationContext context)
             {

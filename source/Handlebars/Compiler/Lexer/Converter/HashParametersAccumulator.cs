@@ -6,9 +6,11 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class HashParametersAccumulator : TokenConverter
     {
+        private static readonly HashParametersAccumulator Accumulator = new HashParametersAccumulator();
+
         public static IEnumerable<object> Accumulate(IEnumerable<object> sequence)
         {
-            return new HashParametersAccumulator().ConvertTokens(sequence).ToList();
+            return Accumulator.ConvertTokens(sequence).ToList();
         }
 
         private HashParametersAccumulator() { }

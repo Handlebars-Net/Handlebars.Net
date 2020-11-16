@@ -8,9 +8,11 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class LiteralConverter : TokenConverter
     {
+        private static readonly LiteralConverter Converter = new LiteralConverter();
+        
         public static IEnumerable<object> Convert(IEnumerable<object> sequence)
         {
-            return new LiteralConverter().ConvertTokens(sequence).ToList();
+            return Converter.ConvertTokens(sequence).ToList();
         }
 
         private LiteralConverter()

@@ -7,9 +7,11 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class PartialConverter : TokenConverter
     {
+        private static readonly PartialConverter Converter = new PartialConverter();
+
         public static IEnumerable<object> Convert(IEnumerable<object> sequence)
         {
-            return new PartialConverter().ConvertTokens(sequence).ToList();
+            return Converter.ConvertTokens(sequence).ToList();
         }
 
         private PartialConverter()

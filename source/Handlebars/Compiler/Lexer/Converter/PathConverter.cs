@@ -8,9 +8,11 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class PathConverter : TokenConverter
     {
+        private static readonly PathConverter Converter = new PathConverter();
+
         public static IEnumerable<object> Convert(IEnumerable<object> sequence)
         {
-            return new PathConverter().ConvertTokens(sequence).ToList();
+            return Converter.ConvertTokens(sequence).ToList();
         }
 
         private PathConverter()

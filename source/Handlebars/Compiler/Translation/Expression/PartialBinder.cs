@@ -26,7 +26,7 @@ namespace HandlebarsDotNet.Compiler
             var writer = CompilationContext.Args.EncodedWriter;
             
             var partialBlockTemplate = pex.Fallback != null 
-                ? FunctionBuilder.Compile(new[] { pex.Fallback }, CompilationContext.Configuration) 
+                ? FunctionBuilder.Compile(new[] { pex.Fallback }, new CompilationContext(CompilationContext)) 
                 : null;
 
             if (pex.Argument != null || partialBlockTemplate != null)
@@ -91,7 +91,7 @@ namespace HandlebarsDotNet.Compiler
             {
                 var handlebars = Handlebars.Create(configuration);
                 if (configuration.PartialTemplateResolver == null 
-                    || !configuration.PartialTemplateResolver.TryRegisterPartial(handlebars, partialName, context.TemplatePath))
+                    || !configuration.PartialTemplateResolver.TryRegisterPartial(handlebars, partialName, (string) context.Extensions.Optional("templatePath")))
                 {
                     // Template not found.
                     return false;

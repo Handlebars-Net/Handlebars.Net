@@ -1,16 +1,17 @@
 using HandlebarsDotNet.Compiler.Lexer;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using HandlebarsDotNet.Pools;
 
 namespace HandlebarsDotNet.Compiler
 {
     internal class RawHelperAccumulator : TokenConverter
     {
+        private static readonly RawHelperAccumulator Accumulator = new RawHelperAccumulator(); 
+        
         public static IEnumerable<object> Accumulate(IEnumerable<object> sequence)
         {
-            return new RawHelperAccumulator().ConvertTokens(sequence).ToList();
+            return Accumulator.ConvertTokens(sequence).ToList();
         }
 
         private RawHelperAccumulator() {}

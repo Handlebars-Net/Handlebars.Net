@@ -7,9 +7,11 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class HashParameterConverter : TokenConverter
     {
+        private static readonly HashParameterConverter Converter = new HashParameterConverter();
+
         public static IEnumerable<object> Convert(IEnumerable<object> sequence)
         {
-            return new HashParameterConverter().ConvertTokens(sequence).ToList();
+            return Converter.ConvertTokens(sequence).ToList();
         }
 
         private HashParameterConverter() { }

@@ -21,8 +21,8 @@ namespace HandlebarsDotNet.Compiler
             var context = CompilationContext.Args.BindingContext;
             var writer = CompilationContext.Args.EncodedWriter;
 
-            var template = FunctionBuilder.Compile(new[] {iex.Template}, CompilationContext.Configuration);
-            var ifEmpty = FunctionBuilder.Compile(new[] {iex.IfEmpty}, CompilationContext.Configuration);
+            var template = FunctionBuilder.Compile(new[] {iex.Template}, new CompilationContext(CompilationContext));
+            var ifEmpty = FunctionBuilder.Compile(new[] {iex.IfEmpty}, new CompilationContext(CompilationContext));
 
             if (iex.Sequence is PathExpression pathExpression)
             {

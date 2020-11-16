@@ -19,15 +19,18 @@ namespace HandlebarsDotNet
         {
             InlinePartialTemplates = new CascadeIndex<string, Action<EncodedTextWriter, BindingContext>, StringEqualityComparer>(new StringEqualityComparer(StringComparison.OrdinalIgnoreCase));
             
-            Extensions = new FixedSizeDictionary<string, object, StringEqualityComparer>(8, 7, new StringEqualityComparer(StringComparison.OrdinalIgnoreCase));
+            Bag = new CascadeIndex<string, object, StringEqualityComparer>(new StringEqualityComparer(StringComparison.OrdinalIgnoreCase));
             RootDataObject = new FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer>(16, 7, ChainSegment.EqualityComparer);
             ContextDataObject = new FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer>(16, 7, ChainSegment.EqualityComparer);
             BlockParamsObject = new FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer>(16, 7, ChainSegment.EqualityComparer);
             
-            ObjectDescriptor = new DeferredValue<BindingContext, ObjectDescriptor>(this, context => ObjectDescriptors.ObjectDescriptor.Create(context.Value, context.Configuration.ObjectDescriptorProvider));
+            ObjectDescriptor = new DeferredValue<BindingContext, ObjectDescriptor>(this, context =>
+            {
+                return ObjectDescriptors.ObjectDescriptor.Create(context.Value, context.Configuration.ObjectDescriptorProvider);
+            });
         }
         
-        internal FixedSizeDictionary<string, object, StringEqualityComparer> Extensions { get; }
+        internal CascadeIndex<string, object, StringEqualityComparer> Bag { get; }
         internal FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer> RootDataObject { get; }
         internal FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer> ContextDataObject { get; }
         internal FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer> BlockParamsObject { get; }
@@ -35,8 +38,12 @@ namespace HandlebarsDotNet
         internal void SetDataObject(object data)
         {
             if(data == null) return;
+
+            if (!Configuration.ObjectDescriptorProvider.TryGetDescriptor(data.GetType(), out var objectDescriptor))
+            {
+                throw new HandlebarsRuntimeException($"Cannot resolve object descriptor for type `{data.GetType()}`");
+            }
             
-            var objectDescriptor = ObjectDescriptors.ObjectDescriptor.Create(data, Configuration.ObjectDescriptorProvider);
             var objectAccessor = new ObjectAccessor(data, objectDescriptor);
 
             foreach (var property in objectAccessor.Properties)
@@ -70,7 +77,8 @@ namespace HandlebarsDotNet
                 ParentContext.Value, 
                 out WellKnownVariables[(int) WellKnownVariable.Parent]
             );
-            
+
+            Bag.Outer = ParentContext.Bag;
             ParentContext.BlockParamsObject.CopyTo(BlockParamsObject);
 
             //Inline partials cannot use the Handlebars.RegisteredTemplate method
@@ -86,8 +94,6 @@ namespace HandlebarsDotNet
             PopulateHash(dictionary, ParentContext.Value, Configuration);
         }
 
-        internal string TemplatePath { get; private set; }
-
         internal ICompiledHandlebarsConfiguration Configuration { get; private set; }
         
         internal CascadeIndex<string, Action<EncodedTextWriter, BindingContext>, StringEqualityComparer> InlinePartialTemplates { get; }
@@ -95,6 +101,11 @@ namespace HandlebarsDotNet
         internal TemplateDelegate PartialBlockTemplate { get; private set; }
         
         public object Value { get; set; }
+
+        /// <summary>
+        /// Used to cary additional data
+        /// </summary>
+        public IIndexed<string, object> Extensions => Bag;
 
         internal BindingContext ParentContext { get; private set; }
 
@@ -128,13 +139,13 @@ namespace HandlebarsDotNet
 
         internal BindingContext CreateChildContext(object value, TemplateDelegate partialBlockTemplate = null)
         {
-            return Create(Configuration, value ?? Value, this, TemplatePath, partialBlockTemplate ?? PartialBlockTemplate);
+            return Create(Configuration, value ?? Value, this, partialBlockTemplate ?? PartialBlockTemplate);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BindingContext CreateFrame(object value = null)
         {
-            return Create(Configuration, value, this, TemplatePath, PartialBlockTemplate);
+            return Create(Configuration, value, this, PartialBlockTemplate);
         }
 
         private static void PopulateHash(HashParameterDictionary hash, object from, ICompiledHandlebarsConfiguration configuration)

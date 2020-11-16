@@ -2,7 +2,6 @@
 using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.Compiler;
 using HandlebarsDotNet.Compiler.Structure.Path;
-using HandlebarsDotNet.EqualityComparers;
 using HandlebarsDotNet.ValueProviders;
 
 namespace HandlebarsDotNet
@@ -18,7 +17,7 @@ namespace HandlebarsDotNet
     /// </summary>
     public readonly struct BlockHelperOptions : IHelperOptions
     {
-        private readonly FixedSizeDictionary<string, object, StringEqualityComparer> _extensions;
+        private readonly IIndexed<string, object> _extensions;
         
         internal readonly TemplateDelegate OriginalTemplate;
         internal readonly TemplateDelegate OriginalInverse;
@@ -34,7 +33,7 @@ namespace HandlebarsDotNet
             BindingContext frame
         )
         {
-            _extensions = frame.Extensions;
+            _extensions = frame.Bag;
             
             OriginalTemplate = template;
             OriginalInverse = inverse;
@@ -118,7 +117,7 @@ namespace HandlebarsDotNet
             get => _extensions.TryGetValue(property, out var value) ? value : null;
             
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            internal set => _extensions.AddOrReplace(property, value, out _);
+            internal set => _extensions.AddOrReplace(property, value);
         }
 
         /// <summary>

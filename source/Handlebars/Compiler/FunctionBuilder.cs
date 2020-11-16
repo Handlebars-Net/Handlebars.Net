@@ -29,7 +29,7 @@ namespace HandlebarsDotNet.Compiler
             return expression;
         }
 
-        public static ExpressionContainer<TemplateDelegate> CreateExpression(IEnumerable<Expression> expressions, ICompiledHandlebarsConfiguration configuration)
+        public static ExpressionContainer<TemplateDelegate> CreateExpression(IEnumerable<Expression> expressions, CompilationContext compilationContext)
         {
             try
             {
@@ -42,12 +42,11 @@ namespace HandlebarsDotNet.Compiler
                 {
                     return Arg(EmptyLambda);
                 }
-                
-                var context = new CompilationContext(configuration);
-                var expression = (Expression) Expression.Block(enumerable);
-                expression = Reduce(expression, context);
 
-                return Arg(ContextBinder.Bind(context, expression));
+                var expression = (Expression) Expression.Block(enumerable);
+                expression = Reduce(expression, compilationContext);
+
+                return Arg(ContextBinder.Bind(compilationContext, expression));
             }
             catch (Exception ex)
             {
@@ -55,18 +54,18 @@ namespace HandlebarsDotNet.Compiler
             }
         }
 
-        public static TemplateDelegate Compile(IEnumerable<Expression> expressions, ICompiledHandlebarsConfiguration configuration)
+        public static TemplateDelegate Compile(IEnumerable<Expression> expressions, CompilationContext compilationContext)
         {
             try
             {
-                var expression = CreateExpression(expressions, configuration);
+                var expression = CreateExpression(expressions, compilationContext);
                 if (expression.Expression is ConstantExpression constantExpression)
                 {
                     return (TemplateDelegate) constantExpression.Value;
                 }
 
                 var lambda = (Expression<TemplateDelegate>) expression.Expression;
-                return configuration.ExpressionCompiler.Compile(lambda);
+                return compilationContext.Configuration.ExpressionCompiler.Compile(lambda);
             }
             catch (Exception ex)
             {

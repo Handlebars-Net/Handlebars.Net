@@ -8,9 +8,11 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class SubExpressionConverter : TokenConverter
     {
+        private static readonly SubExpressionConverter Converter = new SubExpressionConverter();
+
         public static IEnumerable<object> Convert(IEnumerable<object> sequence)
         {
-            return new SubExpressionConverter().ConvertTokens(sequence).ToList();
+            return Converter.ConvertTokens(sequence).ToList();
         }
 
         private SubExpressionConverter()

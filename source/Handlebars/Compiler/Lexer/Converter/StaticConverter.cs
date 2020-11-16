@@ -7,9 +7,11 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class StaticConverter : TokenConverter
     {
+        private static readonly StaticConverter Converter = new StaticConverter();
+
         public static IEnumerable<object> Convert(IEnumerable<object> sequence)
         {
-            return new StaticConverter().ConvertTokens(sequence).ToList();
+            return Converter.ConvertTokens(sequence).ToList();
         }
 
         private StaticConverter()
