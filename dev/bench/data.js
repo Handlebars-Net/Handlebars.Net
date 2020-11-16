@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1605554229612,
+  "lastUpdate": 1605564350422,
   "repoUrl": "https://github.com/Handlebars-Net/Handlebars.Net",
   "entries": {
     "Benchmark.Net Benchmark": [
@@ -2016,6 +2016,102 @@ window.BENCHMARK_DATA = {
             "value": 209462.55659179686,
             "unit": "ns",
             "range": "± 7297.032644821255"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "zjklee@gmail.com",
+            "name": "Oleh Formaniuk",
+            "username": "zjklee"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0b00295a8ae9392229c0267a0cda44c26860b265",
+          "message": "Merge pull request #389 from zjklee/feature/less-compiler-allocations\n\nReduce compiler allocations",
+          "timestamp": "2020-11-16T14:00:19-08:00",
+          "tree_id": "81a2bd8e49193b728c430a5e68df13114dbe07da",
+          "url": "https://github.com/Handlebars-Net/Handlebars.Net/commit/0b00295a8ae9392229c0267a0cda44c26860b265"
+        },
+        "date": 1605564349206,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "HandlebarsNet.Benchmark.Compilation.Template",
+            "value": 10789579.015625,
+            "unit": "ns",
+            "range": "± 305012.10868710285"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithoutParameters",
+            "value": 363.4632857322693,
+            "unit": "ns",
+            "range": "± 3.2060180936653597"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithOneParameter",
+            "value": 370.85585383006503,
+            "unit": "ns",
+            "range": "± 4.541327784662626"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithTwoParameter",
+            "value": 388.21718041102093,
+            "unit": "ns",
+            "range": "± 9.688594408740224"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithoutParameters",
+            "value": 540.1633776346843,
+            "unit": "ns",
+            "range": "± 11.58804991293326"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithOneParameter",
+            "value": 370.6034899439131,
+            "unit": "ns",
+            "range": "± 4.3034809357976345"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithTwoParameter",
+            "value": 380.02298221588137,
+            "unit": "ns",
+            "range": "± 5.085580811238182"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithoutParameters",
+            "value": 586.1924699636606,
+            "unit": "ns",
+            "range": "± 8.70522624727927"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithOneParameter",
+            "value": 598.0728092193604,
+            "unit": "ns",
+            "range": "± 6.837798785318802"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithTwoParameter",
+            "value": 601.3936422348022,
+            "unit": "ns",
+            "range": "± 6.34373277756443"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.EndToEnd.Default(N: 5, DataType: \"dictionary\")",
+            "value": 186055.52059500557,
+            "unit": "ns",
+            "range": "± 2407.185641415902"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.EndToEnd.Default(N: 5, DataType: \"object\")",
+            "value": 197943.7073079427,
+            "unit": "ns",
+            "range": "± 2066.5456587481126"
           }
         ]
       }
