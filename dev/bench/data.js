@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1605110947917,
+  "lastUpdate": 1605554229612,
   "repoUrl": "https://github.com/Handlebars-Net/Handlebars.Net",
   "entries": {
     "Benchmark.Net Benchmark": [
@@ -1920,6 +1920,102 @@ window.BENCHMARK_DATA = {
             "value": 174809.31548602766,
             "unit": "ns",
             "range": "± 60.65700218307799"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "zjklee@gmail.com",
+            "name": "Oleh Formaniuk",
+            "username": "zjklee"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "5149d7a6806f780753f1a1c6edac55bd8c4a7c4e",
+          "message": "Merge pull request #388 from zjklee/feature/improve-internal-collections\n\nExpose inner interfaces in configuration",
+          "timestamp": "2020-11-16T11:11:31-08:00",
+          "tree_id": "2fd7d5f30f149b5c9763e8ebb04c858a40b23f1a",
+          "url": "https://github.com/Handlebars-Net/Handlebars.Net/commit/5149d7a6806f780753f1a1c6edac55bd8c4a7c4e"
+        },
+        "date": 1605554228991,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "HandlebarsNet.Benchmark.Compilation.Template",
+            "value": 11165144.575,
+            "unit": "ns",
+            "range": "± 367155.8960666653"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithoutParameters",
+            "value": 357.6046886444092,
+            "unit": "ns",
+            "range": "± 11.824370366076852"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithOneParameter",
+            "value": 368.36316916147865,
+            "unit": "ns",
+            "range": "± 6.147843776972714"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithTwoParameter",
+            "value": 381.05272207260134,
+            "unit": "ns",
+            "range": "± 4.853656113558389"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithoutParameters",
+            "value": 579.550513013204,
+            "unit": "ns",
+            "range": "± 8.529489218158943"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithOneParameter",
+            "value": 369.5127893447876,
+            "unit": "ns",
+            "range": "± 4.987387033112359"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithTwoParameter",
+            "value": 383.4870189666748,
+            "unit": "ns",
+            "range": "± 8.265672047968632"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithoutParameters",
+            "value": 601.3039999643962,
+            "unit": "ns",
+            "range": "± 27.860765690429268"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithOneParameter",
+            "value": 587.8702471733093,
+            "unit": "ns",
+            "range": "± 23.538584454862008"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithTwoParameter",
+            "value": 598.3573600451151,
+            "unit": "ns",
+            "range": "± 16.268283346615423"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.EndToEnd.Default(N: 5, DataType: \"dictionary\")",
+            "value": 206927.23648507256,
+            "unit": "ns",
+            "range": "± 5153.568579398805"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.EndToEnd.Default(N: 5, DataType: \"object\")",
+            "value": 209462.55659179686,
+            "unit": "ns",
+            "range": "± 7297.032644821255"
           }
         ]
       }
