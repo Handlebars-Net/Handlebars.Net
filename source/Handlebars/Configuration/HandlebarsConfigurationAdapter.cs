@@ -9,6 +9,7 @@ using HandlebarsDotNet.Compiler.Resolvers;
 using HandlebarsDotNet.EqualityComparers;
 using HandlebarsDotNet.Features;
 using HandlebarsDotNet.Helpers;
+using HandlebarsDotNet.IO;
 using HandlebarsDotNet.ObjectDescriptors;
 using HandlebarsDotNet.Runtime;
 
@@ -23,14 +24,23 @@ namespace HandlebarsDotNet
             AliasProviders = new ObservableList<IMemberAliasProvider>(configuration.AliasProviders);
             HelperResolvers = new ObservableList<IHelperResolver>(configuration.HelperResolvers);
             RegisteredTemplates = new ObservableIndex<string, HandlebarsTemplate<TextWriter, object, object>, StringEqualityComparer>(new StringEqualityComparer(StringComparison.OrdinalIgnoreCase), configuration.RegisteredTemplates);
+            AliasProviders = new ObservableList<IMemberAliasProvider>(configuration.AliasProviders);
+            FormatterProviders = new ObservableList<IFormatterProvider>
+            {
+                new DefaultFormatter(),
+                new CollectionFormatterProvider(),
+                new ReadOnlyCollectionFormatterProvider(),
+                new DefaultDateTimeFormatter()
+            }.AddMany(configuration.FormatterProviders);
+            
             ObjectDescriptorProvider = CreateObjectDescriptorProvider();
-
-            ExpressionMiddlewares = new ObservableList<IExpressionMiddleware>(UnderlingConfiguration.CompileTimeConfiguration.ExpressionMiddleware)
+            ExpressionMiddlewares = new ObservableList<IExpressionMiddleware>(configuration.CompileTimeConfiguration.ExpressionMiddleware)
             {
                 new ClosureExpressionMiddleware(),
                 new ExpressionOptimizerMiddleware()
             };
 
+            FormatterProvider = new AggregatedFormatterProvider((ObservableList<IFormatterProvider>) FormatterProviders);                
             Features = UnderlingConfiguration.CompileTimeConfiguration.Features
                 .Select(o => o.CreateFeature())
                 .OrderBy(o => o.GetType().GetTypeInfo().GetCustomAttribute<FeatureOrderAttribute>()?.Order ?? 100)
@@ -45,11 +55,13 @@ namespace HandlebarsDotNet
         public ITextEncoder TextEncoder => UnderlingConfiguration.TextEncoder;
         public IFormatProvider FormatProvider => UnderlingConfiguration.FormatProvider;
         public ViewEngineFileSystem FileSystem => UnderlingConfiguration.FileSystem;
-        public Formatter<UndefinedBindingResult> UnresolvedBindingFormatter => UnderlingConfiguration.UnresolvedBindingFormatter;
+        public IAppendOnlyList<IFormatterProvider> FormatterProviders { get; }
         public bool ThrowOnUnresolvedBindingExpression => UnderlingConfiguration.ThrowOnUnresolvedBindingExpression;
         public IPartialTemplateResolver PartialTemplateResolver => UnderlingConfiguration.PartialTemplateResolver;
         public IMissingPartialTemplateHandler MissingPartialTemplateHandler => UnderlingConfiguration.MissingPartialTemplateHandler;
         public Compatibility Compatibility => UnderlingConfiguration.Compatibility;
+        public IFormatterProvider FormatterProvider { get; }
+        
         public bool NoEscape => UnderlingConfiguration.NoEscape;
         
         public IObjectDescriptorProvider ObjectDescriptorProvider { get; }
@@ -77,17 +89,20 @@ namespace HandlebarsDotNet
             var target = new ObservableIndex<PathInfoLight, Ref<IHelperDescriptor<TOptions>>, IEqualityComparer<PathInfoLight>>(equalityComparer, existingHelpers);
 
             var helpersObserver = new ObserverBuilder<ObservableEvent<IHelperDescriptor<TOptions>>>()
-                .OnEvent<DictionaryAddedObservableEvent<string, IHelperDescriptor<TOptions>>>(
-                    @event =>
+                .OnEvent<
+                    DictionaryAddedObservableEvent<string, IHelperDescriptor<TOptions>>,
+                    ObservableIndex<PathInfoLight, Ref<IHelperDescriptor<TOptions>>, IEqualityComparer<PathInfoLight>>
+                >(target,
+                    (@event, state) =>
                     {
                         PathInfoLight key = $"[{@event.Key}]";
-                        if (target.TryGetValue(key, out var @ref))
+                        if (state.TryGetValue(key, out var @ref))
                         {
                             @ref.Value = @event.Value;
                             return;
                         }
                         
-                        target.AddOrReplace(key, new Ref<IHelperDescriptor<TOptions>>(@event.Value));
+                        state.AddOrReplace(key, new Ref<IHelperDescriptor<TOptions>>(@event.Value));
                     })
                 .Build();
 
@@ -99,17 +114,18 @@ namespace HandlebarsDotNet
         private ObjectDescriptorFactory CreateObjectDescriptorProvider()
         {
             var objectDescriptorProvider = new ObjectDescriptorProvider(AliasProviders);
-            var providers = new ObservableList<IObjectDescriptorProvider>(UnderlingConfiguration.ObjectDescriptorProviders)
-            {
-                new StringDictionaryObjectDescriptorProvider(),
-                new ReadOnlyStringDictionaryObjectDescriptorProvider(),
-                new GenericDictionaryObjectDescriptorProvider(),
-                new ReadOnlyGenericDictionaryObjectDescriptorProvider(),
-                new DictionaryObjectDescriptor(),
-                new EnumerableObjectDescriptor(objectDescriptorProvider),
-                objectDescriptorProvider,
-                new DynamicObjectDescriptor()
-            };
+            var providers = new ObservableList<IObjectDescriptorProvider>
+                {
+                    objectDescriptorProvider,
+                    new DynamicObjectDescriptor(),
+                    new EnumerableObjectDescriptor(objectDescriptorProvider),
+                    new DictionaryObjectDescriptor(),
+                    new ReadOnlyGenericDictionaryObjectDescriptorProvider(),
+                    new GenericDictionaryObjectDescriptorProvider(),
+                    new ReadOnlyStringDictionaryObjectDescriptorProvider(),
+                    new StringDictionaryObjectDescriptorProvider(),
+                }
+                .AddMany(UnderlingConfiguration.ObjectDescriptorProviders);
 
             return new ObjectDescriptorFactory(providers);
         }

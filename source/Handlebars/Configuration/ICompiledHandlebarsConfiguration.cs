@@ -5,6 +5,7 @@ using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.Compiler.Resolvers;
 using HandlebarsDotNet.Features;
 using HandlebarsDotNet.Helpers;
+using HandlebarsDotNet.IO;
 using HandlebarsDotNet.ObjectDescriptors;
 using HandlebarsDotNet.Runtime;
 
@@ -16,61 +17,30 @@ namespace HandlebarsDotNet
         ViewEngineFileSystem FileSystem { get; }
     }
     
-    /// <summary>
-    /// 
-    /// </summary>
     public interface ICompiledHandlebarsConfiguration : IHandlebarsTemplateRegistrations
     {
-        /// <summary>
-        /// 
-        /// </summary>
         HandlebarsConfiguration UnderlingConfiguration { get; }
         
-        /// <summary>
-        /// 
-        /// </summary>
         IExpressionNameResolver ExpressionNameResolver { get; }
         
-        /// <summary>
-        /// 
-        /// </summary>
         ITextEncoder TextEncoder { get; }
         
-        /// <summary>
-        /// 
-        /// </summary>
         IFormatProvider FormatProvider { get; }
         
-        Formatter<UndefinedBindingResult> UnresolvedBindingFormatter { get; }
+        IFormatterProvider FormatterProvider { get; }
         
-        /// <summary>
-        /// 
-        /// </summary>
+        IAppendOnlyList<IFormatterProvider> FormatterProviders { get; }
+        
         bool ThrowOnUnresolvedBindingExpression { get; }
         
-        /// <summary>
-        /// 
-        /// </summary>
         IPartialTemplateResolver PartialTemplateResolver { get; }
         
-        /// <summary>
-        /// 
-        /// </summary>
         IMissingPartialTemplateHandler MissingPartialTemplateHandler { get; }
-
-        /// <summary>
-        /// 
-        /// </summary>
+        
         IIndexed<PathInfoLight, Ref<IHelperDescriptor<HelperOptions>>> Helpers { get; }
         
-        /// <summary>
-        /// 
-        /// </summary>
         IIndexed<PathInfoLight, Ref<IHelperDescriptor<BlockHelperOptions>>> BlockHelpers { get; }
         
-        /// <summary>
-        /// 
-        /// </summary>
         IAppendOnlyList<IHelperResolver> HelperResolvers { get; }
         
         /// <inheritdoc cref="Compatibility"/>

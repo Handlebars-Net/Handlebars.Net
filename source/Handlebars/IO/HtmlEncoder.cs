@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
-using HandlebarsDotNet.Compiler.Lexer;
 using HandlebarsDotNet.StringUtils;
 
 namespace HandlebarsDotNet
@@ -22,7 +22,7 @@ namespace HandlebarsDotNet
         {
             if(text == null || text.Length == 0) return;
             
-            EncodeImpl(new StringBuilderWrapper(text), target);
+            EncodeImpl(new StringBuilderEnumerator(text), target);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -30,14 +30,22 @@ namespace HandlebarsDotNet
         {
             if(string.IsNullOrEmpty(text)) return;
             
-            EncodeImpl(new StringWrapper(text), target);
+            EncodeImpl(new StringEnumerator(text), target);
         }
         
-        private static void EncodeImpl<T>(T text, TextWriter target) where T: IStringWrapper
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Encode<T>(T text, TextWriter target) where T : IEnumerator<char>
         {
-            for (var i = 0; i < text.Count; i++)
+            if(text == null) return;
+            
+            EncodeImpl(text, target);
+        }
+        
+        private static void EncodeImpl<T>(T text, TextWriter target) where T: IEnumerator<char>
+        {
+            while (text.MoveNext())
             {
-                var value = text[i];
+                var value = text.Current;
                 switch (value)
                 {
                     case '"':

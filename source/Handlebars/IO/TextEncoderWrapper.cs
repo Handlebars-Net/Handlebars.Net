@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using HandlebarsDotNet.Pools;
@@ -42,6 +43,13 @@ namespace HandlebarsDotNet
         }
 
         public void Encode(string text, TextWriter target)
+        {
+            if (!Enabled) return;
+
+            _underlyingEncoder.Encode(text, target);
+        }
+
+        public void Encode<T>(T text, TextWriter target) where T: IEnumerator<char>
         {
             if (!Enabled) return;
 

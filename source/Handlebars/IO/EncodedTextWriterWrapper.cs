@@ -12,7 +12,7 @@ namespace HandlebarsDotNet
 		
         public EncodedTextWriter UnderlyingWriter { get; private set; }
 		
-        public static TextWriter From(EncodedTextWriter encodedTextWriter)
+        public static TextWriter From(in EncodedTextWriter encodedTextWriter)
         {
             var textWriter = Pool.Get();
             textWriter.UnderlyingWriter = encodedTextWriter;
@@ -27,9 +27,6 @@ namespace HandlebarsDotNet
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Write(StringBuilder value, bool encode) => UnderlyingWriter.Write(value, encode);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Write(UndefinedBindingResult undefined) => UnderlyingWriter.Write(undefined);
         
         public override void Write(string value) => UnderlyingWriter.Write(value);
 

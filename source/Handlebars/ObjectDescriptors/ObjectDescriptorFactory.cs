@@ -12,7 +12,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
 
         private static readonly Func<Type, ObservableList<IObjectDescriptorProvider>, DeferredValue<Type, ObjectDescriptor>> ValueFactory = (key, providers) => new DeferredValue<Type, ObjectDescriptor>(key, t =>
         {
-            for (var index = 0; index < providers.Count; index++)
+            for (var index = providers.Count - 1; index >= 0; index--)
             {
                 if (!providers[index].TryGetDescriptor(t, out var descriptor)) continue;
 
@@ -37,8 +37,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
         
         public bool TryGetDescriptor(Type type, out ObjectDescriptor value)
         {
-            var deferredValue = _descriptorsCache.GetOrAdd(type, ValueFactory, _providers);
-            value = deferredValue.Value;
+            value = _descriptorsCache.GetOrAdd(type, ValueFactory, _providers).Value;
             return !ReferenceEquals(value, ObjectDescriptor.Empty);
         }
     }

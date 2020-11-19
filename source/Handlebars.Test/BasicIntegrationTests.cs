@@ -3,7 +3,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using HandlebarsDotNet.Compiler;
@@ -11,6 +10,7 @@ using HandlebarsDotNet.Helpers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using HandlebarsDotNet.Features;
+using HandlebarsDotNet.IO;
 using Xunit.Abstractions;
 
 namespace HandlebarsDotNet.Test
@@ -42,6 +42,23 @@ namespace HandlebarsDotNet.Test
         public BasicIntegrationTests(ITestOutputHelper testOutputHelper)
         {
             _testOutputHelper = testOutputHelper;
+        }
+
+        [Theory]
+        [ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicEnumerableFormatter(IHandlebars handlebars)
+        {
+            var source = "{{values}}";
+            var template = handlebars.Compile(source);
+            var data = new
+            {
+                values = new object[]
+                {
+                    "a", 'b', 1, 1L, 1F, 1D
+                }
+            };
+            var result = template(data);
+            Assert.Equal("a,b,1,1,1,1", result);
         }
 
         [Theory]
@@ -88,6 +105,57 @@ namespace HandlebarsDotNet.Test
             };
             var result = template(data);
             Assert.Equal("Hello, ('foo' is undefined)!", result);
+        }
+        
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void PathUnresolvedBindingFormatter(IHandlebars handlebars)
+        {
+            var source = "Hello, {{foo}}!";
+
+            handlebars.Configuration.FormatterProviders.Add(new CustomUndefinedFormatter());
+
+            var template = handlebars.Compile(source);
+            var data = new
+            {
+                name = "Handlebars.Net"
+            };
+            var result = template(data);
+            Assert.Equal("Hello, ('foo' is undefined)!", result);
+        }
+        
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void CustcomDateTimeFormat(IHandlebars handlebars)
+        {
+            var source = "{{now}}";
+
+            var format = "d";
+            var formatter = new CustomDateTimeFormatter(format);
+            handlebars.Configuration.FormatterProviders.Add(formatter);
+
+            var template = handlebars.Compile(source);
+            var data = new
+            {
+                now = DateTime.Now
+            };
+            
+            var result = template(data);
+            Assert.Equal(data.now.ToString(format), result);
+        }
+        
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void DefaultDateTimeFormat(IHandlebars handlebars)
+        {
+            var source = "{{time}}";
+            
+            var template = handlebars.Compile(source);
+            var time = "2020-11-19T23:36:08.4256520Z";
+            var data = new
+            {
+                time = DateTime.Parse(time).ToUniversalTime()
+            };
+            
+            var result = template(data);
+            Assert.Equal(time, result);
         }
 
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
@@ -1857,7 +1925,7 @@ false
                 Assert.Equal("42", actual);   
             }
         }
-
+        
         private class StringHelperResolver : IHelperResolver
         {
             public bool TryResolveHelper(string name, Type targetType, out IHelperDescriptor<HelperOptions> helper)
@@ -1886,6 +1954,53 @@ false
             {
                 helper = null;
                 return false;
+            }
+        }
+        
+        private class CustomUndefinedFormatter : IFormatter, IFormatterProvider
+        {
+            public void Format<T>(T value, in EncodedTextWriter writer)
+            {
+                writer.Write($"('{(value as UndefinedBindingResult)!.Value}' is undefined)");
+            }
+
+            public bool TryCreateFormatter(Type type, out IFormatter formatter)
+            {
+                if (type != typeof(UndefinedBindingResult))
+                {
+                    formatter = null;
+                    return false;
+                }
+
+                formatter = this;
+                return true;
+            }
+        }
+        
+        private class CustomDateTimeFormatter : IFormatter, IFormatterProvider
+        {
+            private readonly string _format;
+
+            public CustomDateTimeFormatter(string format) => _format = format;
+
+            public void Format<T>(T value, in EncodedTextWriter writer)
+            {
+                if(!(value is DateTime dateTime)) 
+                    throw new ArgumentException("supposed to be DateTime");
+                
+                writer.Write($"{dateTime.ToString(_format)}");
+            }
+
+            public bool TryCreateFormatter(Type type, out IFormatter formatter)
+            {
+                if (type != typeof(DateTime))
+                {
+                    formatter = null;
+                    return false;
+                }
+
+                formatter = this;
+                return true;
             }
         }
 

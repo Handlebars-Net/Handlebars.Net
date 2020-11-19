@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using HandlebarsDotNet.Compiler.Resolvers;
 using Newtonsoft.Json;
@@ -74,7 +77,24 @@ namespace HandlebarsDotNet.Test
                 target.Write(JsonConvert.ToString(text, '"').Trim('"'));
             }
 
+            public void Encode<T>(T text, TextWriter target) where T : IEnumerator<char>
+            {
+                Encode(new string(new Adapter<T, char>(text).ToArray()), target);
+            }
+
             public IFormatProvider FormatProvider { get; } = CultureInfo.InvariantCulture;
+            
+            private class Adapter<T, TV> : IEnumerable<TV>
+                where T: IEnumerator<TV>
+            {
+                private readonly T _enumerator;
+
+                public Adapter(T enumerator) => _enumerator = enumerator;
+
+                public IEnumerator<TV> GetEnumerator() => _enumerator;
+
+                IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+            }
         }
 
 
