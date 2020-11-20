@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 
 namespace HandlebarsDotNet.Runtime
 {
@@ -24,6 +25,7 @@ namespace HandlebarsDotNet.Runtime
 
         public T Value
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 if (_isValueCreated) return _value;

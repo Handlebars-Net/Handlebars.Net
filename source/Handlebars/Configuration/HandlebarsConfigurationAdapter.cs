@@ -27,10 +27,9 @@ namespace HandlebarsDotNet
             AliasProviders = new ObservableList<IMemberAliasProvider>(configuration.AliasProviders);
             FormatterProviders = new ObservableList<IFormatterProvider>
             {
-                new DefaultFormatter(),
+                new DefaultFormatterProvider(),
                 new CollectionFormatterProvider(),
                 new ReadOnlyCollectionFormatterProvider(),
-                new DefaultDateTimeFormatter()
             }.AddMany(configuration.FormatterProviders);
             
             ObjectDescriptorProvider = CreateObjectDescriptorProvider();

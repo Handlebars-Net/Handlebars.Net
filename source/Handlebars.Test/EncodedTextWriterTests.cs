@@ -32,7 +32,8 @@ namespace HandlebarsDotNet.Test
             formatterProvider.TryCreateFormatter(Arg.Any<Type>(), out Arg.Any<IFormatter>())
                 .Returns(o =>
                 {
-                    o[1] = new DefaultFormatter();
+                    new DefaultFormatterProvider().TryCreateFormatter(o[0] as Type, out var formatter);
+                    o[1] = formatter;
                     return true;
                 });
             

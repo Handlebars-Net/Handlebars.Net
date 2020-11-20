@@ -37,13 +37,6 @@ namespace HandlebarsDotNet.Test
     
     public class BasicIntegrationTests
     {
-        private readonly ITestOutputHelper _testOutputHelper;
-
-        public BasicIntegrationTests(ITestOutputHelper testOutputHelper)
-        {
-            _testOutputHelper = testOutputHelper;
-        }
-
         [Theory]
         [ClassData(typeof(HandlebarsEnvGenerator))]
         public void BasicEnumerableFormatter(IHandlebars handlebars)
@@ -54,11 +47,12 @@ namespace HandlebarsDotNet.Test
             {
                 values = new object[]
                 {
-                    "a", 'b', 1, 1L, 1F, 1D
+                    "a", 'b', 1, 1L, 1F, 1D, (decimal)1, (short)1, (ushort)1, (ulong)1, (uint)1, true, false
                 }
             };
             var result = template(data);
-            Assert.Equal("a,b,1,1,1,1", result);
+            var expected = string.Join(",", data.values);
+            Assert.Equal(expected, result);
         }
 
         [Theory]
