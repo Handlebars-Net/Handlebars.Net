@@ -10,12 +10,12 @@ namespace HandlebarsDotNet.Helpers
             in TOptions options, 
             in Context context, 
             in Arguments arguments
-        )  where THelperDescriptor: IHelperDescriptor<TOptions> 
+        )  where THelperDescriptor: class, IHelperDescriptor<TOptions> 
             where TOptions : struct, IHelperOptions
         {
             var configuration = options.Frame.Configuration;
             using var writer = ReusableStringWriter.Get(configuration.FormatProvider);
-            using var output = new EncodedTextWriter(writer, configuration.TextEncoder, configuration.UnresolvedBindingFormatter, configuration.NoEscape);
+            using var output = new EncodedTextWriter(writer, configuration.TextEncoder, configuration.FormatterProvider, configuration.NoEscape);
 
             descriptor.Invoke(output, options, context, arguments);
 

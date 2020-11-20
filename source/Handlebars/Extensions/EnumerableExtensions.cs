@@ -74,5 +74,63 @@ namespace HandlebarsDotNet
             indexed.TryGetValue(key, out var value);
             return value;
         }
+
+        public static SequenceOfOneClass<T> SequenceOfOne<T>(this T value)
+        {
+            return new SequenceOfOneClass<T>(value);
+        }
+        
+        internal struct SequenceOfOneClass<T> : IEnumerable<T>, IEnumerator<T>
+        {
+            private readonly T _value;
+            private bool _enumerated;
+
+            public SequenceOfOneClass(T value)
+            {
+                _value = value;
+                _enumerated = false;
+                Current = default;
+            }
+
+            public SequenceOfOneClass<T> GetEnumerator() => this;
+            
+            IEnumerator<T> IEnumerable<T>.GetEnumerator() => this;
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+            
+            public bool MoveNext()
+            {
+                if (_enumerated)
+                {
+                    Current = default;
+                    return false;
+                }
+                _enumerated = true;
+                Current = _value;
+                return true;
+            }
+
+            public void Reset() => _enumerated = false;
+
+            public T Current { get; private set; }
+
+            object IEnumerator.Current => Current;
+
+            public void Dispose()
+            {
+                // nothing to do here
+            }
+        }
+
+        public static TList AddMany<T, TList>(this TList list, IEnumerable<T> items)
+            where TList: IAppendOnlyList<T>
+        {
+            foreach (var item in items)
+            {
+                list.Add(item);
+            }
+            
+            return list;
+        }
     }
 }

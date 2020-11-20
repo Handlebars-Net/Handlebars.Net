@@ -5,12 +5,15 @@ using System.IO;
 using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.EqualityComparers;
 using HandlebarsDotNet.Helpers;
+using HandlebarsDotNet.IO;
 using HandlebarsDotNet.ObjectDescriptors;
 
 namespace HandlebarsDotNet
 {
     public sealed class HandlebarsConfiguration : IHandlebarsTemplateRegistrations
     {
+        private readonly UndefinedFormatter _undefinedFormatter = new UndefinedFormatter();
+
         public IIndexed<string, IHelperDescriptor<HelperOptions>> Helpers { get; }
         
         public IIndexed<string, IHelperDescriptor<BlockHelperOptions>> BlockHelpers { get; }
@@ -28,9 +31,14 @@ namespace HandlebarsDotNet
         public IFormatProvider FormatProvider { get; set; } = CultureInfo.CurrentCulture;
         
         public ViewEngineFileSystem FileSystem { get; set; }
-        
-	    public Formatter<UndefinedBindingResult> UnresolvedBindingFormatter { get; set; }
-        
+
+        [Obsolete("Register custom formatters using `Formatters` property")]
+        public string UnresolvedBindingFormatter
+        {
+            get => _undefinedFormatter.FormatString;
+            set => _undefinedFormatter.FormatString = value;
+        }
+
         public bool ThrowOnUnresolvedBindingExpression { get; set; }
         
         public bool NoEscape { get; set; }
@@ -47,7 +55,7 @@ namespace HandlebarsDotNet
         public IMissingPartialTemplateHandler MissingPartialTemplateHandler { get; set; }
         
         /// <inheritdoc cref="IMemberAliasProvider"/>
-        public IAppendOnlyList<IMemberAliasProvider> AliasProviders { get; internal set; } = new ObservableList<IMemberAliasProvider>();
+        public IAppendOnlyList<IMemberAliasProvider> AliasProviders { get; } = new ObservableList<IMemberAliasProvider>();
 
         /// <inheritdoc cref="HandlebarsDotNet.Compatibility"/>
         public Compatibility Compatibility { get; } = new Compatibility();
@@ -55,6 +63,9 @@ namespace HandlebarsDotNet
         /// <inheritdoc cref="HandlebarsDotNet.CompileTimeConfiguration"/>
         public CompileTimeConfiguration CompileTimeConfiguration { get; } = new CompileTimeConfiguration();
 
+        public IAppendOnlyList<IFormatterProvider> FormatterProviders { get; } = new ObservableList<IFormatterProvider>();
+
+        /// <inheritdoc cref="ObjectDescriptor"/>
         public IAppendOnlyList<IObjectDescriptorProvider> ObjectDescriptorProviders { get; } = new ObservableList<IObjectDescriptorProvider>();
 
         public HandlebarsConfiguration()
@@ -66,7 +77,7 @@ namespace HandlebarsDotNet
             
             HelperResolvers = new ObservableList<IHelperResolver>();
             TextEncoder = new HtmlEncoder(FormatProvider);
-            UnresolvedBindingFormatter = new Formatter<UndefinedBindingResult>(undef => string.Empty);
+            FormatterProviders.Add(_undefinedFormatter);
         }
     }
 }

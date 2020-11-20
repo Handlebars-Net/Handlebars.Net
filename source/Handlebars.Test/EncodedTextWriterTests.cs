@@ -1,8 +1,10 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using HandlebarsDotNet.Compiler;
+using HandlebarsDotNet.IO;
+using NSubstitute;
 using Xunit;
 
 namespace HandlebarsDotNet.Test
@@ -26,8 +28,23 @@ namespace HandlebarsDotNet.Test
         public void Write(object value)
         {
             var stringWriter = new StringWriter();
+            var formatterProvider = Substitute.For<IFormatterProvider>();
+            formatterProvider.TryCreateFormatter(Arg.Any<Type>(), out Arg.Any<IFormatter>())
+                .Returns(o =>
+                {
+                    new DefaultFormatterProvider().TryCreateFormatter(o[0] as Type, out var formatter);
+                    o[1] = formatter;
+                    return true;
+                });
+            
+            formatterProvider.TryCreateFormatter(typeof(UndefinedBindingResult), out Arg.Any<IFormatter>())
+                .Returns(o =>
+                {
+                    o[1] = new UndefinedFormatter("{0}");
+                    return true;
+                });
 
-            using var writer = new EncodedTextWriter(stringWriter, null, new Formatter<UndefinedBindingResult>(undefined => undefined.ToString()));
+            using var writer = new EncodedTextWriter(stringWriter, null, formatterProvider);
             
             writer.Write(value);
             

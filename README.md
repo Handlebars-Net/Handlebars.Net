@@ -156,6 +156,60 @@ The animal, Chewy, is not a dog.
 */
 ```
 
+### Register custom value formatter
+
+In case you need to apply custom value formatting (e.g. `DateTime`) you can use `IFormatter` and `IFormatterProvider` interfaces:
+
+```c#
+public sealed class CustomDateTimeFormatter : IFormatter, IFormatterProvider
+{
+    private readonly string _format;
+
+    public CustomDateTimeFormatter(string format) => _format = format;
+
+    public void Format<T>(T value, in EncodedTextWriter writer)
+    {
+        if(!(value is DateTime dateTime)) 
+            throw new ArgumentException("supposed to be DateTime");
+        
+        writer.Write($"{dateTime.ToString(_format)}");
+    }
+
+    public bool TryCreateFormatter(Type type, out IFormatter formatter)
+    {
+        if (type != typeof(DateTime))
+        {
+            formatter = null;
+            return false;
+        }
+
+        formatter = this;
+        return true;
+    }
+}
+
+[Fact]
+public void DateTimeFormatter(IHandlebars handlebars)
+{
+    var source = "{{now}}";
+
+    var format = "d";
+    var formatter = new CustomDateTimeFormatter(format);
+    handlebars.Configuration.FormatterProviders.Add(formatter);
+
+    var template = handlebars.Compile(source);
+    var data = new
+    {
+        now = DateTime.Now
+    };
+    
+    var result = template(data);
+    Assert.Equal(data.now.ToString(format), result);
+}
+```
+#### Notes
+- Formatters are resolved in reverse order according to registration. If multiple providers can provide formatter for a type the last registered would be used.
+
 ### Compatibility feature toggles
 
 Compatibility feature toggles defines a set of settings responsible for controlling compilation/rendering behavior. Each of those settings would enable certain feature that would break compatibility with canonical Handlebars.

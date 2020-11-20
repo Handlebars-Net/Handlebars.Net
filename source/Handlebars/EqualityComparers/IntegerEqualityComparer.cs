@@ -6,6 +6,6 @@ namespace HandlebarsDotNet.EqualityComparers
     {
         public bool Equals(int x, int y) => x == y;
 
-        public int GetHashCode(int obj) => obj.GetHashCode();
+        public int GetHashCode(int obj) => obj;
     }
 }

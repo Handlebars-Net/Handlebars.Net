@@ -1,14 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using HandlebarsDotNet.IO;
 
 namespace HandlebarsDotNet
 {
 	public readonly struct EncodedTextWriter : IDisposable
 	{
-		private readonly TextWriter _underlyingWriter;
-		private readonly Formatter<UndefinedBindingResult> _undefinedFormatter;
+		internal readonly TextWriter UnderlyingWriter;
+		private readonly IFormatterProvider _formatterProvider;
 
 		private readonly TextEncoderWrapper _encoder;
 
@@ -25,14 +28,13 @@ namespace HandlebarsDotNet
 		
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public EncodedTextWriter(
-			TextWriter writer, 
+			TextWriter writer,
 			ITextEncoder encoder, 
-			in Formatter<UndefinedBindingResult> undefinedFormatter, 
+			IFormatterProvider formatterProvider, 
 			bool suppressEncoding = false)
 		{
-			_underlyingWriter = writer;
-			_undefinedFormatter = undefinedFormatter;
-
+			UnderlyingWriter = writer;
+			_formatterProvider = formatterProvider;
 			_encoder = encoder != null 
 				? TextEncoderWrapper.Create(encoder) 
 				: TextEncoderWrapper.Null;
@@ -48,11 +50,11 @@ namespace HandlebarsDotNet
 		{
 			if(encode && !SuppressEncoding)
 			{
-				_encoder.Encode(value, _underlyingWriter);
+				_encoder.Encode(value, UnderlyingWriter);
 				return;
 			}
 			
-			_underlyingWriter.Write(value);
+			UnderlyingWriter.Write(value);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -60,110 +62,92 @@ namespace HandlebarsDotNet
 		{
 			if(encode && !SuppressEncoding)
 			{
-				_encoder.Encode(value, _underlyingWriter);
+				_encoder.Encode(value, UnderlyingWriter);
 				return;
 			}
 
 			for (int i = 0; i < value.Length; i++)
 			{
-				_underlyingWriter.Write(value[i]);
+				UnderlyingWriter.Write(value[i]);
 			}
 		}
 		
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Write(string value)
+		public void Write<T>(T value, bool encode) where T: IEnumerator<char>
 		{
-			if(!SuppressEncoding)
+			if(encode && !SuppressEncoding)
 			{
-				_encoder.Encode(value, _underlyingWriter);
+				_encoder.Encode(value, UnderlyingWriter);
 				return;
 			}
 
-			_underlyingWriter.Write(value);
+			while (value.MoveNext())
+			{
+				UnderlyingWriter.Write(value.Current);
+			}
 		}
+		
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Write(string value) => Write(value, true);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Write(string format, params object[] arguments) => Write(string.Format(format, arguments));
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Write(char value) => Write(value.ToString(), true);
+		public void Write(char value) => Write(value.SequenceOfOne(), true);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Write(UndefinedBindingResult undefined) => _undefinedFormatter.Format(undefined, _underlyingWriter);
+		public void Write(object value) => Write<object>(value);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Write(int value) => _underlyingWriter.Write(value);
-		
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Write(double value) => _underlyingWriter.Write(value);
-		
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Write(float value) => _underlyingWriter.Write(value);
-		
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Write(bool value) => _underlyingWriter.Write(value);
-		
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Write(decimal value) => _underlyingWriter.Write(value);
-		
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Write(short value) => _underlyingWriter.Write(value);
-		
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Write(long value) => _underlyingWriter.Write(value);
-		
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Write(ulong value) => _underlyingWriter.Write(value);
-		
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Write(uint value) => _underlyingWriter.Write(value);
-		
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Write(ushort value) => _underlyingWriter.Write(value);
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Write(object value)
-		{
-			Write<object>(value);
-		}
-		
-		[MethodImpl(MethodImplOptions.NoInlining)]
 		public void Write<T>(T value)
 		{
 			switch (value)
 			{
-				case string v: Write(v); return;
-				case UndefinedBindingResult v: Write(v); return;
-				case bool v: Write(v); return;
-				case int v: Write(v); return;
-				case char v: Write(v); return;
-				case float v: Write(v); return;
-				case double v: Write(v); return;
-				case long v: Write(v); return;
-				case short v: Write(v); return;
-				case uint v: Write(v); return;
-				case ulong v: Write(v); return;
-				case ushort v: Write(v); return;
-				case decimal v: Write(v); return;
+				case null:
+				case string v when string.IsNullOrEmpty(v): 
+				case StringBuilder st when st.Length == 0:
+					return;
+				
+				case string v: Write(v, true); return;
 				case StringBuilder v: Write(v, true); return;
 				
 				default:
-					var @string = value.ToString();
-					if(string.IsNullOrEmpty(@string)) return;
-			
-					Write(@string);
+					WriteFormatted(value);
 					return;
 			}
+		}
+		
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private void WriteFormatted<T>(T value)
+		{
+			var type = typeof(T);
+#if netstandard1_3
+			if (type.GetTypeInfo().IsClass) type = value.GetType();
+#else
+			if (type.IsClass) type = value.GetType();
+#endif
+
+			if (!_formatterProvider.TryCreateFormatter(type, out var formatter))
+				Throw.CannotResolveFormatter(type);
+
+			formatter.Format(value, this);
 		}
 
 		public Encoding Encoding
 		{
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			get => _underlyingWriter.Encoding;
+			get => UnderlyingWriter.Encoding;
 		}
 		
 		public void Dispose() => _encoder.Dispose();
 		
-		public override string ToString() => _underlyingWriter.ToString();
+		public override string ToString() => UnderlyingWriter.ToString();
+		
+		private static class Throw
+		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public static void CannotResolveFormatter(Type type) => throw new HandlebarsRuntimeException($"Cannot resolve formatter for type `{type}`");
+		}
 	}
 }

@@ -11,10 +11,12 @@ namespace HandlebarsDotNet.Collections
         IReadOnlyIndexed<TKey, TValue>
         where TComparer : IEqualityComparer<TKey>
     {
+        private readonly TComparer _comparer;
         private DictionarySlim<TKey, TValue, TComparer> _inner;
 
         public LookupSlim(TComparer comparer)
         {
+            _comparer = comparer;
             _inner = new DictionarySlim<TKey, TValue, TComparer>(comparer);
         }
 
@@ -38,7 +40,7 @@ namespace HandlebarsDotNet.Collections
 
         public int Count => _inner.Count;
 
-        public void Clear() => _inner.Clear();
+        public void Clear() => _inner = new DictionarySlim<TKey, TValue, TComparer>(_comparer);
         
         TValue IReadOnlyIndexed<TKey, TValue>.this[in TKey key] => _inner[key];
         
