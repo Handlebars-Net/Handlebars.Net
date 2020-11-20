@@ -118,6 +118,7 @@ namespace HandlebarsDotNet
 
             public void Dispose()
             {
+                // nothing to do here
             }
         }
 
