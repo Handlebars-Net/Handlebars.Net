@@ -14,29 +14,29 @@ namespace HandlebarsDotNet.ObjectDescriptors
         public static readonly ObjectDescriptor Empty = new ObjectDescriptor();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ObjectDescriptor Create(object from, IObjectDescriptorProvider objectDescriptorProvider)
+        public static ObjectDescriptor Create(object from)
         {
-            return Create(from?.GetType(), objectDescriptorProvider);
+            return Create(from?.GetType());
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ObjectDescriptor Create(Type from, IObjectDescriptorProvider objectDescriptorProvider)
+        public static ObjectDescriptor Create(Type from)
         {
-            if (from == null) return null;
-            if (!objectDescriptorProvider.TryGetDescriptor(@from, out var descriptor)) return null;
+            if (from == null) return Empty;
+            if (!ObjectDescriptorFactory.Current.TryGetDescriptor(@from, out var descriptor)) return Empty;
             return descriptor;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryCreate(object @from, IObjectDescriptorProvider objectDescriptorProvider, out ObjectDescriptor descriptor)
+        public static bool TryCreate(object @from, out ObjectDescriptor descriptor)
         {
-            return TryCreate(from?.GetType(), objectDescriptorProvider, out descriptor);
+            return TryCreate(from?.GetType(), out descriptor);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryCreate(Type @from, IObjectDescriptorProvider objectDescriptorProvider, out ObjectDescriptor descriptor)
+        public static bool TryCreate(Type @from, out ObjectDescriptor descriptor)
         {
-            return objectDescriptorProvider.TryGetDescriptor(from, out descriptor);
+            return ObjectDescriptorFactory.Current.TryGetDescriptor(from, out descriptor);
         }
 
         /// <summary>

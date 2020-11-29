@@ -1,7 +1,7 @@
 using System.Linq.Expressions;
 using Expressions.Shortcuts;
-using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.ObjectDescriptors;
+using HandlebarsDotNet.PathStructure;
 using HandlebarsDotNet.Polyfills;
 using static Expressions.Shortcuts.ExpressionShortcuts;
 
@@ -66,7 +66,7 @@ namespace HandlebarsDotNet.Compiler
                 return;
             }
 
-            if (!ObjectDescriptor.TryCreate(target, context.Configuration.ObjectDescriptorProvider, out var descriptor))
+            if (!ObjectDescriptor.TryCreate(target, out var descriptor))
             {
                 throw new HandlebarsRuntimeException($"Cannot create ObjectDescriptor for type {descriptor.DescribedType}");
             }

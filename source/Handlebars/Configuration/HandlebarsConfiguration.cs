@@ -63,10 +63,10 @@ namespace HandlebarsDotNet
         /// <inheritdoc cref="HandlebarsDotNet.CompileTimeConfiguration"/>
         public CompileTimeConfiguration CompileTimeConfiguration { get; } = new CompileTimeConfiguration();
 
-        public IAppendOnlyList<IFormatterProvider> FormatterProviders { get; } = new ObservableList<IFormatterProvider>();
+        public ObservableList<IFormatterProvider> FormatterProviders { get; } = new ObservableList<IFormatterProvider>();
 
         /// <inheritdoc cref="ObjectDescriptor"/>
-        public IAppendOnlyList<IObjectDescriptorProvider> ObjectDescriptorProviders { get; } = new ObservableList<IObjectDescriptorProvider>();
+        public ObservableList<IObjectDescriptorProvider> ObjectDescriptorProviders { get; } = new ObservableList<IObjectDescriptorProvider>();
 
         public HandlebarsConfiguration()
         {
@@ -76,7 +76,7 @@ namespace HandlebarsDotNet
             RegisteredTemplates = new ObservableIndex<string, HandlebarsTemplate<TextWriter, object, object>, StringEqualityComparer>(stringEqualityComparer);
             
             HelperResolvers = new ObservableList<IHelperResolver>();
-            TextEncoder = new HtmlEncoder(FormatProvider);
+            TextEncoder = new HtmlEncoder();
             FormatterProviders.Add(_undefinedFormatter);
         }
     }

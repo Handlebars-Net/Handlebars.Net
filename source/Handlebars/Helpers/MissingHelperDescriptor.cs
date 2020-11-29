@@ -1,4 +1,4 @@
-using HandlebarsDotNet.Compiler.Structure.Path;
+using HandlebarsDotNet.PathStructure;
 
 namespace HandlebarsDotNet.Helpers
 {
@@ -8,14 +8,12 @@ namespace HandlebarsDotNet.Helpers
         
         public object Invoke(in HelperOptions options, in Context context, in Arguments arguments)
         {
-            var nameArgument = arguments[arguments.Length - 1];
-            if (arguments.Length > 1)
+            if (arguments.Length > 0)
             {
-                throw new HandlebarsRuntimeException($"Template references a helper that cannot be resolved. Helper '{nameArgument}'");
+                throw new HandlebarsRuntimeException($"Template references a helper that cannot be resolved. Helper '{options.Name}'");
             }
             
-            var name = PathInfoStore.Shared.GetOrAdd(nameArgument as string ?? nameArgument.ToString());
-            return UndefinedBindingResult.Create(name);
+            return UndefinedBindingResult.Create(options.Name);
         }
 
         public void Invoke(in EncodedTextWriter output, in HelperOptions options, in Context context, in Arguments arguments)

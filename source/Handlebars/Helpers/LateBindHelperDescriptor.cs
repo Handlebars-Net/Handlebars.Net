@@ -1,5 +1,5 @@
 using HandlebarsDotNet.Collections;
-using HandlebarsDotNet.Compiler.Structure.Path;
+using HandlebarsDotNet.PathStructure;
 
 namespace HandlebarsDotNet.Helpers
 {
@@ -31,8 +31,7 @@ namespace HandlebarsDotNet.Helpers
             var value = PathResolver.ResolvePath(bindingContext, Name);
             if (!(value is UndefinedBindingResult)) return value;
             
-            var newArguments = arguments.Add(Name.TrimmedPath);
-            return configuration.Helpers["helperMissing"].Value.Invoke(options, context, newArguments);
+            return configuration.Helpers["helperMissing"].Value.Invoke(options, context, arguments);
         }
 
         public void Invoke(in EncodedTextWriter output, in HelperOptions options, in Context context, in Arguments arguments)

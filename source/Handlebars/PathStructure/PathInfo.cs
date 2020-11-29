@@ -6,7 +6,7 @@ using HandlebarsDotNet.Polyfills;
 using HandlebarsDotNet.Pools;
 using HandlebarsDotNet.StringUtils;
 
-namespace HandlebarsDotNet.Compiler.Structure.Path
+namespace HandlebarsDotNet.PathStructure
 {
     public enum PathType
     {
@@ -23,12 +23,18 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
     /// </summary>
     public sealed partial class PathInfo : IEquatable<PathInfo>
     {
-        private readonly string _path;
-        
         internal readonly bool IsValidHelperLiteral;
         internal readonly bool HasValue;
         internal readonly bool IsThis;
         internal readonly bool IsPureThis;
+        internal readonly bool IsInversion;
+        internal readonly bool IsBlockHelper;
+        internal readonly bool IsBlockClose;
+        internal readonly bool HasContextChange;
+        internal readonly int ContextChangeDepth;
+        
+        private readonly int _hashCode;
+        private readonly int _trimmedHashCode;
         
         internal PathInfo(
             PathType pathType,
@@ -39,9 +45,9 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
         {
             IsValidHelperLiteral = isValidHelperLiteral;
             HasValue = pathType != PathType.Empty;
-            _path = path;
+            Path = path;
 
-            _hashCode = (_path.GetHashCode() * 397) ^ HasValue.GetHashCode();
+            _hashCode = (Path.GetHashCode() * 397) ^ HasValue.GetHashCode();
             
             if(!HasValue) return;
 
@@ -89,28 +95,16 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
         /// Indicates whether <see cref="PathInfo"/> is part of <c>@</c> variable
         /// </summary>
         public readonly bool IsVariable;
-        
-        /// <summary>
-        /// 
-        /// </summary>
         public readonly ChainSegment[] PathChain;
-
-        internal readonly string TrimmedPath;
-        internal readonly bool IsInversion;
-        internal readonly bool IsBlockHelper;
-        internal readonly bool IsBlockClose;
-        internal readonly bool HasContextChange;
-        internal readonly int ContextChangeDepth;
-        
-        private readonly int _hashCode;
-        private readonly int _trimmedHashCode;
+        public readonly string Path;
+        public readonly string TrimmedPath;
 
         /// <inheritdoc />
         public bool Equals(PathInfo other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return HasValue == other.HasValue && string.Equals(_path, other._path, StringComparison.Ordinal);
+            return HasValue == other.HasValue && string.Equals(Path, other.Path, StringComparison.Ordinal);
         }
 
         /// <inheritdoc />
@@ -128,12 +122,12 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
         /// <summary>
         /// Returns string representation of current <see cref="PathInfo"/>
         /// </summary>
-        public override string ToString() => _path;
+        public override string ToString() => Path;
         
         /// <inheritdoc cref="ToString"/>
-        public static implicit operator string(PathInfo pathInfo) => pathInfo._path;
+        public static implicit operator string(PathInfo pathInfo) => pathInfo.Path;
         
-        public static implicit operator PathInfo(string path) => PathInfoStore.Shared.GetOrAdd(path);
+        public static implicit operator PathInfo(string path) => PathInfoStore.Current?.GetOrAdd(path) ?? Parse(path);
         
         public static PathInfo Parse(string path)
         {
@@ -189,7 +183,7 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
         {
             var insideEscapeBlock = false;
             var pathChainParts = Substring.Split(segmentString, '.', StringSplitOptions.RemoveEmptyEntries);
-            if (pathChainParts.Count == 0 && segmentString == ".") return new[] {ChainSegment.Create("this")};
+            if (pathChainParts.Count == 0 && segmentString == ".") return new[] { ChainSegment.This };
             
             var chainSegments = new List<ChainSegment>();
 

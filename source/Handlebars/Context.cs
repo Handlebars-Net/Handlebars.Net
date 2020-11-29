@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.ObjectDescriptors;
+using HandlebarsDotNet.PathStructure;
 using HandlebarsDotNet.Runtime;
 
 namespace HandlebarsDotNet
@@ -16,20 +16,20 @@ namespace HandlebarsDotNet
         public Context(BindingContext context)
         {
             Value = context.Value;
-            _descriptor = context.ObjectDescriptor;
+            _descriptor = context.Descriptor;
         }
         
         public Context(BindingContext context, object value)
         {
             Value = value;
-            _descriptor = context.ObjectDescriptor;
+            _descriptor = context.Descriptor;
         }
 
         public IEnumerable<ChainSegment> Properties => 
             _descriptor.Value
                 .GetProperties(_descriptor.Value, Value)
                 .OfType<object>()
-                .Select(ChainSegment.Create);
+                .Select(o => ChainSegment.Create(o));
 
         public object this[ChainSegment segment] =>
             _descriptor.Value.MemberAccessor.TryGetValue(Value, segment, out var value) 

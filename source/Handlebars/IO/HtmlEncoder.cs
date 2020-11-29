@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -13,10 +12,6 @@ namespace HandlebarsDotNet
     /// </summary>
     public class HtmlEncoder : ITextEncoder
     {
-        public HtmlEncoder(IFormatProvider provider) => FormatProvider = provider;
-
-        public IFormatProvider FormatProvider { get; }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Encode(StringBuilder text, TextWriter target)
         {

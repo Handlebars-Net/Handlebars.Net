@@ -14,34 +14,37 @@ namespace HandlebarsNet.Benchmark
         public void Setup()
         {
             var handlebars = Handlebars.Create();
-            
-            handlebars.RegisterHelper("helper1", (output, context, arguments) =>
-            {
-                output.WriteSafeString("42");
-            });
-            
-            handlebars.RegisterHelper("helper2", (output, context, arguments) =>
-            {
-                for (int i = 0; i < arguments.Length; i++)
-                {
-                    output.WriteSafeString(arguments[i]);
-                }
-            });
 
-            handlebars.RegisterHelper("helper5", (output, options, context, arguments) =>
+            using(handlebars.Configure())
             {
-                options.Template(output, context);
-                output.WriteSafeString("42");
-            });
-            
-            handlebars.RegisterHelper("helper6", (output, options, context, arguments) =>
-            {
-                options.Template(output, context);
-                for (int i = 0; i < arguments.Length; i++)
+                handlebars.RegisterHelper("helper1", (output, context, arguments) =>
                 {
-                    output.WriteSafeString(arguments[i]);
-                }
-            });
+                    output.WriteSafeString("42");
+                });
+            
+                handlebars.RegisterHelper("helper2", (output, context, arguments) =>
+                {
+                    for (int i = 0; i < arguments.Length; i++)
+                    {
+                        output.WriteSafeString(arguments[i]);
+                    }
+                });
+
+                handlebars.RegisterHelper("helper5", (output, options, context, arguments) =>
+                {
+                    options.Template(output, context);
+                    output.WriteSafeString("42");
+                });
+            
+                handlebars.RegisterHelper("helper6", (output, options, context, arguments) =>
+                {
+                    options.Template(output, context);
+                    for (int i = 0; i < arguments.Length; i++)
+                    {
+                        output.WriteSafeString(arguments[i]);
+                    }
+                });
+            }
             
             _templates.Add(handlebars.Compile(Read("Call {{helper1}}")));
             _templates.Add(handlebars.Compile(Read("Call {{helper2 '1'}}")));
@@ -55,18 +58,21 @@ namespace HandlebarsNet.Benchmark
             _templates.Add(handlebars.Compile(Read("Call {{#helper6 '1'}}empty{{/helper6}}")));
             _templates.Add(handlebars.Compile(Read("Call {{#helper6 '1' '2'}}empty{{/helper6}}")));
             
-            handlebars.RegisterHelper("helper3", (output, context, arguments) =>
+            using(handlebars.Configure())
             {
-                output.WriteSafeString("42");
-            });
-            
-            handlebars.RegisterHelper("helper4", (output, context, arguments) =>
-            {
-                for (int i = 0; i < arguments.Length; i++)
+                handlebars.RegisterHelper("helper3", (output, context, arguments) =>
                 {
-                    output.WriteSafeString(arguments[i]);
-                }
-            });
+                    output.WriteSafeString("42");
+                });
+            
+                handlebars.RegisterHelper("helper4", (output, context, arguments) =>
+                {
+                    for (int i = 0; i < arguments.Length; i++)
+                    {
+                        output.WriteSafeString(arguments[i]);
+                    }
+                });
+            }
         }
         
         [Benchmark]

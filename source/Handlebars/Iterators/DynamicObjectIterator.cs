@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.Compiler;
-using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.ObjectDescriptors;
+using HandlebarsDotNet.PathStructure;
 using HandlebarsDotNet.Runtime;
 using HandlebarsDotNet.ValueProviders;
 

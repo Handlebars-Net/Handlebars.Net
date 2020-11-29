@@ -1,5 +1,4 @@
-using System;
-using HandlebarsDotNet.Compiler.Structure.Path;
+using HandlebarsDotNet.PathStructure;
 
 namespace HandlebarsDotNet.MemberAccessors
 {
@@ -19,7 +18,7 @@ namespace HandlebarsDotNet.MemberAccessors
                 if (_accessors[index].TryGetValue(instance, memberName, out value)) return true;
             }
 
-            value = default(object);
+            value = default;
             return false;
         }
     }

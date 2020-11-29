@@ -1,7 +1,7 @@
 using System.Linq.Expressions;
 using Expressions.Shortcuts;
-using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.Helpers;
+using HandlebarsDotNet.PathStructure;
 using HandlebarsDotNet.Runtime;
 using static Expressions.Shortcuts.ExpressionShortcuts;
 
@@ -30,7 +30,7 @@ namespace HandlebarsDotNet.Compiler
         {
             var bindingContext = CompilationContext.Args.BindingContext;
             var configuration = CompilationContext.Configuration;
-            var pathInfo = PathInfoStore.Shared.GetOrAdd(pex.Path);
+            var pathInfo = PathInfoStore.Current.GetOrAdd(pex.Path);
 
             var resolvePath = Call(() => PathResolver.ResolvePath(bindingContext, pathInfo));
             
@@ -41,6 +41,7 @@ namespace HandlebarsDotNet.Compiler
             var pathInfoLight = new PathInfoLight(pathInfo);
             if (!configuration.Helpers.TryGetValue(pathInfoLight, out var helper))
             {
+                // TODO: use IHelperResolver here as well
                 var lateBindHelperDescriptor = new LateBindHelperDescriptor(pathInfo);
                 helper = new Ref<IHelperDescriptor<HelperOptions>>(lateBindHelperDescriptor);
                 configuration.Helpers.AddOrReplace(pathInfoLight, helper);
@@ -56,7 +57,7 @@ namespace HandlebarsDotNet.Compiler
                 }
             }
 
-            var options = New(() => new HelperOptions(bindingContext));
+            var options = New(() => new HelperOptions(pathInfo, bindingContext));
             var context = New(() => new Context(bindingContext));
             var argumentsArg = New(() => new Arguments(0));
             return Call(() => helper.Value.Invoke(options, context, argumentsArg));

@@ -20,7 +20,7 @@ namespace HandlebarsDotNet
             return textWriter;
         }
 
-        public override IFormatProvider FormatProvider => UnderlyingWriter.Encoder.FormatProvider;
+        public override IFormatProvider FormatProvider => UnderlyingWriter.UnderlyingWriter.FormatProvider;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Write(string value, bool encode) => UnderlyingWriter.Write(value, encode);

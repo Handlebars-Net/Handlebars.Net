@@ -85,28 +85,6 @@ namespace HandlebarsDotNet.Test
         [InlineData(6)]
         [InlineData(7)]
         [InlineData(10)]
-        public void ArgumentsAdd(int count)
-        {
-            var values = new object[count];
-            CreateValues(values);
-            var arguments = CreateArguments(values);
-
-            var value = new object();
-            var newArguments = arguments.Add(value);
-            
-            Assert.Equal(arguments.Length + 1, newArguments.Length);
-            Assert.Equal(value, newArguments[newArguments.Length - 1]);
-        }
-        
-        [Theory]
-        [InlineData(1)]
-        [InlineData(2)]
-        [InlineData(3)]
-        [InlineData(4)]
-        [InlineData(5)]
-        [InlineData(6)]
-        [InlineData(7)]
-        [InlineData(10)]
         public void ArgumentsEquals(int count)
         {
             var values = new object[count];

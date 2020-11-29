@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using HandlebarsDotNet.ObjectDescriptors;
+using HandlebarsDotNet.Runtime;
 
 namespace HandlebarsDotNet.Features
 {
@@ -28,7 +30,7 @@ namespace HandlebarsDotNet.Features
 
         public void OnCompiling(ICompiledHandlebarsConfiguration configuration)
         {
-            var descriptorProvider = configuration.ObjectDescriptorProvider;
+            var descriptorProvider = ObjectDescriptorFactory.Current;
             foreach (var type in _types)
             {
                 descriptorProvider.TryGetDescriptor(type, out _);

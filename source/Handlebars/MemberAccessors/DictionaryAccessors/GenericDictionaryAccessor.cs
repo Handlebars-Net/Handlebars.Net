@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
-using HandlebarsDotNet.Compiler.Structure.Path;
+using HandlebarsDotNet.PathStructure;
 
 namespace HandlebarsDotNet.MemberAccessors.DictionaryAccessors
 {

@@ -14,7 +14,7 @@ namespace HandlebarsDotNet.Features
     {
         public void OnCompiling(ICompiledHandlebarsConfiguration configuration)
         {
-            configuration.ExpressionCompiler = new DefaultExpressionCompiler(configuration);
+            configuration.ExpressionCompiler = new DefaultExpressionCompiler(configuration.ExpressionMiddlewares);
         }
 
         public void CompilationCompleted()
@@ -26,9 +26,9 @@ namespace HandlebarsDotNet.Features
         {
             private readonly IReadOnlyList<IExpressionMiddleware> _expressionMiddleware;
             
-            public DefaultExpressionCompiler(ICompiledHandlebarsConfiguration configuration)
+            public DefaultExpressionCompiler(IReadOnlyList<IExpressionMiddleware> expressionMiddlewares)
             {
-                _expressionMiddleware = configuration.ExpressionMiddlewares;
+                _expressionMiddleware = expressionMiddlewares;
             }
             
             public T Compile<T>(Expression<T> expression) where T: class, Delegate

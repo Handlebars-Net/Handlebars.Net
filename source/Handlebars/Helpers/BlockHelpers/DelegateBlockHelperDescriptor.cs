@@ -1,4 +1,4 @@
-using HandlebarsDotNet.Compiler.Structure.Path;
+using HandlebarsDotNet.PathStructure;
 
 namespace HandlebarsDotNet.Helpers.BlockHelpers
 {

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
-using HandlebarsDotNet.Compiler.Structure.Path;
+using HandlebarsDotNet.PathStructure;
 
 namespace HandlebarsDotNet.Compiler
 {

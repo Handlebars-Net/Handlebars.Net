@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
-using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.ObjectDescriptors;
+using HandlebarsDotNet.PathStructure;
 
 namespace HandlebarsDotNet
 {

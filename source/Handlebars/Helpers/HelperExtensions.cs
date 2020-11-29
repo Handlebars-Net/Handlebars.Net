@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using HandlebarsDotNet.IO;
 
 namespace HandlebarsDotNet.Helpers
 {
@@ -15,7 +16,7 @@ namespace HandlebarsDotNet.Helpers
         {
             var configuration = options.Frame.Configuration;
             using var writer = ReusableStringWriter.Get(configuration.FormatProvider);
-            using var output = new EncodedTextWriter(writer, configuration.TextEncoder, configuration.FormatterProvider, configuration.NoEscape);
+            using var output = new EncodedTextWriter(writer, configuration.TextEncoder, FormatterProvider.Current, configuration.NoEscape);
 
             descriptor.Invoke(output, options, context, arguments);
 

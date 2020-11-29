@@ -4,6 +4,11 @@ using HandlebarsDotNet.Collections;
 
 namespace HandlebarsDotNet.Runtime
 {
+    /// <summary>
+    /// Provides cache for frequently used struct values to avoid unnecessary boxing. 
+    /// <para>Overuse may lead to memory leaks! Do not store one-time values here!</para>
+    /// <para>Usage example: indexes in iterators</para>
+    /// </summary>
     public static class BoxedValues
     {
         private const int BoxedIntegersCount = 20;
@@ -20,9 +25,6 @@ namespace HandlebarsDotNet.Runtime
         public static readonly object True = true;
         public static readonly object False = false;
         public static readonly object Zero = 0;
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static object Bool(bool value) => value ? True : False;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static object Int(int value)
@@ -32,7 +34,7 @@ namespace HandlebarsDotNet.Runtime
                 return BoxedIntegers[value];
             }
             
-            return BoxedContainer<int>.Boxed.GetOrAdd(value, v => (object) v);
+            return Value(value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

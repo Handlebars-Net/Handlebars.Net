@@ -1,6 +1,6 @@
 using System.Collections;
 using HandlebarsDotNet.Compiler;
-using HandlebarsDotNet.Compiler.Structure.Path;
+using HandlebarsDotNet.PathStructure;
 using HandlebarsDotNet.Polyfills;
 
 namespace HandlebarsDotNet.Helpers.BlockHelpers
@@ -16,14 +16,12 @@ namespace HandlebarsDotNet.Helpers.BlockHelpers
             return this.ReturnInvoke(options, context, arguments);
         }
 
-        public void Invoke(in EncodedTextWriter output, in BlockHelperOptions options, in Context context,
-            in Arguments arguments)
+        public void Invoke(in EncodedTextWriter output, in BlockHelperOptions options, in Context context, in Arguments arguments)
         {
-            var pathInfo = options.GetValue<PathInfo>("path");
-            if(arguments.Length > 0) throw new HandlebarsRuntimeException($"Template references a helper that cannot be resolved. BlockHelper '{pathInfo}'");
+            if(arguments.Length > 0) throw new HandlebarsRuntimeException($"Template references a helper that cannot be resolved. BlockHelper '{options.Name}'");
             
             var bindingContext = options.Frame;
-            var value = PathResolver.ResolvePath(bindingContext, pathInfo);
+            var value = PathResolver.ResolvePath(bindingContext, options.Name);
             RenderSection(value, bindingContext, output, options.OriginalTemplate, options.OriginalInverse);
         }
 

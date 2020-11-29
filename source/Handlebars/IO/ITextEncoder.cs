@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
@@ -10,8 +9,6 @@ namespace HandlebarsDotNet
     /// </summary>
     public interface ITextEncoder
     {
-        IFormatProvider FormatProvider { get; }
-        
         void Encode(StringBuilder text, TextWriter target);
 
         void Encode(string text, TextWriter target);

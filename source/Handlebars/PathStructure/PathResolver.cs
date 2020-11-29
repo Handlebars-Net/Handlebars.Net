@@ -1,7 +1,8 @@
 using System.Runtime.CompilerServices;
+using HandlebarsDotNet.Compiler;
 using HandlebarsDotNet.ObjectDescriptors;
 
-namespace HandlebarsDotNet.Compiler.Structure.Path
+namespace HandlebarsDotNet.PathStructure
 {
     public static class PathResolver
     {
@@ -104,13 +105,12 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
             chainSegment = ResolveMemberName(instance, chainSegment, configuration);
 
             value = null;
-            return ObjectDescriptor.TryCreate(instance, configuration.ObjectDescriptorProvider, out var descriptor) 
+            return ObjectDescriptor.TryCreate(instance, out var descriptor) 
                    && descriptor.MemberAccessor.TryGetValue(instance, chainSegment, out value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static ChainSegment ResolveMemberName(object instance, ChainSegment memberName,
-            ICompiledHandlebarsConfiguration configuration)
+        private static ChainSegment ResolveMemberName(object instance, ChainSegment memberName, ICompiledHandlebarsConfiguration configuration)
         {
             var resolver = configuration.ExpressionNameResolver;
             if (resolver == null) return memberName;

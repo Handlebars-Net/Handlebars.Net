@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using HandlebarsDotNet.PathStructure;
 using HandlebarsDotNet.ValueProviders;
 
 namespace HandlebarsDotNet
@@ -8,8 +9,14 @@ namespace HandlebarsDotNet
         public BindingContext Frame { get; }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public HelperOptions(BindingContext frame) => Frame = frame;
-        
+        public HelperOptions(PathInfo name, BindingContext frame)
+        {
+            Frame = frame;
+            Name = name;
+        }
+
         public DataValues Data => new DataValues(Frame);
+        
+        public PathInfo Name { get; }
     }
 }
