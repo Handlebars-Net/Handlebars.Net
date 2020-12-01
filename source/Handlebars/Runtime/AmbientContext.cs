@@ -1,6 +1,11 @@
 using System;
 using System.Runtime.CompilerServices;
+#if !NET451 && !NET452
 using System.Threading;
+#else
+using HandlebarsDotNet.Polyfills;
+#endif
+
 using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.IO;
 using HandlebarsDotNet.ObjectDescriptors;
