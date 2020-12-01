@@ -34,7 +34,7 @@ namespace HandlebarsDotNet
             return this;
         }
         
-        bool IMemberAliasProvider.TryGetMemberByAlias(object instance, Type targetType, ChainSegment memberAlias,
+        bool IMemberAliasProvider<object>.TryGetMemberByAlias(object instance, Type targetType, ChainSegment memberAlias,
             out object value)
         {
             if (_aliases.TryGetValue(targetType, out var aliases))
