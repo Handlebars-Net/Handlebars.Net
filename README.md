@@ -10,6 +10,12 @@
 
 ---
 
+[![Stack Exchange questions](https://img.shields.io/stackexchange/stackoverflow/t/%5Bhandlebars.net%5D?label=stackoverflow)](https://stackoverflow.com/questions/tagged/handlebars.net) 
+[![GitHub issues questions](https://img.shields.io/github/issues/handlebars-net/handlebars.net/question)](https://github.com/Handlebars-Net/Handlebars.Net/labels/question) 
+[![GitHub issues help wanted](https://img.shields.io/github/issues/handlebars-net/handlebars.net/help%20wanted?color=green&label=help%20wanted)](https://github.com/Handlebars-Net/Handlebars.Net/labels/help%20wanted)
+
+---
+
 **[Call for Input on v2](https://github.com/rexm/Handlebars.Net/issues/294)**
 
 Blistering-fast [Handlebars.js templates](http://handlebarsjs.com) in your .NET application.
