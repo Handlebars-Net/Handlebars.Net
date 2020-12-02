@@ -53,7 +53,7 @@ namespace HandlebarsDotNet.IO
         public FormatterProvider Append(ObservableList<IFormatterProvider> providers)
         {
             _formatterProviders.AddMany(providers);
-            _formatterProviders.Subscribe(providers);
+            providers.Subscribe(_formatterProviders);
 
             return this;
         }
@@ -61,7 +61,7 @@ namespace HandlebarsDotNet.IO
         public FormatterProvider Append(FormatterProvider provider)
         {
             _formatterProviders.AddMany(provider._formatterProviders);
-            _formatterProviders.Subscribe(provider._formatterProviders);
+            provider._formatterProviders.Subscribe(_formatterProviders);
             
             return this;
         }

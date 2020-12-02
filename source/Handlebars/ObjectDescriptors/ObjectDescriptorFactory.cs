@@ -42,7 +42,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
         public ObjectDescriptorFactory Append(ObservableList<IObjectDescriptorProvider> providers)
         {
             _providers.AddMany(providers);
-            _providers.Subscribe(providers);
+            providers.Subscribe(_providers);
 
             return this;
         }
@@ -50,7 +50,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
         public ObjectDescriptorFactory Append(ObjectDescriptorFactory factory)
         {
             _providers.AddMany(factory._providers);
-            _providers.Subscribe(factory._providers);
+            factory._providers.Subscribe(_providers);
             
             return this;
         }
