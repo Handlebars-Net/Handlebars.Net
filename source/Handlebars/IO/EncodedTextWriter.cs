@@ -10,13 +10,11 @@ namespace HandlebarsDotNet
 {
 	public readonly struct EncodedTextWriter : IDisposable
 	{
-		internal readonly TextWriter UnderlyingWriter;
 		private readonly IFormatterProvider _formatterProvider;
-
 		private readonly TextEncoderWrapper _encoder;
 
-		public ITextEncoder Encoder => _encoder;
-		
+		internal readonly TextWriter UnderlyingWriter;
+
 		public bool SuppressEncoding
 		{
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -91,7 +89,7 @@ namespace HandlebarsDotNet
 		public void Write(string value) => Write(value, true);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Write(string format, params object[] arguments) => Write(string.Format(format, arguments));
+		public void Write(string format, params object[] arguments) => Write(string.Format(format, arguments), true);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Write(char value) => Write(value.SequenceOfOne(), true);

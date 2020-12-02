@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace HandlebarsDotNet.Compiler.Structure.Path
+namespace HandlebarsDotNet.PathStructure
 {
     public sealed partial class ChainSegment
     {

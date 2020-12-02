@@ -1,6 +1,6 @@
 using HandlebarsDotNet.StringUtils;
 
-namespace HandlebarsDotNet.Compiler.Structure.Path
+namespace HandlebarsDotNet.PathStructure
 {
     /// <summary>
     /// Represents parts of single <see cref="PathInfo"/> separated with '/'.

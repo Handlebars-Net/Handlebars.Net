@@ -56,8 +56,6 @@ namespace HandlebarsDotNet
             _underlyingEncoder.Encode(text, target);
         }
 
-        public IFormatProvider FormatProvider => _underlyingEncoder.FormatProvider;
-
         public void Dispose()
         {
             if(ReferenceEquals(this, Null)) return;

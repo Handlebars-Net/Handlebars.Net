@@ -1,6 +1,7 @@
 using System.Linq;
 using HandlebarsDotNet.Helpers;
 using HandlebarsDotNet.Helpers.BlockHelpers;
+using HandlebarsDotNet.PathStructure;
 using HandlebarsDotNet.Runtime;
 
 namespace HandlebarsDotNet.Features
@@ -42,12 +43,12 @@ namespace HandlebarsDotNet.Features
         /// <returns></returns>
         public static HandlebarsConfiguration RegisterMissingHelperHook(
             this HandlebarsConfiguration configuration,
-            HandlebarsReturnHelper helperMissing = null,
+            HandlebarsReturnWithOptionsHelper helperMissing = null,
             HandlebarsBlockHelper blockHelperMissing = null
         )
         {
             return configuration.RegisterMissingHelperHook(
-                helperMissing != null ? new DelegateReturnHelperDescriptor("helperMissing", helperMissing) : null,
+                helperMissing != null ? new DelegateReturnHelperWithOptionsDescriptor("helperMissing", helperMissing) : null,
                 blockHelperMissing != null ? new DelegateBlockHelperDescriptor("blockHelperMissing", blockHelperMissing) : null
             );
         }
@@ -90,7 +91,7 @@ namespace HandlebarsDotNet.Features
 
         public void OnCompiling(ICompiledHandlebarsConfiguration configuration)
         {
-            var helperMissingPathInfo = PathInfoStore.Shared.GetOrAdd(HelperMissingKey);
+            var helperMissingPathInfo = PathInfoStore.Current.GetOrAdd(HelperMissingKey);
             if(!configuration.Helpers.ContainsKey(helperMissingPathInfo))
             {
                 var helper = _helper ?? new MissingHelperDescriptor();
@@ -103,7 +104,7 @@ namespace HandlebarsDotNet.Features
                 configuration.Helpers.AddOrReplace(helperMissingPathInfo, new Ref<IHelperDescriptor<HelperOptions>>(helper));
             }
 
-            var blockHelperMissingKeyPathInfo = PathInfoStore.Shared.GetOrAdd(BlockHelperMissingKey);
+            var blockHelperMissingKeyPathInfo = PathInfoStore.Current.GetOrAdd(BlockHelperMissingKey);
             if(!configuration.BlockHelpers.ContainsKey(blockHelperMissingKeyPathInfo))
             {
                 var blockHelper = _blockHelper ?? new MissingBlockHelperDescriptor();

@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using System.IO;
+﻿using System.IO;
 using Xunit;
 
 namespace HandlebarsDotNet.Test
@@ -22,7 +21,7 @@ namespace HandlebarsDotNet.Test
         public void EncodeTest(string input, string expected)
         {
             // Arrange
-            var htmlEncoder = new HtmlEncoder(CultureInfo.InvariantCulture);
+            var htmlEncoder = new HtmlEncoder();
             using var writer = new StringWriter();
 
             // Act

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using HandlebarsDotNet.Compiler.Structure.Path;
+using HandlebarsDotNet.PathStructure;
 
 namespace HandlebarsDotNet
 {
@@ -65,7 +65,7 @@ namespace HandlebarsDotNet
 
         public static implicit operator PathInfoLight(PathInfo pathInfo) => new PathInfoLight(pathInfo);
         
-        public static implicit operator PathInfoLight(string path) => new PathInfoLight(PathInfoStore.Shared.GetOrAdd(path));
+        public static implicit operator PathInfoLight(string path) => new PathInfoLight(PathInfoStore.Current?.GetOrAdd(path) ?? PathInfo.Parse(path));
         
         public static implicit operator PathInfo(PathInfoLight pathInfo) => pathInfo.PathInfo;
     }

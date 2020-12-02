@@ -7,7 +7,7 @@ using LookupSlim = HandlebarsDotNet.Collections.LookupSlim<System.Type, Handleba
 
 namespace HandlebarsDotNet.IO
 {
-    internal class AggregatedFormatterProvider : IFormatterProvider
+    public class FormatterProvider : IFormatterProvider
     {
         private static readonly Func<Type, ObservableList<IFormatterProvider>, DeferredValue<KeyValuePair<Type, ObservableList<IFormatterProvider>>, IFormatter>> ValueFactory = (t, providers) =>
         {
@@ -28,22 +28,42 @@ namespace HandlebarsDotNet.IO
 
             return null;
         };
+
+        public static FormatterProvider Current => AmbientContext.Current?.FormatterProvider;
         
         private readonly LookupSlim _formatters = new LookupSlim(new ReferenceEqualityComparer<Type>());
 
         private readonly ObservableList<IFormatterProvider> _formatterProviders;
 
-        public AggregatedFormatterProvider(ObservableList<IFormatterProvider> formatterProviders)
+        public FormatterProvider(ObservableList<IFormatterProvider> providers = null)
         {
-            _formatterProviders = formatterProviders;
+            _formatterProviders = new ObservableList<IFormatterProvider>();
+            
+            if (providers != null) Append(providers);
             
             var observer = new ObserverBuilder<ObservableEvent<IFormatterProvider>>()
                 .OnEvent<AddedObservableEvent<IFormatterProvider>, LookupSlim>(
                     _formatters, (@event, state) => state.Clear()
                 )
                 .Build();
-                
-            formatterProviders.Subscribe(observer);
+
+            _formatterProviders.Subscribe(observer);
+        }
+
+        public FormatterProvider Append(ObservableList<IFormatterProvider> providers)
+        {
+            _formatterProviders.AddMany(providers);
+            _formatterProviders.Subscribe(providers);
+
+            return this;
+        }
+        
+        public FormatterProvider Append(FormatterProvider provider)
+        {
+            _formatterProviders.AddMany(provider._formatterProviders);
+            _formatterProviders.Subscribe(provider._formatterProviders);
+            
+            return this;
         }
         
         public bool TryCreateFormatter(Type type, out IFormatter formatter)

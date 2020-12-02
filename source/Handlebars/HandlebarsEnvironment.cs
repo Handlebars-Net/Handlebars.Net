@@ -3,6 +3,9 @@ using System.IO;
 using HandlebarsDotNet.Compiler;
 using HandlebarsDotNet.Helpers;
 using HandlebarsDotNet.Helpers.BlockHelpers;
+using HandlebarsDotNet.IO;
+using HandlebarsDotNet.ObjectDescriptors;
+using HandlebarsDotNet.Runtime;
 
 namespace HandlebarsDotNet
 {
@@ -21,7 +24,9 @@ namespace HandlebarsDotNet
                 
             return new StringReader(template);
         };
-        
+
+        private readonly AmbientContext _ambientContext = AmbientContext.Create();
+
         public HandlebarsEnvironment(HandlebarsConfiguration configuration)
         {
             Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
@@ -56,7 +61,21 @@ namespace HandlebarsDotNet
 
         private HandlebarsTemplate<TextWriter, object, object> CompileViewInternal(string templatePath, ViewReaderFactory readerFactoryFactory)
         {
+            using var container = AmbientContext.Use(_ambientContext);
+            
             var configuration = CompiledConfiguration ?? new HandlebarsConfigurationAdapter(Configuration);
+            
+            var formatterProvider = new FormatterProvider(configuration.FormatterProviders);
+            var objectDescriptorFactory = new ObjectDescriptorFactory(configuration.ObjectDescriptorProviders);
+            
+            var localContext = AmbientContext.Create(
+                _ambientContext, 
+                formatterProvider: formatterProvider,
+                descriptorFactory: objectDescriptorFactory
+            );
+            
+            using var localContainer = AmbientContext.Use(localContext);
+            
             var createdFeatures = configuration.Features;
             for (var index = 0; index < createdFeatures.Count; index++)
             {
@@ -73,11 +92,13 @@ namespace HandlebarsDotNet
 
             return (writer, context, data) =>
             {
+                using var disposableContainer = AmbientContext.Use(localContext);
+                
                 if (context is BindingContext bindingContext)
                 {
                     bindingContext.Extensions["templatePath"] = templatePath; 
                     var config = bindingContext.Configuration;
-                    using var encodedTextWriter = new EncodedTextWriter(writer, config.TextEncoder, config.FormatterProvider, config.NoEscape);
+                    using var encodedTextWriter = new EncodedTextWriter(writer, config.TextEncoder, formatterProvider, config.NoEscape);
                     compiledView(encodedTextWriter, bindingContext);
                 }
                 else
@@ -86,7 +107,7 @@ namespace HandlebarsDotNet
                     newBindingContext.Extensions["templatePath"] = templatePath;
                     newBindingContext.SetDataObject(data);
 
-                    using var encodedTextWriter = new EncodedTextWriter(writer, configuration.TextEncoder, configuration.FormatterProvider, configuration.NoEscape);
+                    using var encodedTextWriter = new EncodedTextWriter(writer, configuration.TextEncoder, formatterProvider, configuration.NoEscape);
                     compiledView(encodedTextWriter, newBindingContext);
                 }
             };
@@ -94,12 +115,29 @@ namespace HandlebarsDotNet
 
         public HandlebarsTemplate<TextWriter, object, object> Compile(TextReader template)
         {
+            using var container = AmbientContext.Use(_ambientContext);
+            
             var configuration = CompiledConfiguration ?? new HandlebarsConfigurationAdapter(Configuration);
+            
+            var formatterProvider = new FormatterProvider(configuration.FormatterProviders);
+            var objectDescriptorFactory = new ObjectDescriptorFactory(configuration.ObjectDescriptorProviders);
+            
+            var localContext = AmbientContext.Create(
+                _ambientContext, 
+                formatterProvider: formatterProvider,
+                descriptorFactory: objectDescriptorFactory
+            );
+            
+            using var localContainer = AmbientContext.Use(localContext);
+            
             var compilationContext = new CompilationContext(configuration);
             using var reader = new ExtendedStringReader(template);
             var compiledTemplate = HandlebarsCompiler.Compile(reader, compilationContext);
+            
             return (writer, context, data) =>
             {
+                using var disposableContainer = AmbientContext.Use(localContext);
+
                 if (writer is EncodedTextWriterWrapper encodedTextWriterWrapper)
                 {
                     var encodedTextWriter = encodedTextWriterWrapper.UnderlyingWriter;
@@ -119,7 +157,7 @@ namespace HandlebarsDotNet
                     if (context is BindingContext bindingContext)
                     {
                         var config = bindingContext.Configuration;
-                        using var encodedTextWriter = new EncodedTextWriter(writer, config.TextEncoder, config.FormatterProvider, config.NoEscape);
+                        using var encodedTextWriter = new EncodedTextWriter(writer, config.TextEncoder, formatterProvider, config.NoEscape);
                         compiledTemplate(encodedTextWriter, bindingContext);
                     }
                     else
@@ -127,7 +165,7 @@ namespace HandlebarsDotNet
                         using var newBindingContext = BindingContext.Create(configuration, context);
                         newBindingContext.SetDataObject(data);
 
-                        using var encodedTextWriter = new EncodedTextWriter(writer, configuration.TextEncoder, configuration.FormatterProvider, configuration.NoEscape);
+                        using var encodedTextWriter = new EncodedTextWriter(writer, configuration.TextEncoder, formatterProvider, configuration.NoEscape);
                         compiledTemplate(encodedTextWriter, newBindingContext);    
                     }  
                 }
@@ -197,6 +235,11 @@ namespace HandlebarsDotNet
         public void RegisterHelper(IHelperDescriptor<HelperOptions> helperObject)
         {
             Configuration.Helpers[helperObject.Name] = helperObject;
+        }
+
+        public DisposableContainer Configure()
+        {
+            return AmbientContext.Use(_ambientContext);
         }
     }
 }

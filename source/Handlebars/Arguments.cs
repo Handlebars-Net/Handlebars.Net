@@ -170,7 +170,7 @@ namespace HandlebarsDotNet
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                if(index < 0 || index >= Length) throw new IndexOutOfRangeException();
+                if (index < 0 || index >= Length) Throw.IndexOutOfRangeException();
                 
                 if(_useArray) return _array[index];
 
@@ -182,7 +182,7 @@ namespace HandlebarsDotNet
                     3 => _element3,
                     4 => _element4,
                     5 => _element5,
-                    _ => throw new IndexOutOfRangeException()
+                    _ => Throw.IndexOutOfRangeException()
                 };
             }
         }
@@ -193,51 +193,6 @@ namespace HandlebarsDotNet
             get => Hash?[name];
         }
         
-        [Pure]
-        public Arguments Add(object value)
-        {
-            if (Length <= 5)
-            {
-                return Length switch
-                {
-                    0 => new Arguments(value),
-                    1 => new Arguments(_element0, value),
-                    2 => new Arguments(_element0, _element1, value),
-                    3 => new Arguments(_element0, _element1, _element2, value),
-                    4 => new Arguments(_element0, _element1, _element2, _element3, value),
-                    5 => new Arguments(_element0, _element1, _element2, _element3, _element4, value),
-                    _ => throw new IndexOutOfRangeException()
-                };
-            }
-
-            if (!_useArray)
-            {
-                var array = new[]
-                {
-                    _element0,
-                    _element1,
-                    _element2,
-                    _element3,
-                    _element4,
-                    _element5,
-                    value
-                };
-                
-                return new Arguments(array);
-            }
-            else
-            {
-                var array = new object[_array.Length + 1];
-                for (var i = 0; i < _array.Length; i++)
-                {
-                    array[i] = _array[i];
-                }
-
-                array[_array.Length] = value;
-                return new Arguments(array);
-            }
-        }
-
         [Pure]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T At<T>(in int index)
@@ -253,7 +208,7 @@ namespace HandlebarsDotNet
         public static implicit operator Arguments(object[] array)
         {
             return array.Length == 0 
-                ? new Arguments() 
+                ? new Arguments(0) 
                 : new Arguments(array);
         }
 
@@ -288,15 +243,13 @@ namespace HandlebarsDotNet
         {
             unchecked
             {
-                var hashCode = (_array != null ? _array.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ _useArray.GetHashCode();
-                hashCode = (hashCode * 397) ^ (_element0 != null ? _element0.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ (_element1 != null ? _element1.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ (_element2 != null ? _element2.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ (_element3 != null ? _element3.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ (_element4 != null ? _element4.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ (_element5 != null ? _element5.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ Length;
+                var hashCode = Length;
+                using var enumerator = GetEnumerator();
+                while (enumerator.MoveNext())
+                {
+                    hashCode = (hashCode * 397) ^ (enumerator.Current?.GetHashCode() ?? 0);
+                }
+                
                 return hashCode;
             }
         }
@@ -355,7 +308,7 @@ namespace HandlebarsDotNet
                         3 => _arguments._element3,
                         4 => _arguments._element4,
                         5 => _arguments._element5,
-                        _ => throw new ArgumentOutOfRangeException()
+                        _ => Throw.IndexOutOfRangeException()
                     };
                 }
             }
@@ -370,8 +323,18 @@ namespace HandlebarsDotNet
             {
                 public Enumerator Create() => new Enumerator();
 
-                public bool Return(Enumerator item) => true;
+                public bool Return(Enumerator item)
+                {
+                    item.Reset();
+                    return true;
+                }
             }
+        }
+        
+        private static class Throw
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static object IndexOutOfRangeException(string message = null) => throw new IndexOutOfRangeException(message);
         }
     }
 }

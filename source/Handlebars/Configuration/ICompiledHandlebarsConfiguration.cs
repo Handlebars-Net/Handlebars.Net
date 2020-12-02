@@ -27,9 +27,7 @@ namespace HandlebarsDotNet
         
         IFormatProvider FormatProvider { get; }
         
-        IFormatterProvider FormatterProvider { get; }
-        
-        IAppendOnlyList<IFormatterProvider> FormatterProviders { get; }
+        ObservableList<IFormatterProvider> FormatterProviders { get; }
         
         bool ThrowOnUnresolvedBindingExpression { get; }
         
@@ -47,7 +45,7 @@ namespace HandlebarsDotNet
         Compatibility Compatibility { get; }
         
         /// <inheritdoc cref="IObjectDescriptorProvider"/>
-        IObjectDescriptorProvider ObjectDescriptorProvider { get; }
+        ObservableList<IObjectDescriptorProvider> ObjectDescriptorProviders { get; }
         
         /// <inheritdoc cref="IExpressionMiddleware"/>
         IAppendOnlyList<IExpressionMiddleware> ExpressionMiddlewares { get; }

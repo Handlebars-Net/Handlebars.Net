@@ -1,9 +1,8 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Compiler;
-using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.Helpers;
+using HandlebarsDotNet.PathStructure;
 using HandlebarsDotNet.Runtime;
 using Xunit;
 
@@ -113,7 +112,7 @@ namespace HandlebarsDotNet.Test
             var paths = new List<PathInfo>();
             for (int i = 0; i < count; i++)
             {
-                var pathInfo = PathInfoStore.Shared.GetOrAdd($"{i}");
+                var pathInfo = PathInfo.Parse($"{i}");
                 builder.Add(Const(pathInfo));
                 paths.Add(pathInfo);
             }

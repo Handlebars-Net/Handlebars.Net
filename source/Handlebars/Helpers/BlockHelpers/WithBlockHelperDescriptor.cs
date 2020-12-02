@@ -1,5 +1,4 @@
-using HandlebarsDotNet.Compiler.Structure.Path;
-using HandlebarsDotNet.ValueProviders;
+using HandlebarsDotNet.PathStructure;
 
 namespace HandlebarsDotNet.Helpers.BlockHelpers
 {
@@ -26,7 +25,7 @@ namespace HandlebarsDotNet.Helpers.BlockHelpers
             }
 
             using var frame = options.CreateFrame(arguments[0]);
-            var blockParamsValues = new BlockParamsValues(frame, options.BlockVariables);
+            var blockParamsValues = frame.BlockParams(options.BlockVariables);
             blockParamsValues[0] = arguments[0];
 
             options.Template(output, frame);

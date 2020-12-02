@@ -1,21 +1,16 @@
 ﻿using System;
 using System.Collections;
 using System.Linq;
-using HandlebarsDotNet.Compiler.Structure.Path;
+using HandlebarsDotNet.ObjectDescriptors;
+using HandlebarsDotNet.PathStructure;
 
 namespace HandlebarsDotNet.MemberAliasProvider
 {
     internal sealed class CollectionMemberAliasProvider : IMemberAliasProvider
     {
-        private readonly ICompiledHandlebarsConfiguration _configuration;
         private static readonly ChainSegment Count = ChainSegment.Create("Count");
         private static readonly ChainSegment Length = ChainSegment.Create("Length");
 
-        public CollectionMemberAliasProvider(ICompiledHandlebarsConfiguration configuration)
-        {
-            _configuration = configuration;
-        }
-        
         public bool TryGetMemberByAlias(object instance, Type targetType, ChainSegment memberAlias, out object value)
         {
             switch (instance)
@@ -28,7 +23,7 @@ namespace HandlebarsDotNet.MemberAliasProvider
                     value = array.Count;
                     return true;
 
-                case IEnumerable enumerable when _configuration.ObjectDescriptorProvider.TryGetDescriptor(targetType, out var descriptor) && descriptor.GetProperties != null:
+                case IEnumerable enumerable when ObjectDescriptorFactory.Current.TryGetDescriptor(targetType, out var descriptor) && descriptor.GetProperties != null:
                     var properties = descriptor.GetProperties(descriptor, enumerable);
                     var property = properties.OfType<ChainSegment>().FirstOrDefault(o =>
                     {

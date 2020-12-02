@@ -3,9 +3,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.Helpers;
+using HandlebarsDotNet.PathStructure;
 using HandlebarsDotNet.Runtime;
 
 namespace HandlebarsDotNet.Compiler

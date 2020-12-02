@@ -4,10 +4,11 @@ namespace HandlebarsDotNet.Features
 {
     internal class CollectionMemberAliasProviderFeature : IFeature
     {
+        private static readonly CollectionMemberAliasProvider AliasProvider = new CollectionMemberAliasProvider();
+
         public void OnCompiling(ICompiledHandlebarsConfiguration configuration)
         {
-            var aliasProvider = new CollectionMemberAliasProvider(configuration);
-            configuration.AliasProviders.Add(aliasProvider);
+            configuration.AliasProviders.Add(AliasProvider);
         }
 
         public void CompilationCompleted()

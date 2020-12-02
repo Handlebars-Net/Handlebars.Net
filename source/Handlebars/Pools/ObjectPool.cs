@@ -1,21 +1,7 @@
 using System.Collections.Concurrent;
-using HandlebarsDotNet.Runtime;
 
 namespace HandlebarsDotNet.Pools
 {
-    internal static class ObjectPoolExtensions
-    {
-        public static DisposableContainer<T, InternalObjectPool<T, TPolicy>> Use<T, TPolicy>(this InternalObjectPool<T, TPolicy> objectPool) 
-            where T : class where TPolicy : IInternalObjectPoolPolicy<T>
-        {
-            return new DisposableContainer<T, InternalObjectPool<T, TPolicy>>(
-                objectPool.Get(), 
-                objectPool, 
-                (item, pool) => pool.Return(item)
-            );
-        }
-    }
-
     internal class InternalObjectPool<T, TPolicy>
         where TPolicy: IInternalObjectPoolPolicy<T>
         where T: class

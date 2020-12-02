@@ -29,17 +29,16 @@ namespace HandlebarsDotNet
             {
                 new DefaultFormatterProvider(),
                 new CollectionFormatterProvider(),
-                new ReadOnlyCollectionFormatterProvider(),
+                new ReadOnlyCollectionFormatterProvider()
             }.AddMany(configuration.FormatterProviders);
             
-            ObjectDescriptorProvider = CreateObjectDescriptorProvider();
+            ObjectDescriptorProviders = CreateObjectDescriptorProvider(UnderlingConfiguration.ObjectDescriptorProviders);
             ExpressionMiddlewares = new ObservableList<IExpressionMiddleware>(configuration.CompileTimeConfiguration.ExpressionMiddleware)
             {
                 new ClosureExpressionMiddleware(),
                 new ExpressionOptimizerMiddleware()
             };
 
-            FormatterProvider = new AggregatedFormatterProvider((ObservableList<IFormatterProvider>) FormatterProviders);                
             Features = UnderlingConfiguration.CompileTimeConfiguration.Features
                 .Select(o => o.CreateFeature())
                 .OrderBy(o => o.GetType().GetTypeInfo().GetCustomAttribute<FeatureOrderAttribute>()?.Order ?? 100)
@@ -54,16 +53,15 @@ namespace HandlebarsDotNet
         public ITextEncoder TextEncoder => UnderlingConfiguration.TextEncoder;
         public IFormatProvider FormatProvider => UnderlingConfiguration.FormatProvider;
         public ViewEngineFileSystem FileSystem => UnderlingConfiguration.FileSystem;
-        public IAppendOnlyList<IFormatterProvider> FormatterProviders { get; }
+        public ObservableList<IFormatterProvider> FormatterProviders { get; }
         public bool ThrowOnUnresolvedBindingExpression => UnderlingConfiguration.ThrowOnUnresolvedBindingExpression;
         public IPartialTemplateResolver PartialTemplateResolver => UnderlingConfiguration.PartialTemplateResolver;
         public IMissingPartialTemplateHandler MissingPartialTemplateHandler => UnderlingConfiguration.MissingPartialTemplateHandler;
         public Compatibility Compatibility => UnderlingConfiguration.Compatibility;
-        public IFormatterProvider FormatterProvider { get; }
-        
+
         public bool NoEscape => UnderlingConfiguration.NoEscape;
         
-        public IObjectDescriptorProvider ObjectDescriptorProvider { get; }
+        public ObservableList<IObjectDescriptorProvider> ObjectDescriptorProviders { get; }
         public IAppendOnlyList<IExpressionMiddleware> ExpressionMiddlewares { get; }
         public IAppendOnlyList<IMemberAliasProvider> AliasProviders { get; }
         public IExpressionCompiler ExpressionCompiler { get; set; }
@@ -110,13 +108,13 @@ namespace HandlebarsDotNet
             return target;
         }
         
-        private ObjectDescriptorFactory CreateObjectDescriptorProvider()
+        private ObservableList<IObjectDescriptorProvider> CreateObjectDescriptorProvider(ObservableList<IObjectDescriptorProvider> descriptorProviders)
         {
             var objectDescriptorProvider = new ObjectDescriptorProvider(AliasProviders);
-            var providers = new ObservableList<IObjectDescriptorProvider>
+            var objectDescriptorProviders = new ObservableList<IObjectDescriptorProvider>
                 {
                     objectDescriptorProvider,
-                    new DynamicObjectDescriptor(),
+                    new DynamicObjectDescriptor(objectDescriptorProvider),
                     new EnumerableObjectDescriptor(objectDescriptorProvider),
                     new DictionaryObjectDescriptor(),
                     new ReadOnlyGenericDictionaryObjectDescriptorProvider(),
@@ -124,9 +122,18 @@ namespace HandlebarsDotNet
                     new ReadOnlyStringDictionaryObjectDescriptorProvider(),
                     new StringDictionaryObjectDescriptorProvider(),
                 }
-                .AddMany(UnderlingConfiguration.ObjectDescriptorProviders);
+                .AddMany(descriptorProviders);
 
-            return new ObjectDescriptorFactory(providers);
+            var observer = new ObserverBuilder<ObservableEvent<IObjectDescriptorProvider>>()
+                .OnEvent<
+                    AddedObservableEvent<IObjectDescriptorProvider>,
+                    ObservableList<IObjectDescriptorProvider>
+                >(objectDescriptorProviders, (@event, state) => { state.Add(@event.Value); })
+                .Build();
+
+            descriptorProviders.Subscribe(observer);
+            
+            return objectDescriptorProviders;
         }
     }
 }

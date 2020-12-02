@@ -1,5 +1,5 @@
 ﻿using System;
-using HandlebarsDotNet.Compiler.Structure.Path;
+using HandlebarsDotNet.PathStructure;
 
 namespace HandlebarsDotNet
 {

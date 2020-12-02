@@ -6,22 +6,34 @@ using HandlebarsDotNet.Runtime;
 
 namespace HandlebarsDotNet
 {
+	public sealed class UndefinedBindingResultCache
+	{
+		private static readonly Func<string, DeferredValue<string, UndefinedBindingResult>> ValueFactory = s =>
+		{
+			return new DeferredValue<string, UndefinedBindingResult>(s, v => new UndefinedBindingResult(v));
+		};
+		
+		private readonly LookupSlim<string, DeferredValue<string, UndefinedBindingResult>, StringEqualityComparer> _cache 
+			= new LookupSlim<string, DeferredValue<string, UndefinedBindingResult>, StringEqualityComparer>(new StringEqualityComparer(StringComparison.Ordinal));
+
+		public static UndefinedBindingResultCache Current => AmbientContext.Current?.UndefinedBindingResultCache;
+
+		internal UndefinedBindingResultCache()
+		{
+			
+		}
+		
+		public UndefinedBindingResult Create(string value) => _cache.GetOrAdd(value, ValueFactory).Value;
+	} 
+	
 	[DebuggerDisplay("undefined")]
 	public sealed class UndefinedBindingResult : IEquatable<UndefinedBindingResult>
     {
-	    private static readonly LookupSlim<string, GcDeferredValue<string, UndefinedBindingResult>, StringEqualityComparer> Cache 
-		    = new LookupSlim<string, GcDeferredValue<string, UndefinedBindingResult>, StringEqualityComparer>(new StringEqualityComparer(StringComparison.Ordinal));
-
-	    public static UndefinedBindingResult Create(string value) => Cache.GetOrAdd(value, ValueFactory).Value;
-	    
-	    private static readonly Func<string, GcDeferredValue<string, UndefinedBindingResult>> ValueFactory = s =>
-	    {
-		    return new GcDeferredValue<string, UndefinedBindingResult>(s, v => new UndefinedBindingResult(v));
-	    };
+	    public static UndefinedBindingResult Create(string value) => UndefinedBindingResultCache.Current?.Create(value) ?? new UndefinedBindingResult(value);
 
 	    public readonly string Value;
 	    
-	    private UndefinedBindingResult(string value) => Value = value;
+	    internal UndefinedBindingResult(string value) => Value = value;
 
 	    public override string ToString() => Value;
 

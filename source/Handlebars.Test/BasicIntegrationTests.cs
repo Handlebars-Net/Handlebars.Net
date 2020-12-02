@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using HandlebarsDotNet.Features;
 using HandlebarsDotNet.IO;
-using Xunit.Abstractions;
+using HandlebarsDotNet.PathStructure;
 
 namespace HandlebarsDotNet.Test
 {
@@ -1922,7 +1922,7 @@ false
         
         private class StringHelperResolver : IHelperResolver
         {
-            public bool TryResolveHelper(string name, Type targetType, out IHelperDescriptor<HelperOptions> helper)
+            public bool TryResolveHelper(PathInfo name, Type targetType, out IHelperDescriptor<HelperOptions> helper)
             {
                 if (targetType == typeof(string))
                 {
@@ -1934,9 +1934,8 @@ false
                         helper = null;
                         return false;
                     }
-
-                    object Helper(Context context, Arguments arguments) => method.Invoke(arguments[0], arguments.AsEnumerable().Skip(1).ToArray());
-                    helper = new DelegateReturnHelperDescriptor(name, Helper);
+                    
+                    helper = new HelperDescriptor(name, method);
                     return true;
                 }
                 
@@ -1944,10 +1943,32 @@ false
                 return false;
             }
 
-            public bool TryResolveBlockHelper(string name, out IHelperDescriptor<BlockHelperOptions> helper)
+            public bool TryResolveBlockHelper(PathInfo name, out IHelperDescriptor<BlockHelperOptions> helper)
             {
                 helper = null;
                 return false;
+            }
+            
+            private class HelperDescriptor : IHelperDescriptor<HelperOptions>
+            {
+                private readonly MethodInfo _methodInfo;
+
+                public HelperDescriptor(PathInfo name, MethodInfo methodInfo)
+                {
+                    _methodInfo = methodInfo;
+                    Name = name;
+                }
+
+                public PathInfo Name { get; }
+                public object Invoke(in HelperOptions options, in Context context, in Arguments arguments)
+                {
+                    return _methodInfo.Invoke(arguments[0], arguments.AsEnumerable().Skip(1).ToArray());
+                }
+
+                public void Invoke(in EncodedTextWriter output, in HelperOptions options, in Context context, in Arguments arguments)
+                {
+                    output.Write(Invoke(options, context, arguments));
+                }
             }
         }
         

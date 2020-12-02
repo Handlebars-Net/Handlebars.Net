@@ -1,54 +1,32 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using HandlebarsDotNet.Collections;
-using HandlebarsDotNet.EqualityComparers;
-using HandlebarsDotNet.Runtime;
 using HandlebarsDotNet.StringUtils;
 
-namespace HandlebarsDotNet.Compiler.Structure.Path
+namespace HandlebarsDotNet.PathStructure
 {
-    internal enum WellKnownVariable
-    {
-        None = -1,
-        Index = 0,
-        Key = 1,
-        Value = 2,
-        First = 3,
-        Last = 4,
-        Root = 5,
-        Parent = 6,
-        This = 7,
-    }
-    
     /// <summary>
     /// Represents parts of single <see cref="PathSegment"/> separated with dots.
     /// </summary>
     public sealed partial class ChainSegment : IEquatable<ChainSegment>
     {
-        private static readonly LookupSlim<string, GcDeferredValue<CreationProperties, ChainSegment>, StringEqualityComparer> Lookup = new LookupSlim<string, GcDeferredValue<CreationProperties, ChainSegment>, StringEqualityComparer>(new StringEqualityComparer(StringComparison.Ordinal));
-        
-        private static readonly Func<string, WellKnownVariable, GcDeferredValue<CreationProperties, ChainSegment>> ValueFactory = (s, v) =>
-        {
-            return new GcDeferredValue<CreationProperties, ChainSegment>(new CreationProperties(s, v), properties => new ChainSegment(properties.String, properties.KnownVariable));
-        };
-        
         public static ChainSegmentEqualityComparer EqualityComparer { get; } = new ChainSegmentEqualityComparer();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ChainSegment Create(string value) => Lookup.GetOrAdd(value, ValueFactory, WellKnownVariable.None).Value;
+        public static ChainSegment Create(string value) => ChainSegmentStore.Current?.Create(value) ?? new ChainSegment(value);
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ChainSegment Create(object value)
         {
             if (value is ChainSegment segment) return segment;
-            return Lookup.GetOrAdd(value as string ?? value.ToString(), ValueFactory, WellKnownVariable.None).Value;
+            var sValue = value as string ?? value.ToString();
+            return ChainSegmentStore.Current?.Create(sValue) ?? new ChainSegment(sValue);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static ChainSegment Create(string value, WellKnownVariable variable)
+        internal static ChainSegment Create(string value, WellKnownVariable variable)
         {
-            return Lookup.GetOrAdd(value, ValueFactory, variable).Value;
+            return ChainSegmentStore.Current?.Create(value, variable) ?? new ChainSegment(value, variable);
         }
 
         public static ChainSegment Index { get; } = Create(nameof(Index), WellKnownVariable.Index);
@@ -69,7 +47,7 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
         /// <summary>
         ///  
         /// </summary>
-        private ChainSegment(string value, WellKnownVariable wellKnownVariable = WellKnownVariable.None)
+        internal ChainSegment(string value, WellKnownVariable wellKnownVariable = WellKnownVariable.None)
         {
             WellKnownVariable = wellKnownVariable;
 
@@ -148,18 +126,14 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
             }
         }
 
-        /// <inheritdoc cref="Equals(HandlebarsDotNet.Compiler.Structure.Path.ChainSegment)"/>
+        /// <inheritdoc cref="Equals(HandlebarsDotNet.PathStructure.ChainSegment)"/>
         public static bool operator ==(ChainSegment a, ChainSegment b) => Equals(a, b);
 
-        /// <inheritdoc cref="Equals(HandlebarsDotNet.Compiler.Structure.Path.ChainSegment)"/>
+        /// <inheritdoc cref="Equals(HandlebarsDotNet.PathStructure.ChainSegment)"/>
         public static bool operator !=(ChainSegment a, ChainSegment b) => !Equals(a, b);
 
         /// <inheritdoc cref="ToString"/>
         public static implicit operator string(ChainSegment segment) => segment._value;
-        
-        /// <summary>
-        /// 
-        /// </summary>
         
         public static implicit operator ChainSegment(string segment) => Create(segment);
 
@@ -172,18 +146,6 @@ namespace HandlebarsDotNet.Compiler.Structure.Path
             }
 
             return key;
-        }
-
-        private readonly struct CreationProperties
-        {
-            public readonly string String;
-            public readonly WellKnownVariable KnownVariable;
-
-            public CreationProperties(string @string, WellKnownVariable knownVariable = WellKnownVariable.None)
-            {
-                String = @string;
-                KnownVariable = knownVariable;
-            }
         }
     }
 }

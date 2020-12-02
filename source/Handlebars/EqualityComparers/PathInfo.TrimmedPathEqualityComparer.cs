@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace HandlebarsDotNet.Compiler.Structure.Path
+namespace HandlebarsDotNet.PathStructure
 {
     public sealed partial class PathInfo
     {

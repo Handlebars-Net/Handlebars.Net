@@ -86,7 +86,7 @@ namespace HandlebarsDotNet.Collections
             var entry = _entries[entryIndex];
             if (entry.Version != _version || hash == entry.Hash && _comparer.Equals(key, entry.Key))
             {
-                index = new EntryIndex<TKey>(entryIndex, _version, this);
+                index = new EntryIndex<TKey>(entryIndex, _version);
                 return true;
             }
 
@@ -97,7 +97,7 @@ namespace HandlebarsDotNet.Collections
                 if (!entry.IsNotDefault) break;
                 if (entry.Version == _version && (hash != entry.Hash || !_comparer.Equals(key, entry.Key))) continue;
 
-                index = new EntryIndex<TKey>(entry.Index, _version, this);
+                index = new EntryIndex<TKey>(entry.Index, _version);
                 return true;
             }
 
@@ -112,7 +112,7 @@ namespace HandlebarsDotNet.Collections
         {
             // No need to extract actual value. EntryIndex should be used only as part of it's issuer
             // and as collection is append only it's guarantied to have the value at particular index
-            return keyIndex.Version == _version && ReferenceEquals(keyIndex.Producer, this);
+            return keyIndex.Version == _version;
         }
 
         /// <summary>
@@ -156,7 +156,7 @@ namespace HandlebarsDotNet.Collections
         /// </summary>
         public bool TryGetValue(in EntryIndex<TKey> keyIndex, out TValue value)
         {
-            if (_count == 0 || keyIndex.Version != _version || !ReferenceEquals(keyIndex.Producer, this))
+            if (_count == 0 || keyIndex.Version != _version)
             {
                 value = default;
                 return false;
@@ -251,14 +251,14 @@ namespace HandlebarsDotNet.Collections
             if (!entry.IsNotDefault || entry.Version != _version)
             {
                 _entries[entryIndex] = new Entry(hash, entryIndex, key, value, _version);
-                index = new EntryIndex<TKey>(entryIndex, _version, this);
+                index = new EntryIndex<TKey>(entryIndex, _version);
                 _indexes[_count++] = index;
                 return;
             }
 
             if (hash == entry.Hash && _comparer.Equals(key, entry.Key))
             {
-                index = new EntryIndex<TKey>(entryIndex, _version, this);
+                index = new EntryIndex<TKey>(entryIndex, _version);
                 _entries[entryIndex].Value = value;
                 return;
             }
@@ -270,14 +270,14 @@ namespace HandlebarsDotNet.Collections
                 if (entry.Version != _version)
                 {
                     _entries[entry.Index] = new Entry(hash, entry.Index, key, value, _version);
-                    index = new EntryIndex<TKey>(entry.Index, _version, this);
+                    index = new EntryIndex<TKey>(entry.Index, _version);
                     _indexes[_count++] = index;
                     return;
                 }
 
                 if (hash == entry.Hash && _comparer.Equals(key, entry.Key))
                 {
-                    index = new EntryIndex<TKey>(entry.Index, _version, this);
+                    index = new EntryIndex<TKey>(entry.Index, _version);
                     _entries[entry.Index].Value = value;
                     return;
                 }
@@ -296,7 +296,7 @@ namespace HandlebarsDotNet.Collections
 
                 entryReference.Next = entryIndex;
                 _entries[entryIndex] = new Entry(hash, entryIndex, key, value, _version);
-                index = new EntryIndex<TKey>(entryIndex, _version, this);
+                index = new EntryIndex<TKey>(entryIndex, _version);
                 _indexes[_count++] = index;
                 return;
             }
@@ -309,7 +309,7 @@ namespace HandlebarsDotNet.Collections
 
                 entryReference.Next = entryIndex;
                 _entries[entryIndex] = new Entry(hash, entryIndex, key, value, _version);
-                index = new EntryIndex<TKey>(entryIndex, _version, this);
+                index = new EntryIndex<TKey>(entryIndex, _version);
                 _indexes[_count++] = index;
                 return;
             }
@@ -326,14 +326,14 @@ namespace HandlebarsDotNet.Collections
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                if (entryIndex.Version != _version || !ReferenceEquals(entryIndex.Producer, this)) return default;
+                if (entryIndex.Version != _version) return default;
                 return _entries[entryIndex.Index].Value;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
-                if (entryIndex.Version != _version || !ReferenceEquals(entryIndex.Producer, this)) return;
+                if (entryIndex.Version != _version) return;
                 _entries[entryIndex.Index].Value = value;
             }
         }
@@ -346,7 +346,7 @@ namespace HandlebarsDotNet.Collections
         public void CopyTo(FixedSizeDictionary<TKey, TValue, TComparer> destination)
         {
             if (Capacity != destination.Capacity)
-                throw new ArgumentException(" capacity should be equal to source dictionary", nameof(destination));
+                Throw.CapacityShouldBeEqual(nameof(destination));
             
             if(_count == 0) return;
             
@@ -355,14 +355,14 @@ namespace HandlebarsDotNet.Collections
                 var idx = _indexes[index];
                 if (idx.Version != _version || !idx.IsNotEmpty)
                 {
-                    destination._indexes[index] = new EntryIndex<TKey>(idx.Index, destination._version, destination);
+                    destination._indexes[index] = new EntryIndex<TKey>(idx.Index, destination._version);
                     break;
                 }
                 
                 var entry = _entries[idx.Index];
                 if(!entry.IsNotDefault || entry.Version != _version) continue;
 
-                destination._indexes[index] = new EntryIndex<TKey>(idx.Index, destination._version, destination);
+                destination._indexes[index] = new EntryIndex<TKey>(idx.Index, destination._version);
                 destination._entries[idx.Index] = new Entry(entry, destination._version);
             }
             
@@ -410,7 +410,7 @@ namespace HandlebarsDotNet.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void OptionalClear()
         {
-            if (_version % 5 == 0)
+            if (_version % 10 == 0)
             {
                 Clear();
                 return;
@@ -509,6 +509,12 @@ namespace HandlebarsDotNet.Collections
 
             public override string ToString() => $"{Key}: {Value}";
         }
+        
+        private static class Throw
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static void CapacityShouldBeEqual(string paramName) => throw new ArgumentException(" capacity should be equal to source dictionary", paramName);
+        }
     }
 
     [DebuggerDisplay("{Index}")]
@@ -516,14 +522,12 @@ namespace HandlebarsDotNet.Collections
     {
         public readonly int Index;
         public readonly byte Version;
-        public readonly object Producer;
         public readonly bool IsNotEmpty;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal EntryIndex(in int index, in byte version, object producer)
+        internal EntryIndex(in int index, in byte version)
         {
             Version = version;
-            Producer = producer;
             Index = index;
             IsNotEmpty = true;
         }

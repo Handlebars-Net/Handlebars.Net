@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace HandlebarsDotNet.Runtime
 {
-    internal readonly struct DisposableContainer<T, TState> : IDisposable
+    public readonly struct DisposableContainer<T, TState> : IDisposable
     {
         private readonly TState _state;
         private readonly Action<T, TState> _onDispose;
@@ -20,7 +20,7 @@ namespace HandlebarsDotNet.Runtime
         public void Dispose() => _onDispose(Value, _state);
     }
     
-    internal readonly struct DisposableContainer<T> : IDisposable
+    public readonly struct DisposableContainer<T> : IDisposable
     {
         private readonly Action<T> _onDispose;
         public readonly T Value;
@@ -33,5 +33,15 @@ namespace HandlebarsDotNet.Runtime
         }
         
         public void Dispose() => _onDispose(Value);
+    }
+    
+    public readonly struct DisposableContainer : IDisposable
+    {
+        private readonly Action _onDispose;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public DisposableContainer(Action onDispose) => _onDispose = onDispose;
+
+        public void Dispose() => _onDispose();
     }
 }

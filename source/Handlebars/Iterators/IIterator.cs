@@ -1,5 +1,5 @@
 using HandlebarsDotNet.Compiler;
-using HandlebarsDotNet.Compiler.Structure.Path;
+using HandlebarsDotNet.PathStructure;
 
 namespace HandlebarsDotNet.Iterators
 {

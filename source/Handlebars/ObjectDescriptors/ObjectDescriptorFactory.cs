@@ -5,7 +5,7 @@ using HandlebarsDotNet.Runtime;
 
 namespace HandlebarsDotNet.ObjectDescriptors
 {
-    internal class ObjectDescriptorFactory : IObjectDescriptorProvider
+    public class ObjectDescriptorFactory : IObjectDescriptorProvider
     {
         private readonly ObservableList<IObjectDescriptorProvider> _providers;
         private readonly LookupSlim<Type, DeferredValue<Type, ObjectDescriptor>, ReferenceEqualityComparer<Type>> _descriptorsCache = new LookupSlim<Type, DeferredValue<Type, ObjectDescriptor>, ReferenceEqualityComparer<Type>>(new ReferenceEqualityComparer<Type>());
@@ -22,17 +22,37 @@ namespace HandlebarsDotNet.ObjectDescriptors
             return ObjectDescriptor.Empty;
         });
 
-        public ObjectDescriptorFactory(ObservableList<IObjectDescriptorProvider> providers)
+        public static ObjectDescriptorFactory Current => AmbientContext.Current?.ObjectDescriptorFactory;
+        
+        public ObjectDescriptorFactory(ObservableList<IObjectDescriptorProvider> providers = null)
         {
-            _providers = providers;
-
+            _providers = new ObservableList<IObjectDescriptorProvider>();
+             
+            if (providers != null) Append(providers);
+            
             var observer = new ObserverBuilder<ObservableEvent<IObjectDescriptorProvider>>()
                 .OnEvent<
                     AddedObservableEvent<IObjectDescriptorProvider>,
                     LookupSlim<Type, DeferredValue<Type, ObjectDescriptor>, ReferenceEqualityComparer<Type>>
                 >(_descriptorsCache, (@event, state) => state.Clear()).Build();
+
+            _providers.Subscribe(observer);
+        }
+
+        public ObjectDescriptorFactory Append(ObservableList<IObjectDescriptorProvider> providers)
+        {
+            _providers.AddMany(providers);
+            _providers.Subscribe(providers);
+
+            return this;
+        }
+        
+        public ObjectDescriptorFactory Append(ObjectDescriptorFactory factory)
+        {
+            _providers.AddMany(factory._providers);
+            _providers.Subscribe(factory._providers);
             
-            providers.Subscribe(observer);
+            return this;
         }
         
         public bool TryGetDescriptor(Type type, out ObjectDescriptor value)

@@ -3,19 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using HandlebarsDotNet.Collections;
-using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.EqualityComparers;
+using HandlebarsDotNet.PathStructure;
 using HandlebarsDotNet.Runtime;
 
 namespace HandlebarsDotNet.MemberAccessors
 {
     public sealed class ReflectionMemberAccessor : IMemberAccessor
     {
-        private readonly LookupSlim<Type, DeferredValue<Type, RawObjectTypeDescriptor>, ReferenceEqualityComparer<Type>> _descriptors =
-            new LookupSlim<Type, DeferredValue<Type, RawObjectTypeDescriptor>, ReferenceEqualityComparer<Type>>(new ReferenceEqualityComparer<Type>());
-
         private static readonly Func<Type, DeferredValue<Type, RawObjectTypeDescriptor>> DescriptorsValueFactory =
             key => new DeferredValue<Type, RawObjectTypeDescriptor>(key, type => new RawObjectTypeDescriptor(type));
+        
+        private readonly LookupSlim<Type, DeferredValue<Type, RawObjectTypeDescriptor>, ReferenceEqualityComparer<Type>> _descriptors =
+            new LookupSlim<Type, DeferredValue<Type, RawObjectTypeDescriptor>, ReferenceEqualityComparer<Type>>(new ReferenceEqualityComparer<Type>());
 
         private readonly IReadOnlyList<IMemberAliasProvider> _aliasProviders;
 

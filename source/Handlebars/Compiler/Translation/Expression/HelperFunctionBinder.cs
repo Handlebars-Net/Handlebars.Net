@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using HandlebarsDotNet.Helpers;
+using HandlebarsDotNet.PathStructure;
 using HandlebarsDotNet.Runtime;
 using static Expressions.Shortcuts.ExpressionShortcuts;
 
@@ -21,12 +22,11 @@ namespace HandlebarsDotNet.Compiler
         
         protected override Expression VisitHelperExpression(HelperExpression hex)
         {
-            var pathInfo = PathInfoStore.Shared.GetOrAdd(hex.HelperName);
+            var pathInfo = PathInfoStore.Current.GetOrAdd(hex.HelperName);
             if(!pathInfo.IsValidHelperLiteral && !CompilationContext.Configuration.Compatibility.RelaxedHelperNaming) return Expression.Empty();
             
-            var helperName = pathInfo.TrimmedPath;
             var bindingContext = CompilationContext.Args.BindingContext;
-            var options = New(() => new HelperOptions(bindingContext));
+            var options = New(() => new HelperOptions(pathInfo, bindingContext));
             var textWriter = CompilationContext.Args.EncodedWriter;
 
             var contextValue = New(() => new Context(bindingContext));
@@ -41,7 +41,7 @@ namespace HandlebarsDotNet.Compiler
             for (var index = 0; index < configuration.HelperResolvers.Count; index++)
             {
                 var resolver = configuration.HelperResolvers[index];
-                if (resolver.TryResolveHelper(helperName, typeof(object), out var resolvedHelper))
+                if (resolver.TryResolveHelper(pathInfo, typeof(object), out var resolvedHelper))
                 {
                     helper = new Ref<IHelperDescriptor<HelperOptions>>(resolvedHelper);
                     configuration.Helpers.AddOrReplace(pathInfo, helper);

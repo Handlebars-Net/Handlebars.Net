@@ -64,17 +64,23 @@ namespace HandlebarsNet.Benchmark
             }
 
             var handlebars = Handlebars.Create();
-            handlebars.RegisterHelper("pow1", (output, context, arguments) => output.WriteSafeString(((int) arguments[0] * (int) arguments[0]).ToString()));
-            handlebars.RegisterHelper("pow2", (output, context, arguments) => output.WriteSafeString(((int) arguments[0] * (int) arguments[0]).ToString()));
-            handlebars.RegisterHelper("pow5", (output, options, context, arguments) => output.WriteSafeString(((int) arguments[0] * (int) arguments[0]).ToString()));
+            using(handlebars.Configure())
+            {
+                handlebars.RegisterHelper("pow1", (output, context, arguments) => output.WriteSafeString(((int) arguments[0] * (int) arguments[0]).ToString()));
+                handlebars.RegisterHelper("pow2", (output, context, arguments) => output.WriteSafeString(((int) arguments[0] * (int) arguments[0]).ToString()));
+                handlebars.RegisterHelper("pow5", (output, options, context, arguments) => output.WriteSafeString(((int) arguments[0] * (int) arguments[0]).ToString()));
+            }
 
             using (var reader = new StringReader(template))
             {
                 _default = handlebars.Compile(reader);
             }
 
-            handlebars.RegisterHelper("pow3", (output, context, arguments) => output.WriteSafeString(((int) arguments[0] * (int) arguments[0]).ToString()));
-            handlebars.RegisterHelper("pow4", (output, context, arguments) => output.WriteSafeString(((int) arguments[0] * (int) arguments[0]).ToString()));
+            using(handlebars.Configure())
+            {
+                handlebars.RegisterHelper("pow3", (output, context, arguments) => output.WriteSafeString(((int) arguments[0] * (int) arguments[0]).ToString()));
+                handlebars.RegisterHelper("pow4", (output, context, arguments) => output.WriteSafeString(((int) arguments[0] * (int) arguments[0]).ToString()));
+            }
 
             List<object> ObjectLevel1Generator()
             {

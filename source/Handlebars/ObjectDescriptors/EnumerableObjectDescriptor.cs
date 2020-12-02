@@ -89,7 +89,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
                 return true;
             }
 
-            value = null;
+            value = ObjectDescriptor.Empty;
             return false;
         }
 
@@ -104,7 +104,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
                 return true;
             }
 
-            descriptor = null;
+            descriptor = ObjectDescriptor.Empty;
             return false;
         }
         
@@ -119,7 +119,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
                 return true;
             }
 
-            descriptor = null;
+            descriptor = ObjectDescriptor.Empty;
             return false;
         }
 

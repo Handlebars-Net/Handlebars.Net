@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using HandlebarsDotNet.Compiler.Lexer;
+using HandlebarsDotNet.IO;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -59,7 +60,7 @@ namespace HandlebarsDotNet.Compiler
             {
                 var config = context.Configuration;
                 using var innerWriter = ReusableStringWriter.Get(config.FormatProvider);
-                using var textWriter = new EncodedTextWriter(innerWriter, config.TextEncoder, config.FormatterProvider, true);
+                using var textWriter = new EncodedTextWriter(innerWriter, config.TextEncoder, FormatterProvider.Current, true);
                 compiledView(textWriter, context);
                 var inner = innerWriter.ToString();
 

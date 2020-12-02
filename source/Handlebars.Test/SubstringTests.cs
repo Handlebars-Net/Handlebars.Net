@@ -49,18 +49,7 @@ namespace HandlebarsDotNet.Test
             
             Assert.Equal(expected, substring.ToString());
         }
-        
-        [Theory]
-        [InlineData("abc", 'a', "bc")]
-        [InlineData("cccde", 'c', "de")]
-        public void TrimStartSubstring(string input, char trimChar, string expected)
-        {
-            var substring = new Substring(input);
-            substring = Substring.TrimStart(substring, trimChar);
-            
-            Assert.Equal(expected, substring.ToString());
-        }
-        
+
         [Theory]
         [InlineData("abc", 'c', "ab")]
         [InlineData("abccccc", 'c', "ab")]
@@ -70,35 +59,13 @@ namespace HandlebarsDotNet.Test
             
             Assert.Equal(expected, substring.ToString());
         }
-        
-        [Theory]
-        [InlineData("abc", 'c', "ab")]
-        [InlineData("abccccc", 'c', "ab")]
-        public void TrimEndSubstring(string input, char trimChar, string expected)
-        {
-            var substring = new Substring(input);
-            substring = Substring.TrimEnd(substring, trimChar);
-            
-            Assert.Equal(expected, substring.ToString());
-        }
-        
+
         [Theory]
         [InlineData("abc", 'c', "ab")]
         [InlineData("abccccc", 'c', "ab")]
         public void Trim(string input, char trimChar, string expected)
         {
             var substring = Substring.Trim(input, trimChar);
-            
-            Assert.Equal(expected, substring.ToString());
-        }
-        
-        [Theory]
-        [InlineData("cabc", 'c', "ab")]
-        [InlineData("cccccabccccc", 'c', "ab")]
-        public void TrimSubstring(string input, char trimChar, string expected)
-        {
-            var substring = new Substring(input);
-            substring = Substring.Trim(substring, trimChar);
             
             Assert.Equal(expected, substring.ToString());
         }

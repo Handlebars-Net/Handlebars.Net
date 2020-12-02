@@ -12,11 +12,15 @@ namespace HandlebarsDotNet.Features
     [FeatureOrder(int.MinValue)]
     internal class BuildInHelpersFeature : IFeature
     {
+        private static readonly WithBlockHelperDescriptor WithBlockHelperDescriptor = new WithBlockHelperDescriptor();
+        private static readonly InlineBlockHelperDescriptor InlineBlockHelperDescriptor = new InlineBlockHelperDescriptor();
+        private static readonly LookupReturnHelperDescriptor LookupReturnHelperDescriptor = new LookupReturnHelperDescriptor();
+
         public void OnCompiling(ICompiledHandlebarsConfiguration configuration)
         {
-            configuration.BlockHelpers["with"] = new Ref<IHelperDescriptor<BlockHelperOptions>>(new WithBlockHelperDescriptor());
-            configuration.BlockHelpers["*inline"] = new Ref<IHelperDescriptor<BlockHelperOptions>>(new InlineBlockHelperDescriptor());
-            configuration.Helpers["lookup"] = new Ref<IHelperDescriptor<HelperOptions>>(new LookupReturnHelperDescriptor());
+            configuration.BlockHelpers["with"] = new Ref<IHelperDescriptor<BlockHelperOptions>>(WithBlockHelperDescriptor);
+            configuration.BlockHelpers["*inline"] = new Ref<IHelperDescriptor<BlockHelperOptions>>(InlineBlockHelperDescriptor);
+            configuration.Helpers["lookup"] = new Ref<IHelperDescriptor<HelperOptions>>(LookupReturnHelperDescriptor);
         }
 
         public void CompilationCompleted()

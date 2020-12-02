@@ -1,5 +1,5 @@
 using HandlebarsDotNet.Collections;
-using HandlebarsDotNet.Compiler.Structure.Path;
+using HandlebarsDotNet.PathStructure;
 
 namespace HandlebarsDotNet.Helpers.BlockHelpers
 {
@@ -30,8 +30,6 @@ namespace HandlebarsDotNet.Helpers.BlockHelpers
                 }
             }
 
-            options["name"] = Name.TrimmedPath;
-            options["path"] = Name;
             configuration.BlockHelpers["blockHelperMissing"].Value
                 .Invoke(output, options, context, arguments);
         }

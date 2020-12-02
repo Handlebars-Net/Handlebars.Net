@@ -2,10 +2,11 @@
 using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.Compiler;
-using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.EqualityComparers;
 using HandlebarsDotNet.ObjectDescriptors;
+using HandlebarsDotNet.PathStructure;
 using HandlebarsDotNet.Runtime;
+using HandlebarsDotNet.ValueProviders;
 
 namespace HandlebarsDotNet
 {
@@ -13,7 +14,7 @@ namespace HandlebarsDotNet
     {
         internal readonly EntryIndex<ChainSegment>[] WellKnownVariables = new EntryIndex<ChainSegment>[8];
         
-        internal readonly DeferredValue<BindingContext, ObjectDescriptor> ObjectDescriptor;
+        internal readonly DeferredValue<BindingContext, ObjectDescriptor> Descriptor;
 
         private BindingContext()
         {
@@ -24,9 +25,9 @@ namespace HandlebarsDotNet
             ContextDataObject = new FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer>(16, 7, ChainSegment.EqualityComparer);
             BlockParamsObject = new FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer>(16, 7, ChainSegment.EqualityComparer);
             
-            ObjectDescriptor = new DeferredValue<BindingContext, ObjectDescriptor>(this, context =>
+            Descriptor = new DeferredValue<BindingContext, ObjectDescriptor>(this, context =>
             {
-                return ObjectDescriptors.ObjectDescriptor.Create(context.Value, context.Configuration.ObjectDescriptorProvider);
+                return ObjectDescriptor.Create(context.Value);
             });
         }
         
@@ -38,8 +39,8 @@ namespace HandlebarsDotNet
         internal void SetDataObject(object data)
         {
             if(data == null) return;
-
-            if (!Configuration.ObjectDescriptorProvider.TryGetDescriptor(data.GetType(), out var objectDescriptor))
+            
+            if (!ObjectDescriptor.TryCreate(data.GetType(), out var objectDescriptor))
             {
                 throw new HandlebarsRuntimeException($"Cannot resolve object descriptor for type `{data.GetType()}`");
             }
@@ -91,7 +92,7 @@ namespace HandlebarsDotNet
             if (!(Value is HashParameterDictionary dictionary) || ParentContext.Value == null || ReferenceEquals(Value, ParentContext.Value)) return;
             
             // Populate value with parent context
-            PopulateHash(dictionary, ParentContext.Value, Configuration);
+            PopulateHash(dictionary, ParentContext.Value);
         }
 
         internal ICompiledHandlebarsConfiguration Configuration { get; private set; }
@@ -101,6 +102,11 @@ namespace HandlebarsDotNet
         internal TemplateDelegate PartialBlockTemplate { get; private set; }
         
         public object Value { get; set; }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public BlockParamsValues BlockParams(ChainSegment[] blockParamsVariables) => new BlockParamsValues(this, blockParamsVariables);
+        
+        public DataValues Data => new DataValues(this);
 
         /// <summary>
         /// Used to cary additional data
@@ -117,11 +123,11 @@ namespace HandlebarsDotNet
             {
                 var wellKnownVariable = WellKnownVariables[(int) segment.WellKnownVariable];
                 return BlockParamsObject.TryGetValue(wellKnownVariable, out value) 
-                       || (ObjectDescriptor.Value?.MemberAccessor.TryGetValue(Value, segment, out value) ?? false);
+                       || (Descriptor.Value.MemberAccessor?.TryGetValue(Value, segment, out value) ?? false);
             }
             
             return BlockParamsObject.TryGetValue(segment, out value) 
-                   || (ObjectDescriptor.Value?.MemberAccessor.TryGetValue(Value, segment, out value) ?? false);
+                   || (Descriptor.Value.MemberAccessor?.TryGetValue(Value, segment, out value) ?? false);
         }
         
         internal bool TryGetContextVariable(ChainSegment segment, out object value)
@@ -148,9 +154,9 @@ namespace HandlebarsDotNet
             return Create(Configuration, value, this, PartialBlockTemplate);
         }
 
-        private static void PopulateHash(HashParameterDictionary hash, object from, ICompiledHandlebarsConfiguration configuration)
+        private static void PopulateHash(HashParameterDictionary hash, object from)
         {
-            var descriptor = HandlebarsDotNet.ObjectDescriptors.ObjectDescriptor.Create(from, configuration.ObjectDescriptorProvider);
+            var descriptor = ObjectDescriptor.Create(from);
             var accessor = descriptor.MemberAccessor;
             var properties = descriptor.GetProperties(descriptor, from);
             var enumerator = properties.GetEnumerator();

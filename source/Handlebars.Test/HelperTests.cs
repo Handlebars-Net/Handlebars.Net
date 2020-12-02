@@ -2,10 +2,9 @@ using Xunit;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using HandlebarsDotNet.Compiler.Structure.Path;
 using HandlebarsDotNet.Features;
 using HandlebarsDotNet.Helpers;
-using HandlebarsDotNet.Helpers.BlockHelpers;
+using HandlebarsDotNet.PathStructure;
 using HandlebarsDotNet.ValueProviders;
 
 namespace HandlebarsDotNet.Test
@@ -64,7 +63,7 @@ namespace HandlebarsDotNet.Test
             handlebars.RegisterHelper("myHelper",
                 (in HelperOptions options, in Context context, in Arguments arguments) =>
                 {
-                    var data = new DataValues(options.Frame);
+                    var data = options.Frame.Data;
                     var i = data.Value<int>("i");
                     return Enumerate(i);
 
@@ -244,7 +243,7 @@ namespace HandlebarsDotNet.Test
 
             var handlebars = Handlebars.Create();
             handlebars.Configuration.RegisterMissingHelperHook(
-                (context, arguments) => "Hook"
+                (in HelperOptions options, in Context context, in Arguments arguments) => "Hook"
             );
             var template = handlebars.Compile(source);
             
@@ -327,11 +326,11 @@ namespace HandlebarsDotNet.Test
             var format = "Missing helper: {0}";
             handlebars.Configuration
                 .RegisterMissingHelperHook(
-                    (context, arguments) =>
+                    (in HelperOptions options, in Context context, in Arguments arguments) =>
                     {
-                        var name = arguments[arguments.Length - 1].ToString();
-                        return string.Format(format, name.Trim('[', ']'));
-                    });
+                        return string.Format(format, options.Name.TrimmedPath);
+                    }
+                );
 
             var source = "{{"+ helperName +"}}";
 
@@ -350,7 +349,7 @@ namespace HandlebarsDotNet.Test
             var handlebars = Handlebars.Create();
             handlebars.Configuration
                 .RegisterMissingHelperHook(
-                    (context, arguments) => "Should be ignored"
+                    (in HelperOptions options, in Context context, in Arguments arguments) => "Should be ignored"
                 );
 
             handlebars.RegisterHelper("helperMissing", 
@@ -374,11 +373,11 @@ namespace HandlebarsDotNet.Test
         {
             var handlebars = Handlebars.Create();
             var format = "Missing helper: {0}";
-            handlebars.RegisterHelper("helperMissing", (context, arguments) =>
-            {
-                var name = arguments[arguments.Length - 1].ToString();
-                return string.Format(format, name.Trim('[', ']'));
-            });
+            handlebars.RegisterHelper("helperMissing",
+                (in HelperOptions options, in Context context, in Arguments arguments) =>
+                {
+                    return string.Format(format, options.Name.TrimmedPath);
+                });
 
             var source = "{{"+ helperName +"}}";
 
@@ -403,8 +402,7 @@ namespace HandlebarsDotNet.Test
                 .RegisterMissingHelperHook(
                     blockHelperMissing: (writer, options, context, arguments) =>
                     {
-                        var name = options.GetValue<string>("name").ToString();
-                        writer.WriteSafeString(string.Format(format, name.Trim('[', ']')));
+                        writer.WriteSafeString(string.Format(format, options.Name.TrimmedPath));
                     });
 
             var source = "{{#"+ helperName +"}}should not appear{{/" + helperName + "}}";
@@ -428,8 +426,7 @@ namespace HandlebarsDotNet.Test
             var format = "Missing block helper: {0}";
             handlebars.RegisterHelper("blockHelperMissing", (writer, options, context, arguments) =>
             {
-                var name = options.GetValue<string>("name");
-                writer.WriteSafeString(string.Format(format, name.Trim('[', ']')));
+                writer.WriteSafeString(string.Format(format, options.Name.TrimmedPath));
             });
 
             var source = "{{#"+ helperName +"}}should not appear{{/" + helperName + "}}";
@@ -450,7 +447,7 @@ namespace HandlebarsDotNet.Test
             
             handlebars.Configuration
                 .RegisterMissingHelperHook(
-                    (context, arguments) => "Hook"
+                    (in HelperOptions options, in Context context, in Arguments arguments) => "Hook"
                 );
 
             var source = "{{missing}}";

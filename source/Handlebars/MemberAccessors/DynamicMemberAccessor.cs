@@ -1,6 +1,6 @@
 using System;
 using System.Dynamic;
-using HandlebarsDotNet.Compiler.Structure.Path;
+using HandlebarsDotNet.PathStructure;
 
 namespace HandlebarsDotNet.MemberAccessors
 {

@@ -1,5 +1,6 @@
 using System.IO;
 using HandlebarsDotNet.Helpers;
+using HandlebarsDotNet.Runtime;
 
 namespace HandlebarsDotNet
 {
@@ -51,6 +52,20 @@ namespace HandlebarsDotNet
         void RegisterHelper(IHelperDescriptor<BlockHelperOptions> helperObject);
         
         void RegisterHelper(IHelperDescriptor<HelperOptions> helperObject);
+
+        /// <summary>
+        /// Defines current environment configuration scope.
+        /// <para>It's not required to call this method. However it enables certain optimizations.</para>
+        /// <para>Example:<code>
+        /// var env = Handlebars.Create();
+        /// using(env.Configure())
+        /// {
+        ///    env.RegisterHelper(...)
+        /// }
+        /// </code></para>
+        /// </summary>
+        /// <returns></returns>
+        DisposableContainer Configure();
     }
     
     internal interface ICompiledHandlebars
