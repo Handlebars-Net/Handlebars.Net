@@ -59,7 +59,7 @@ namespace HandlebarsDotNet.Collections
     public ref struct ExtendedEnumerator<T, TEnumerator>
         where TEnumerator: IEnumerator<T>
     {
-        private readonly TEnumerator _enumerator;
+        private TEnumerator _enumerator;
 
         private T _next;
         private int _index;
