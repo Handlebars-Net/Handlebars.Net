@@ -1,4 +1,6 @@
+using System;
 using System.Runtime.CompilerServices;
+using HandlebarsDotNet.Pools;
 
 namespace HandlebarsDotNet.Collections
 {
@@ -8,7 +10,7 @@ namespace HandlebarsDotNet.Collections
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private ImmutableStack(T value, Node parent)
-            :this(new Node { Value = value, Parent = parent })
+            :this(Node.Create(value, parent))
         {
         }
         
@@ -36,13 +38,40 @@ namespace HandlebarsDotNet.Collections
             }
             
             value = _container.Value;
+            _container.Dispose();
             return new ImmutableStack<T>(_container.Parent);
         }
         
-        private class Node
+        private sealed class Node : IDisposable
         {
+            private static readonly InternalObjectPool<Node, Policy> Pool = new InternalObjectPool<Node, Policy>(new Policy());
+            
             public Node Parent;
             public T Value;
+
+            public static Node Create(T value = default, Node parent = null)
+            {
+                var item = Pool.Get();
+                item.Value = value;
+                item.Parent = parent;
+                return item;
+            }
+            
+            private Node() { }
+            
+            private struct Policy : IInternalObjectPoolPolicy<Node>
+            {
+                public Node Create() => new Node();
+
+                public bool Return(Node item)
+                {
+                    item.Parent = null;
+                    item.Value = default;
+                    return true;
+                }
+            }
+
+            public void Dispose() => Pool.Return(this);
         }
     }
 }

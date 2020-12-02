@@ -22,7 +22,7 @@ namespace HandlebarsDotNet.ValueProviders
             var variable = GetVariable(variableIndex);
             if (ReferenceEquals(variable, null))
             {
-                index = new EntryIndex<ChainSegment>(-1, 0, null);
+                index = new EntryIndex<ChainSegment>(-1, 0);
                 return;
             }
             var value = UndefinedBindingResult.Create(variable);
