@@ -1,11 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 #if !NET451 && !NET452
 using System.Threading;
 #else
 using HandlebarsDotNet.Polyfills;
 #endif
-
 using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.IO;
 using HandlebarsDotNet.ObjectDescriptors;
@@ -14,7 +14,7 @@ using HandlebarsDotNet.Pools;
 
 namespace HandlebarsDotNet.Runtime
 {
-    public class AmbientContext : IDisposable
+    public sealed class AmbientContext : IDisposable
     {
         private static readonly InternalObjectPool<AmbientContext, Policy> Pool = new InternalObjectPool<AmbientContext, Policy>(new Policy()); 
         
@@ -89,6 +89,8 @@ namespace HandlebarsDotNet.Runtime
         
         public ObjectDescriptorFactory ObjectDescriptorFactory { get; private set; }
         
+        public Dictionary<string, object> Bag { get; } = new Dictionary<string, object>();
+        
         private struct Policy : IInternalObjectPoolPolicy<AmbientContext>
         {
             public AmbientContext Create()
@@ -103,6 +105,7 @@ namespace HandlebarsDotNet.Runtime
                 item.UndefinedBindingResultCache = null;
                 item.FormatterProvider = null;
                 item.ObjectDescriptorFactory = null;
+                item.Bag.Clear();
 
                 return true;
             }

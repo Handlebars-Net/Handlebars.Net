@@ -3,7 +3,6 @@ using System.Collections;
 using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Iterators;
 using HandlebarsDotNet.MemberAccessors;
-using HandlebarsDotNet.PathStructure;
 
 namespace HandlebarsDotNet.ObjectDescriptors
 {
@@ -46,10 +45,6 @@ namespace HandlebarsDotNet.ObjectDescriptors
             return ObjectDescriptorFactory.Current.TryGetDescriptor(from, out descriptor);
         }
 
-        private ObjectDescriptor()
-        {
-        }
-
         /// <summary>
         /// 
         /// </summary>
@@ -73,7 +68,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
             Iterator = iterator(this);
         }
         
-        //private ObjectDescriptor(){ }
+        private ObjectDescriptor(){ }
 
         /// <summary>
         /// Iterator implementation for <see cref="DescribedType"/>
