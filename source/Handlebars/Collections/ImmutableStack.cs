@@ -38,8 +38,9 @@ namespace HandlebarsDotNet.Collections
             }
             
             value = _container.Value;
+            var parent = _container.Parent;
             _container.Dispose();
-            return new ImmutableStack<T>(_container.Parent);
+            return new ImmutableStack<T>(parent);
         }
         
         private sealed class Node : IDisposable
