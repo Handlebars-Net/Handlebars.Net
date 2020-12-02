@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using HandlebarsDotNet.ObjectDescriptors;
-using HandlebarsDotNet.Runtime;
 
 namespace HandlebarsDotNet.Features
 {

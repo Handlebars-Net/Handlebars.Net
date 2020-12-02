@@ -3,6 +3,7 @@ using System.Collections;
 using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Iterators;
 using HandlebarsDotNet.MemberAccessors;
+using HandlebarsDotNet.PathStructure;
 
 namespace HandlebarsDotNet.ObjectDescriptors
 {
@@ -28,7 +29,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryCreate(object @from, out ObjectDescriptor descriptor)
+        public static bool TryCreate(object from, out ObjectDescriptor descriptor)
         {
             return TryCreate(from?.GetType(), out descriptor);
         }
@@ -36,7 +37,17 @@ namespace HandlebarsDotNet.ObjectDescriptors
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryCreate(Type @from, out ObjectDescriptor descriptor)
         {
+            if (from == null)
+            {
+                descriptor = Empty;
+                return false;
+            }
+            
             return ObjectDescriptorFactory.Current.TryGetDescriptor(from, out descriptor);
+        }
+
+        private ObjectDescriptor()
+        {
         }
 
         /// <summary>
@@ -53,7 +64,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
             Func<ObjectDescriptor, object, IEnumerable> getProperties,
             Func<ObjectDescriptor, IIterator> iterator,
             params object[] dependencies
-        )
+        ) : this()
         {
             DescribedType = describedType;
             GetProperties = getProperties;
@@ -62,7 +73,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
             Iterator = iterator(this);
         }
         
-        private ObjectDescriptor(){ }
+        //private ObjectDescriptor(){ }
 
         /// <summary>
         /// Iterator implementation for <see cref="DescribedType"/>

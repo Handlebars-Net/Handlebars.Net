@@ -3,7 +3,6 @@ using System.Collections;
 using System.Linq;
 using HandlebarsDotNet.ObjectDescriptors;
 using HandlebarsDotNet.PathStructure;
-using HandlebarsDotNet.Runtime;
 
 namespace HandlebarsDotNet.MemberAliasProvider
 {
