@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1606946359809,
+  "lastUpdate": 1606949016841,
   "repoUrl": "https://github.com/Handlebars-Net/Handlebars.Net",
   "entries": {
     "Benchmark.Net Benchmark": [
@@ -2496,6 +2496,102 @@ window.BENCHMARK_DATA = {
             "value": 287750.604422433,
             "unit": "ns",
             "range": "± 3280.352484062722"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "zjklee@gmail.com",
+            "name": "Oleh Formaniuk",
+            "username": "zjklee"
+          },
+          "committer": {
+            "email": "zjklee@gmail.com",
+            "name": "Oleh Formaniuk",
+            "username": "zjklee"
+          },
+          "distinct": true,
+          "id": "21dc530e3d9d9b9f5b4c317d9ee603619f386294",
+          "message": "Fix support for `struct` enumerators in `ExtendedEnumerator`",
+          "timestamp": "2020-12-03T00:38:08+02:00",
+          "tree_id": "45331c78cbd68e1b55c68139fa10f25162e7d9ae",
+          "url": "https://github.com/Handlebars-Net/Handlebars.Net/commit/21dc530e3d9d9b9f5b4c317d9ee603619f386294"
+        },
+        "date": 1606949016222,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "HandlebarsNet.Benchmark.Compilation.Template",
+            "value": 18843272.981770832,
+            "unit": "ns",
+            "range": "± 239965.632597829"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithoutParameters",
+            "value": 571.7412096659342,
+            "unit": "ns",
+            "range": "± 19.819213394735815"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithOneParameter",
+            "value": 556.6350046157837,
+            "unit": "ns",
+            "range": "± 20.44911619358745"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithTwoParameter",
+            "value": 584.9741022109986,
+            "unit": "ns",
+            "range": "± 26.414601554771778"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithoutParameters",
+            "value": 698.7664411251361,
+            "unit": "ns",
+            "range": "± 25.20151313692663"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithOneParameter",
+            "value": 582.2911779085795,
+            "unit": "ns",
+            "range": "± 21.06034087920543"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithTwoParameter",
+            "value": 595.5773295720418,
+            "unit": "ns",
+            "range": "± 28.68041881653256"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithoutParameters",
+            "value": 693.4368607447698,
+            "unit": "ns",
+            "range": "± 11.944361639952287"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithOneParameter",
+            "value": 747.3066433270773,
+            "unit": "ns",
+            "range": "± 28.181232056732966"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithTwoParameter",
+            "value": 765.1574738184611,
+            "unit": "ns",
+            "range": "± 29.32850596345185"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.EndToEnd.Default(N: 5, DataType: \"dictionary\")",
+            "value": 265262.27975260414,
+            "unit": "ns",
+            "range": "± 4388.708382557258"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.EndToEnd.Default(N: 5, DataType: \"object\")",
+            "value": 255343.8607421875,
+            "unit": "ns",
+            "range": "± 6526.261957370825"
           }
         ]
       }
