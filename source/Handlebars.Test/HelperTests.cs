@@ -915,6 +915,46 @@ namespace HandlebarsDotNet.Test
             Assert.Equal("one's index is 0 two's index is 1 ", result);
         }
         
+        [Fact]
+        public void BlockHelperThis()
+        {
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterHelper("bold", 
+                (writer, options, context, arguments) =>
+                {
+                    writer.WriteSafeString("<bold>");
+                    writer.WriteSafeString(options.Template());
+                    writer.WriteSafeString("</bold>");
+                });
+        
+            const string source = "{{#bold}}This should be bold{{/bold}}";
+        
+            var template = handlebars.Compile(source);
+            var actual = template(null);
+            
+            Assert.Equal("<bold>This should be bold</bold>", actual);
+        }
+        
+        [Fact]
+        public void BlockHelperElseThis()
+        {
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterHelper("bold", 
+                (writer, options, context, arguments) =>
+                {
+                    writer.WriteSafeString("<bold>");
+                    writer.WriteSafeString(options.Inverse());
+                    writer.WriteSafeString("</bold>");
+                });
+        
+            const string source = "{{^bold}}This should be bold{{/bold}}";
+        
+            var template = handlebars.Compile(source);
+            var actual = template(null);
+            
+            Assert.Equal("<bold>This should be bold</bold>", actual);
+        }
+        
         private class CustomEachBlockHelper : IHelperDescriptor<BlockHelperOptions>
         {
             public PathInfo Name { get; } = "customEach";

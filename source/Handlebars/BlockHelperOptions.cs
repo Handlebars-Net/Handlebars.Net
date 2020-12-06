@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Compiler;
+using HandlebarsDotNet.IO;
 using HandlebarsDotNet.PathStructure;
 using HandlebarsDotNet.ValueProviders;
 
@@ -40,6 +41,20 @@ namespace HandlebarsDotNet
         /// BlockHelper body
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public string Template()
+        {
+            using var writer = ReusableStringWriter.Get();
+            using var encodedTextWriter = new EncodedTextWriter(writer, Frame.Configuration.TextEncoder, FormatterProvider.Current);
+            
+            OriginalTemplate(encodedTextWriter, Frame);
+
+            return encodedTextWriter.ToString();
+        }
+
+        /// <summary>
+        /// BlockHelper body
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Template(in EncodedTextWriter writer, object context)
         {
             if (context is BindingContext bindingContext)
@@ -64,6 +79,20 @@ namespace HandlebarsDotNet
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Template(in EncodedTextWriter writer, BindingContext context) => OriginalTemplate(writer, context);
 
+        /// <summary>
+        /// BlockHelper body
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public string Inverse()
+        {
+            using var writer = ReusableStringWriter.Get();
+            using var encodedTextWriter = new EncodedTextWriter(writer, Frame.Configuration.TextEncoder, FormatterProvider.Current);
+            
+            OriginalInverse(encodedTextWriter, Frame);
+
+            return encodedTextWriter.ToString();
+        }
+        
         /// <summary>
         /// BlockHelper body
         /// </summary>
