@@ -4,7 +4,7 @@
     <AssemblyName>Handlebars</AssemblyName>
     <ProjectGuid>9822C7B8-7E51-42BC-9A49-72A10491B202</ProjectGuid>
     <TargetFrameworks>netstandard1.3;netstandard2.0;netstandard2.1</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">$(TargetFrameworks);net451;net452</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">$(TargetFrameworks);net451;net452;net46</TargetFrameworks>
     <Version>2.0.0</Version>
     <RootNamespace>HandlebarsDotNet</RootNamespace>
     <SignAssembly Condition="'$(ShouldSignAssembly)' == 'true'">true</SignAssembly>
@@ -21,6 +21,9 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)'=='net452'">
     <DefineConstants>$(DefineConstants);NET452</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)'=='net46'">
+    <DefineConstants>$(DefineConstants);NET46</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -45,7 +48,7 @@
     </Content>
   </ItemGroup>
   
-  <ItemGroup Condition="'$(TargetFramework)'=='net451' or '$(TargetFramework)'=='net452'">
+  <ItemGroup Condition="'$(TargetFramework)'=='net451' or '$(TargetFramework)'=='net452' or '$(TargetFramework)'=='net46'">
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
 

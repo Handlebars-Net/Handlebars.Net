@@ -1,4 +1,5 @@
 #if NET451 || NET452
+using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.Remoting.Messaging;
 
@@ -19,6 +20,7 @@ namespace HandlebarsDotNet.Polyfills
             set => CallContext.LogicalSetData(Slot, new Container(value));
         }
 
+        [Serializable]
         private class Container
         {
             public readonly T Value;
