@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using HandlebarsDotNet.StringUtils;
 
@@ -10,6 +12,10 @@ namespace HandlebarsDotNet.PathStructure
     /// </summary>
     public sealed partial class ChainSegment : IEquatable<ChainSegment>
     {
+        private static readonly Dictionary<string, WellKnownVariable> WellKnownVariables = Enum
+            .GetNames(typeof(WellKnownVariable))
+            .ToDictionary(o => o, o => (WellKnownVariable) Enum.Parse(typeof(WellKnownVariable), o), StringComparer.OrdinalIgnoreCase);
+        
         public static ChainSegmentEqualityComparer EqualityComparer { get; } = new ChainSegmentEqualityComparer();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -66,6 +72,10 @@ namespace HandlebarsDotNet.PathStructure
 
             if (IsThis) WellKnownVariable = WellKnownVariable.This;
             if (IsValue) WellKnownVariable = WellKnownVariable.Value;
+            if (WellKnownVariable == WellKnownVariable.None && WellKnownVariables.TryGetValue(LowerInvariant, out wellKnownVariable))
+            {
+                WellKnownVariable = wellKnownVariable;
+            }
         }
 
         /// <summary>
