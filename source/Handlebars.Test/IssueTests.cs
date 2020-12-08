@@ -208,5 +208,17 @@ namespace HandlebarsDotNet.Test
     <div>Menu Item: Getting Started</div>
 </div>", transformed);
         }
+
+        // issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/394
+        [Fact]
+        public void SlashesInTemplateKey()
+        {
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterTemplate("Foo/bar", "hello world");
+            var compiled = handlebars.Compile("{{#>Foo/bar }} {{/Foo/bar}}");
+            var result = compiled(null);
+
+            Assert.Equal("hello world", result);
+        }
     }
 }
