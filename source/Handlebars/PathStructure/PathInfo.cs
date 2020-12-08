@@ -63,7 +63,7 @@ namespace HandlebarsDotNet.PathStructure
             IsThis = string.Equals(path, "this", StringComparison.OrdinalIgnoreCase) || path == "." || plainSegments.Any(o => o.IsThis);
             IsPureThis = string.Equals(path, "this", StringComparison.OrdinalIgnoreCase) || path == ".";
 
-            var segment = plainSegments.SingleOrDefault(o => !o.IsThis);
+            var segment = plainSegments.FirstOrDefault(o => !o.IsThis);
             if (!segment.IsNotEmpty)
             {
                 IsPureThis = true;
