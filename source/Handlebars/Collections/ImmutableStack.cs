@@ -4,6 +4,9 @@ using HandlebarsDotNet.Pools;
 
 namespace HandlebarsDotNet.Collections
 {
+#if NET451 || NET452
+    [Serializable]
+#endif
     internal readonly struct ImmutableStack<T>
     {
         private readonly Node _container;
@@ -43,6 +46,9 @@ namespace HandlebarsDotNet.Collections
             return new ImmutableStack<T>(parent);
         }
         
+#if NET451 || NET452
+        [Serializable]
+#endif
         private sealed class Node : IDisposable
         {
             private static readonly InternalObjectPool<Node, Policy> Pool = new InternalObjectPool<Node, Policy>(new Policy());
