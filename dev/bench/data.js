@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1607388213380,
+  "lastUpdate": 1607389990422,
   "repoUrl": "https://github.com/Handlebars-Net/Handlebars.Net",
   "entries": {
     "Benchmark.Net Benchmark": [
@@ -2880,6 +2880,102 @@ window.BENCHMARK_DATA = {
             "value": 225193.75150240384,
             "unit": "ns",
             "range": "± 2949.3576112855376"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "zjklee@gmail.com",
+            "name": "Oleh Formaniuk",
+            "username": "zjklee"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a4c8db094f9b0069b5c00eabcd09ba2c6e2cf57d",
+          "message": "Merge pull request #397 from zjklee/issues/395\n\nFix case insensitive selection of WellKnownVariable",
+          "timestamp": "2020-12-07T17:07:32-08:00",
+          "tree_id": "2db6679e3231a49eeee9b7134f7bb8e6250431a6",
+          "url": "https://github.com/Handlebars-Net/Handlebars.Net/commit/a4c8db094f9b0069b5c00eabcd09ba2c6e2cf57d"
+        },
+        "date": 1607389989787,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "HandlebarsNet.Benchmark.Compilation.Template",
+            "value": 19902883.698660713,
+            "unit": "ns",
+            "range": "± 394250.70334067446"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithoutParameters",
+            "value": 578.6445392290751,
+            "unit": "ns",
+            "range": "± 5.549776082081189"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithOneParameter",
+            "value": 590.5500820704868,
+            "unit": "ns",
+            "range": "± 8.962210873064143"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithTwoParameter",
+            "value": 636.0624630610148,
+            "unit": "ns",
+            "range": "± 14.126367349219255"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithoutParameters",
+            "value": 794.2733682904925,
+            "unit": "ns",
+            "range": "± 10.31159531729149"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithOneParameter",
+            "value": 647.4512135187784,
+            "unit": "ns",
+            "range": "± 14.431910766401977"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithTwoParameter",
+            "value": 642.0005065282186,
+            "unit": "ns",
+            "range": "± 20.650641077992915"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithoutParameters",
+            "value": 770.3783132870992,
+            "unit": "ns",
+            "range": "± 14.989471213861538"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithOneParameter",
+            "value": 816.6258433024088,
+            "unit": "ns",
+            "range": "± 8.294939722775338"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithTwoParameter",
+            "value": 866.825203259786,
+            "unit": "ns",
+            "range": "± 21.123037923500878"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.EndToEnd.Default(N: 5, DataType: \"dictionary\")",
+            "value": 242900.08989606585,
+            "unit": "ns",
+            "range": "± 5342.074714294402"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.EndToEnd.Default(N: 5, DataType: \"object\")",
+            "value": 252222.74293619793,
+            "unit": "ns",
+            "range": "± 3834.202366412663"
           }
         ]
       }
