@@ -1,4 +1,6 @@
+using System;
 using System.Dynamic;
+using System.IO;
 using Xunit;
 
 namespace HandlebarsDotNet.Test
@@ -147,6 +149,64 @@ namespace HandlebarsDotNet.Test
         End outer partial";
             
             Assert.Equal(expected, result);
+        }
+        
+        // issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/395
+        [Fact]
+        public void RenderingWithUnusedPartial()
+        {
+            var handlebars = Handlebars.Create();
+
+            var mainTemplate = @"
+{{>Navigation}}
+";
+
+            var navPartial = @"
+<div>
+    {{#each MenuItems}}
+    <div>Menu Item: {{Name}}</div>
+    {{/each}}
+</div>";
+
+            // Remove the {{#if First}} section, and the test will pass
+            var unusedPartial = @"
+{{#each Results}}
+    Result
+    {{#if HasSinglePackage}}
+        HasSinglePackage
+        {{#if First}}
+            First
+        {{/if}}
+    {{/if}}
+{{/each}}";
+
+            var navTemplate = handlebars.Compile(mainTemplate);
+
+            using (var reader = new StringReader(navPartial))
+            {
+                handlebars.RegisterTemplate("Navigation", handlebars.Compile(reader));
+            }
+
+            // Comment this section out and the test will succeed
+            using (var reader = new StringReader(unusedPartial))
+            {
+                handlebars.RegisterTemplate("Unused", handlebars.Compile(reader));
+            }
+
+            // Attempted with concrete classes, still fails
+            var context = new
+            {
+                MenuItems = new[]
+                {
+                    new { Name = "Getting Started"}
+                }
+            };
+
+            var transformed = navTemplate(context).Trim();
+
+            Assert.Equal(@"<div>
+    <div>Menu Item: Getting Started</div>
+</div>", transformed);
         }
     }
 }
