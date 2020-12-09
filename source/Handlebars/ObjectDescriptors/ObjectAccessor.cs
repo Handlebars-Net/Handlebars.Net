@@ -47,7 +47,15 @@ namespace HandlebarsDotNet
                 : null;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryGetValue(ChainSegment segment, out object value) => 
-            _memberAccessor.TryGetValue(_data, segment, out value);
+        public bool TryGetValue(ChainSegment segment, out object value)
+        {
+            if (_memberAccessor == null)
+            {
+                value = null;
+                return false;
+            }
+            
+            return _memberAccessor.TryGetValue(_data, segment, out value);
+        }
     }
 }
