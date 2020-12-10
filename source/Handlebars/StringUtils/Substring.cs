@@ -196,6 +196,7 @@ namespace HandlebarsDotNet.StringUtils
 
             public void Dispose()
             {
+                // nothing to do here
             }
         }
         
@@ -257,6 +258,7 @@ namespace HandlebarsDotNet.StringUtils
 
             public void Dispose()
             {
+                // nothing to do here
             }
         }
         

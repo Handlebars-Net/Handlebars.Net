@@ -59,32 +59,6 @@ namespace HandlebarsDotNet.PathStructure
             return instance;
         }
 
-        private static object ResolveValue(bool isVariable, BindingContext context, object instance, ChainSegment chainSegment)
-        {
-            object resolvedValue;
-            if (isVariable)
-            {
-                return context.TryGetContextVariable(chainSegment, out resolvedValue)
-                    ? resolvedValue
-                    : UndefinedBindingResult.Create(chainSegment);
-            }
-
-            if (chainSegment.IsThis) return instance;
-
-            if (context.TryGetVariable(chainSegment, out resolvedValue)
-                || TryAccessMember(context, instance, chainSegment, out resolvedValue))
-            {
-                return resolvedValue;
-            }
-            
-            if (chainSegment.IsValue && context.TryGetContextVariable(chainSegment, out resolvedValue))
-            {
-                return resolvedValue;
-            }
-
-            return UndefinedBindingResult.Create(chainSegment);
-        }
-        
         private static bool TryResolveValue(bool isVariable, BindingContext context, ChainSegment chainSegment, object instance, out object value)
         {
             if (isVariable)
