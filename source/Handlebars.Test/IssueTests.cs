@@ -276,7 +276,10 @@ namespace HandlebarsDotNet.Test
             var result = handlebarsTemplate(data);
             
             const string expected = "<ul><li>a 1 zzz z</li><li>b 2 yyy y</li><li>c 3 xxx x</li></ul>";
-            var actual = result.Replace("\n", string.Empty).Replace("\t", string.Empty);
+            var actual = result
+                .Replace("\n", string.Empty)
+                .Replace("\r", string.Empty)
+                .Replace("\t", string.Empty);
             
             Assert.Equal(expected, actual);
         }
