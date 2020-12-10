@@ -1,7 +1,10 @@
+using System.Runtime.CompilerServices;
+
 namespace HandlebarsDotNet.Collections
 {
     public readonly ref struct EnumeratorValue<T>
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public EnumeratorValue(T value, int index, bool isLast)
         {
             Value = value;

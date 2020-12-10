@@ -34,9 +34,10 @@ namespace HandlebarsDotNet.Test
             var substring = new Substring(input);
             var split = Substring.Split(substring, splitChar);
 
-            for (var index = 0; index < expected.Length; index++)
+            var index = 0;
+            while (split.MoveNext())
             {
-                Assert.True(split[index] == expected[index]);
+                Assert.Equal(split.Current, expected[index++]);
             }
         }
         

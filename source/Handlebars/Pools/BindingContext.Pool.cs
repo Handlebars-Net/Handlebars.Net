@@ -52,7 +52,6 @@ namespace HandlebarsDotNet
                     item.InlinePartialTemplates.Clear();
                     item.Bag.Clear();
 
-                    item.RootDataObject.Clear();
                     item.BlockParamsObject.OptionalClear();
                     item.ContextDataObject.OptionalClear();
                     

@@ -8,69 +8,55 @@ namespace HandlebarsDotNet.PathStructure
         public static object ResolvePath(BindingContext context, PathInfo pathInfo)
         {
             if (!pathInfo.HasValue) return null;
-            
-            if (pathInfo.HasContextChange)
-            {
-                context = ChangeContext(pathInfo, context);
-                if (ReferenceEquals(context, null)) return string.Empty;
-            }
-
             if (pathInfo.IsPureThis) return context.Value;
             
             var instance = context.Value;
-            var pathChain = pathInfo.PathChain;
-            
-            var hashParameters = instance as HashParameterDictionary;
+            var throwOnUnresolvedBindingExpression = context!.Configuration.ThrowOnUnresolvedBindingExpression;
 
-            for (var index = 0; index < pathChain.Length; index++)
+            var segments = pathInfo.Segments;
+            for (var segmentIndex = 0; segmentIndex < segments.Length; segmentIndex++)
             {
-                var isVariable = index == 0 && pathInfo.IsVariable;
-                if (!ProcessSegment(context, pathInfo, isVariable, pathChain[index], hashParameters, ref instance))
+                var segment = segments[segmentIndex];
+                if (segment.IsThis) continue;
+                if (segment.IsParent)
                 {
-                    return instance;
+                    context = context!.ParentContext;
+                    if (context == null)
+                    {
+                        instance = UndefinedBindingResult.Create("..");
+                        goto undefined;
+                    }
+
+                    instance = context.Value;
+                    throwOnUnresolvedBindingExpression = context.Configuration.ThrowOnUnresolvedBindingExpression;
+                    continue;
                 }
+
+                var pathChain = segment.PathChain;
+                if (!TryResolveValue(pathInfo.IsVariable, context, pathChain[0], instance, out instance))
+                {
+                    instance = UndefinedBindingResult.Create(pathChain[0]);
+                    goto undefined;
+                }
+
+                for (var index = 1; index < pathChain.Length; index++)
+                {
+                    if (TryAccessMember(context, instance, pathChain[index], out instance)) continue;
+                    
+                    instance = UndefinedBindingResult.Create(pathChain[index]);
+                    goto undefined;
+                }
+            }
+            
+            return instance;
+            
+            undefined:
+            if (throwOnUnresolvedBindingExpression)
+            {
+                Throw.Undefined(pathInfo, (UndefinedBindingResult) instance);
             }
 
             return instance;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool ProcessSegment(BindingContext context, PathInfo pathInfo, bool isVariable, ChainSegment chainSegment, HashParameterDictionary hashParameters, ref object instance)
-        {
-            instance = ResolveValue(isVariable, context, instance, chainSegment);
-            if (!(instance is UndefinedBindingResult undefined)) return true;
-
-            if (hashParameters == null || hashParameters.ContainsKey(chainSegment) || context.ParentContext == null)
-            {
-                if (context.Configuration.ThrowOnUnresolvedBindingExpression)
-                    Throw.Undefined(pathInfo, undefined);
-
-                return false; // return instance
-            }
-
-            instance = ResolveValue(isVariable, context.ParentContext, context.ParentContext.Value, chainSegment);
-            if (!(instance is UndefinedBindingResult result)) return true;
-
-            if (context.Configuration.ThrowOnUnresolvedBindingExpression)
-                Throw.Undefined(pathInfo, result);
-
-            return false; // return instance
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static BindingContext ChangeContext(PathInfo pathInfo, BindingContext context)
-        {
-            for (var i = 0; i < pathInfo.ContextChangeDepth; i++)
-            {
-                context = context!.ParentContext;
-                if (context == null)
-                {
-                    if (!pathInfo.IsVariable) Throw.PathReferenceParentOfRoot();
-                    else return null;
-                }
-            }
-            
-            return context;
         }
 
         private static object ResolveValue(bool isVariable, BindingContext context, object instance, ChainSegment chainSegment)
@@ -86,7 +72,7 @@ namespace HandlebarsDotNet.PathStructure
             if (chainSegment.IsThis) return instance;
 
             if (context.TryGetVariable(chainSegment, out resolvedValue)
-                || TryAccessMember(instance, chainSegment, context.Configuration, out resolvedValue))
+                || TryAccessMember(context, instance, chainSegment, out resolvedValue))
             {
                 return resolvedValue;
             }
@@ -98,17 +84,39 @@ namespace HandlebarsDotNet.PathStructure
 
             return UndefinedBindingResult.Create(chainSegment);
         }
+        
+        private static bool TryResolveValue(bool isVariable, BindingContext context, ChainSegment chainSegment, object instance, out object value)
+        {
+            if (isVariable)
+            {
+                return context.TryGetContextVariable(chainSegment, out value);
+            }
+
+            if (chainSegment.IsThis)
+            {
+                value = context.Value;
+                return true;
+            }
+
+            if (context.TryGetVariable(chainSegment, out value)
+                || TryAccessMember(context, instance, chainSegment, out value))
+            {
+                return true;
+            }
+            
+            return chainSegment.IsValue && context.TryGetContextVariable(chainSegment, out value);
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static bool TryAccessMember(object instance, ChainSegment chainSegment, ICompiledHandlebarsConfiguration configuration, out object value)
+        public static bool TryAccessMember(BindingContext context, object instance, ChainSegment chainSegment, out object value)
         {
             if (instance == null)
             {
-                value = UndefinedBindingResult.Create(chainSegment);
+                value = null;
                 return false;
             }
             
-            chainSegment = ResolveMemberName(instance, chainSegment, configuration);
+            chainSegment = ResolveMemberName(instance, chainSegment, context.Configuration);
             
             return new ObjectAccessor(instance).TryGetValue(chainSegment, out value);
         }
@@ -124,9 +132,6 @@ namespace HandlebarsDotNet.PathStructure
         
         private static class Throw
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static void PathReferenceParentOfRoot() => throw new HandlebarsRuntimeException("Path expression tried to reference parent of root");
-            
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void Undefined(PathInfo pathInfo, UndefinedBindingResult undefinedBindingResult) => throw new HandlebarsUndefinedBindingException(pathInfo, undefinedBindingResult);
         }
