@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using HandlebarsDotNet.PathStructure;
 
@@ -7,6 +7,9 @@ namespace HandlebarsDotNet.Compiler
 {
     internal abstract class BlockAccumulatorContext
     {
+        private static readonly HashSet<string> ConditionHelpers = new HashSet<string>(StringComparer.OrdinalIgnoreCase){ "#if", "#unless", "^if", "^unless" };
+        private static readonly HashSet<string> IteratorHelpers = new HashSet<string>(StringComparer.OrdinalIgnoreCase){ "#each", "^each" };
+
         public static BlockAccumulatorContext Create(Expression item, ICompiledHandlebarsConfiguration configuration)
         {
             BlockAccumulatorContext context = null;
@@ -35,7 +38,8 @@ namespace HandlebarsDotNet.Compiler
         private static bool IsConditionalBlock(Expression item)
         {
             item = UnwrapStatement(item);
-            return (item is HelperExpression) && new[] { "#if", "#unless" }.Contains(((HelperExpression)item).HelperName);
+            return item is HelperExpression helperExpression 
+                   && ConditionHelpers.Contains(helperExpression.HelperName);
         }
 
         private static bool IsBlockHelper(Expression item, ICompiledHandlebarsConfiguration configuration)
@@ -53,7 +57,8 @@ namespace HandlebarsDotNet.Compiler
         private static bool IsIteratorBlock(Expression item)
         {
             item = UnwrapStatement(item);
-            return item is HelperExpression expression && "#each".Equals(expression.HelperName, StringComparison.OrdinalIgnoreCase);
+            return item is HelperExpression expression 
+                   && IteratorHelpers.Contains(expression.HelperName);
         }
 
         private static bool IsPartialBlock (Expression item)

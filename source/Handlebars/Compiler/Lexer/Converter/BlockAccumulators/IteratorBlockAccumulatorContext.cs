@@ -28,45 +28,31 @@ namespace HandlebarsDotNet.Compiler
         {
             if (IsElseBlock(item))
             {
-                _accumulatedExpression = HandlebarsExpression.Iterator(
-                    _startingNode.Arguments.Single(o => o.NodeType != (ExpressionType)HandlebarsExpressionType.BlockParamsExpression),
-                    _startingNode.Arguments.OfType<BlockParamsExpression>().SingleOrDefault() ?? BlockParamsExpression.Empty(),
-                    Expression.Block(_body));
+                _accumulatedExpression = HandlebarsExpression.Iterator(BlockName, _startingNode.Arguments.Single(o => o.NodeType != (ExpressionType)HandlebarsExpressionType.BlockParamsExpression), _startingNode.Arguments.OfType<BlockParamsExpression>().SingleOrDefault() ?? BlockParamsExpression.Empty(), Expression.Block(_body));
                 _body = new List<Expression>();
             }
             else
             {
-                _body.Add((Expression)item);
+                _body.Add(item);
             }
         }
 
         public override bool IsClosingElement(Expression item)
         {
-            if (IsClosingNode(item))
+            if (!IsClosingNode(item)) return false;
+            
+            // If the template has no content within the block, e.g. `{{#each ...}}{{/each}`, then the block body is a no-op.
+            var bodyStatements = _body.Count != 0 ? _body : new List<Expression>{ Expression.Empty() };
+            if (_accumulatedExpression == null)
             {
-                // If the template has no content within the block, e.g. `{{#each ...}}{{/each}`, then the block body is a no-op.
-                var bodyStatements = _body.Count != 0 ? _body : new List<Expression>{ Expression.Empty() };
-                if (_accumulatedExpression == null)
-                {
-                    _accumulatedExpression = HandlebarsExpression.Iterator(
-                        _startingNode.Arguments.Single(o => o.NodeType != (ExpressionType)HandlebarsExpressionType.BlockParamsExpression),
-                        _startingNode.Arguments.OfType<BlockParamsExpression>().SingleOrDefault() ?? BlockParamsExpression.Empty(),
-                        Expression.Block(bodyStatements));
-                }
-                else
-                {
-                    _accumulatedExpression = HandlebarsExpression.Iterator(
-                        ((IteratorExpression)_accumulatedExpression).Sequence,
-                        ((IteratorExpression)_accumulatedExpression).BlockParams,
-                        ((IteratorExpression)_accumulatedExpression).Template,
-                        Expression.Block(bodyStatements));
-                }
-                return true;
+                _accumulatedExpression = HandlebarsExpression.Iterator(BlockName, _startingNode.Arguments.Single(o => o.NodeType != (ExpressionType)HandlebarsExpressionType.BlockParamsExpression), _startingNode.Arguments.OfType<BlockParamsExpression>().SingleOrDefault() ?? BlockParamsExpression.Empty(), Expression.Block(bodyStatements));
             }
             else
             {
-                return false;
+                _accumulatedExpression = HandlebarsExpression.Iterator(BlockName, ((IteratorExpression)_accumulatedExpression).Sequence, ((IteratorExpression)_accumulatedExpression).BlockParams, ((IteratorExpression)_accumulatedExpression).Template, Expression.Block(bodyStatements));
             }
+            
+            return true;
         }
 
         public override Expression GetAccumulatedBlock()
@@ -74,16 +60,16 @@ namespace HandlebarsDotNet.Compiler
             return _accumulatedExpression;
         }
 
-        private bool IsClosingNode(Expression item)
+        private static bool IsClosingNode(Expression item)
         {
             item = UnwrapStatement(item);
-            return item is PathExpression && ((PathExpression)item).Path.Replace("#", "") == "/each";
+            return item is PathExpression pathExpression && pathExpression.Path.Replace("#", "").Replace("^", "") == "/each";
         }
 
-        private bool IsElseBlock(Expression item)
+        private static bool IsElseBlock(Expression item)
         {
             item = UnwrapStatement(item);
-            return item is HelperExpression && ((HelperExpression)item).HelperName == "else";
+            return item is HelperExpression helperExpression && helperExpression.HelperName == "else";
         }
     }
 }

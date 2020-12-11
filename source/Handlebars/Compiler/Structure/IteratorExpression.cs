@@ -6,8 +6,9 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class IteratorExpression : BlockHelperExpression
     {
-        public IteratorExpression(Expression sequence, BlockParamsExpression blockParams, Expression template, Expression ifEmpty)
-            :base("each", Enumerable.Empty<Expression>(), blockParams, template, ifEmpty, false)
+        public IteratorExpression(string helperName, Expression sequence, BlockParamsExpression blockParams,
+            Expression template, Expression ifEmpty)
+            :base(helperName, Enumerable.Empty<Expression>(), blockParams, template, ifEmpty, false)
         {
             Sequence = sequence;
             Template = template;

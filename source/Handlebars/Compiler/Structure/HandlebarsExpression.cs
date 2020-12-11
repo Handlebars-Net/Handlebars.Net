@@ -69,20 +69,22 @@ namespace HandlebarsDotNet.Compiler
         }
 
         public static IteratorExpression Iterator(
+            string helperName, 
             Expression sequence,
             BlockParamsExpression blockParams,
             Expression template)
         {
-            return new IteratorExpression(sequence, blockParams, template, Empty());
+            return new IteratorExpression(helperName, sequence, blockParams, template, Empty());
         }
 
         public static IteratorExpression Iterator(
+            string helperName, 
             Expression sequence,
             BlockParamsExpression blockParams,
             Expression template,
             Expression ifEmpty)
         {
-            return new IteratorExpression(sequence, blockParams, template, ifEmpty);
+            return new IteratorExpression(helperName, sequence, blockParams, template, ifEmpty);
         }
 
         public static PartialExpression Partial(Expression partialName)

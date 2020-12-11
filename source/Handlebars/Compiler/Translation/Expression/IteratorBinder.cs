@@ -31,11 +31,14 @@ namespace HandlebarsDotNet.Compiler
             
             var compiledSequence = Arg<object>(FunctionBuilder.Reduce(iex.Sequence, CompilationContext));
             var blockParamsValues = CreateBlockParams();
-
-            return Call(() =>
-                Iterator.Iterate(context, writer, blockParamsValues, compiledSequence, template, ifEmpty)
-            );
             
+            return iex.HelperName[0] switch
+            {
+                '#' => Call(() => Iterator.Iterate(context, writer, blockParamsValues, compiledSequence, template, ifEmpty)),
+                '^' => Call(() => Iterator.Iterate(context, writer, blockParamsValues, compiledSequence, ifEmpty, template)),
+                _ => throw new HandlebarsCompilerException($"Tried to convert {iex.HelperName} expression to iterator block", iex.Context) 
+            };
+
             ExpressionContainer<ChainSegment[]> CreateBlockParams()
             {
                 var parameters = iex.BlockParams?.BlockParam?.Parameters;

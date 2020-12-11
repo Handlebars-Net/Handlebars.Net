@@ -90,7 +90,7 @@ namespace HandlebarsDotNet.Compiler
 
             if (sequence != iex.Sequence)
             {
-                return HandlebarsExpression.Iterator(sequence, iex.BlockParams, iex.Template, iex.IfEmpty);
+                return HandlebarsExpression.Iterator(iex.HelperName, sequence, iex.BlockParams, iex.Template, iex.IfEmpty);
             }
             return iex;
         }

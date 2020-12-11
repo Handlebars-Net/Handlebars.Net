@@ -4,7 +4,9 @@ using System.IO;
 using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.Helpers;
 using HandlebarsDotNet.PathStructure;
+using HandlebarsDotNet.Runtime;
 using HandlebarsDotNet.StringUtils;
+using HandlebarsDotNet.ValueProviders;
 using Xunit;
 
 namespace HandlebarsDotNet.Test
@@ -240,6 +242,49 @@ namespace HandlebarsDotNet.Test
             
             Assert.Equal("a:b :42", actual);
         }
+        
+        // issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/387
+        [Fact]
+        public void ReverseIfCondition()
+        {
+            const string template = "{{^if false}}false{{/if}}";
+
+            var handlebars = Handlebars.Create();
+            var handlebarsTemplate = handlebars.Compile(template);
+            var actual = handlebarsTemplate(null);
+    
+            Assert.Equal("false", actual);
+        }
+        
+        // issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/387
+        [Fact]
+        public void ReverseUnlessCondition()
+        {
+            const string template = "{{^unless true}}false{{/unless}}";
+
+            var handlebars = Handlebars.Create();
+            var handlebarsTemplate = handlebars.Compile(template);
+            var actual = handlebarsTemplate(null);
+    
+            Assert.Equal("false", actual);
+        }
+        
+        // issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/387
+        [Fact]
+        public void ReverseEach()
+        {
+            const string template = "{{^each this}}false{{else}}{{@value}}{{/each}}";
+
+            var handlebars = Handlebars.Create();
+            var handlebarsTemplate = handlebars.Compile(template);
+            var actual = handlebarsTemplate(new[]{ 1, 2 });
+    
+            Assert.Equal("12", actual);
+            
+            actual = handlebarsTemplate(null);
+    
+            Assert.Equal("false", actual);
+        }
 
         // issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/402
         [Fact]
@@ -314,6 +359,94 @@ namespace HandlebarsDotNet.Test
                         output.Write(separator);
                     }
                 }
+            }
+        }
+
+        // discussion: https://github.com/Handlebars-Net/Handlebars.Net/discussions/404
+        [Fact]
+        public void SwitchCaseTest()
+        {
+            const string template = @"
+                {{~#switch propertyValue}}
+                    {{~#case 'a'}}a == {{@switchValue}}{{/case~}}
+                    {{~#case 'b'}}b == {{@switchValue}}{{/case~}}
+                    {{~#default}}the value is not provided{{/default~}}
+                {{/switch~}}";
+
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterHelper(new CaseHelper());
+            handlebars.RegisterHelper(new SwitchHelper());
+            handlebars.RegisterHelper(new DefaultCaseHelper());
+
+            var handlebarsTemplate = handlebars.Compile(template);
+
+            var a = handlebarsTemplate(new {propertyValue = "a"});
+            var b = handlebarsTemplate(new {propertyValue = "b"});
+            var c = handlebarsTemplate(new {propertyValue = "c"});
+            
+            Assert.Equal("a == a", a);
+            Assert.Equal("b == b", b);
+            Assert.Equal("the value is not provided", c);
+        }
+
+        private class SwitchHelper : IHelperDescriptor<BlockHelperOptions>
+        {
+            public PathInfo Name { get; } = "switch";
+            
+            public object Invoke(in BlockHelperOptions options, in Context context, in Arguments arguments)
+            {
+                return this.ReturnInvoke(options, context, arguments);
+            }
+
+            public void Invoke(in EncodedTextWriter output, in BlockHelperOptions options, in Context context, in Arguments arguments)
+            {
+                var switchFrame = options.CreateFrame();
+                var data = new DataValues(switchFrame);
+                data["switchValue"] = arguments[0];
+                data["__switchBlock"] = BoxedValues.True;
+                data["__switchCaseMatched"] = BoxedValues.False;
+                options.Template(output, switchFrame);
+            }
+        }
+        
+        private class CaseHelper : IHelperDescriptor<BlockHelperOptions>
+        {
+            public PathInfo Name { get; } = "case";
+            
+            public object Invoke(in BlockHelperOptions options, in Context context, in Arguments arguments)
+            {
+                return this.ReturnInvoke(options, context, arguments);
+            }
+
+            public void Invoke(in EncodedTextWriter output, in BlockHelperOptions options, in Context context, in Arguments arguments)
+            {
+                if (!(bool) options.Data["__switchBlock"]) throw new InvalidOperationException();
+                if((bool) options.Data["__switchCaseMatched"]) return;
+                
+                var value = options.Data["switchValue"];
+                if(!Equals(value, arguments[0])) return;
+                var data = new DataValues(options.Frame);
+                data["__switchCaseMatched"] = BoxedValues.True;
+                
+                options.Template(output, options.Frame); // execute `case` in switch context
+            }
+        }
+        
+        private class DefaultCaseHelper : IHelperDescriptor<BlockHelperOptions>
+        {
+            public PathInfo Name { get; } = "default";
+            
+            public object Invoke(in BlockHelperOptions options, in Context context, in Arguments arguments)
+            {
+                return this.ReturnInvoke(options, context, arguments);
+            }
+
+            public void Invoke(in EncodedTextWriter output, in BlockHelperOptions options, in Context context, in Arguments arguments)
+            {
+                if (!(bool) options.Data["__switchBlock"]) throw new InvalidOperationException();
+                if((bool) options.Data["__switchCaseMatched"]) return;
+                
+                options.Template(output, options.Frame);  // execute `default` in switch context
             }
         }
     }

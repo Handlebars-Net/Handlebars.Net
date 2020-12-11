@@ -7,6 +7,8 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class ConditionalBlockAccumulatorContext : BlockAccumulatorContext
     {
+        private enum TestType { Direct, Reverse }
+        
         private static readonly HashSet<string> ValidHelperNames = new HashSet<string> { "if", "unless" };
         
         private readonly List<ConditionalExpression> _conditionalBlock = new List<ConditionalExpression>();
@@ -20,14 +22,24 @@ namespace HandlebarsDotNet.Compiler
         {
             startingNode = UnwrapStatement(startingNode);
             var helperExpression = (HelperExpression)startingNode;
-            BlockName = helperExpression.HelperName.Replace("#", "");
+            var testType = helperExpression.HelperName[0] == '#' ? TestType.Direct : TestType.Reverse;
+            BlockName = helperExpression.HelperName.Substring(1, helperExpression.HelperName.Length - 1);
+
             if (!ValidHelperNames.Contains(BlockName))
             {
                 throw new HandlebarsCompilerException($"Tried to convert {BlockName} expression to conditional block", helperExpression.Context);
             }
-            var testType = BlockName == "if";
+
             var argument = HandlebarsExpression.Boolish(helperExpression.Arguments.Single());
-            _currentCondition = testType ? (Expression)argument : Expression.Not(argument);
+
+            _currentCondition = BlockName switch
+            {
+                "if" when testType == TestType.Direct => argument,
+                "if" when testType == TestType.Reverse => Expression.Not(argument),
+                "unless" when testType == TestType.Direct => Expression.Not(argument),
+                "unless" when testType == TestType.Reverse => argument,
+                _ => throw new HandlebarsCompilerException($"Tried to convert {BlockName} expression to conditional block", helperExpression.Context) 
+            };
         }
 
         public override void HandleElement(Expression item)
