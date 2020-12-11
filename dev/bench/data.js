@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1607700423760,
+  "lastUpdate": 1607704544113,
   "repoUrl": "https://github.com/Handlebars-Net/Handlebars.Net",
   "entries": {
     "Benchmark.Net Benchmark": [
@@ -3264,6 +3264,102 @@ window.BENCHMARK_DATA = {
             "value": 245738.5713936942,
             "unit": "ns",
             "range": "± 6366.316690785009"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "zjklee@gmail.com",
+            "name": "Oleh Formaniuk",
+            "username": "zjklee"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6ce87b65a8c13bc315895f010da227882ed52b3d",
+          "message": "Merge pull request #405 from zjklee/issues/387\n\nFix `^if`, `^unless` and `^each`",
+          "timestamp": "2020-12-11T08:30:03-08:00",
+          "tree_id": "695dd9c96435fa9d1fcf989b38837ad5748cb277",
+          "url": "https://github.com/Handlebars-Net/Handlebars.Net/commit/6ce87b65a8c13bc315895f010da227882ed52b3d"
+        },
+        "date": 1607704543195,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "HandlebarsNet.Benchmark.Compilation.Template",
+            "value": 23330112.31919643,
+            "unit": "ns",
+            "range": "± 61282.60026231208"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithoutParameters",
+            "value": 629.1869071324667,
+            "unit": "ns",
+            "range": "± 25.728067592641555"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithOneParameter",
+            "value": 642.0420251259437,
+            "unit": "ns",
+            "range": "± 1.947251666574062"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithTwoParameter",
+            "value": 644.3838714872088,
+            "unit": "ns",
+            "range": "± 2.0430331669055226"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithoutParameters",
+            "value": 833.6639590263367,
+            "unit": "ns",
+            "range": "± 0.8839913841036448"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithOneParameter",
+            "value": 644.0049471173968,
+            "unit": "ns",
+            "range": "± 11.652438439614713"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithTwoParameter",
+            "value": 658.438824780782,
+            "unit": "ns",
+            "range": "± 4.199616389199829"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithoutParameters",
+            "value": 877.5040862401327,
+            "unit": "ns",
+            "range": "± 3.288775530440582"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithOneParameter",
+            "value": 894.1018781661987,
+            "unit": "ns",
+            "range": "± 1.1969304053582723"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithTwoParameter",
+            "value": 904.6948950449625,
+            "unit": "ns",
+            "range": "± 3.6080457417405576"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.EndToEnd.Default(N: 5, DataType: \"dictionary\")",
+            "value": 267422.52968052455,
+            "unit": "ns",
+            "range": "± 1068.2012328373182"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.EndToEnd.Default(N: 5, DataType: \"object\")",
+            "value": 286325.4210205078,
+            "unit": "ns",
+            "range": "± 694.9608680589707"
           }
         ]
       }
