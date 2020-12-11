@@ -27,7 +27,7 @@ namespace HandlebarsDotNet.Iterators
             blockParamsValues.CreateProperty(1, out var _1);
 
             var target = (T) input;
-            var enumerator = new ExtendedEnumerator<object>(target.GetEnumerator());
+            var enumerator = ExtendedEnumerator<object>.Create(target.GetEnumerator());
 
             iterator.First = BoxedValues.True;
             iterator.Last = BoxedValues.False;

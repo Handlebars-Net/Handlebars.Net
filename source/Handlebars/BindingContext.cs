@@ -21,7 +21,6 @@ namespace HandlebarsDotNet
             InlinePartialTemplates = new CascadeIndex<string, Action<EncodedTextWriter, BindingContext>, StringEqualityComparer>(new StringEqualityComparer(StringComparison.OrdinalIgnoreCase));
             
             Bag = new CascadeIndex<string, object, StringEqualityComparer>(new StringEqualityComparer(StringComparison.OrdinalIgnoreCase));
-            RootDataObject = new FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer>(16, 7, ChainSegment.EqualityComparer);
             ContextDataObject = new FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer>(16, 7, ChainSegment.EqualityComparer);
             BlockParamsObject = new FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer>(16, 7, ChainSegment.EqualityComparer);
             
@@ -32,7 +31,6 @@ namespace HandlebarsDotNet
         }
         
         internal CascadeIndex<string, object, StringEqualityComparer> Bag { get; }
-        internal FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer> RootDataObject { get; }
         internal FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer> ContextDataObject { get; }
         internal FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer> BlockParamsObject { get; }
 
@@ -50,8 +48,14 @@ namespace HandlebarsDotNet
             foreach (var property in objectAccessor.Properties)
             {
                 var value = objectAccessor[property];
-                RootDataObject.AddOrReplace(property, value, out _);
-                ContextDataObject.AddOrReplace(property, value, out _);
+                if (property.WellKnownVariable == WellKnownVariable.None)
+                {
+                    ContextDataObject.AddOrReplace(property, value, out _);
+                }
+                else
+                {
+                    ContextDataObject.AddOrReplace(property, value, out WellKnownVariables[(int) property.WellKnownVariable]);
+                }
             }
         }
         
@@ -59,7 +63,6 @@ namespace HandlebarsDotNet
         {
             Root = ParentContext?.Root ?? this;
             
-            if(!ReferenceEquals(Root, this)) Root.RootDataObject.CopyTo(ContextDataObject);
             ContextDataObject.AddOrReplace(ChainSegment.Root, Root.Value, out WellKnownVariables[(int) WellKnownVariable.Root]);
 
             if (ParentContext == null)
@@ -73,6 +76,9 @@ namespace HandlebarsDotNet
                 return;
             }
 
+            ParentContext.ContextDataObject.CopyTo(ContextDataObject);
+            ParentContext.ContextDataObject.AdjustIndexes(ParentContext.WellKnownVariables, ContextDataObject, WellKnownVariables);
+            
             ContextDataObject.AddOrReplace(
                 ChainSegment.Parent, 
                 ParentContext.Value, 

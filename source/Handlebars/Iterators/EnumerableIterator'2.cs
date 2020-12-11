@@ -28,7 +28,7 @@ namespace HandlebarsDotNet.Iterators
 
             var target = (T) input;
             var outerEnumerator = target.GetEnumerator();
-            var enumerator = new ExtendedEnumerator<TValue, IEnumerator<TValue>>(outerEnumerator);
+            var enumerator = ExtendedEnumerator<TValue>.Create(outerEnumerator);
 
             iterator.First = BoxedValues.True;
             iterator.Last = BoxedValues.False;

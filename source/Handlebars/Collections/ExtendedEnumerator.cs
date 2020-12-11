@@ -6,6 +6,16 @@ namespace HandlebarsDotNet.Collections
 {
     public ref struct ExtendedEnumerator<T>
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ExtendedEnumerator<T> Create(IEnumerator enumerator) 
+            => new ExtendedEnumerator<T>(enumerator);
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ExtendedEnumerator<T, TEnumerator> Create<TEnumerator>(TEnumerator enumerator) 
+            where TEnumerator: IEnumerator<T>
+            => new ExtendedEnumerator<T, TEnumerator>(enumerator);
+        
+        
         private readonly IEnumerator _enumerator;
 
         private T _next;
@@ -17,8 +27,12 @@ namespace HandlebarsDotNet.Collections
         {
             _enumerator = enumerator;
             PerformIteration();
+
+            Any = _hasNext;
         }
-            
+
+        public readonly bool Any;
+        
         public EnumeratorValue<T> Current { get; private set; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -70,8 +84,12 @@ namespace HandlebarsDotNet.Collections
         {
             _enumerator = enumerator;
             PerformIteration();
+
+            Any = _hasNext;
         }
-            
+
+        public readonly bool Any;
+
         public EnumeratorValue<T> Current { get; private set; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

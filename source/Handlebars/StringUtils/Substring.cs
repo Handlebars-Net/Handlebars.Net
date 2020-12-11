@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
@@ -14,34 +15,19 @@ namespace HandlebarsDotNet.StringUtils
         private readonly int _start;
         public readonly int Length;
 
-        public static IReadOnlyList<Substring> Split(Substring str, char separator, StringSplitOptions options = StringSplitOptions.None)
+        public static bool EqualsIgnoreCase(Substring a, Substring b)
         {
-            var result = new List<Substring>();
-            var substringStart = 0;
-            var substringLength = 0;
-            for (var index = 0; index < str.Length; index++)
+            if (a.Length != b.Length) return false;
+
+            for (int index = 0; index < a.Length; index++)
             {
-                if (str[index] != separator)
-                {
-                    substringLength++;
-                    continue;
-                }
-
-                var substring = new Substring(str, substringStart, substringLength);
-                substringLength = 0;
-                substringStart = index + 1;
-
-                if (substring.Length != 0 || options != StringSplitOptions.RemoveEmptyEntries)
-                    result.Add(substring);
+                if (!char.ToLowerInvariant(a[index]).Equals(char.ToLowerInvariant(b[index]))) return false;
             }
 
-            if (substringLength != 0)
-            {
-                result.Add(new Substring(str, substringStart, substringLength));
-            }
-            
-            return result;
+            return true;
         }
+        
+        public static SplitEnumerator Split(Substring str, char separator, StringSplitOptions options = StringSplitOptions.None) => new SplitEnumerator(str, separator, options);
 
         public static Substring TrimStart(Substring str, char trimChar)
         {
@@ -138,6 +124,9 @@ namespace HandlebarsDotNet.StringUtils
         public override string ToString() => _str.Substring(_start, Length);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SubstringEnumerator GetEnumerator() => new SubstringEnumerator(this);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(Substring other)
         {
             if (Length != other.Length) return false;
@@ -182,6 +171,96 @@ namespace HandlebarsDotNet.StringUtils
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator Substring(string a) => new Substring(a);
+        
+        public struct SubstringEnumerator : IEnumerator<char>
+        {
+            private readonly Substring _substring;
+            private int _index;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public SubstringEnumerator(Substring substring)
+            {
+                _substring = substring;
+                _index = -1;
+            }
+            
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool MoveNext() => ++_index < _substring.Length;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Reset() => _index = -1;
+
+            public char Current => _substring[_index];
+
+            object IEnumerator.Current => Current;
+
+            public void Dispose()
+            {
+                // nothing to do here
+            }
+        }
+        
+        public struct SplitEnumerator : IEnumerator<Substring>
+        {
+            private readonly Substring _substring;
+            private readonly char _separator;
+            private readonly StringSplitOptions _options;
+            
+            private Substring _current;
+            private int _index;
+
+            public SplitEnumerator(Substring substring, char separator, StringSplitOptions options = StringSplitOptions.None)
+            {
+                _substring = substring;
+                _separator = separator;
+                _options = options;
+                _current = new Substring();
+                _index = 0;
+            }
+            
+            public bool MoveNext()
+            {
+                var substringStart = _index;
+                var substringLength = 0;
+                for (; _index < _substring.Length; _index++)
+                {
+                    if (_substring[_index] != _separator)
+                    {
+                        substringLength++;
+                        continue;
+                    }
+
+                    var substring = new Substring(_substring, substringStart, substringLength);
+                    substringLength = 0;
+                    substringStart = ++_index;
+
+                    if (substring.Length != 0 || _options != StringSplitOptions.RemoveEmptyEntries)
+                    {
+                        _current = substring;
+                        return true;
+                    }
+                }
+
+                if (substringLength != 0)
+                {
+                    _current = new Substring(_substring, substringStart, substringLength);
+                    return true;
+                }
+
+                return false;
+            }
+
+            public void Reset() => _index = 0;
+
+            public Substring Current => _current;
+
+            object IEnumerator.Current => Current;
+
+            public void Dispose()
+            {
+                // nothing to do here
+            }
+        }
         
         private static class Throw
         {

@@ -35,7 +35,7 @@ namespace HandlebarsDotNet.Iterators
             blockParamsValues.CreateProperty(1, out var _1);
             
             var properties = _descriptor.GetProperties(_descriptor, input).Cast<ChainSegment>();
-            var enumerator = new ExtendedEnumerator<ChainSegment, IEnumerator<ChainSegment>>(properties.GetEnumerator());
+            var enumerator = ExtendedEnumerator<ChainSegment>.Create(properties.GetEnumerator());
 
             iterator.First = BoxedValues.True;
             iterator.Last = BoxedValues.False;

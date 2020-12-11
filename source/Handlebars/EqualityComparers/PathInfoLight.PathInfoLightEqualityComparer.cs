@@ -9,9 +9,9 @@ namespace HandlebarsDotNet
         {
             private readonly PathInfo.TrimmedPathEqualityComparer _comparer;
 
-            public PathInfoLightEqualityComparer(bool countParts = true)
+            public PathInfoLightEqualityComparer(bool countParts = true, bool ignoreCase = true)
             {
-                _comparer = new PathInfo.TrimmedPathEqualityComparer(countParts);
+                _comparer = new PathInfo.TrimmedPathEqualityComparer(countParts, ignoreCase);
             }
             
             public bool Equals(PathInfoLight x, PathInfoLight y)

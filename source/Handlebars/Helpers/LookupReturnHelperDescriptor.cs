@@ -14,9 +14,7 @@ namespace HandlebarsDotNet.Helpers
             }
             
             var segment = ChainSegment.Create(arguments[1]);
-
-            var configuration = options.Frame.Configuration;
-            return !PathResolver.TryAccessMember(arguments[0], segment, configuration, out var value) 
+            return !options.TryAccessMember(arguments[0], segment, out var value)
                 ? UndefinedBindingResult.Create(segment)
                 : value;
         }

@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using HandlebarsDotNet.IO;
+using HandlebarsDotNet.StringUtils;
 
 namespace HandlebarsDotNet
 {
@@ -71,6 +72,21 @@ namespace HandlebarsDotNet
 		}
 		
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Write(Substring value, bool encode = true)
+		{
+			if(encode && !SuppressEncoding)
+			{
+				_encoder.Encode(value.GetEnumerator(), UnderlyingWriter);
+				return;
+			}
+
+			for (int i = 0; i < value.Length; i++)
+			{
+				UnderlyingWriter.Write(value[i]);
+			}
+		}
+		
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Write<T>(T value, bool encode) where T: IEnumerator<char>
 		{
 			if(encode && !SuppressEncoding)
@@ -105,10 +121,12 @@ namespace HandlebarsDotNet
 				case null:
 				case string v when string.IsNullOrEmpty(v): 
 				case StringBuilder st when st.Length == 0:
+				case Substring substring when substring.Length == 0:
 					return;
 				
 				case string v: Write(v, true); return;
 				case StringBuilder v: Write(v, true); return;
+				case Substring v: Write(v, true); return; 
 				
 				default:
 					WriteFormatted(value);
