@@ -29,3 +29,13 @@ public void Descriptive_Test_Name_Here()
 
 ### Other related info
 Provide additional information if any.
+
+---
+
+### After submitting the issue
+Please consider contributing to the project by submitting a PR with a fix to the issue. 
+This would help to solve your problem in a shorter time as well as help other users of the project.
+
+In case you do not know where to start - feel free to ask for help in the issue thread.
+
+Building an active community is essential for any project survival as time of maintainers is limited.
