@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1608218941665,
+  "lastUpdate": 1608291416170,
   "repoUrl": "https://github.com/Handlebars-Net/Handlebars.Net",
   "entries": {
     "Benchmark.Net Benchmark": [
@@ -3552,6 +3552,102 @@ window.BENCHMARK_DATA = {
             "value": 297780.896484375,
             "unit": "ns",
             "range": "± 6110.96466694407"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "zjklee@gmail.com",
+            "name": "Oleh Formaniuk",
+            "username": "zjklee"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ef732830fb05b70553bd39efa7da4e7c6db6d75f",
+          "message": "Merge pull request #409 from zjklee/issues/408\n\nAdd boundaries check to MemberAccessor responsible for `IList*`",
+          "timestamp": "2020-12-18T03:30:49-08:00",
+          "tree_id": "813274e5e30bb75940dac1c4408ca747753085a3",
+          "url": "https://github.com/Handlebars-Net/Handlebars.Net/commit/ef732830fb05b70553bd39efa7da4e7c6db6d75f"
+        },
+        "date": 1608291415165,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "HandlebarsNet.Benchmark.Compilation.Template",
+            "value": 24381221.335416667,
+            "unit": "ns",
+            "range": "± 698943.943179266"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithoutParameters",
+            "value": 622.7077430089315,
+            "unit": "ns",
+            "range": "± 26.832641171396748"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithOneParameter",
+            "value": 634.7159806765043,
+            "unit": "ns",
+            "range": "± 14.630871096142517"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithTwoParameter",
+            "value": 621.5724114009312,
+            "unit": "ns",
+            "range": "± 23.834133732517696"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithoutParameters",
+            "value": 793.5283640861511,
+            "unit": "ns",
+            "range": "± 25.33830358431176"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithOneParameter",
+            "value": 608.4618665059407,
+            "unit": "ns",
+            "range": "± 29.915070046273367"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithTwoParameter",
+            "value": 635.9361822764079,
+            "unit": "ns",
+            "range": "± 25.65557435210037"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithoutParameters",
+            "value": 900.941188621521,
+            "unit": "ns",
+            "range": "± 33.08526890925258"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithOneParameter",
+            "value": 867.3158700806754,
+            "unit": "ns",
+            "range": "± 26.10022889260693"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithTwoParameter",
+            "value": 890.0073724746704,
+            "unit": "ns",
+            "range": "± 25.243321316629647"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.EndToEnd.Default(N: 5, DataType: \"dictionary\")",
+            "value": 252734.80854492186,
+            "unit": "ns",
+            "range": "± 9916.439865418963"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.EndToEnd.Default(N: 5, DataType: \"object\")",
+            "value": 271556.4489908854,
+            "unit": "ns",
+            "range": "± 14702.8380945717"
           }
         ]
       }
