@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using HandlebarsDotNet.PathStructure;
 
 namespace HandlebarsDotNet.MemberAccessors.EnumerableAccessors
@@ -41,7 +40,7 @@ namespace HandlebarsDotNet.MemberAccessors.EnumerableAccessors
         
         public virtual bool TryGetValue(object instance, ChainSegment memberName, out object value)
         {
-            if (int.TryParse(memberName.LowerInvariant, out var index)) 
+            if (int.TryParse(memberName.LowerInvariant, out var index) && index >= 0) 
                 return TryGetValueInternal(instance, index, out value);
             
             value = null;
@@ -52,13 +51,22 @@ namespace HandlebarsDotNet.MemberAccessors.EnumerableAccessors
         {
             switch (instance)
             {
-                case IList list:
+                case IList list when list.Count > index:
                     value = list[index];
                     return true;
 
                 case IEnumerable enumerable:
-                    value = enumerable.Cast<object>().ElementAtOrDefault(index);
-                    return true;
+                    var e = enumerable.GetEnumerator();
+                    while (e.MoveNext())
+                    {
+                        if (index-- != 0) continue;
+                        
+                        value = e.Current;
+                        return true;
+                    }
+
+                    value = null;
+                    return false;
             }
 
             value = null;
