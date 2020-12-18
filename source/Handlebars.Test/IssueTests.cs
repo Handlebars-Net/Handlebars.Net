@@ -1,6 +1,9 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
+using System.Linq;
 using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.Helpers;
 using HandlebarsDotNet.PathStructure;
@@ -447,6 +450,59 @@ namespace HandlebarsDotNet.Test
                 if((bool) options.Data["__switchCaseMatched"]) return;
                 
                 options.Template(output, options.Frame);  // execute `default` in switch context
+            }
+        }
+        
+        // issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/408
+        [Theory]
+        [ClassData(typeof(CollectionsOutOfRangeGenerator))]
+        public void Empty_string_if_index_is_out_of_range(IEnumerable input)
+        {
+            var handlebars = Handlebars.Create();
+            var render = handlebars.Compile("{{input.[1]}}");
+            object data = new { input };
+
+            var actual = render(data);
+            Assert.Equal("", actual);
+        }
+
+        private class CollectionsOutOfRangeGenerator : IEnumerable<object[]>
+        {
+            private readonly List<IEnumerable> _data = new List<IEnumerable>
+            {
+                new[] { "one" },
+                new List<string>{ "one" },
+                new HashSet<string>{ "one" },
+                new CustomReadOnlyList(new[] { "one" }),
+                Enumerable.Range(0, 1).Select(i => "one")
+            };
+
+            public IEnumerator<object[]> GetEnumerator() => _data.Select(o => new object[] { o }).GetEnumerator();
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+            
+            private class CustomReadOnlyList : IReadOnlyList<string>
+            {
+                private readonly IReadOnlyList<string> _readOnlyListImplementation;
+
+                public CustomReadOnlyList(IReadOnlyList<string> readOnlyListImplementation)
+                {
+                    _readOnlyListImplementation = readOnlyListImplementation;
+                }
+
+                public IEnumerator<string> GetEnumerator()
+                {
+                    return _readOnlyListImplementation.GetEnumerator();
+                }
+
+                IEnumerator IEnumerable.GetEnumerator()
+                {
+                    return ((IEnumerable) _readOnlyListImplementation).GetEnumerator();
+                }
+
+                public int Count => _readOnlyListImplementation.Count;
+
+                public string this[int index] => _readOnlyListImplementation[index];
             }
         }
     }
