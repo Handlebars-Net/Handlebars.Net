@@ -25,7 +25,7 @@ jobs:
 
       - name: Pack
         working-directory: ./source
-        run: dotnet pack Handlebars/Handlebars.csproj -c Release /p:version=${{ github.event.release.tag_name }} /p:ContinuousIntegrationBuild=true /p:AssemblyOriginatorKeyFile=${{ steps.obtain_snk.outputs.filePath }} /p:ShouldSignAssembly=true
+        run: dotnet pack Handlebars.sln -c Release /p:version=${{ github.event.release.tag_name }} /p:ContinuousIntegrationBuild=true /p:AssemblyOriginatorKeyFile=${{ steps.obtain_snk.outputs.filePath }} /p:ShouldSignAssembly=true
 
       - name: Publish to NuGet
         working-directory: ./source
