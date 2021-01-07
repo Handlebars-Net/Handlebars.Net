@@ -13,7 +13,7 @@ namespace HandlebarsDotNet.MemberAccessors
     {
         private static readonly Func<Type, DeferredValue<Type, RawObjectTypeDescriptor>> DescriptorsValueFactory =
             key => new DeferredValue<Type, RawObjectTypeDescriptor>(key, type => new RawObjectTypeDescriptor(type));
-        
+
         private readonly LookupSlim<Type, DeferredValue<Type, RawObjectTypeDescriptor>, ReferenceEqualityComparer<Type>> _descriptors =
             new LookupSlim<Type, DeferredValue<Type, RawObjectTypeDescriptor>, ReferenceEqualityComparer<Type>>(new ReferenceEqualityComparer<Type>());
 
@@ -53,6 +53,8 @@ namespace HandlebarsDotNet.MemberAccessors
 
         private sealed class RawObjectTypeDescriptor
         {
+            private delegate TValue ValueTypeGetterDelegate<T, TValue>(ref T instance);
+
             private static readonly MethodInfo CreateGetDelegateMethodInfo = typeof(RawObjectTypeDescriptor)
                 .GetMethod(nameof(CreateGetDelegate), BindingFlags.Static | BindingFlags.NonPublic);
 
@@ -93,7 +95,7 @@ namespace HandlebarsDotNet.MemberAccessors
                 }
 
                 var field = type.GetFields(BindingFlags.Instance | BindingFlags.Public).FirstOrDefault(o => string.Equals(o.Name, name.LowerInvariant, StringComparison.OrdinalIgnoreCase));
-                
+
                 if (field != null)
                 {
                     return o => field.GetValue(o);
@@ -104,8 +106,23 @@ namespace HandlebarsDotNet.MemberAccessors
 
             private static Func<object, object> CreateGetDelegate<T, TValue>(PropertyInfo property)
             {
-                var @delegate = (Func<T, TValue>) property.GetMethod.CreateDelegate(typeof(Func<T, TValue>));
-                return o => (object) @delegate((T) o);
+                var typeInfo = property.DeclaringType.GetTypeInfo();
+
+                if (typeInfo.IsValueType)
+                {
+                    // Value types must be passed by reference
+                    var @delegate = (ValueTypeGetterDelegate<T, TValue>)property.GetMethod.CreateDelegate(typeof(ValueTypeGetterDelegate<T, TValue>));
+                    return o =>
+                    {
+                        var to = (T)o;
+                        return (object)@delegate(ref to);
+                    };
+                }
+                else
+                {
+                    var @delegate = (Func<T, TValue>) property.GetMethod.CreateDelegate(typeof(Func<T, TValue>));
+                    return o => (object) @delegate((T) o);
+                }
             }
         }
     }
