@@ -14,9 +14,12 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 3.1.x
+      - name: Clean package cache as a temporary workaround for https://github.com/actions/setup-dotnet/issues/155
+        working-directory: ./source
+        run: dotnet clean -c Release && dotnet nuget locals all --clear
       - name: Build
         working-directory: ./source
-        run: dotnet build Handlebars.sln -c Release
+        run: dotnet build -c Release
 
   test:
     name: Tests on ${{ matrix.os }}
@@ -35,9 +38,12 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 3.1.x
+      - name: Clean package cache as a temporary workaround for https://github.com/actions/setup-dotnet/issues/155
+        working-directory: ./source
+        run: dotnet clean -c Release && dotnet nuget locals all --clear
       - name: Test
         working-directory: ./source
-        run: dotnet test Handlebars.sln --logger:trx --logger:GitHubActions
+        run: dotnet test --logger:trx --logger:GitHubActions
 
   sonar-ci:
     name: SonarCloud
@@ -57,6 +63,9 @@ jobs:
       - uses: actions/setup-java@v1
         with:
           java-version: '13' # The JDK version to make available on the path.
+      - name: Clean package cache as a temporary workaround for https://github.com/actions/setup-dotnet/issues/155
+        working-directory: ./source
+        run: dotnet clean -c Release && dotnet nuget locals all --clear
       - name: Cache SonarCloud packages
         uses: actions/cache@v1
         with:
@@ -96,6 +105,9 @@ jobs:
       - uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 3.1.x
+      - name: Clean package cache as a temporary workaround for https://github.com/actions/setup-dotnet/issues/155
+        working-directory: ./source
+        run: dotnet clean -c Release && dotnet nuget locals all --clear
       - name: Run benchmark
         working-directory: ./source/Handlebars.Benchmark
         run: dotnet run -c Release --exporters json --filter '*' -m --join

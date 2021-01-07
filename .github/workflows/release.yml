@@ -23,9 +23,13 @@ jobs:
         with:
           dotnet-version: 3.1.x
 
+      - name: Clean package cache as a temporary workaround for https://github.com/actions/setup-dotnet/issues/155
+        working-directory: ./source
+        run: dotnet clean -c Release && dotnet nuget locals all --clear
+
       - name: Pack
         working-directory: ./source
-        run: dotnet pack Handlebars.sln -c Release /p:version=${{ github.event.release.tag_name }} /p:ContinuousIntegrationBuild=true /p:AssemblyOriginatorKeyFile=${{ steps.obtain_snk.outputs.filePath }} /p:ShouldSignAssembly=true
+        run: dotnet pack -c Release /p:version=${{ github.event.release.tag_name }} /p:ContinuousIntegrationBuild=true /p:AssemblyOriginatorKeyFile=${{ steps.obtain_snk.outputs.filePath }} /p:ShouldSignAssembly=true
 
       - name: Publish to NuGet
         working-directory: ./source
