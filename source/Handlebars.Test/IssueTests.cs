@@ -505,5 +505,27 @@ namespace HandlebarsDotNet.Test
                 public string this[int index] => _readOnlyListImplementation[index];
             }
         }
+
+        // issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/412
+        [Fact]
+        public void StructReflectionAccessor()
+        {
+            const string template = "{{Name}}";
+
+            var handlebars = Handlebars.Create();
+            var handlebarsTemplate = handlebars.Compile(template);
+
+            var actual = handlebarsTemplate(new CustomStruct
+            {
+                Name = "Foo"
+            });
+
+            Assert.Equal("Foo", actual);
+        }
+
+        private struct CustomStruct
+        {
+            public string Name { get; set; }
+        }
     }
 }
