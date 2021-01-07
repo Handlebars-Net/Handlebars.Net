@@ -1,18 +1,19 @@
+
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30804.86
+# Visual Studio 15
+VisualStudioVersion = 15.0.26403.3
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Handlebars", "Handlebars\Handlebars.csproj", "{9822C7B8-7E51-42BC-9A49-72A10491B202}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Handlebars", "Handlebars\Handlebars.csproj", "{A09CFF95-B671-48FE-96A8-D3CBDC110B75}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Handlebars.Test", "Handlebars.Test\Handlebars.Test.csproj", "{6BA232A6-8C4D-4C7D-BD75-1844FE9774AF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Handlebars.Test", "Handlebars.Test\Handlebars.Test.csproj", "{2BD48FB6-C852-4141-B734-12E501B1D761}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E9AC0BCD-C060-4634-BBBB-636167C809B4}"
 	ProjectSection(SolutionItems) = preProject
-		Directory.Build.props = Directory.Build.props
 		..\README.md = ..\README.md
+		Directory.Build.props = Directory.Build.props
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Handlebars.Benchmark", "Handlebars.Benchmark\Handlebars.Benchmark.csproj", "{417E2E51-2DD2-4045-84E5-BA66484E957B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Handlebars.Benchmark", "Handlebars.Benchmark\Handlebars.Benchmark.csproj", "{417E2E51-2DD2-4045-84E5-BA66484E957B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,14 +21,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{9822C7B8-7E51-42BC-9A49-72A10491B202}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9822C7B8-7E51-42BC-9A49-72A10491B202}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9822C7B8-7E51-42BC-9A49-72A10491B202}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9822C7B8-7E51-42BC-9A49-72A10491B202}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6BA232A6-8C4D-4C7D-BD75-1844FE9774AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6BA232A6-8C4D-4C7D-BD75-1844FE9774AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6BA232A6-8C4D-4C7D-BD75-1844FE9774AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6BA232A6-8C4D-4C7D-BD75-1844FE9774AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A09CFF95-B671-48FE-96A8-D3CBDC110B75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A09CFF95-B671-48FE-96A8-D3CBDC110B75}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A09CFF95-B671-48FE-96A8-D3CBDC110B75}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A09CFF95-B671-48FE-96A8-D3CBDC110B75}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2BD48FB6-C852-4141-B734-12E501B1D761}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2BD48FB6-C852-4141-B734-12E501B1D761}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2BD48FB6-C852-4141-B734-12E501B1D761}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2BD48FB6-C852-4141-B734-12E501B1D761}.Release|Any CPU.Build.0 = Release|Any CPU
 		{417E2E51-2DD2-4045-84E5-BA66484E957B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{417E2E51-2DD2-4045-84E5-BA66484E957B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{417E2E51-2DD2-4045-84E5-BA66484E957B}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -35,9 +36,6 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {DC4EC492-E1FF-4BAF-8B26-F12EA8A461BA}
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		Policies = $0

@@ -1,11 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.EqualityComparers;
 using HandlebarsDotNet.PathStructure;
 using HandlebarsDotNet.Runtime;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace HandlebarsDotNet.MemberAccessors
 {
@@ -53,8 +53,6 @@ namespace HandlebarsDotNet.MemberAccessors
 
         private sealed class RawObjectTypeDescriptor
         {
-            private delegate TValue ValueTypeGetterDelegate<T, TValue>(ref T instance);
-
             private static readonly MethodInfo CreateGetDelegateMethodInfo = typeof(RawObjectTypeDescriptor)
                 .GetMethod(nameof(CreateGetDelegate), BindingFlags.Static | BindingFlags.NonPublic);
 
@@ -103,6 +101,8 @@ namespace HandlebarsDotNet.MemberAccessors
 
                 return null;
             }
+
+            delegate TValue ValueTypeGetterDelegate<T, TValue>(ref T instance);
 
             private static Func<object, object> CreateGetDelegate<T, TValue>(PropertyInfo property)
             {
