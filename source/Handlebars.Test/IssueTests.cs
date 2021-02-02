@@ -332,6 +332,25 @@ namespace HandlebarsDotNet.Test
             Assert.Equal(expected, actual);
         }
         
+        // issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/422
+        [Fact]
+        public void CallPartialInEach()
+        {
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterTemplate("testPartial", " 42 ");
+            var source = "{{#each Fruits}}{{> testPartial aPartialParameter=\"couldBeAnything\"}}{{/each}}";
+            var template = handlebars.Compile(source);
+            var data = new
+            {
+                Fruits = new[] {"apple", "banana" }
+            };
+            
+            var actual = template(data);
+            var expected = " 42  42 ";
+            
+            Assert.Equal(expected, actual);
+        }
+        
         private class JoinHelper : IHelperDescriptor<HelperOptions>
         {
             public PathInfo Name { get; } = "join";
