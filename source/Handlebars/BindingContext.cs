@@ -163,13 +163,15 @@ namespace HandlebarsDotNet
         private static void PopulateHash(HashParameterDictionary hash, object from)
         {
             var descriptor = ObjectDescriptor.Create(from);
+            if (descriptor == ObjectDescriptor.Empty) return;
+            
             var accessor = descriptor.MemberAccessor;
             var properties = descriptor.GetProperties(descriptor, from);
             var enumerator = properties.GetEnumerator();
             while (enumerator.MoveNext())
             {
                 var segment = ChainSegment.Create(enumerator.Current);
-                if(hash.ContainsKey(segment)) continue;
+                if (hash.ContainsKey(segment)) continue;
                 if (!accessor.TryGetValue(@from, segment, out var value)) continue;
                 hash[segment] = value;
             }
