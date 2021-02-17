@@ -16,8 +16,6 @@
 
 ---
 
-**[Call for Input on v2](https://github.com/rexm/Handlebars.Net/issues/294)**
-
 Blistering-fast [Handlebars.js templates](http://handlebarsjs.com) in your .NET application.
 
 >Handlebars.js is an extension to the Mustache templating language created by Chris Wanstrath. Handlebars.js and Mustache are both logicless templating languages that keep the view and the code separated like we all know they should be.
