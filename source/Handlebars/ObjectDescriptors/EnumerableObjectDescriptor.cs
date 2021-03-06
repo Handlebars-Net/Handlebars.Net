@@ -42,9 +42,9 @@ namespace HandlebarsDotNet.ObjectDescriptors
         private static readonly MethodInfo NonGenericEnumerableObjectDescriptorFactoryMethodInfo = EnumerableObjectDescriptorType
             .GetMethod(nameof(NonGenericEnumerableObjectDescriptorFactory), BindingFlags);
 
-        private readonly IObjectDescriptorProvider _descriptorProvider;
+        private readonly ObjectDescriptorProvider _descriptorProvider;
 
-        public EnumerableObjectDescriptor(IObjectDescriptorProvider descriptorProvider)
+        public EnumerableObjectDescriptor(ObjectDescriptorProvider descriptorProvider)
         {
             _descriptorProvider = descriptorProvider;
         }
@@ -125,55 +125,55 @@ namespace HandlebarsDotNet.ObjectDescriptors
 
         private static ObjectDescriptor ArrayObjectDescriptorFactory<TValue>(IMemberAccessor accessor, ObjectDescriptor descriptor)
         {
-            return new ObjectDescriptor(typeof(TValue[]), accessor, descriptor.GetProperties, self => new ArrayIterator<TValue>());
+            return new ObjectDescriptor(typeof(TValue[]), accessor, descriptor.GetProperties, self => new ArrayIterator<TValue>(), descriptor.Dependencies);
         }
         
         private static ObjectDescriptor ListObjectDescriptorFactory<T, TValue>(IMemberAccessor accessor, ObjectDescriptor descriptor) 
             where T : class, IList<TValue>
         {
-            return new ObjectDescriptor(typeof(T), accessor, descriptor.GetProperties, self => new ListIterator<T, TValue>());
+            return new ObjectDescriptor(typeof(T), accessor, descriptor.GetProperties, self => new ListIterator<T, TValue>(), descriptor.Dependencies);
         }
         
         private static ObjectDescriptor ReadOnlyListObjectDescriptorFactory<T, TValue>(IMemberAccessor accessor, ObjectDescriptor descriptor) 
             where T : class, IReadOnlyList<TValue>
         {
-            return new ObjectDescriptor(typeof(T), accessor, descriptor.GetProperties, self => new ReadOnlyListIterator<T, TValue>());
+            return new ObjectDescriptor(typeof(T), accessor, descriptor.GetProperties, self => new ReadOnlyListIterator<T, TValue>(), descriptor.Dependencies);
         }
         
         private static ObjectDescriptor NonGenericListObjectDescriptorFactory<T>(IMemberAccessor accessor, ObjectDescriptor descriptor) 
             where T : class, IList
         {
-            return new ObjectDescriptor(typeof(T), accessor, descriptor.GetProperties, self => new ListIterator<T>());
+            return new ObjectDescriptor(typeof(T), accessor, descriptor.GetProperties, self => new ListIterator<T>(), descriptor.Dependencies);
         }
         
         private static ObjectDescriptor CollectionObjectDescriptorFactory<T, TValue>(IMemberAccessor accessor, ObjectDescriptor descriptor) 
             where T : class, ICollection<TValue>
         {
-            return new ObjectDescriptor(typeof(T), accessor, descriptor.GetProperties, self => new CollectionIterator<T, TValue>());
+            return new ObjectDescriptor(typeof(T), accessor, descriptor.GetProperties, self => new CollectionIterator<T, TValue>(), descriptor.Dependencies);
         }
         
         private static ObjectDescriptor ReadOnlyCollectionObjectDescriptorFactory<T, TValue>(IMemberAccessor accessor, ObjectDescriptor descriptor) 
             where T : class, IReadOnlyCollection<TValue>
         {
-            return new ObjectDescriptor(typeof(T), accessor, descriptor.GetProperties, self => new ReadOnlyCollectionIterator<T, TValue>());
+            return new ObjectDescriptor(typeof(T), accessor, descriptor.GetProperties, self => new ReadOnlyCollectionIterator<T, TValue>(), descriptor.Dependencies);
         }
         
         private static ObjectDescriptor NonGenericCollectionObjectDescriptorFactory<T>(IMemberAccessor accessor, ObjectDescriptor descriptor) 
             where T : class, ICollection
         {
-            return new ObjectDescriptor(typeof(T), accessor, descriptor.GetProperties, self => new CollectionIterator<T>());
+            return new ObjectDescriptor(typeof(T), accessor, descriptor.GetProperties, self => new CollectionIterator<T>(), descriptor.Dependencies);
         }
         
         private static ObjectDescriptor EnumerableObjectDescriptorFactory<T, TValue>(IMemberAccessor accessor, ObjectDescriptor descriptor) 
             where T : class, IEnumerable<TValue>
         {
-            return new ObjectDescriptor(typeof(T), accessor, descriptor.GetProperties, self => new EnumerableIterator<T, TValue>());
+            return new ObjectDescriptor(typeof(T), accessor, descriptor.GetProperties, self => new EnumerableIterator<T, TValue>(), descriptor.Dependencies);
         }
         
         private static ObjectDescriptor NonGenericEnumerableObjectDescriptorFactory<T>(IMemberAccessor accessor, ObjectDescriptor descriptor) 
             where T : class, IEnumerable
         {
-            return new ObjectDescriptor(typeof(T), accessor, descriptor.GetProperties, self => new EnumerableIterator<T>());
+            return new ObjectDescriptor(typeof(T), accessor, descriptor.GetProperties, self => new EnumerableIterator<T>(), descriptor.Dependencies);
         }
     }
 }
