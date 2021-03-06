@@ -546,5 +546,34 @@ namespace HandlebarsDotNet.Test
         {
             public string Name { get; set; }
         }
+        
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/432
+        [Fact]
+        public void WeirdBehaviour()
+        {
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterTemplate("displayListItem", "{{this}},");
+            handlebars.RegisterTemplate("displayList", "{{#each this}}{{> displayListItem}}{{/each}}");
+            
+            var template = handlebars.Compile("{{> displayList TheList}}");
+            var actual1 = template(new ClassWithAList());
+            var actual2 = template(new ClassWithAListAndOtherMembers());
+            var expected = "";
+
+            Assert.Equal(expected, actual1);
+            Assert.Equal(expected, actual2);
+        }
+        
+        private class ClassWithAList
+        {
+            public IEnumerable<string> TheList { get; set; }
+        }
+
+        private class ClassWithAListAndOtherMembers
+        {
+            public IEnumerable<string> TheList { get; set; }
+            public bool SomeBool { get; set; }
+            public string SomeString { get; set; } = "I shouldn't show up!";
+        }
     }
 }

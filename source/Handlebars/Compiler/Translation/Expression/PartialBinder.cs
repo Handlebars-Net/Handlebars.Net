@@ -31,7 +31,10 @@ namespace HandlebarsDotNet.Compiler
 
             if (pex.Argument != null || partialBlockTemplate != null)
             {
-                var value = Arg<object>(FunctionBuilder.Reduce(pex.Argument, CompilationContext));
+                var value = pex.Argument != null
+                    ? Arg<object>(FunctionBuilder.Reduce(pex.Argument, CompilationContext))
+                    : bindingContext.Property(o => o.Value);
+                
                 var partialTemplate = Arg(partialBlockTemplate);
                 bindingContext = bindingContext.Call(o => o.CreateChildContext(value, partialTemplate));
             }

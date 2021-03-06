@@ -151,7 +151,7 @@ namespace HandlebarsDotNet
 
         internal BindingContext CreateChildContext(object value, TemplateDelegate partialBlockTemplate = null)
         {
-            return Create(Configuration, value ?? Value, this, partialBlockTemplate ?? PartialBlockTemplate);
+            return Create(Configuration, value, this, partialBlockTemplate ?? PartialBlockTemplate);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
