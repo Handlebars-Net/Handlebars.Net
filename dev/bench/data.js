@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1613603774141,
+  "lastUpdate": 1615069452140,
   "repoUrl": "https://github.com/Handlebars-Net/Handlebars.Net",
   "entries": {
     "Benchmark.Net Benchmark": [
@@ -4416,6 +4416,102 @@ window.BENCHMARK_DATA = {
             "value": 279841.34261067706,
             "unit": "ns",
             "range": "± 1574.1656795735403"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "zjklee@gmail.com",
+            "name": "Oleh Formaniuk",
+            "username": "zjklee"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a2146e7b86017cbbbecfafd04ce1497e15753b0f",
+          "message": "Merge pull request #433 from zjklee/issues/432\n\nFix child context creation when value is `null` when invoking partials",
+          "timestamp": "2021-03-07T00:19:08+02:00",
+          "tree_id": "9ebc68627fc23b842670f51b269154a089b69afd",
+          "url": "https://github.com/Handlebars-Net/Handlebars.Net/commit/a2146e7b86017cbbbecfafd04ce1497e15753b0f"
+        },
+        "date": 1615069451613,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "HandlebarsNet.Benchmark.Compilation.Template",
+            "value": 22478029.929166667,
+            "unit": "ns",
+            "range": "± 430545.4642381724"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithoutParameters",
+            "value": 612.1351924260457,
+            "unit": "ns",
+            "range": "± 24.743112769915886"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithOneParameter",
+            "value": 607.6808296203614,
+            "unit": "ns",
+            "range": "± 18.812965839276536"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithTwoParameter",
+            "value": 607.8265102386474,
+            "unit": "ns",
+            "range": "± 16.78499363448172"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithoutParameters",
+            "value": 754.4605593045552,
+            "unit": "ns",
+            "range": "± 19.676483714415255"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithOneParameter",
+            "value": 579.240347925822,
+            "unit": "ns",
+            "range": "± 20.10951077488145"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithTwoParameter",
+            "value": 596.8995667237502,
+            "unit": "ns",
+            "range": "± 10.367218466491948"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithoutParameters",
+            "value": 852.4297406332834,
+            "unit": "ns",
+            "range": "± 18.228012797855698"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithOneParameter",
+            "value": 836.5713718278067,
+            "unit": "ns",
+            "range": "± 15.32653172098234"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithTwoParameter",
+            "value": 856.9210077013288,
+            "unit": "ns",
+            "range": "± 21.44043666951781"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.EndToEnd.Default(N: 5, DataType: \"dictionary\")",
+            "value": 274118.69306640624,
+            "unit": "ns",
+            "range": "± 8486.790616498409"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.EndToEnd.Default(N: 5, DataType: \"object\")",
+            "value": 241705.54321289062,
+            "unit": "ns",
+            "range": "± 6527.649606250094"
           }
         ]
       }
