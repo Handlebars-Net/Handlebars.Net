@@ -10,8 +10,8 @@ namespace HandlebarsDotNet.Compiler.Lexer
             if (!IsComment(reader)) return null;
          
             Token token = null;
-            var buffer = AccumulateComment(reader).Trim();
-            if (buffer.StartsWith("<")) //syntax for layout is {{!< layoutname }} - i.e. its inside a comment block
+            var buffer = AccumulateComment(reader, out bool isEscaped).Trim();
+            if (buffer.StartsWith("<") && !isEscaped) //syntax for layout is {{!< layoutname }} - i.e. its inside a comment block
             {
                 token = Token.Layout(buffer.Substring(1).Trim());
             }
@@ -26,7 +26,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
             return peek == '!';
         }
 
-        private static string AccumulateComment(ExtendedStringReader reader)
+        private static string AccumulateComment(ExtendedStringReader reader, out bool isEscaped)
         {
             reader.Read();
             bool? escaped = null;
@@ -53,7 +53,8 @@ namespace HandlebarsDotNet.Compiler.Lexer
                         buffer.Append((char)node);
                     }
                 }
-                
+
+                isEscaped = escaped.Value;
                 return buffer.ToString();
             }
         }
