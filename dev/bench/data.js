@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1616331042038,
+  "lastUpdate": 1616343052810,
   "repoUrl": "https://github.com/Handlebars-Net/Handlebars.Net",
   "entries": {
     "Benchmark.Net Benchmark": [
@@ -4608,6 +4608,102 @@ window.BENCHMARK_DATA = {
             "value": 240793.81708984374,
             "unit": "ns",
             "range": "± 17562.805992225203"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "zjklee@gmail.com",
+            "name": "Oleh Formaniuk",
+            "username": "zjklee"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f2adea9b4a2561bdec0dd8bfea0bb72e2b9fc350",
+          "message": "Merge pull request #438 from heemskerkerik/feature/fix-html-comment-as-layout",
+          "timestamp": "2021-03-21T18:05:33+02:00",
+          "tree_id": "473d6c4f5546ea8904d50fb2f6546adb8095ce8b",
+          "url": "https://github.com/Handlebars-Net/Handlebars.Net/commit/f2adea9b4a2561bdec0dd8bfea0bb72e2b9fc350"
+        },
+        "date": 1616343051962,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "HandlebarsNet.Benchmark.Compilation.Template",
+            "value": 23484932.535714287,
+            "unit": "ns",
+            "range": "± 60591.53424579331"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithoutParameters",
+            "value": 650.1170993169148,
+            "unit": "ns",
+            "range": "± 32.7081064420912"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithOneParameter",
+            "value": 628.2369129474347,
+            "unit": "ns",
+            "range": "± 1.1628733389344008"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithTwoParameter",
+            "value": 682.7584060668945,
+            "unit": "ns",
+            "range": "± 14.044562353088264"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithoutParameters",
+            "value": 871.0431939760844,
+            "unit": "ns",
+            "range": "± 0.9837575635826136"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithOneParameter",
+            "value": 643.0405593285194,
+            "unit": "ns",
+            "range": "± 1.3228179802209088"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithTwoParameter",
+            "value": 667.6105702718099,
+            "unit": "ns",
+            "range": "± 6.244951010134163"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithoutParameters",
+            "value": 883.8502046267191,
+            "unit": "ns",
+            "range": "± 1.5162462603436888"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithOneParameter",
+            "value": 870.9134222439358,
+            "unit": "ns",
+            "range": "± 1.9885242683269708"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithTwoParameter",
+            "value": 898.2625948832585,
+            "unit": "ns",
+            "range": "± 3.6151057105330398"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.EndToEnd.Default(N: 5, DataType: \"dictionary\")",
+            "value": 273358.5104166667,
+            "unit": "ns",
+            "range": "± 7885.784947196799"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.EndToEnd.Default(N: 5, DataType: \"object\")",
+            "value": 286725.1134765625,
+            "unit": "ns",
+            "range": "± 7443.455660933802"
           }
         ]
       }
