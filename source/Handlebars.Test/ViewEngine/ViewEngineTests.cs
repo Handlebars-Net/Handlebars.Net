@@ -130,6 +130,23 @@ namespace HandlebarsDotNet.Test.ViewEngine
             Assert.Equal("This is the THING", output);
         }
 
+        [Fact]
+        public void CanIgnoreCommentsContainingHtml()
+        {
+            var files = new FakeFileSystem()
+            {
+                { "views\\layout.hbs", "Start\r\n{{{body}}}\r\nEnd" },
+                { "views\\someview.hbs", "{{!< layout}}\r\n\r\nTemplate\r\n{{!--\r\n<div>Commented out HTML</div>\r\n--}}" },
+            };
+
+            var handlebarsConfiguration = new HandlebarsConfiguration() { FileSystem = files };
+            var handlebars = Handlebars.Create(handlebarsConfiguration);
+            var render = handlebars.CompileView("views\\someview.hbs");
+            var output = render(null);
+
+            Assert.Equal("Start\r\n\r\nTemplate\r\n\r\nEnd", output);
+        }
+
         //We have a fake file system. Difference frameworks and apps will use 
         //different file systems.
         class FakeFileSystem : ViewEngineFileSystem, IEnumerable
