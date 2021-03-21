@@ -734,6 +734,23 @@ false
             var result = template(data);
             Assert.Equal("hello: foo world: bar ", result);
         }
+        
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void ObjectEnumeratorWithWithContainingBlockParams(IHandlebars handlebars)
+        {
+            var source = "{{#each enumerateMe as |item val|}}{{#with @item as |item2|}}{{@item2}}: {{@val}} {{/with}}{{/each}}";
+            var template = handlebars.Compile(source);
+            var data = new
+            {
+                enumerateMe = new
+                {
+                    foo = "hello",
+                    bar = "world"
+                }
+            };
+            var result = template(data);
+            Assert.Equal("hello: foo world: bar ", result);
+        }
 
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
         public void BasicDictionaryEnumerator(IHandlebars handlebars)

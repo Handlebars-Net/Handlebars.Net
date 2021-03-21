@@ -36,6 +36,8 @@ namespace HandlebarsDotNet.Compiler
                 }
                 else
                 {
+                    if (item is EndExpressionToken) foundBlockParams = false;
+
                     result.Add(item);
                 }
             }
