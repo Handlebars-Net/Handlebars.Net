@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1615069452140,
+  "lastUpdate": 1616331042038,
   "repoUrl": "https://github.com/Handlebars-Net/Handlebars.Net",
   "entries": {
     "Benchmark.Net Benchmark": [
@@ -4512,6 +4512,102 @@ window.BENCHMARK_DATA = {
             "value": 241705.54321289062,
             "unit": "ns",
             "range": "± 6527.649606250094"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "zjklee@gmail.com",
+            "name": "Oleh Formaniuk",
+            "username": "zjklee"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "95c787a185e54d2fb4eee25efd4014825eacdcaa",
+          "message": "Merge pull request #436 from zjklee/fix/multiple-block-params\n\nFix multiple block params in the same template in different blocks",
+          "timestamp": "2021-03-21T14:45:27+02:00",
+          "tree_id": "4811f326d262df187b81bcb7212426306fc2a674",
+          "url": "https://github.com/Handlebars-Net/Handlebars.Net/commit/95c787a185e54d2fb4eee25efd4014825eacdcaa"
+        },
+        "date": 1616331041215,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "HandlebarsNet.Benchmark.Compilation.Template",
+            "value": 19385319.435416665,
+            "unit": "ns",
+            "range": "± 828301.9064634563"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithoutParameters",
+            "value": 518.4902978624616,
+            "unit": "ns",
+            "range": "± 12.660559537733983"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithOneParameter",
+            "value": 543.0463656743367,
+            "unit": "ns",
+            "range": "± 40.19067460319065"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithTwoParameter",
+            "value": 579.3125210762024,
+            "unit": "ns",
+            "range": "± 32.14090770984754"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithoutParameters",
+            "value": 704.0393073081971,
+            "unit": "ns",
+            "range": "± 26.666421957988405"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithOneParameter",
+            "value": 536.1753165381296,
+            "unit": "ns",
+            "range": "± 15.169789344517634"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithTwoParameter",
+            "value": 527.9820722897847,
+            "unit": "ns",
+            "range": "± 23.77923349784145"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithoutParameters",
+            "value": 768.2909335454304,
+            "unit": "ns",
+            "range": "± 40.04601161751011"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithOneParameter",
+            "value": 744.3587540308635,
+            "unit": "ns",
+            "range": "± 20.467945875800922"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithTwoParameter",
+            "value": 784.7120342254639,
+            "unit": "ns",
+            "range": "± 35.7732457073661"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.EndToEnd.Default(N: 5, DataType: \"dictionary\")",
+            "value": 229462.8174967448,
+            "unit": "ns",
+            "range": "± 12084.922313384053"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.EndToEnd.Default(N: 5, DataType: \"object\")",
+            "value": 240793.81708984374,
+            "unit": "ns",
+            "range": "± 17562.805992225203"
           }
         ]
       }
