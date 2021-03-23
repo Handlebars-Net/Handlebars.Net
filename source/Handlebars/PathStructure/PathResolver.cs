@@ -73,7 +73,7 @@ namespace HandlebarsDotNet.PathStructure
             }
 
             if (context.TryGetVariable(chainSegment, out value)
-                || TryAccessMember(context, instance, chainSegment, out value))
+                || !ReferenceEquals(context.Value, instance) && TryAccessMember(context, instance, chainSegment, out value))
             {
                 return true;
             }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using HandlebarsDotNet.Compiler.Lexer;
 using HandlebarsDotNet.IO;
+using HandlebarsDotNet.PathStructure;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -59,6 +60,19 @@ namespace HandlebarsDotNet.Compiler
             return (in EncodedTextWriter writer, BindingContext context) =>
             {
                 var config = context.Configuration;
+                using var bindingContext = BindingContext.Create(config, null);
+                foreach (var pair in context.ContextDataObject)
+                {
+                    switch (pair.Key.WellKnownVariable)
+                    {
+                        case WellKnownVariable.Parent:
+                        case WellKnownVariable.Root:
+                            continue;
+                    }
+                    
+                    bindingContext.ContextDataObject[pair.Key] = pair.Value;
+                }
+                
                 using var innerWriter = ReusableStringWriter.Get(config.FormatProvider);
                 using var textWriter = new EncodedTextWriter(innerWriter, config.TextEncoder, FormatterProvider.Current, true);
                 compiledView(textWriter, context);
@@ -66,7 +80,7 @@ namespace HandlebarsDotNet.Compiler
 
                 var vmContext = new [] {new {body = inner}, context.Value};
                 var viewModel = new DynamicViewModel(vmContext);
-                using var bindingContext = BindingContext.Create(config, viewModel);
+                bindingContext.Value = viewModel;
 
                 compiledLayout(writer, bindingContext);
             };
