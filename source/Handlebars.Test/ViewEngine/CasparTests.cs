@@ -6,6 +6,44 @@ namespace HandlebarsDotNet.Test.ViewEngine
     public class CasparTests
     {
         [Fact]
+        public void CanRenderVariablesInCasperLayout()
+        {
+            var fs = new DiskFileSystem();
+            var handlebars = Handlebars.Create(new HandlebarsConfiguration()
+            {
+                FileSystem = fs
+            });
+            
+            AddHelpers(handlebars);
+            var renderView = handlebars.CompileView("ViewEngine/Casper-master/index.hbs");
+            var output = renderView(
+                new
+                {
+                    posts = new[]
+                    {
+                        new
+                        {
+                            title = "My Post Title",
+                            image = "/someimage.png",
+                            post_class = "somepostclass"
+                        }
+                    }
+                },
+                new
+                {
+                    blog = new
+                    {
+                        url = "http://someblog.com",
+                        title = "This is the blog title"
+                    }
+                }
+            );
+
+            var cq = CsQuery.CQ.CreateDocument(output);
+            Assert.Equal("This is the blog title", cq["section.copyright a"].Text());
+        }
+        
+        [Fact]
         public void CanRenderCasparIndexTemplate()
         {
             var fs = new DiskFileSystem();
