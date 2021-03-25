@@ -11,7 +11,8 @@ namespace HandlebarsDotNet
 {
     internal class LayoutViewModel
     {
-        private static readonly ChainSegment _bodyChainSegment = ChainSegment.Create("body");
+        private static readonly ChainSegment BodyChainSegment = ChainSegment.Create("body");
+
         private readonly string _body;
         private readonly object _value;
         private readonly ObjectDescriptor _valueDescriptor;
@@ -25,21 +26,22 @@ namespace HandlebarsDotNet
 
         internal class DescriptorProvider: IObjectDescriptorProvider
         {
-            private static readonly object[] _bodyProperties = { _bodyChainSegment };
-            private static readonly Type _type = typeof(LayoutViewModel);
+            private static readonly object[] BodyProperties = { BodyChainSegment };
+            private static readonly Type Type = typeof(LayoutViewModel);
+
             private readonly ObjectDescriptor _descriptor;
 
             public DescriptorProvider()
             {
                 _descriptor = new ObjectDescriptor(
-                    _type,
+                    Type,
                     new MemberAccessor(),
                     (_, o) =>
                     {
                         var vm = (LayoutViewModel) o;
                         IEnumerable valueProperties = vm._valueDescriptor.GetProperties(vm._valueDescriptor, vm._value);
 
-                        return _bodyProperties
+                        return BodyProperties
                            .Concat(valueProperties.Cast<object>());
                     },
                     _ => new Iterator()
@@ -48,7 +50,7 @@ namespace HandlebarsDotNet
 
             public bool TryGetDescriptor(Type type, out ObjectDescriptor value)
             {
-                if (type != _type)
+                if (type != Type)
                 {
                     value = ObjectDescriptor.Empty;
                     return false;
@@ -65,7 +67,7 @@ namespace HandlebarsDotNet
             {
                 var vm = (LayoutViewModel) instance;
 
-                if (memberName.Equals(_bodyChainSegment))
+                if (memberName.Equals(BodyChainSegment))
                 {
                     value = vm._body;
                     return true;
