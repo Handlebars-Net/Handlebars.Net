@@ -190,6 +190,29 @@ namespace HandlebarsDotNet.Test.ViewEngine
         }
 
         [Fact]
+        public void CanBindToModelInNestedLayout()
+        {
+            var files = new FakeFileSystem
+                        {
+                            { "views\\parent_layout.hbs", "Parent layout: {{property}}\r\n{{{body}}}" },
+                            { "views\\layout.hbs", "{{!< parent_layout}}\r\nLayout: {{property}}\r\n{{{body}}}" },
+                            { "views\\someview.hbs", "{{!< layout}}\r\n\r\nBody: {{property}}" },
+                        };
+
+            var handlebarsConfiguration = new HandlebarsConfiguration { FileSystem = files };
+            var handlebars = Handlebars.Create(handlebarsConfiguration);
+            var render = handlebars.CompileView("views\\someview.hbs");
+            var output = render(
+                new
+                {
+                    property = "Foo"
+                }
+            );
+
+            Assert.Equal("Parent layout: Foo\r\nLayout: Foo\r\n\r\nBody: Foo", output);
+        }
+
+        [Fact]
         public void CanUseNullModelInLayout()
         {
             var files = new FakeFileSystem
