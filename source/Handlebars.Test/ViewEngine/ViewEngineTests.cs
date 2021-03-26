@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Xunit;
 
@@ -50,7 +52,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
             //Then the correct output should be rendered
             Assert.Equal("layout start\r\nThis is the body\r\nlayout end", output);
         }
-        
+
         [Fact]
         public void CanLoadAViewWithALayoutInTheRoot()
         {
@@ -63,7 +65,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
             };
 
             //When a viewengine renders that view
-            var handlebars = HandlebarsDotNet.Handlebars.Create(new HandlebarsConfiguration() {FileSystem = files});
+            var handlebars = Handlebars.Create(new HandlebarsConfiguration() {FileSystem = files});
             var render = handlebars.CompileView("views\\someview.hbs");
             var output = render(null);
 
@@ -110,7 +112,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
             //Then the correct output should be rendered
             Assert.Equal("layout start\r\nThis is the body\r\nlayout end", output);
         }
-        
+
         [Fact]
         public void CanRenderAGlobalVariable()
         {
@@ -147,7 +149,198 @@ namespace HandlebarsDotNet.Test.ViewEngine
             Assert.Equal("Start\r\n\r\nTemplate\r\n\r\nEnd", output);
         }
 
-        //We have a fake file system. Difference frameworks and apps will use 
+        [Fact]
+        public void CanUseDictionaryModelInLayout()
+        {
+            var files = new FakeFileSystem
+                        {
+                            { "views\\layout.hbs", "Layout: {{property}}\r\n{{{body}}}" },
+                            { "views\\someview.hbs", "{{!< layout}}\r\n\r\nBody: {{property}}" },
+                        };
+
+            var handlebarsConfiguration = new HandlebarsConfiguration { FileSystem = files };
+            var handlebars = Handlebars.Create(handlebarsConfiguration);
+            var render = handlebars.CompileView("views\\someview.hbs");
+            var output = render(
+                new Dictionary<string, object>
+                {
+                    { "property", "Foo" },
+                }
+            );
+
+            Assert.Equal("Layout: Foo\r\n\r\nBody: Foo", output);
+        }
+
+        [Fact]
+        public void CanUseDynamicModelInLayout()
+        {
+            var files = new FakeFileSystem
+                        {
+                            { "views\\layout.hbs", "Layout: {{property}}\r\n{{{body}}}" },
+                            { "views\\someview.hbs", "{{!< layout}}\r\n\r\nBody: {{property}}" },
+                        };
+
+            dynamic model = new MyDynamicModel();
+            var handlebarsConfiguration = new HandlebarsConfiguration { FileSystem = files };
+            var handlebars = Handlebars.Create(handlebarsConfiguration);
+            var render = handlebars.CompileView("views\\someview.hbs");
+            var output = render(model);
+
+            Assert.Equal("Layout: Foo\r\n\r\nBody: Foo", output);
+        }
+
+        [Fact]
+        public void CanBindToModelInNestedLayout()
+        {
+            var files = new FakeFileSystem
+                        {
+                            { "views\\parent_layout.hbs", "Parent layout: {{property}}\r\n{{{body}}}" },
+                            { "views\\layout.hbs", "{{!< parent_layout}}\r\nLayout: {{property}}\r\n{{{body}}}" },
+                            { "views\\someview.hbs", "{{!< layout}}\r\n\r\nBody: {{property}}" },
+                        };
+
+            var handlebarsConfiguration = new HandlebarsConfiguration { FileSystem = files };
+            var handlebars = Handlebars.Create(handlebarsConfiguration);
+            var render = handlebars.CompileView("views\\someview.hbs");
+            var output = render(
+                new
+                {
+                    property = "Foo"
+                }
+            );
+
+            Assert.Equal("Parent layout: Foo\r\nLayout: Foo\r\n\r\nBody: Foo", output);
+        }
+
+        [Fact]
+        public void CanUseNullModelInLayout()
+        {
+            var files = new FakeFileSystem
+                        {
+                            { "views\\layout.hbs", "Layout: {{property}}\r\n{{{body}}}" },
+                            { "views\\someview.hbs", "{{!< layout}}\r\n\r\nBody: {{property}}" },
+                        };
+
+            var handlebarsConfiguration = new HandlebarsConfiguration { FileSystem = files };
+            var handlebars = Handlebars.Create(handlebarsConfiguration);
+            var render = handlebars.CompileView("views\\someview.hbs");
+            var output = render(null);
+
+            Assert.Equal("Layout: \r\n\r\nBody: ", output);
+        }
+
+        [Fact]
+        public void CanIterateOverDictionaryInLayout()
+        {
+            var files = new FakeFileSystem
+                        {
+                            { "views\\layout.hbs", "Layout: {{#each this}}{{#if @First}}First:{{/if}}{{#if @Last}}Last:{{/if}}{{@Key}}={{@Value}};{{/each}}{{{body}}}" },
+                            { "views\\someview.hbs", "{{!< layout}} View" },
+                        };
+
+            var handlebarsConfiguration = new HandlebarsConfiguration
+                                          {
+                                              FileSystem = files,
+                                              Compatibility =
+                                              {
+                                                  SupportLastInObjectIterations = true,
+                                              },
+                                          };
+            var handlebars = Handlebars.Create(handlebarsConfiguration);
+            var render = handlebars.CompileView("views\\someview.hbs");
+            var output = render(
+                new Dictionary<string, object>
+                {
+                    { "Foo", "Bar" },
+                    { "Baz", "Foo" },
+                    { "Bar", "Baz" },
+                }
+            );
+
+            Assert.Equal("Layout: First:Foo=Bar;Baz=Foo;Last:Bar=Baz; View", output);
+        }
+
+        [Fact]
+        public void CanIterateOverObjectInLayout()
+        {
+            var files = new FakeFileSystem
+                        {
+                            { "views\\layout.hbs", "Layout: {{#each this}}{{#if @First}}First:{{/if}}{{#if @Last}}Last:{{/if}}{{@Key}}={{@Value}};{{/each}}{{{body}}}" },
+                            { "views\\someview.hbs", "{{!< layout}} View" },
+                        };
+
+            var handlebarsConfiguration = new HandlebarsConfiguration
+                                          {
+                                              FileSystem = files,
+                                              Compatibility =
+                                              {
+                                                  SupportLastInObjectIterations = true,
+                                              },
+                                          };
+            var handlebars = Handlebars.Create(handlebarsConfiguration);
+            var render = handlebars.CompileView("views\\someview.hbs");
+            var output = render(
+                new
+                {
+                    Foo = "Bar",
+                    Baz = "Foo",
+                    Bar = "Baz",
+                }
+            );
+
+            Assert.Equal("Layout: First:Foo=Bar;Baz=Foo;Last:Bar=Baz; View", output);
+        }
+
+        [Fact]
+        public void CanIterateOverEnumerableInLayout()
+        {
+            var files = new FakeFileSystem
+                        {
+                            { "views\\layout.hbs", "Layout: {{#each this}}{{#if @First}}First:{{/if}}{{#if @Last}}Last:{{/if}}{{this}};{{/each}}{{{body}}}" },
+                            { "views\\someview.hbs", "{{!< layout}} View" },
+                        };
+
+            var handlebarsConfiguration = new HandlebarsConfiguration { FileSystem = files };
+            var handlebars = Handlebars.Create(handlebarsConfiguration);
+            var render = handlebars.CompileView("views\\someview.hbs");
+            var output = render(
+                Enumerable.Range(0, 5)
+            );
+
+            Assert.Equal("Layout: First:0;1;2;3;Last:4; View", output);
+        }
+
+        [Fact]
+        public void CanIterateOverNullModelInLayout()
+        {
+            var files = new FakeFileSystem
+                        {
+                            { "views\\layout.hbs", "Layout: {{#each this}}{{#if @First}}First:{{/if}}{{#if @Last}}Last:{{/if}}{{this}};{{/each}}{{{body}}}" },
+                            { "views\\someview.hbs", "{{!< layout}} View" },
+                        };
+
+            var handlebarsConfiguration = new HandlebarsConfiguration { FileSystem = files };
+            var handlebars = Handlebars.Create(handlebarsConfiguration);
+            var render = handlebars.CompileView("views\\someview.hbs");
+            var output = render(null);
+
+            Assert.Equal("Layout:  View", output);
+        }
+
+        private class MyDynamicModel: DynamicObject
+        {
+            private readonly Dictionary<string, object> _properties =
+                new Dictionary<string, object>
+                {
+                    { "property", "Foo" },
+                };
+
+            public override IEnumerable<string> GetDynamicMemberNames() => _properties.Keys;
+            public override bool TryGetMember(GetMemberBinder binder, out object result) =>
+                _properties.TryGetValue(binder.Name, out result);
+        }
+
+        //We have a fake file system. Difference frameworks and apps will use
         //different file systems.
         class FakeFileSystem : ViewEngineFileSystem, IEnumerable
         {

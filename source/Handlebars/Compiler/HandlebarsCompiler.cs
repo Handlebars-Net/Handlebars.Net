@@ -78,8 +78,7 @@ namespace HandlebarsDotNet.Compiler
                 compiledView(textWriter, context);
                 var inner = innerWriter.ToString();
 
-                var vmContext = new [] {new {body = inner}, context.Value};
-                var viewModel = new DynamicViewModel(vmContext);
+                var viewModel = new LayoutViewModel(inner, context.Value);
                 bindingContext.Value = viewModel;
 
                 compiledLayout(writer, bindingContext);

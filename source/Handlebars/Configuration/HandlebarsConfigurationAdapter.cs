@@ -121,6 +121,7 @@ namespace HandlebarsDotNet
                     new GenericDictionaryObjectDescriptorProvider(),
                     new ReadOnlyStringDictionaryObjectDescriptorProvider(),
                     new StringDictionaryObjectDescriptorProvider(),
+                    new LayoutViewModel.DescriptorProvider(),
                 }
                 .AddMany(descriptorProviders);
 
