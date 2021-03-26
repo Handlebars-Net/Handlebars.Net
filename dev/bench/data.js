@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1616536902614,
+  "lastUpdate": 1616754073516,
   "repoUrl": "https://github.com/Handlebars-Net/Handlebars.Net",
   "entries": {
     "Benchmark.Net Benchmark": [
@@ -4800,6 +4800,102 @@ window.BENCHMARK_DATA = {
             "value": 288582.0443033854,
             "unit": "ns",
             "range": "± 537.4929548121985"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "41167595+probot-auto-merge[bot]@users.noreply.github.com",
+            "name": "probot-auto-merge[bot]",
+            "username": "probot-auto-merge[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "01ad0e69e56331371f85a1c59c008d7ecfd06f78",
+          "message": "Merge pull request #443 from heemskerkerik/issues/440\n\nRender layouts using LayoutViewModel instead of DynamicViewModel",
+          "timestamp": "2021-03-26T10:16:02Z",
+          "tree_id": "64a432e27b021bfdc0bd58fa65697f1d23e5f7cf",
+          "url": "https://github.com/Handlebars-Net/Handlebars.Net/commit/01ad0e69e56331371f85a1c59c008d7ecfd06f78"
+        },
+        "date": 1616754072638,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "HandlebarsNet.Benchmark.Compilation.Template",
+            "value": 25556961.68125,
+            "unit": "ns",
+            "range": "± 205076.52343855725"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithoutParameters",
+            "value": 632.9861302057902,
+            "unit": "ns",
+            "range": "± 6.654843313962429"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithOneParameter",
+            "value": 671.7222473780314,
+            "unit": "ns",
+            "range": "± 13.181419842927808"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithTwoParameter",
+            "value": 666.0157056808472,
+            "unit": "ns",
+            "range": "± 4.848528211793209"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithoutParameters",
+            "value": 854.8037636439005,
+            "unit": "ns",
+            "range": "± 8.20643861682191"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithOneParameter",
+            "value": 670.1762642542521,
+            "unit": "ns",
+            "range": "± 11.93903660869173"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithTwoParameter",
+            "value": 659.2565800348917,
+            "unit": "ns",
+            "range": "± 7.629869766709978"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithoutParameters",
+            "value": 944.8588298797607,
+            "unit": "ns",
+            "range": "± 6.404378944956234"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithOneParameter",
+            "value": 994.8686173756918,
+            "unit": "ns",
+            "range": "± 7.911636688225971"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithTwoParameter",
+            "value": 951.8701061521258,
+            "unit": "ns",
+            "range": "± 8.829320716854035"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.EndToEnd.Default(N: 5, DataType: \"dictionary\")",
+            "value": 271762.0411202567,
+            "unit": "ns",
+            "range": "± 2211.0210260090435"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.EndToEnd.Default(N: 5, DataType: \"object\")",
+            "value": 288416.9512765067,
+            "unit": "ns",
+            "range": "± 1978.5911169485275"
           }
         ]
       }
