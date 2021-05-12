@@ -8,7 +8,7 @@ using HandlebarsDotNet.ValueProviders;
 namespace HandlebarsDotNet.Iterators
 {
     public sealed class EnumerableIterator<T, TValue> : IIterator 
-        where T : class, IEnumerable<TValue>
+        where T : IEnumerable<TValue>
     {
         public void Iterate(
             in EncodedTextWriter writer,
