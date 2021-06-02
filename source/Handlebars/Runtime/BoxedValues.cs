@@ -34,16 +34,7 @@ namespace HandlebarsDotNet.Runtime
                 return BoxedIntegers[value];
             }
             
-            return Value(value);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static object Value<T>(T value) where T: struct =>
-            BoxedContainer<T>.Boxed.GetOrAdd(value, v => (object) v);
-
-        private static class BoxedContainer<T>
-        {
-            public static readonly LookupSlim<T, object, IEqualityComparer<T>> Boxed = new LookupSlim<T, object, IEqualityComparer<T>>(EqualityComparer<T>.Default);
+            return value;
         }
     }
 }
