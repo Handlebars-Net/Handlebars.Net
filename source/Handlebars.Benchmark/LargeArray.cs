@@ -10,7 +10,7 @@ namespace HandlebarsNet.Benchmark
     public class LargeArray
     {
         private object _data;
-        private HandlebarsTemplate<object, object> _default;
+        private HandlebarsTemplate<TextWriter, object, object> _default;
 
         [Params(20000, 40000, 80000)]
         public int N { get; set; }
@@ -19,11 +19,18 @@ namespace HandlebarsNet.Benchmark
         public void Setup()
         {
             const string template = @"{{#each this}}{{this}}{{/each}}";
-            _default = Handlebars.Compile(template);
+
+            var handlebars = Handlebars.Create();
+
+            using (var reader = new StringReader(template))
+            {
+                _default = handlebars.Compile(reader);
+            }
+
             _data = Enumerable.Range(0, N).ToList();
         }
         
         [Benchmark]
-        public void Default() => _default(_data);
+        public void Default() => _default(TextWriter.Null, _data);
     }
 }
