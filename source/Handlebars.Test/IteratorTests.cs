@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using NSubstitute;
@@ -380,6 +381,19 @@ namespace HandlebarsDotNet.Test
             }
 
             return sub;
+        }
+
+        [Fact]
+        public void ImmutableArrayTest()
+        {
+            var source = "{{#each data}}{{.}}{{/each}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                data = ImmutableArray.Create(0,1,2,3)
+            };
+            var result = template(data);
+            Assert.Equal("0123", result);
         }
     }
 }

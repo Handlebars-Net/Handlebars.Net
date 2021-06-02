@@ -7,7 +7,7 @@ using HandlebarsDotNet.ValueProviders;
 namespace HandlebarsDotNet.Iterators
 {
     public sealed class DictionaryIterator<TDictionary, TKey, TValue> : IIterator
-        where TDictionary : class, IDictionary<TKey, TValue>
+        where TDictionary : IDictionary<TKey, TValue>
     {
         public void Iterate(
             in EncodedTextWriter writer,
