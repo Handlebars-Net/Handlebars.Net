@@ -34,6 +34,7 @@ namespace HandlebarsDotNet.IO
         private readonly LookupSlim _formatters = new LookupSlim(new ReferenceEqualityComparer<Type>());
 
         private readonly ObservableList<IFormatterProvider> _formatterProviders;
+        private readonly List<object> _observers = new List<object>();
 
         public FormatterProvider(ObservableList<IFormatterProvider> providers = null)
         {
@@ -41,12 +42,12 @@ namespace HandlebarsDotNet.IO
             
             if (providers != null) Append(providers);
             
-            var observer = new ObserverBuilder<ObservableEvent<IFormatterProvider>>()
-                .OnEvent<AddedObservableEvent<IFormatterProvider>, LookupSlim>(
-                    _formatters, (@event, state) => state.Clear()
-                )
+            var observer = ObserverBuilder<ObservableEvent<IFormatterProvider>>.Create(_formatters)
+                .OnEvent<AddedObservableEvent<IFormatterProvider>>((@event, state) => state.Clear())
                 .Build();
 
+            _observers.Add(observer);
+            
             _formatterProviders.Subscribe(observer);
         }
 

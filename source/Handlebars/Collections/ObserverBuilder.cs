@@ -5,25 +5,20 @@ namespace HandlebarsDotNet.Collections
 {
     internal class ObserverBuilder<T>
     {
-        private readonly Dictionary<Type, List<Action<T>>> _handlers = new Dictionary<Type, List<Action<T>>>();
-        
-        public ObserverBuilder<T> OnEvent<TEvent>(Action<TEvent> handler, Func<TEvent, bool> predicate = null) where TEvent: T
+        public static ObserverBuilder<T, TState> Create<TState>(TState state)
         {
-            if (!_handlers.TryGetValue(typeof(TEvent), out var handlers))
-            {
-                handlers = new List<Action<T>>();
-                _handlers.Add(typeof(TEvent), handlers);
-            }
-            
-            handlers.Add(@event =>
-            {
-                if(predicate?.Invoke((TEvent) @event) ?? true) handler((TEvent) @event);
-            });
-
-            return this;
+            return new ObserverBuilder<T, TState>(state);
         }
-        
-        public ObserverBuilder<T> OnEvent<TEvent, TState>(TState state, Action<TEvent, TState> handler, Func<TEvent, bool> predicate = null) where TEvent: T
+    }
+    
+    internal class ObserverBuilder<T, TState>
+    {
+        private readonly TState _state;
+        private readonly Dictionary<Type, List<Action<T>>> _handlers = new Dictionary<Type, List<Action<T>>>();
+
+        public ObserverBuilder(TState state) => _state = state;
+
+        public ObserverBuilder<T, TState> OnEvent<TEvent>(Action<TEvent, TState> handler, Func<TEvent, bool> predicate = null) where TEvent: T
         {
             if (!_handlers.TryGetValue(typeof(TEvent), out var handlers))
             {
@@ -31,9 +26,9 @@ namespace HandlebarsDotNet.Collections
                 _handlers.Add(typeof(TEvent), handlers);
             }
             
-            handlers.Add(@event =>
+            handlers.Add((@event) =>
             {
-                if(predicate?.Invoke((TEvent) @event) ?? true) handler((TEvent) @event, state);
+                if(predicate?.Invoke((TEvent) @event) ?? true) handler((TEvent) @event, _state);
             });
 
             return this;
