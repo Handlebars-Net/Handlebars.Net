@@ -5,7 +5,7 @@ using HandlebarsDotNet.Runtime;
 
 namespace HandlebarsDotNet.ObjectDescriptors
 {
-    public class ObjectDescriptorFactory : IObjectDescriptorProvider
+    public class ObjectDescriptorFactory : IObjectDescriptorProvider, IObserver<ObservableEvent<IObjectDescriptorProvider>>
     {
         private readonly ObservableList<IObjectDescriptorProvider> _providers;
         private readonly LookupSlim<Type, DeferredValue<Type, ObjectDescriptor>, ReferenceEqualityComparer<Type>> _descriptorsCache = new LookupSlim<Type, DeferredValue<Type, ObjectDescriptor>, ReferenceEqualityComparer<Type>>(new ReferenceEqualityComparer<Type>());
@@ -22,6 +22,8 @@ namespace HandlebarsDotNet.ObjectDescriptors
             return ObjectDescriptor.Empty;
         });
 
+        private readonly IObserver<ObservableEvent<IObjectDescriptorProvider>> _observer;
+
         public static ObjectDescriptorFactory Current => AmbientContext.Current?.ObjectDescriptorFactory;
         
         public ObjectDescriptorFactory(ObservableList<IObjectDescriptorProvider> providers = null)
@@ -30,13 +32,11 @@ namespace HandlebarsDotNet.ObjectDescriptors
              
             if (providers != null) Append(providers);
             
-            var observer = new ObserverBuilder<ObservableEvent<IObjectDescriptorProvider>>()
-                .OnEvent<
-                    AddedObservableEvent<IObjectDescriptorProvider>,
-                    LookupSlim<Type, DeferredValue<Type, ObjectDescriptor>, ReferenceEqualityComparer<Type>>
-                >(_descriptorsCache, (@event, state) => state.Clear()).Build();
-
-            _providers.Subscribe(observer);
+            _observer = ObserverBuilder<ObservableEvent<IObjectDescriptorProvider>>.Create(_descriptorsCache)
+                .OnEvent<AddedObservableEvent<IObjectDescriptorProvider>>((@event, state) => state.Clear())
+                .Build();
+            
+            _providers.Subscribe(this);
         }
 
         public ObjectDescriptorFactory Append(ObservableList<IObjectDescriptorProvider> providers)
@@ -60,5 +60,11 @@ namespace HandlebarsDotNet.ObjectDescriptors
             value = _descriptorsCache.GetOrAdd(type, ValueFactory, _providers).Value;
             return !ReferenceEquals(value, ObjectDescriptor.Empty);
         }
+
+        public void OnCompleted() => _observer.OnCompleted();
+
+        public void OnError(Exception error) => _observer.OnError(error);
+
+        public void OnNext(ObservableEvent<IObjectDescriptorProvider> value) => _observer.OnNext(value);
     }
 }
