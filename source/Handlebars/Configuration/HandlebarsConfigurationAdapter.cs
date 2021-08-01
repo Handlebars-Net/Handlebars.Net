@@ -17,6 +17,8 @@ namespace HandlebarsDotNet
 {
     internal class HandlebarsConfigurationAdapter : ICompiledHandlebarsConfiguration
     {
+        private readonly List<object> _observers = new List<object>();
+        
         public HandlebarsConfigurationAdapter(HandlebarsConfiguration configuration)
         {
             UnderlingConfiguration = configuration;
@@ -85,11 +87,8 @@ namespace HandlebarsDotNet
             
             var target = new ObservableIndex<PathInfoLight, Ref<IHelperDescriptor<TOptions>>, IEqualityComparer<PathInfoLight>>(equalityComparer, existingHelpers);
 
-            var helpersObserver = new ObserverBuilder<ObservableEvent<IHelperDescriptor<TOptions>>>()
-                .OnEvent<
-                    DictionaryAddedObservableEvent<string, IHelperDescriptor<TOptions>>,
-                    ObservableIndex<PathInfoLight, Ref<IHelperDescriptor<TOptions>>, IEqualityComparer<PathInfoLight>>
-                >(target,
+            var observer = ObserverBuilder<ObservableEvent<IHelperDescriptor<TOptions>>>.Create(target)
+                .OnEvent<DictionaryAddedObservableEvent<string, IHelperDescriptor<TOptions>>>(
                     (@event, state) =>
                     {
                         PathInfoLight key = $"[{@event.Key}]";
@@ -103,7 +102,9 @@ namespace HandlebarsDotNet
                     })
                 .Build();
 
-            source.As<ObservableIndex<string, IHelperDescriptor<TOptions>, StringEqualityComparer>>()?.Subscribe(helpersObserver);
+            _observers.Add(observer);
+            
+            source.As<ObservableIndex<string, IHelperDescriptor<TOptions>, StringEqualityComparer>>()?.Subscribe(observer);
 
             return target;
         }
@@ -125,13 +126,12 @@ namespace HandlebarsDotNet
                 }
                 .AddMany(descriptorProviders);
 
-            var observer = new ObserverBuilder<ObservableEvent<IObjectDescriptorProvider>>()
-                .OnEvent<
-                    AddedObservableEvent<IObjectDescriptorProvider>,
-                    ObservableList<IObjectDescriptorProvider>
-                >(objectDescriptorProviders, (@event, state) => { state.Add(@event.Value); })
+            var observer = ObserverBuilder<ObservableEvent<IObjectDescriptorProvider>>.Create(objectDescriptorProviders)
+                .OnEvent<AddedObservableEvent<IObjectDescriptorProvider>>((@event, state) => { state.Add(@event.Value); })
                 .Build();
 
+            _observers.Add(observer);
+            
             descriptorProviders.Subscribe(observer);
             
             return objectDescriptorProviders;

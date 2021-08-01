@@ -16,7 +16,7 @@ namespace HandlebarsDotNet.Collections
         private readonly ReaderWriterLockSlim _observersLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
         private readonly ReaderWriterLockSlim _itemsLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
         
-        private readonly List<IObserver<ObservableEvent<T>>> _observers = new List<IObserver<ObservableEvent<T>>>();
+        private readonly WeakCollection<IObserver<ObservableEvent<T>>> _observers = new WeakCollection<IObserver<ObservableEvent<T>>>();
         private readonly List<T> _inner;
 
         public ObservableList(IEnumerable<T> list = null)
@@ -83,7 +83,7 @@ namespace HandlebarsDotNet.Collections
                 _observers.Add(observer);
             }
     
-            var disposableContainer = new DisposableContainer<List<IObserver<ObservableEvent<T>>>, ReaderWriterLockSlim>(
+            var disposableContainer = new DisposableContainer<WeakCollection<IObserver<ObservableEvent<T>>>, ReaderWriterLockSlim>(
                 _observers, _observersLock, (observers, @lock) =>
                 {
                     using (@lock.WriteLock())
@@ -123,11 +123,11 @@ namespace HandlebarsDotNet.Collections
         {
             using (_observersLock.ReadLock())
             {
-                for (int index = 0; index < _observers.Count; index++)
+                foreach (var observer in _observers)
                 {
                     try
                     {
-                        _observers[index].OnNext(@event);
+                        observer.OnNext(@event);
                     }
                     catch
                     {
