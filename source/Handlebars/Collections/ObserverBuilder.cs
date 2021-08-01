@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace HandlebarsDotNet.Collections
 {
-    internal class ObserverBuilder<T>
+    internal static class ObserverBuilder<T>
     {
         public static ObserverBuilder<T, TState> Create<TState>(TState state)
         {
