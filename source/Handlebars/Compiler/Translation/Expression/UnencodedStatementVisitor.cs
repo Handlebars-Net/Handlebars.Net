@@ -20,10 +20,14 @@ namespace HandlebarsDotNet.Compiler
                 var writer = CompilationContext.Args.EncodedWriter;
                 var suppressEncoding = writer.Property(o => o.SuppressEncoding);
                 
+                var existingValue = new ExpressionContainer<bool>(Expression.Variable(typeof(bool)));
+                
                 return Block()
+                    .Parameter(existingValue)
+                    .Line(existingValue.Assign(suppressEncoding))
                     .Line(suppressEncoding.Assign(true))
                     .Line(sex)
-                    .Line(suppressEncoding.Assign(false));
+                    .Line(suppressEncoding.Assign(existingValue));
             }
 
             return sex;
