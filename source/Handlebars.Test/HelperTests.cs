@@ -57,6 +57,28 @@ namespace HandlebarsDotNet.Test
         }
         
         [Fact]
+        public void HelperWithOptionsStatic()
+        {
+            Handlebars.RegisterHelper("myHelper",
+                (in EncodedTextWriter writer, in HelperOptions options, in Context context, in Arguments arguments) =>
+                {
+                    var i = options.Data.Value<int>("i");
+                    for (int j = 0; j < i; j++) writer.Write(j);
+                }
+            );
+
+            var source = "{{myHelper}}";
+
+            var template = Handlebars.Compile(source);
+
+            var output = template(new { }, new { i = 5 });
+
+            var expected = "01234";
+
+            Assert.Equal(expected, output);
+        }
+        
+        [Fact]
         public void ReturnHelperWithOptions()
         {
             var handlebars = Handlebars.Create();
@@ -77,6 +99,34 @@ namespace HandlebarsDotNet.Test
             var source = "{{#each (myHelper)}}{{.}}{{/each}}";
 
             var template = handlebars.Compile(source);
+
+            var output = template(new { }, new { i = 5 });
+
+            var expected = "01234";
+
+            Assert.Equal(expected, output);
+        }
+        
+        [Fact]
+        public void ReturnHelperWithOptionsStatic()
+        {
+            Handlebars.RegisterHelper("myHelper",
+                (in HelperOptions options, in Context context, in Arguments arguments) =>
+                {
+                    var data = options.Frame.Data;
+                    var i = data.Value<int>("i");
+                    return Enumerate(i);
+
+                    static IEnumerable<int> Enumerate(int count)
+                    {
+                        for (var j = 0; j < count; j++) yield return j;
+                    }
+                }
+            );
+
+            var source = "{{#each (myHelper)}}{{.}}{{/each}}";
+
+            var template = Handlebars.Compile(source);
 
             var output = template(new { }, new { i = 5 });
 
