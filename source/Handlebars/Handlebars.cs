@@ -132,11 +132,31 @@ namespace HandlebarsDotNet
         }
         
         /// <summary>
+        /// Registers new <see cref="HandlebarsHelperWithOptions"/>
+        /// </summary>
+        /// <param name="helperName"></param>
+        /// <param name="helperFunction"></param>
+        public static void RegisterHelper(string helperName, HandlebarsHelperWithOptions helperFunction)
+        {
+            Instance.RegisterHelper(helperName, helperFunction);
+        }
+        
+        /// <summary>
         /// Registers new <see cref="HandlebarsReturnHelper"/>
         /// </summary>
         /// <param name="helperName"></param>
         /// <param name="helperFunction"></param>
         public static void RegisterHelper(string helperName, HandlebarsReturnHelper helperFunction)
+        {
+            Instance.RegisterHelper(helperName, helperFunction);
+        }
+        
+        /// <summary>
+        /// Registers new <see cref="HandlebarsReturnWithOptionsHelper"/>
+        /// </summary>
+        /// <param name="helperName"></param>
+        /// <param name="helperFunction"></param>
+        public static void RegisterHelper(string helperName, HandlebarsReturnWithOptionsHelper helperFunction)
         {
             Instance.RegisterHelper(helperName, helperFunction);
         }
