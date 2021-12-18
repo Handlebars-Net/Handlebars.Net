@@ -6,6 +6,7 @@ using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.Polyfills;
 using HandlebarsDotNet.Pools;
 using HandlebarsDotNet.StringUtils;
+using HandlebarsDotNet.Extensions;
 
 namespace HandlebarsDotNet.PathStructure
 {
@@ -145,21 +146,46 @@ namespace HandlebarsDotNet.PathStructure
             var segments = new List<PathSegment>();
             var pathParts = Substring.Split(pathSubstring, '/');
             var extendedEnumerator = ExtendedEnumerator<Substring>.Create(pathParts);
+            using var container = StringBuilderPool.Shared.Use();
+            var buffer = container.Value;
+            
             while (extendedEnumerator.MoveNext())
             {
                 var segment = extendedEnumerator.Current.Value;
-                if (segment.Length == 2 && segment[0] == '.' && segment[1] == '.')
+                if (buffer.Length != 0)
                 {
-                    isValidHelperLiteral = false;
-                    segments.Add(new PathSegment(segment, ArrayEx.Empty<ChainSegment>()));
+                    buffer.Append('/');
+                    buffer.Append(in segment);
+                    if(Substring.LastIndexOf(segment, ']', out var index) 
+                       && !Substring.LastIndexOf(segment, '[', index, out _))
+                    {
+                        var chainSegment = GetPathChain(buffer.ToString());
+                        if (chainSegment.Length > 1) isValidHelperLiteral = false;
+
+                        segments.Add(new PathSegment(segment, chainSegment));
+                        buffer.Length = 0;
+                        continue;
+                    }
+                }
+                
+                if(Substring.LastIndexOf(segment, '[', out var startIndex) 
+                   && !Substring.LastIndexOf(segment, ']', startIndex, out _))
+                {
+                    buffer.Append(in segment);
                     continue;
                 }
                 
-                if (segment.Length == 1 && segment[0] == '.')
+                switch (segment.Length)
                 {
-                    isValidHelperLiteral = false;
-                    segments.Add(new PathSegment(segment, ArrayEx.Empty<ChainSegment>()));
-                    continue;
+                    case 2 when segment[0] == '.' && segment[1] == '.':
+                        isValidHelperLiteral = false;
+                        segments.Add(new PathSegment(segment, ArrayEx.Empty<ChainSegment>()));
+                        continue;
+                    
+                    case 1 when segment[0] == '.':
+                        isValidHelperLiteral = false;
+                        segments.Add(new PathSegment(segment, ArrayEx.Empty<ChainSegment>()));
+                        continue;
                 }
 
                 var chainSegments = GetPathChain(segment);

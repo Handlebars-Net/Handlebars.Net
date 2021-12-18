@@ -10,9 +10,8 @@ namespace HandlebarsDotNet.StringUtils
     /// </summary>
     public readonly struct Substring : IEquatable<Substring>, IEquatable<string>
     {
-        private readonly string _str;
-
-        private readonly int _start;
+        public readonly string String;
+        public readonly int Start;
         public readonly int Length;
 
         public static bool EqualsIgnoreCase(Substring a, Substring b)
@@ -69,22 +68,22 @@ namespace HandlebarsDotNet.StringUtils
             :this(str, 0, str.Length)
         {
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Substring(Substring substring)
-            : this(substring._str, substring._start, substring.Length)
+            : this(substring.String, substring.Start, substring.Length)
         {
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Substring(Substring substring, int start)
-            : this(substring._str, substring._start + start, substring.Length - start)
+            : this(substring.String, substring.Start + start, substring.Length - start)
         {
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Substring(Substring substring, int start, int length)
-            : this(substring._str, substring._start + start, length)
+            : this(substring.String, substring.Start + start, length)
         {
         }
         
@@ -100,8 +99,8 @@ namespace HandlebarsDotNet.StringUtils
         {
             if(string.IsNullOrEmpty(str)) Throw.ArgumentNullException(nameof(str));
                 
-            _str = str;
-            _start = start;
+            String = str;
+            Start = start;
             Length = length;
         }
         
@@ -111,17 +110,17 @@ namespace HandlebarsDotNet.StringUtils
             get
             {
                 if(index < 0 || index >= Length) Throw.IndexOutOfRangeException();
-                return _str[index + _start];
+                return String[index + Start];
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool StartsWith(char c) => _str[_start] == c;
+        public bool StartsWith(char c) => String[Start] == c;
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool EndsWith(char c) => _str[_start + Length - 1] == c;
+        public bool EndsWith(char c) => String[Start + Length - 1] == c;
 
-        public override string ToString() => _str.Substring(_start, Length);
+        public override string ToString() => String.Substring(Start, Length);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SubstringEnumerator GetEnumerator() => new SubstringEnumerator(this);
@@ -130,14 +129,14 @@ namespace HandlebarsDotNet.StringUtils
         public bool Equals(Substring other)
         {
             if (Length != other.Length) return false;
-            return string.CompareOrdinal(_str, _start, other._str, other._start, Length) == 0;
+            return string.CompareOrdinal(String, Start, other.String, other.Start, Length) == 0;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(string other)
         {
             if (Length != other?.Length) return false;
-            return string.CompareOrdinal(_str, _start, other, 0, Length) == 0;
+            return string.CompareOrdinal(String, Start, other, 0, Length) == 0;
         }
         
         public override bool Equals(object obj) => obj is Substring other && Equals(other);
@@ -147,7 +146,7 @@ namespace HandlebarsDotNet.StringUtils
         {
             unchecked
             {
-                return (_str.GetHashCode() * 397) ^ Length;
+                return (String.GetHashCode() * 397) ^ Length;
             }
         }
 
@@ -168,6 +167,71 @@ namespace HandlebarsDotNet.StringUtils
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(string a, Substring b) => !b.Equals(a);
+        
+        public static bool Contains(Substring substring, char c)
+        {
+            return IndexOf(substring, c) != -1;
+        }
+        
+        public static int IndexOf(Substring substring, char c)
+        {
+            return IndexOf(substring, c, 0);
+        }
+        
+        public static int IndexOf(Substring substring, char c, int startIndex)
+        {
+            for (var index = startIndex; index < substring.Length; index++)
+            {
+                if (substring[index] == c) return index;
+            }
+            
+            return -1;
+        }
+        
+        public static bool IndexOf(Substring substring, char c, out int index)
+        {
+            return IndexOf(substring, c, 0, out index);
+        }
+        
+        public static bool IndexOf(Substring substring, char c, int startIndex, out int index)
+        {
+            for (index = startIndex; index < substring.Length; index++)
+            {
+                if (substring[index] == c) return true;
+            }
+            
+            return false;
+        }
+        
+        public static int LastIndexOf(Substring substring, char c)
+        {
+            return LastIndexOf(substring, c, 0);
+        }
+        
+        public static int LastIndexOf(Substring substring, char c, int startIndex)
+        {
+            for (var index = substring.Length - 1; index >= startIndex; index--)
+            {
+                if (substring[index] == c) return index;
+            }
+            
+            return -1;
+        }
+        
+        public static bool LastIndexOf(Substring substring, char c, out int index)
+        {
+            return LastIndexOf(substring, c, 0, out index);
+        }
+        
+        public static bool LastIndexOf(Substring substring, char c, int startIndex, out int index)
+        {
+            for (index = substring.Length - 1; index >= startIndex; index--)
+            {
+                if (substring[index] == c) return true;
+            }
+            
+            return false;
+        }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator Substring(string a) => new Substring(a);

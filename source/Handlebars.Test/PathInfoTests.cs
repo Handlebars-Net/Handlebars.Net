@@ -40,24 +40,25 @@ namespace HandlebarsDotNet.Test
         }
         
         [Theory]
-        [InlineData("a")]
-        [InlineData("a.c")]
-        [InlineData("a//c")]
-        [InlineData("a/b/c")]
-        [InlineData("a/b.c/d")]
-        [InlineData("a/[b.c]/d")]
-        [InlineData("a/[b/c]/d")]
-        [InlineData("a/[b.c/d]/e")]
-        public void SlashPath(string input)
+        [InlineData("a", new [] {"a"})]
+        [InlineData("a.c", new [] {"a.c"})]
+        [InlineData("a//c", new [] {"a", "", "c"})]
+        [InlineData("a/b/c", new [] {"a", "b", "c"})]
+        [InlineData("a/b.c/d", new [] {"a", "b.c", "d"})]
+        [InlineData("a/[b.c]/d", new [] {"a", "[b.c]", "d"})]
+        [InlineData("a/[b[.]c]/d", new [] {"a", "[b[.]c]", "d"})]
+        [InlineData("a/[b.c].[b/c]/d", new [] {"a", "[b.c].[b/c]", "d"})]
+        [InlineData("a/[b/c]/d", new [] {"a", "[b/c]", "d"})]
+        [InlineData("a/[b.c/d]/e", new [] {"a", "[b.c/d]", "e"})]
+        public void SlashPath(string input, string[] expected)
         {
             var pathInfo = PathInfo.Parse(input);
             
             Assert.Equal(input, pathInfo.Path);
-
-            var parts = input.Split('/');
+            
             for (var index = 0; index < pathInfo.Segments.Length; index++)
             {
-                Assert.Equal(parts[index], pathInfo.Segments[index].ToString());
+                Assert.Equal(expected[index], pathInfo.Segments[index].ToString());
             }
         }
     }

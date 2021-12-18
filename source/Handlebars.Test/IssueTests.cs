@@ -485,6 +485,39 @@ namespace HandlebarsDotNet.Test
             Assert.Equal("", actual);
         }
 
+        private class EscapeExpressionGenerator : IEnumerable<object[]>
+        {
+            public IEnumerator<object[]> GetEnumerator()
+            {
+                const string OKAY = "OKAY";
+                var chars = " !\"#%&'()*+,./;<=>@[\\]^`{|}~".ToCharArray();
+                var words = new[] { "true", "false","null", "undefined", "foo" };
+
+                var testList = new List<string>();
+                var theContext = new Dictionary<string, object>();
+                foreach (var word in words)
+                {
+                    foreach (var @char in chars)
+                    {
+                        //You can't use the same identifier you use for literal notation.
+                        if (@char == '[' || @char == ']') continue;
+                            
+                        var theKeyWord = $"{word}{@char}{word}";
+                        var testSegment = $"[{theKeyWord}]";
+                        testList.Add(testSegment);
+                        theContext[theKeyWord]=OKAY;
+                    }
+                }
+
+                for (var index = 0; index < testList.Count; index++)
+                {
+                    yield return new object[] { $"{{{{ { testList[index] } }}}}", OKAY, theContext };
+                }
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+
         private class CollectionsOutOfRangeGenerator : IEnumerable<object[]>
         {
             private readonly List<IEnumerable> _data = new List<IEnumerable>
@@ -562,6 +595,19 @@ namespace HandlebarsDotNet.Test
 
             Assert.Equal(expected, actual1);
             Assert.Equal(expected, actual2);
+        }
+        
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/470
+        [Theory]
+        [ClassData(typeof(EscapeExpressionGenerator))]
+        public void SegmentLiteralNotationTest(string template, string expected, Dictionary<string, object> context)
+        {
+            var handlebars = Handlebars.Create();
+            var renderer = handlebars.Compile(template);
+
+            var actual = renderer(context);
+            
+            Assert.Equal(expected, actual);
         }
         
         private class ClassWithAList
