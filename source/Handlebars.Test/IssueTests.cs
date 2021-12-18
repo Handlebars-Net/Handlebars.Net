@@ -575,5 +575,35 @@ namespace HandlebarsDotNet.Test
             public bool SomeBool { get; set; }
             public string SomeString { get; set; } = "I shouldn't show up!";
         }
+
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/468
+        // Issue refers to chinese characters, bug tested here affects any
+        // html char and any non-ascii character.
+        [Theory]
+        [InlineData(true, "<", "<")]
+        [InlineData(false, "<", "&lt;")]
+        public void ConfigNoEscapeHtmlCharsShouldNotBeEscapedAfterWritingTripleCurlyValue(bool noEscape, string inputChar, string expectedChar)
+        {
+            // Affects any value written after execution of expression built in
+            // class UnencodedStatementVisitor when config NoEscape is true.
+            // Using triple curly brackets to trigger this case.
+
+            var template = "{{{ArbitraryText}}} {{HtmlSymbol}}";
+            var value = new
+            {
+                ArbitraryText = "text",
+                HtmlSymbol = inputChar
+            };
+
+            var expected = $"text {expectedChar}";
+
+            var config = new HandlebarsConfiguration
+            {
+                NoEscape = noEscape
+            };
+            var actual = Handlebars.Create(config).Compile(template).Invoke(value);
+
+            Assert.Equal(expected, actual);
+        }
     }
 }

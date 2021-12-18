@@ -21,9 +21,11 @@ namespace HandlebarsDotNet.Compiler
                 var suppressEncoding = writer.Property(o => o.SuppressEncoding);
                 
                 return Block()
+                    .Parameter<bool>(out var existingValue)
+                    .Line(existingValue.Assign(suppressEncoding))
                     .Line(suppressEncoding.Assign(true))
                     .Line(sex)
-                    .Line(suppressEncoding.Assign(false));
+                    .Line(suppressEncoding.Assign(existingValue));
             }
 
             return sex;
