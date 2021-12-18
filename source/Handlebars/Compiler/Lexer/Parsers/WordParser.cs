@@ -87,29 +87,6 @@ namespace HandlebarsDotNet.Compiler.Lexer
                 
             return buffer.Trim().ToString();
         }
-        
-        private static bool CanBreakAtSpace(StringBuilder buffer)
-        {
-            var left = 0;
-            var right = 0;
-            
-            var enumerator = new StringBuilderEnumerator(buffer);
-            while (enumerator.MoveNext())
-            {
-                switch (enumerator.Current)
-                {
-                    case ']':
-                        right++;
-                        break;
-                    
-                    case '[':
-                        left++;
-                        break;
-                }
-            }
-
-            return left == 0 || left == right;
-        }
     }
 }
 
