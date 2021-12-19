@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text;
+using HandlebarsDotNet.Extensions;
 using HandlebarsDotNet.Pools;
 using HandlebarsDotNet.StringUtils;
 
@@ -21,13 +22,10 @@ namespace HandlebarsDotNet.Compiler.Lexer
         public override Token Parse(ExtendedStringReader reader)
         {
             var context = reader.GetContext();
-            if (IsWord(reader))
-            {
-                var buffer = AccumulateWord(reader);
-
-                return Token.Word(buffer, context);
-            }
-            return null;
+            if (!IsWord(reader)) return null;
+            
+            var buffer = AccumulateWord(reader);
+            return Token.Word(buffer, context);
         }
 
         private static bool IsWord(ExtendedStringReader reader)
@@ -38,64 +36,56 @@ namespace HandlebarsDotNet.Compiler.Lexer
 
         private static string AccumulateWord(ExtendedStringReader reader)
         {
-            using(var container = StringBuilderPool.Shared.Use())
-            {
-                var buffer = container.Value;
+            using var container = StringBuilderPool.Shared.Use();
+            var buffer = container.Value;
                 
-                var inString = false;
+            var inString = false;
+            var isEscaped = false;
 
-                while (true)
-                {
-                    if (!inString)
-                    {
-                        var peek = (char) reader.Peek();
-
-                        if (peek == '}' || peek == '~' || peek == ')' || peek == '=' || char.IsWhiteSpace(peek) && CanBreakAtSpace(buffer))
-                        {
-                            break;
-                        }
-                    }
-
-                    var node = reader.Read();
-
-                    if (node == -1)
-                    {
-                        throw new HandlebarsParserException("Reached end of template before the expression was closed.", reader.GetContext());
-                    }
-
-                    if (node == '\'' || node == '"')
-                    {
-                        inString = !inString;
-                    }
-
-                    buffer.Append((char)node);
-                }
-                
-                return buffer.ToString().Trim();
-            }
-        }
-
-        private static bool CanBreakAtSpace(StringBuilder buffer)
-        {
-            var left = 0;
-            var right = 0;
-            
-            var enumerator = new StringBuilderEnumerator(buffer);
-            while (enumerator.MoveNext())
+            while (true)
             {
-                switch (enumerator.Current)
+                if (isEscaped)
                 {
-                    case ']':
-                        right++;
-                        break;
+                    var c = (char) reader.Read();
+                    if (c == ']') isEscaped = false;
                     
-                    case '[':
-                        left++;
-                        break;
+                    buffer.Append(c);
+                    continue;
                 }
-            }
+                
+                if (!inString)
+                {
+                    var peek = (char) reader.Peek();
 
-            return left == 0 || left == right;
+                    if (peek == '}' || peek == '~' || peek == ')' || peek == '=' || char.IsWhiteSpace(peek))
+                    {
+                        break;
+                    }
+                }
+
+                var node = reader.Read();
+
+                if (node == -1)
+                {
+                    throw new HandlebarsParserException("Reached end of template before the expression was closed.", reader.GetContext());
+                }
+
+                if (node == '[' && !inString)
+                {
+                    isEscaped = true;
+                    buffer.Append((char)node);
+                    continue;
+                }
+                
+                if (node == '\'' || node == '"')
+                {
+                    inString = !inString;
+                }
+
+                buffer.Append((char)node);
+            }
+                
+            return buffer.Trim().ToString();
         }
     }
 }

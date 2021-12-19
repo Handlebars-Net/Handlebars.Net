@@ -70,5 +70,60 @@ namespace HandlebarsDotNet.Test
             
             Assert.Equal(expected, substring.ToString());
         }
+        
+        [Theory]
+        [InlineData("abc", 'c', true)]
+        [InlineData("abccccc", 'd', false)]
+        public void Contains(string input, char trimChar, bool expected)
+        {
+            var actual = Substring.Contains(input, trimChar);
+            
+            Assert.Equal(expected, actual);
+        }
+        
+        [Theory]
+        [InlineData("abc", 'c', false)]
+        [InlineData("abccccc", 'b', true)]
+        public void StartsWith(string input, char c, bool expected)
+        {
+            var substring = new Substring(input, 1, 2);
+            var actual = Substring.StartsWith(substring, c);
+            
+            Assert.Equal(expected, actual);
+        }
+        
+        [Theory]
+        [InlineData("abc", 'c', true)]
+        [InlineData("abcd", 'd', false)]
+        public void EndsWith(string input, char c, bool expected)
+        {
+            var substring = new Substring(input, 1, 2);
+            var actual = Substring.EndsWith(substring, c);
+            
+            Assert.Equal(expected, actual);
+        }
+        
+        [Theory]
+        [InlineData("abc", 'c', 2)]
+        [InlineData("abcc", 'c', 2)]
+        [InlineData("abccccc", 'd', -1)]
+        public void IndexOf(string input, char trimChar, int expected)
+        {
+            var actual = Substring.IndexOf(input, trimChar);
+            
+            Assert.Equal(expected, actual);
+        }
+        
+        [Theory]
+        [InlineData("abc", 'c', 2)]
+        [InlineData("abcc", 'c', 3)]
+        [InlineData("abcc", 'a', 0)]
+        [InlineData("abccccc", 'd', -1)]
+        public void LastIndexOf(string input, char trimChar, int expected)
+        {
+            var actual = Substring.LastIndexOf(input, trimChar);
+            
+            Assert.Equal(expected, actual);
+        }
     }
 }

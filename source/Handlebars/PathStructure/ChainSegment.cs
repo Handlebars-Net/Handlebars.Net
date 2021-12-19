@@ -150,7 +150,7 @@ namespace HandlebarsDotNet.PathStructure
         private static Substring TrimSquareBrackets(Substring key)
         {
             //Only trim a single layer of brackets.
-            if (key.StartsWith('[') && key.EndsWith(']'))
+            if (Substring.StartsWith(key, '[') && Substring.EndsWith(key, ']'))
             {
                 return new Substring(key, 1, key.Length - 2);
             }
