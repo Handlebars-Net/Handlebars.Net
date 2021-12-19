@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AssemblyName>Handlebars</AssemblyName>
     <ProjectGuid>9822C7B8-7E51-42BC-9A49-72A10491B202</ProjectGuid>
-    <TargetFrameworks>netstandard1.3;netstandard2.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>netstandard1.3;netstandard2.0;netstandard2.1;net5;net6</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">$(TargetFrameworks);net451;net452;net46</TargetFrameworks>
     <Version>2.0.0</Version>
     <RootNamespace>HandlebarsDotNet</RootNamespace>
@@ -66,8 +66,23 @@
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)'=='net5'">
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='net6'">
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="ExpressionShortcuts" Version="1.0.4.39" PrivateAssets="All" />
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(ContinuousIntegrationBuild)' != 'true'">
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="8.33.0.40503">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup Condition="'$(ContinuousIntegrationBuild)' == 'true'">
