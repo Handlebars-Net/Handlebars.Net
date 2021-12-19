@@ -213,7 +213,7 @@ namespace HandlebarsDotNet.PathStructure
                 var next = extendedEnumerator.Current.Value;
                 if (insideEscapeBlock)
                 {
-                    if (next.EndsWith(']'))
+                    if (Substring.EndsWith(next, ']'))
                     {
                         insideEscapeBlock = false;
                     }
@@ -222,12 +222,12 @@ namespace HandlebarsDotNet.PathStructure
                     continue;
                 }
 
-                if (next.StartsWith('['))
+                if (Substring.StartsWith(next, '['))
                 {
                     insideEscapeBlock = true;
                 }
 
-                if (next.EndsWith(']'))
+                if (Substring.EndsWith(next,']'))
                 {
                     insideEscapeBlock = false;
                 }

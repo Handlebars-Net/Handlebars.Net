@@ -14,55 +14,6 @@ namespace HandlebarsDotNet.StringUtils
         public readonly int Start;
         public readonly int Length;
 
-        public static bool EqualsIgnoreCase(Substring a, Substring b)
-        {
-            if (a.Length != b.Length) return false;
-
-            for (int index = 0; index < a.Length; index++)
-            {
-                if (!char.ToLowerInvariant(a[index]).Equals(char.ToLowerInvariant(b[index]))) return false;
-            }
-
-            return true;
-        }
-        
-        public static SplitEnumerator Split(Substring str, char separator, StringSplitOptions options = StringSplitOptions.None) => new SplitEnumerator(str, separator, options);
-
-        public static Substring TrimStart(Substring str, char trimChar)
-        {
-            var start = 0;
-            var length = str.Length;
-
-            while (str[start] == trimChar)
-            {
-                start++;
-                length--;
-            }
-            
-            return new Substring(str, start, length);
-        }
-        
-        public static Substring TrimEnd(Substring str, char trimChar)
-        {
-            var end = str.Length - 1;
-            var length = str.Length;
-
-            while (str[end] == trimChar)
-            {
-                end--;
-                length--;
-            }
-            
-            return new Substring(str, 0, length);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Substring Trim(Substring str, char trimChar)
-        {
-            var substring = TrimStart(str, trimChar);
-            return TrimEnd(substring, trimChar);
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Substring(string str)
             :this(str, 0, str.Length)
@@ -70,31 +21,31 @@ namespace HandlebarsDotNet.StringUtils
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Substring(Substring substring)
+        public Substring(in Substring substring)
             : this(substring.String, substring.Start, substring.Length)
         {
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Substring(Substring substring, int start)
+        public Substring(in Substring substring, in int start)
             : this(substring.String, substring.Start + start, substring.Length - start)
         {
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Substring(Substring substring, int start, int length)
+        public Substring(in Substring substring, in int start, in int length)
             : this(substring.String, substring.Start + start, length)
         {
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Substring(string str, int start)
+        public Substring(string str, in int start)
             : this(str, start, str.Length - start)
         {
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Substring(string str, int start, int length)
+        public Substring(string str, in int start, in int length)
             : this()
         {
             if(string.IsNullOrEmpty(str)) Throw.ArgumentNullException(nameof(str));
@@ -104,7 +55,7 @@ namespace HandlebarsDotNet.StringUtils
             Length = length;
         }
         
-        public char this[int index]
+        public char this[in int index]
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
@@ -113,18 +64,7 @@ namespace HandlebarsDotNet.StringUtils
                 return String[index + Start];
             }
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool StartsWith(char c) => String[Start] == c;
         
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool EndsWith(char c) => String[Start + Length - 1] == c;
-
-        public override string ToString() => String.Substring(Start, Length);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public SubstringEnumerator GetEnumerator() => new SubstringEnumerator(this);
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(Substring other)
         {
@@ -149,51 +89,104 @@ namespace HandlebarsDotNet.StringUtils
                 return (String.GetHashCode() * 397) ^ Length;
             }
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(Substring a, Substring b) => a.Equals(b);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator !=(Substring a, Substring b) => !a.Equals(b);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(Substring a, string b) => a.Equals(b);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator !=(Substring a, string b) => !a.Equals(b);
         
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(string a, Substring b) => b.Equals(a);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator !=(string a, Substring b) => !b.Equals(a);
+        public override string ToString() => String.Substring(Start, Length);
         
-        public static bool Contains(Substring substring, char c)
+        public static bool EqualsIgnoreCase(in Substring a, in Substring b)
         {
-            return IndexOf(substring, c) != -1;
-        }
-        
-        public static int IndexOf(Substring substring, char c)
-        {
-            return IndexOf(substring, c, 0);
-        }
-        
-        public static int IndexOf(Substring substring, char c, int startIndex)
-        {
-            for (var index = startIndex; index < substring.Length; index++)
+            if (a.Length != b.Length) return false;
+
+            for (int index = 0; index < a.Length; index++)
             {
-                if (substring[index] == c) return index;
+                if (!char.ToLowerInvariant(a[index]).Equals(char.ToLowerInvariant(b[index]))) return false;
+            }
+
+            return true;
+        }
+        
+        public static SplitEnumerator Split(in Substring str, in char separator, in StringSplitOptions options = StringSplitOptions.None) 
+            => new SplitEnumerator(str, separator, options);
+
+        public static Substring TrimStart(in Substring str, in char trimChar)
+        {
+            var start = 0;
+            var length = str.Length;
+
+            while (str[start] == trimChar)
+            {
+                start++;
+                length--;
             }
             
-            return -1;
+            return new Substring(str, start, length);
         }
         
-        public static bool IndexOf(Substring substring, char c, out int index)
+        public static Substring TrimEnd(in Substring str, in char trimChar)
         {
-            return IndexOf(substring, c, 0, out index);
+            var end = str.Length - 1;
+            var length = str.Length;
+
+            while (str[end] == trimChar)
+            {
+                end--;
+                length--;
+            }
+            
+            return new Substring(str, 0, length);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Substring Trim(in Substring str, in char trimChar)
+        {
+            var substring = TrimStart(str, trimChar);
+            return TrimEnd(substring, trimChar);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool StartsWith(in Substring substring, in char c) 
+            => substring[0] == c;
         
-        public static bool IndexOf(Substring substring, char c, int startIndex, out int index)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool EndsWith(in Substring substring, in char c) 
+            => substring[substring.Length - 1] == c;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SubstringEnumerator GetEnumerator() => new SubstringEnumerator(this);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator ==(in Substring a, in Substring b) => a.Equals(b);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator !=(in Substring a, in Substring b) => !a.Equals(b);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator ==(in Substring a, string b) => a.Equals(b);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator !=(in Substring a, string b) => !a.Equals(b);
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator ==(string a, in Substring b) => b.Equals(a);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator !=(string a, in Substring b) => !b.Equals(a);
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool Contains(in Substring substring, in char c) 
+            => IndexOf(substring, c) != -1;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int IndexOf(in Substring substring, in char c) 
+            => IndexOf(substring, c, 0);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int IndexOf(in Substring substring, in char c, int startIndex) 
+            => IndexOf(substring, c, startIndex, out var index) ? index : -1;
+
+        public static bool IndexOf(in Substring substring, in char c, out int index) 
+            => IndexOf(substring, c, 0, out index);
+
+        public static bool IndexOf(in Substring substring, in char c, in int startIndex, out int index)
         {
             for (index = startIndex; index < substring.Length; index++)
             {
@@ -203,27 +196,19 @@ namespace HandlebarsDotNet.StringUtils
             return false;
         }
         
-        public static int LastIndexOf(Substring substring, char c)
-        {
-            return LastIndexOf(substring, c, 0);
-        }
-        
-        public static int LastIndexOf(Substring substring, char c, int startIndex)
-        {
-            for (var index = substring.Length - 1; index >= startIndex; index--)
-            {
-                if (substring[index] == c) return index;
-            }
-            
-            return -1;
-        }
-        
-        public static bool LastIndexOf(Substring substring, char c, out int index)
-        {
-            return LastIndexOf(substring, c, 0, out index);
-        }
-        
-        public static bool LastIndexOf(Substring substring, char c, int startIndex, out int index)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int LastIndexOf(in Substring substring, in char c) 
+            => LastIndexOf(substring, c, 0);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int LastIndexOf(in Substring substring, in char c, int startIndex) 
+            => LastIndexOf(substring, c, startIndex, out var index) ? index : -1;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool LastIndexOf(in Substring substring, in char c, out int index) 
+            => LastIndexOf(substring, c, 0, out index);
+
+        public static bool LastIndexOf(in Substring substring, in char c, int startIndex, out int index)
         {
             for (index = substring.Length - 1; index >= startIndex; index--)
             {
