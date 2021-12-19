@@ -119,7 +119,7 @@ jobs:
         run: dotnet clean -c Release && dotnet nuget locals all --clear
       - name: Run benchmark
         working-directory: ./source/Handlebars.Benchmark
-        run: dotnet run -c Release --exporters json --filter '*' -m --join
+        run: dotnet run -c Release -f net6 --exporters json --filter '*' -m --join
       - name: Get benchmark file name
         id: benchmarkfilename
         working-directory: ./source/Handlebars.Benchmark/BenchmarkDotNet.Artifacts/results
