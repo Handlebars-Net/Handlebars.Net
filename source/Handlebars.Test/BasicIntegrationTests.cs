@@ -688,7 +688,6 @@ false
         {
             var source = "{{#each enumerateMe}}{{@last}} {{/each}}";
             var template = handlebars.Compile(source);
-            handlebars.Configuration.Compatibility.SupportLastInObjectIterations = true;
             var data = new
             {
                 enumerateMe = new
@@ -827,7 +826,6 @@ false
         {
             var source = "{{#each enumerateMe}}{{@last}} {{/each}}";
             var template = handlebars.Compile(source);
-            handlebars.Configuration.Compatibility.SupportLastInObjectIterations = true;
             var data = new
             {
                 enumerateMe = new Dictionary<string, object>
