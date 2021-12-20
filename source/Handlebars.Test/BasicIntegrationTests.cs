@@ -37,6 +37,13 @@ namespace HandlebarsDotNet.Test
     
     public class BasicIntegrationTests
     {
+        private static string HtmlEncodeStringHelper(IHandlebars handlebars, string inputString)
+        {
+            using var stringWriter = new System.IO.StringWriter();
+            handlebars.Configuration.TextEncoder.Encode(inputString, stringWriter);
+            return stringWriter.ToString();
+        }
+
         [Theory]
         [ClassData(typeof(HandlebarsEnvGenerator))]
         public void BasicEnumerableFormatter(IHandlebars handlebars)
@@ -98,7 +105,9 @@ namespace HandlebarsDotNet.Test
                 name = "Handlebars.Net"
             };
             var result = template(data);
-            Assert.Equal("Hello, ('foo' is undefined)!", result);
+
+            var expected = HtmlEncodeStringHelper(handlebars, "Hello, ('foo' is undefined)!");
+            Assert.Equal(expected, result);
         }
         
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
@@ -114,7 +123,9 @@ namespace HandlebarsDotNet.Test
                 name = "Handlebars.Net"
             };
             var result = template(data);
-            Assert.Equal("Hello, ('foo' is undefined)!", result);
+
+            var expected = HtmlEncodeStringHelper(handlebars, "Hello, ('foo' is undefined)!");
+            Assert.Equal(expected, result);
         }
         
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
@@ -355,7 +366,9 @@ false
                 nestedObject = "Relative dots, yay"
             };
             var result = template(data);
-            Assert.Equal("{ nestedObject = Relative dots, yay }", result);
+
+            var expected = HtmlEncodeStringHelper(handlebars, "{ nestedObject = Relative dots, yay }");
+            Assert.Equal(expected, result);
         }
 
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]

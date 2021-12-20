@@ -94,11 +94,11 @@ namespace HandlebarsDotNet.Test
             var data = new
                 {
                     a_bool = false,
-                    dangerous_value = "<div>There's HTML here</div>"
+                    dangerous_value = "<div>There is HTML here</div>"
                 };
 
             var result = template(data);
-            Assert.Equal("<div>There's HTML here</div>...&lt;div&gt;There's HTML here&lt;/div&gt;...<div>There's HTML here</div>!", result);
+            Assert.Equal("<div>There is HTML here</div>...&lt;div&gt;There is HTML here&lt;/div&gt;...<div>There is HTML here</div>!", result);
         }
 	}
 }
