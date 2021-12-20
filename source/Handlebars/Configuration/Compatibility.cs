@@ -6,9 +6,9 @@
     public class Compatibility
     {
         /// <summary>
-        /// If <see langword="true"/> enables support for <c>@last</c> in object properties iterations. Not supported in Handlebarsjs.
+        /// If <see langword="true"/> enables support for <c>@last</c> in object properties iterations.
         /// </summary>
-        public bool SupportLastInObjectIterations { get; set; } = false;
+        public bool SupportLastInObjectIterations { get; set; } = true;
         
         /// <summary>
         /// If <see langword="true"/> enables support for Handlebars.Net helper naming rules.

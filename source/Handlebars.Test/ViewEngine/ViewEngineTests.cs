@@ -241,10 +241,6 @@ namespace HandlebarsDotNet.Test.ViewEngine
             var handlebarsConfiguration = new HandlebarsConfiguration
                                           {
                                               FileSystem = files,
-                                              Compatibility =
-                                              {
-                                                  SupportLastInObjectIterations = true,
-                                              },
                                           };
             var handlebars = Handlebars.Create(handlebarsConfiguration);
             var render = handlebars.CompileView("views\\someview.hbs");
@@ -272,10 +268,6 @@ namespace HandlebarsDotNet.Test.ViewEngine
             var handlebarsConfiguration = new HandlebarsConfiguration
                                           {
                                               FileSystem = files,
-                                              Compatibility =
-                                              {
-                                                  SupportLastInObjectIterations = true,
-                                              },
                                           };
             var handlebars = Handlebars.Create(handlebarsConfiguration);
             var render = handlebars.CompileView("views\\someview.hbs");
