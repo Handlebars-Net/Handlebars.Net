@@ -1,4 +1,6 @@
-﻿namespace HandlebarsDotNet
+using System;
+
+namespace HandlebarsDotNet
 {
     /// <summary>
     /// Contains feature flags that breaks compatibility with Handlebarsjs.
@@ -8,6 +10,7 @@
         /// <summary>
         /// If <see langword="true"/> enables support for <c>@last</c> in object properties iterations.
         /// </summary>
+        [Obsolete("@last is supported on Handlebarsjs, so it is always enabled, and the setting should be removed.")]
         public bool SupportLastInObjectIterations { get; set; } = true;
         
         /// <summary>

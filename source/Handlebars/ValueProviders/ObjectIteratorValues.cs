@@ -7,26 +7,14 @@ namespace HandlebarsDotNet.ValueProviders
     public readonly ref struct ObjectIteratorValues
     {
         private readonly FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer> _data;
-        private readonly bool _supportLastInObjectIterations;
-        
+
         private readonly EntryIndex<ChainSegment>[] _wellKnownVariables;
 
         public ObjectIteratorValues(BindingContext bindingContext) : this()
         {
-            var configuration = bindingContext.Configuration;
-            
             _data = bindingContext.ContextDataObject;
-            _supportLastInObjectIterations = configuration.Compatibility.SupportLastInObjectIterations;
             _wellKnownVariables = bindingContext.WellKnownVariables;
-            if (!_supportLastInObjectIterations)
-            {
-                var undefined = UndefinedBindingResult.Create(ChainSegment.Last);
-                _data.AddOrReplace(ChainSegment.Last, undefined, out _wellKnownVariables[(int) ChainSegment.Last.WellKnownVariable]);
-            }
-            else
-            {
-                _data.AddOrReplace(ChainSegment.Last, BoxedValues.False, out _wellKnownVariables[(int) ChainSegment.Last.WellKnownVariable]);
-            }
+            _data.AddOrReplace(ChainSegment.Last, BoxedValues.False, out _wellKnownVariables[(int) ChainSegment.Last.WellKnownVariable]);
             
             _data.AddOrReplace(ChainSegment.Key, null, out _wellKnownVariables[(int) ChainSegment.Key.WellKnownVariable]);
             _data.AddOrReplace(ChainSegment.Value, null, out _wellKnownVariables[(int) ChainSegment.Value.WellKnownVariable]);
@@ -61,11 +49,7 @@ namespace HandlebarsDotNet.ValueProviders
         public object Last
         {
             get => _data[_wellKnownVariables[(int) ChainSegment.Last.WellKnownVariable]];
-            set
-            {
-                if(!_supportLastInObjectIterations) return;
-                _data[_wellKnownVariables[(int) ChainSegment.Last.WellKnownVariable]] = value;
-            }
+            set => _data[_wellKnownVariables[(int) ChainSegment.Last.WellKnownVariable]] = value;
         }
     }
 }
