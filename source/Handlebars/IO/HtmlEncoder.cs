@@ -12,6 +12,13 @@ namespace HandlebarsDotNet
     /// </summary>
     public class HtmlEncoder : ITextEncoder
     {
+        private readonly Compatibility _compatibility;
+
+        public HtmlEncoder(Compatibility compatibility)
+        {
+            _compatibility = compatibility;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Encode(StringBuilder text, TextWriter target)
         {
@@ -35,8 +42,20 @@ namespace HandlebarsDotNet
             
             EncodeImpl(text, target);
         }
-        
-        private static void EncodeImpl<T>(T text, TextWriter target) where T: IEnumerator<char>
+
+        private void EncodeImpl<T>(T text, TextWriter target) where T : IEnumerator<char>
+        {
+            if (_compatibility.UseLegacyHandlebarsNetHtmlEncoding)
+            {
+                EncodeImplLegacyHandlebarsNet(text, target);
+            }
+            else
+            {
+                EncodeImplHandlebarsJs(text, target);
+            }
+        }
+
+        private static void EncodeImplLegacyHandlebarsNet<T>(T text, TextWriter target) where T : IEnumerator<char>
         {
             while (text.MoveNext())
             {
@@ -64,6 +83,45 @@ namespace HandlebarsDotNet
                             target.Write(";");
                         }
                         else target.Write(value);
+                        break;
+                }
+            }
+        }
+
+        private static void EncodeImplHandlebarsJs<T>(T text, TextWriter target) where T : IEnumerator<char>
+        {
+            /*
+             * Based on: https://github.com/handlebars-lang/handlebars.js/blob/master/lib/handlebars/utils.js
+             * As of 2021-12-20 / commit https://github.com/handlebars-lang/handlebars.js/commit/3fb331ef40ee1a8308dd83b8e5adbcd798d0adc9
+             */
+            while (text.MoveNext())
+            {
+                var value = text.Current;
+                switch (value)
+                {
+                    case '&':
+                        target.Write("&amp;");
+                        break;
+                    case '<':
+                        target.Write("&lt;");
+                        break;
+                    case '>':
+                        target.Write("&gt;");
+                        break;
+                    case '"':
+                        target.Write("&quot;");
+                        break;
+                    case '\'':
+                        target.Write("&#x27;");
+                        break;
+                    case '`':
+                        target.Write("&#x60;");
+                        break;
+                    case '=':
+                        target.Write("&#x3D;");
+                        break;
+                    default:
+                        target.Write(value);
                         break;
                 }
             }

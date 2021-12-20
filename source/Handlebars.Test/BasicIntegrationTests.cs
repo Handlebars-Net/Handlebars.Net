@@ -1986,7 +1986,57 @@ false
                 Assert.Equal("42", actual);   
             }
         }
-        
+
+        [Theory]
+        [InlineData(false, "=", "&#x3D;")]
+        [InlineData(true, "=", "=")]
+        public void HtmlEncoderCompatibilityIntegration(bool useLegacyHandlebarsNetHtmlEncoding, string inputChar, string expected)
+        {
+            var template = "{{InputChar}}";
+            var value = new
+            {
+                InputChar = inputChar
+            };
+
+            var config = new HandlebarsConfiguration
+            {
+                Compatibility =
+                {
+                    UseLegacyHandlebarsNetHtmlEncoding = useLegacyHandlebarsNetHtmlEncoding
+                }
+            };
+            var actual = Handlebars.Create(config).Compile(template).Invoke(value);
+
+            Assert.Equal(expected, actual);
+        }
+
+        [Theory]
+        [InlineData(false, "=", "&#x3D;")]
+        [InlineData(true, "=", "=")]
+        public void HtmlEncoderCompatibilityIntegration_LateChangeConfig(bool useLegacyHandlebarsNetHtmlEncoding, string inputChar, string expected)
+        {
+            var template = "{{InputChar}}";
+            var value = new
+            {
+                InputChar = inputChar
+            };
+
+            var config = new HandlebarsConfiguration
+            {
+                Compatibility =
+                {
+                    UseLegacyHandlebarsNetHtmlEncoding = !useLegacyHandlebarsNetHtmlEncoding
+                }
+            };
+            var handlebars = Handlebars.Create(config);
+            var compiledTemplate = handlebars.Compile(template);
+
+            handlebars.Configuration.Compatibility.UseLegacyHandlebarsNetHtmlEncoding = useLegacyHandlebarsNetHtmlEncoding;
+            var actual = compiledTemplate(value);
+
+            Assert.Equal(expected, actual);
+        }
+
         private class StringHelperResolver : IHelperResolver
         {
             public bool TryResolveHelper(PathInfo name, Type targetType, out IHelperDescriptor<HelperOptions> helper)

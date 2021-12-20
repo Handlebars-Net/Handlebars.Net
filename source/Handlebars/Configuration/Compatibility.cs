@@ -16,5 +16,14 @@
         /// <para>Such naming is not supported in Handlebarsjs and would break compatibility.</para>
         /// </summary>
         public bool RelaxedHelperNaming { get; set; } = false;
+
+        /// <summary>
+        /// If <see langword="true"/> enables legacy encoding rules.
+        /// <para>
+        /// This will encode non-ascii characters.
+        /// this will not encode '=', '`' or ''' (single quote).
+        /// </para>
+        /// </summary>
+        public bool UseLegacyHandlebarsNetHtmlEncoding { get; set; } = true;
     }
 }
