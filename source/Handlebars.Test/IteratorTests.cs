@@ -248,6 +248,26 @@ namespace HandlebarsDotNet.Test
         }
 
         [Fact]
+        public void WithKey()
+        {
+            var source = "Hello,{{#each people}}\n{{@key}}. {{name}}{{/each}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                people = new[]{
+                        new {
+                            name = "Erik"
+                        },
+                        new {
+                            name = "Helen"
+                        }
+                    }
+            };
+            var result = template(data);
+            Assert.Equal("Hello,\n0. Erik\n1. Helen", result);
+        }
+
+        [Fact]
         public void Empty()
         {
             var source = "Hello,{{#each people}}\n- {{name}}{{else}} (no one listed){{/each}}";

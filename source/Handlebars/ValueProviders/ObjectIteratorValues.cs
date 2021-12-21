@@ -1,9 +1,11 @@
 using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.PathStructure;
 using HandlebarsDotNet.Runtime;
+using System;
 
 namespace HandlebarsDotNet.ValueProviders
 {
+    [Obsolete("Use IteratorValues")]
     public readonly ref struct ObjectIteratorValues
     {
         private readonly FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer> _data;
