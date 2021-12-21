@@ -3,32 +3,31 @@ using Xunit;
 
 namespace HandlebarsDotNet.Test
 {
-    public class HtmlEncoderTests
+    public class HtmlEncoderLegacyTests
     {
-        private readonly HtmlEncoder _htmlEncoder;
+        private readonly HtmlEncoderLegacy _htmlEncoderLegacy;
 
-        public HtmlEncoderTests()
+        public HtmlEncoderLegacyTests()
         {
-            _htmlEncoder = new HtmlEncoder();
+            _htmlEncoderLegacy = new HtmlEncoderLegacy();
         }
 
         [Theory]
-        // Escape chars based on https://github.com/handlebars-lang/handlebars.js/blob/master/lib/handlebars/utils.js
         [InlineData("&", "&amp;")]
         [InlineData("<", "&lt;")]
         [InlineData(">", "&gt;")]
         [InlineData("\"", "&quot;")]
-        [InlineData("'", "&#x27;")]
-        [InlineData("`", "&#x60;")]
-        [InlineData("=", "&#x3D;")]
+        [InlineData("â", "&#226;")]
 
         // Don't escape.
-        [InlineData("â", "â")]
-        public void EscapeCorrectCharacters(string input, string expected)
+        [InlineData("'", "'")]
+        [InlineData("`", "`")]
+        [InlineData("=", "=")]
+        public void EscapeCorrectCharactersHandlebarsNetLegacyRules(string input, string expected)
         {
             using var writer = new StringWriter();
 
-            _htmlEncoder.Encode(input, writer);
+            _htmlEncoderLegacy.Encode(input, writer);
 
             Assert.Equal(expected, writer.ToString());
         }
@@ -41,16 +40,18 @@ namespace HandlebarsDotNet.Test
         [InlineData("<", "&lt;")]
         [InlineData(">", "&gt;")]
         [InlineData("  >  ", "  &gt;  ")]
+        [InlineData("�", "&#65533;")]
+        [InlineData("�a", "&#65533;a")]
         [InlineData("\"", "&quot;")]
         [InlineData("&a&", "&amp;a&amp;")]
         [InlineData("a&a", "a&amp;a")]
-        public void EncodeTest(string input, string expected)
+        public void EncodeTestHandlebarsNetLegacyRules(string input, string expected)
         {
             // Arrange
             using var writer = new StringWriter();
 
             // Act
-            _htmlEncoder.Encode(input, writer);
+            _htmlEncoderLegacy.Encode(input, writer);
 
             // Assert
             Assert.Equal(expected, writer.ToString());

@@ -2013,10 +2013,7 @@ false
 
             var config = new HandlebarsConfiguration
             {
-                Compatibility =
-                {
-                    UseLegacyHandlebarsNetHtmlEncoding = useLegacyHandlebarsNetHtmlEncoding
-                }
+                TextEncoder = useLegacyHandlebarsNetHtmlEncoding ? (ITextEncoder)new HtmlEncoderLegacy() : new HtmlEncoder()
             };
             var actual = Handlebars.Create(config).Compile(template).Invoke(value);
 
@@ -2036,15 +2033,12 @@ false
 
             var config = new HandlebarsConfiguration
             {
-                Compatibility =
-                {
-                    UseLegacyHandlebarsNetHtmlEncoding = !useLegacyHandlebarsNetHtmlEncoding
-                }
+                TextEncoder = !useLegacyHandlebarsNetHtmlEncoding ? (ITextEncoder)new HtmlEncoderLegacy() : new HtmlEncoder()
             };
             var handlebars = Handlebars.Create(config);
+            handlebars.Configuration.TextEncoder = useLegacyHandlebarsNetHtmlEncoding ? (ITextEncoder)new HtmlEncoderLegacy() : new HtmlEncoder();
             var compiledTemplate = handlebars.Compile(template);
-
-            handlebars.Configuration.Compatibility.UseLegacyHandlebarsNetHtmlEncoding = useLegacyHandlebarsNetHtmlEncoding;
+            
             var actual = compiledTemplate(value);
 
             Assert.Equal(expected, actual);
