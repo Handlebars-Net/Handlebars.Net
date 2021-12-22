@@ -28,6 +28,7 @@ namespace HandlebarsDotNet.Test
                 types.Add(typeof(Dictionary<long, object>));
                 types.Add(typeof(Dictionary<string, string>));
             })),
+            Handlebars.Create(new HandlebarsConfiguration().Configure(o => o.TextEncoder = new HtmlEncoder())),
         };
 
         public IEnumerator<object[]> GetEnumerator() => _data.Select(o => new object[] { o }).GetEnumerator();
@@ -37,6 +38,13 @@ namespace HandlebarsDotNet.Test
     
     public class BasicIntegrationTests
     {
+        private static string HtmlEncodeStringHelper(IHandlebars handlebars, string inputString)
+        {
+            using var stringWriter = new System.IO.StringWriter();
+            handlebars.Configuration.TextEncoder.Encode(inputString, stringWriter);
+            return stringWriter.ToString();
+        }
+
         [Theory]
         [ClassData(typeof(HandlebarsEnvGenerator))]
         public void BasicEnumerableFormatter(IHandlebars handlebars)
@@ -98,7 +106,9 @@ namespace HandlebarsDotNet.Test
                 name = "Handlebars.Net"
             };
             var result = template(data);
-            Assert.Equal("Hello, ('foo' is undefined)!", result);
+
+            var expected = HtmlEncodeStringHelper(handlebars, "Hello, ('foo' is undefined)!");
+            Assert.Equal(expected, result);
         }
         
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
@@ -114,7 +124,9 @@ namespace HandlebarsDotNet.Test
                 name = "Handlebars.Net"
             };
             var result = template(data);
-            Assert.Equal("Hello, ('foo' is undefined)!", result);
+
+            var expected = HtmlEncodeStringHelper(handlebars, "Hello, ('foo' is undefined)!");
+            Assert.Equal(expected, result);
         }
         
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
@@ -355,7 +367,9 @@ false
                 nestedObject = "Relative dots, yay"
             };
             var result = template(data);
-            Assert.Equal("{ nestedObject = Relative dots, yay }", result);
+
+            var expected = HtmlEncodeStringHelper(handlebars, "{ nestedObject = Relative dots, yay }");
+            Assert.Equal(expected, result);
         }
 
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
@@ -1986,7 +2000,51 @@ false
                 Assert.Equal("42", actual);   
             }
         }
-        
+
+        [Theory]
+        [InlineData(false, "=", "&#x3D;")]
+        [InlineData(true, "=", "=")]
+        public void HtmlEncoderCompatibilityIntegration(bool useLegacyHandlebarsNetHtmlEncoding, string inputChar, string expected)
+        {
+            var template = "{{InputChar}}";
+            var value = new
+            {
+                InputChar = inputChar
+            };
+
+            var config = new HandlebarsConfiguration
+            {
+                TextEncoder = useLegacyHandlebarsNetHtmlEncoding ? (ITextEncoder)new HtmlEncoderLegacy() : new HtmlEncoder()
+            };
+            var actual = Handlebars.Create(config).Compile(template).Invoke(value);
+
+            Assert.Equal(expected, actual);
+        }
+
+        [Theory]
+        [InlineData(false, "=", "&#x3D;")]
+        [InlineData(true, "=", "=")]
+        public void HtmlEncoderCompatibilityIntegration_LateChangeConfig(bool useLegacyHandlebarsNetHtmlEncoding, string inputChar, string expected)
+        {
+            var template = "{{InputChar}}";
+            var value = new
+            {
+                InputChar = inputChar
+            };
+
+            var config = new HandlebarsConfiguration
+            {
+                TextEncoder = !useLegacyHandlebarsNetHtmlEncoding ? (ITextEncoder)new HtmlEncoderLegacy() : new HtmlEncoder()
+            };
+            var handlebars = Handlebars.Create(config);
+            handlebars.Configuration.TextEncoder = useLegacyHandlebarsNetHtmlEncoding ? (ITextEncoder)new HtmlEncoderLegacy() : new HtmlEncoder();
+            var compiledTemplate = handlebars.Compile(template);
+            
+            var actual = compiledTemplate(value);
+
+            Assert.Equal(expected, actual);
+        }
+
         private class StringHelperResolver : IHelperResolver
         {
             public bool TryResolveHelper(PathInfo name, Type targetType, out IHelperDescriptor<HelperOptions> helper)
