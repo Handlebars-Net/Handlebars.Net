@@ -36,7 +36,7 @@ namespace HandlebarsDotNet
             EncodeImpl(text, target);
         }
 
-        private void EncodeImpl<T>(T text, TextWriter target) where T : IEnumerator<char>
+        private static void EncodeImpl<T>(T text, TextWriter target) where T : IEnumerator<char>
         {
             /*
              * Based on: https://github.com/handlebars-lang/handlebars.js/blob/master/lib/handlebars/utils.js

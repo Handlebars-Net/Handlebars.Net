@@ -40,7 +40,7 @@ namespace HandlebarsDotNet
             EncodeImpl(text, target);
         }
 
-        private void EncodeImpl<T>(T text, TextWriter target) where T : IEnumerator<char>
+        private static void EncodeImpl<T>(T text, TextWriter target) where T : IEnumerator<char>
         {
             while (text.MoveNext())
             {

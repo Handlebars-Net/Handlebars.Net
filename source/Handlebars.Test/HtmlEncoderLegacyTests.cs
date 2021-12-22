@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Text;
 using Xunit;
 
 namespace HandlebarsDotNet.Test
@@ -54,6 +55,35 @@ namespace HandlebarsDotNet.Test
             _htmlEncoderLegacy.Encode(input, writer);
 
             // Assert
+            Assert.Equal(expected, writer.ToString());
+        }
+
+        [Theory]
+        [InlineData(null, "")]
+        [InlineData("", "")]
+        [InlineData("a", "a")]
+        [InlineData("<", "&lt;")]
+        public void EncodeStringBuilderOverload(string input, string expected)
+        {
+            using var writer = new StringWriter();
+
+            var inputStringBuilder = input == null ? null : new StringBuilder(input);
+
+            _htmlEncoderLegacy.Encode(inputStringBuilder, writer);
+
+            Assert.Equal(expected, writer.ToString());
+        }
+
+        [Theory]
+        [InlineData(null, "")]
+        [InlineData("a", "a")]
+        [InlineData("<", "&lt;")]
+        public void EncodeCharEnumeratorOverload(string input, string expected)
+        {
+            using var writer = new StringWriter();
+
+            _htmlEncoderLegacy.Encode(input?.GetEnumerator(), writer);
+
             Assert.Equal(expected, writer.ToString());
         }
     }
