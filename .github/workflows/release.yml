@@ -33,4 +33,4 @@ jobs:
 
       - name: Publish to NuGet
         working-directory: ./source
-        run: dotnet nuget push **/*.nupkg -k ${{ secrets.NUGET_PUSH_KEY }} -s https://api.nuget.org/v3/index.json
+        run: dotnet nuget push **/*.nupkg -k ${{ secrets.NUGET_ORG_PUSH_KEY }} -s https://api.nuget.org/v3/index.json
