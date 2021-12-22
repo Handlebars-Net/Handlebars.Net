@@ -28,6 +28,7 @@ namespace HandlebarsDotNet.Test
                 types.Add(typeof(Dictionary<long, object>));
                 types.Add(typeof(Dictionary<string, string>));
             })),
+            Handlebars.Create(new HandlebarsConfiguration().Configure(o => o.TextEncoder = new HtmlEncoder())),
         };
 
         public IEnumerator<object[]> GetEnumerator() => _data.Select(o => new object[] { o }).GetEnumerator();
