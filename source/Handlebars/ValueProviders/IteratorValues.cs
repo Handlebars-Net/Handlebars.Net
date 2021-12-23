@@ -8,7 +8,7 @@ namespace HandlebarsDotNet.ValueProviders
     public readonly ref struct IteratorValues
     {
         private readonly FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer> _data;
-        
+
         private readonly EntryIndex<ChainSegment>[] _wellKnownVariables;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -21,8 +21,9 @@ namespace HandlebarsDotNet.ValueProviders
             _data.AddOrReplace(ChainSegment.First, BoxedValues.True, out _wellKnownVariables[(int) ChainSegment.First.WellKnownVariable]);
             _data.AddOrReplace(ChainSegment.Last, BoxedValues.False, out _wellKnownVariables[(int) ChainSegment.Last.WellKnownVariable]);
             _data.AddOrReplace(ChainSegment.Index, BoxedValues.Zero, out _wellKnownVariables[(int) ChainSegment.Index.WellKnownVariable]);
+            _data.AddOrReplace(ChainSegment.Key, null, out _wellKnownVariables[(int)ChainSegment.Key.WellKnownVariable]);
         }
-        
+
         public object Value
         {
             get => _data[_wellKnownVariables[(int) ChainSegment.Value.WellKnownVariable]];
@@ -39,6 +40,12 @@ namespace HandlebarsDotNet.ValueProviders
         {
             get => _data[_wellKnownVariables[(int) ChainSegment.Index.WellKnownVariable]];
             set => _data[_wellKnownVariables[(int) ChainSegment.Index.WellKnownVariable]] = value;
+        }
+
+        public object Key
+        {
+            get => _data[_wellKnownVariables[(int)ChainSegment.Key.WellKnownVariable]];
+            set => _data[_wellKnownVariables[(int)ChainSegment.Key.WellKnownVariable]] = value;
         }
 
         public object Last

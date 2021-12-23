@@ -39,7 +39,7 @@ namespace HandlebarsDotNet.Iterators
                 if (index == 1) iterator.First = BoxedValues.False;
                 if (index == lastIndex) iterator.Last = BoxedValues.True;
                 
-                iterator.Index = objectIndex;
+                iterator.Key = iterator.Index = objectIndex;
                 
                 blockParamsValues[_0] = value;
                 blockParamsValues[_1] = objectIndex;
