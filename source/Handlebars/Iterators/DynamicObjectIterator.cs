@@ -28,7 +28,7 @@ namespace HandlebarsDotNet.Iterators
         )
         {
             using var innerContext = context.CreateFrame();
-            var iterator = new ObjectIteratorValues(innerContext);
+            var iterator = new IteratorValues(innerContext);
             var blockParamsValues = new BlockParamsValues(innerContext, blockParamsVariables);
             
             blockParamsValues.CreateProperty(0, out var _0);

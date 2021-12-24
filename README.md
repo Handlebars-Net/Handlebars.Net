@@ -249,6 +249,43 @@ public void HelperWithDotSeparatedName()
 }
 ```
 
+#### HtmlEncoder
+Used to switch between the legacy Handlebars.Net and the canonical Handlebars rules (or a custom implementation).\
+For Handlebars.Net 2.x.x `HtmlEncoderLegacy` is the default.
+
+`HtmlEncoder`\
+Implements the canonical Handlebars rules.
+
+`HtmlEncoderLegacy`\
+Will not encode:\
+= (equals)\
+&#96; (backtick)\
+' (single quote)
+
+Will encode non-ascii characters `â`, `ß`, ...\
+Into HTML entities (`&lt;`, `&#226;`, `&#223;`, ...).
+
+##### Areas
+- `Runtime`
+
+##### Example
+```c#
+[Fact]
+public void UseCanonicalHtmlEncodingRules()
+{
+    var handlebars = Handlebars.Create();
+    handlebars.Configuration.TextEncoder = new HtmlEncoder();
+
+    var source = "{{Text}}";
+    var value = new { Text = "< â" };
+
+    var template = handlebars.Compile(source);
+    var actual = template(value);
+            
+    Assert.Equal("&lt; â", actual);
+}
+```
+
 ## Performance
 
 ### Compilation
