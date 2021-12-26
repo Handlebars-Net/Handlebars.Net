@@ -10,7 +10,7 @@ namespace HandlebarsDotNet.Compiler
         private static readonly HashSet<string> ConditionHelpers = new HashSet<string>(StringComparer.OrdinalIgnoreCase){ "#if", "#unless", "^if", "^unless" };
         private static readonly HashSet<string> IteratorHelpers = new HashSet<string>(StringComparer.OrdinalIgnoreCase){ "#each", "^each" };
 
-        public static BlockAccumulatorContext Create(Expression item, ICompiledHandlebarsConfiguration configuration)
+        public static BlockAccumulatorContext Create(Expression item, Expression parentItem, ICompiledHandlebarsConfiguration configuration)
         {
             BlockAccumulatorContext context = null;
             if (IsConditionalBlock(item))
@@ -28,6 +28,10 @@ namespace HandlebarsDotNet.Compiler
             else if (IsBlockHelper(item, configuration))
             {
                 context = new BlockHelperAccumulatorContext(item);
+            }
+            else if (IsLooseClosingElement(item, parentItem, out var looseBlockName))
+            {
+                throw new HandlebarsCompilerException($"Loose closing block '{looseBlockName}' was found");
             }
 
             return context;
@@ -74,6 +78,54 @@ namespace HandlebarsDotNet.Compiler
                 
                 default:
                     return false;
+            }
+        }
+
+        private static bool IsLooseClosingElement(Expression item, Expression parentItem, out string looseBlockName)
+        {
+            looseBlockName = null;
+
+            var itemBlockName = GetBlockName(item);
+
+            if (itemBlockName == null) return false;
+
+            var parentBlockName = GetBlockName(parentItem);
+
+            if (!itemBlockName.StartsWith("/")) return false;
+
+            if (parentBlockName == null || IsClosingBlockNotMatchParentBlock(itemBlockName, parentBlockName))
+            {
+                looseBlockName = itemBlockName;
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool IsClosingBlockNotMatchParentBlock(string itemBlockName, string parentBlockName)
+        {
+            if (itemBlockName == null) throw new ArgumentNullException(nameof(itemBlockName));
+            if (parentBlockName == null) throw new ArgumentNullException(nameof(parentBlockName));
+
+            if (!parentBlockName.StartsWith("#") || parentBlockName.StartsWith("#>") || parentBlockName.StartsWith("#*")) return false;
+
+            return parentBlockName.Substring(1) != itemBlockName.Substring(1);
+        }
+
+        private static string GetBlockName(Expression item)
+        {
+            item = UnwrapStatement(item);
+            switch( item )
+            {
+                case PathExpression pathExpression:
+                    return pathExpression.Path;
+
+                case HelperExpression helperExpression:
+                    return helperExpression.HelperName;
+
+                default:
+                    return null;
             }
         }
 
