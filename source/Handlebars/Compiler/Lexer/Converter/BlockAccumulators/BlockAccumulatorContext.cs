@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using HandlebarsDotNet.PathStructure;
+using HandlebarsDotNet.StringUtils;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -68,17 +69,12 @@ namespace HandlebarsDotNet.Compiler
         private static bool IsPartialBlock (Expression item)
         {
             item = UnwrapStatement (item);
-            switch (item)
+            return item switch
             {
-                case PathExpression expression:
-                    return expression.Path.StartsWith("#>");
-                
-                case HelperExpression helperExpression:
-                    return helperExpression.HelperName.StartsWith("#>");
-                
-                default:
-                    return false;
-            }
+                PathExpression expression => expression.Path.StartsWith("#>"),
+                HelperExpression helperExpression => helperExpression.HelperName.StartsWith("#>"),
+                _ => false,
+            };
         }
 
         private static bool IsLooseClosingElement(Expression item, Expression parentItem, out string looseBlockName)
@@ -110,23 +106,18 @@ namespace HandlebarsDotNet.Compiler
 
             if (!parentBlockName.StartsWith("#") || parentBlockName.StartsWith("#>") || parentBlockName.StartsWith("#*")) return false;
 
-            return parentBlockName.Substring(1) != itemBlockName.Substring(1);
+            return new Substring(parentBlockName, 1) != new Substring(itemBlockName, 1);
         }
 
         private static string GetBlockName(Expression item)
         {
             item = UnwrapStatement(item);
-            switch( item )
+            return item switch
             {
-                case PathExpression pathExpression:
-                    return pathExpression.Path;
-
-                case HelperExpression helperExpression:
-                    return helperExpression.HelperName;
-
-                default:
-                    return null;
-            }
+                PathExpression pathExpression => pathExpression.Path,
+                HelperExpression helperExpression => helperExpression.HelperName,
+                _ => null,
+            };
         }
 
         protected static Expression UnwrapStatement(Expression item)
