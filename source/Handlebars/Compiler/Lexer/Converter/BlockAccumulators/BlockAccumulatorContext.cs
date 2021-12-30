@@ -30,9 +30,9 @@ namespace HandlebarsDotNet.Compiler
             {
                 context = new BlockHelperAccumulatorContext(item);
             }
-            else if (IsLooseClosingElement(item, parentItem, out var looseBlockName))
+            else if (IsDetachedClosingElement(item, parentItem, out var closingElement))
             {
-                throw new HandlebarsCompilerException($"Loose closing block '{looseBlockName}' was found");
+                throw new HandlebarsCompilerException($"A closing element '{closingElement}' was found without a matching open element");
             }
 
             return context;
@@ -77,21 +77,21 @@ namespace HandlebarsDotNet.Compiler
             };
         }
 
-        private static bool IsLooseClosingElement(Expression item, Expression parentItem, out string looseBlockName)
+        private static bool IsDetachedClosingElement(Expression item, Expression parentItem, out string closingElement)
         {
-            looseBlockName = null;
+            closingElement = null;
 
-            var itemBlockName = GetBlockName(item);
+            var itemElement = GetItemElement(item);
 
-            if (itemBlockName == null) return false;
+            if (itemElement == null) return false;
 
-            var parentBlockName = GetBlockName(parentItem);
+            var parentItemElement = GetItemElement(parentItem);
 
-            if (!itemBlockName.StartsWith("/")) return false;
+            if (!itemElement.StartsWith("/")) return false;
 
-            if (parentBlockName == null || IsClosingBlockNotMatchParentBlock(itemBlockName, parentBlockName))
+            if (parentItemElement == null || IsClosingElementNotMatchOpenElement(itemElement, parentItemElement))
             {
-                looseBlockName = itemBlockName;
+                closingElement = itemElement;
 
                 return true;
             }
@@ -99,17 +99,17 @@ namespace HandlebarsDotNet.Compiler
             return false;
         }
 
-        private static bool IsClosingBlockNotMatchParentBlock(string itemBlockName, string parentBlockName)
+        private static bool IsClosingElementNotMatchOpenElement(string closingElement, string openElement)
         {
-            if (itemBlockName == null) throw new ArgumentNullException(nameof(itemBlockName));
-            if (parentBlockName == null) throw new ArgumentNullException(nameof(parentBlockName));
+            if (closingElement == null) throw new ArgumentNullException(nameof(closingElement));
+            if (openElement == null) throw new ArgumentNullException(nameof(openElement));
 
-            if (!parentBlockName.StartsWith("#") || parentBlockName.StartsWith("#>") || parentBlockName.StartsWith("#*")) return false;
+            if (!openElement.StartsWith("#") || openElement.StartsWith("#>") || openElement.StartsWith("#*")) return false;
 
-            return new Substring(parentBlockName, 1) != new Substring(itemBlockName, 1);
+            return new Substring(openElement, 1) != new Substring(closingElement, 1);
         }
 
-        private static string GetBlockName(Expression item)
+        private static string GetItemElement(Expression item)
         {
             item = UnwrapStatement(item);
             return item switch
