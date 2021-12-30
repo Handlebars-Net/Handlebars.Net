@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -27,10 +26,10 @@ namespace HandlebarsDotNet.Compiler
             while (enumerator.MoveNext())
             {
                 var item = (Expression)enumerator.Current;
-                var context = BlockAccumulatorContext.Create(item, _configuration);
+                var context = BlockAccumulatorContext.Create(item, null, _configuration);
                 if (context != null)
                 {
-                    yield return AccumulateBlock(enumerator, context);
+                    yield return AccumulateBlock(item, enumerator, context);
                 }
                 else
                 {
@@ -40,16 +39,17 @@ namespace HandlebarsDotNet.Compiler
         }
 
         private Expression AccumulateBlock(
+            Expression parentItem,
             IEnumerator<object> enumerator, 
             BlockAccumulatorContext context)
         {
             while (enumerator.MoveNext())
             {
                 var item = (Expression)enumerator.Current;
-                var innerContext = BlockAccumulatorContext.Create(item, _configuration);
+                var innerContext = BlockAccumulatorContext.Create(item, parentItem, _configuration);
                 if (innerContext != null)
                 {
-                    context.HandleElement(AccumulateBlock(enumerator, innerContext));
+                    context.HandleElement(AccumulateBlock(item, enumerator, innerContext));
                 }
                 else if (context.IsClosingElement(item))
                 {
