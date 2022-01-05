@@ -23,7 +23,6 @@ namespace HandlebarsDotNet
         {
             UnderlingConfiguration = configuration;
 
-            AliasProviders = new ObservableList<IMemberAliasProvider>(configuration.AliasProviders);
             HelperResolvers = new ObservableList<IHelperResolver>(configuration.HelperResolvers);
             RegisteredTemplates = new ObservableIndex<string, HandlebarsTemplate<TextWriter, object, object>, StringEqualityComparer>(new StringEqualityComparer(StringComparison.OrdinalIgnoreCase), configuration.RegisteredTemplates);
             AliasProviders = new ObservableList<IMemberAliasProvider>(configuration.AliasProviders);
