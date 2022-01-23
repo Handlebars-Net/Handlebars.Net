@@ -2044,6 +2044,25 @@ false
 
             Assert.Equal(expected, actual);
         }
+        
+        [Fact]
+        public void ChainedPathIteratorHelper()
+        {
+            var context = new
+            {
+                bundles = new
+                {
+                    styles = new
+                    {
+                        vendor = new[] { "a", "b", "c" }
+                    }
+                }
+            };
+
+            var nestedObjectsHelperResult = Handlebars.Compile("{{#bundles.styles.vendor}}{{this}}{{/bundles.styles.vendor}}")(context);
+
+            Assert.Equal("abc", nestedObjectsHelperResult);
+        }
 
         private class StringHelperResolver : IHelperResolver
         {
