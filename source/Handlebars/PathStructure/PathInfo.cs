@@ -190,6 +190,8 @@ namespace HandlebarsDotNet.PathStructure
 
                 var chainSegments = GetPathChain(segment);
 
+                if (chainSegments.Length > 1 && pathType != PathType.BlockHelper) isValidHelperLiteral = false;
+
                 segments.Add(new PathSegment(segment, chainSegments));
             }
 
