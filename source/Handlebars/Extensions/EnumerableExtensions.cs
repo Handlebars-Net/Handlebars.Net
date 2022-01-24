@@ -40,6 +40,18 @@ namespace HandlebarsDotNet
                 yield return item;
             }   
         }
+        
+        public static IEnumerable<T> Append<TEnumerable, T>(this TEnumerable source, T item)
+            where TEnumerable: IEnumerable<T>
+        {
+            using var enumerator = source.GetEnumerator();
+            while (enumerator.MoveNext())
+            {
+                yield return enumerator.Current;
+            }
+
+            yield return item;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void AddOrUpdate<TK, TV, TO>(this IDictionary<TK, TV> to, TK at, Func<TO, TV> add, Action<TO, TV> update, TO context)

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
+using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.Compiler;
+using HandlebarsDotNet.Decorators;
 using HandlebarsDotNet.Helpers;
 using HandlebarsDotNet.Helpers.BlockHelpers;
 using HandlebarsDotNet.IO;
@@ -197,49 +199,39 @@ namespace HandlebarsDotNet
             RegisterTemplate(templateName, Compile(reader));
         }
 
-        public void RegisterHelper(string helperName, HandlebarsHelper helperFunction)
+        public void RegisterDecorator(string helperName, HandlebarsBlockDecorator helperFunction)
         {
-            Configuration.Helpers[helperName] = new DelegateHelperDescriptor(helperName, helperFunction);
-        }
-        
-        public void RegisterHelper(string helperName, HandlebarsHelperWithOptions helperFunction)
-        {
-            Configuration.Helpers[helperName] = new DelegateHelperWithOptionsDescriptor(helperName, helperFunction);
-        }
-            
-        public void RegisterHelper(string helperName, HandlebarsReturnHelper helperFunction)
-        {
-            Configuration.Helpers[helperName] = new DelegateReturnHelperDescriptor(helperName, helperFunction);
-        }
-        
-        public void RegisterHelper(string helperName, HandlebarsReturnWithOptionsHelper helperFunction)
-        {
-            Configuration.Helpers[helperName] = new DelegateReturnHelperWithOptionsDescriptor(helperName, helperFunction);
+            Configuration.BlockDecorators[$"*{helperName}"] = new DelegateBlockDecoratorDescriptor(helperName, helperFunction);
         }
 
-        public void RegisterHelper(string helperName, HandlebarsBlockHelper helperFunction)
+        public void RegisterDecorator(string helperName, HandlebarsDecorator helperFunction)
         {
-            Configuration.BlockHelpers[helperName] = new DelegateBlockHelperDescriptor(helperName, helperFunction);
+            Configuration.Decorators[$"*{helperName}"] = new DelegateDecoratorDescriptor(helperName, helperFunction);
         }
         
-        public void RegisterHelper(string helperName, HandlebarsReturnBlockHelper helperFunction)
+        public void RegisterDecorator(string helperName, HandlebarsBlockDecoratorVoid helperFunction)
         {
-            Configuration.BlockHelpers[helperName] = new DelegateReturnBlockHelperDescriptor(helperName, helperFunction);
+            Configuration.BlockDecorators[$"*{helperName}"] = new DelegateBlockDecoratorVoidDescriptor(helperName, helperFunction);
         }
 
-        public void RegisterHelper(IHelperDescriptor<BlockHelperOptions> helperObject)
+        public void RegisterDecorator(string helperName, HandlebarsDecoratorVoid helperFunction)
         {
-            Configuration.BlockHelpers[helperObject.Name] = helperObject;
-        }
-        
-        public void RegisterHelper(IHelperDescriptor<HelperOptions> helperObject)
-        {
-            Configuration.Helpers[helperObject.Name] = helperObject;
+            Configuration.Decorators[$"*{helperName}"] = new DelegateDecoratorVoidDescriptor(helperName, helperFunction);
         }
 
         public DisposableContainer Configure()
         {
             return AmbientContext.Use(_ambientContext);
+        }
+
+        public IIndexed<string, IHelperDescriptor<HelperOptions>> GetHelpers()
+        {
+            return Configuration.Helpers;
+        }
+
+        public IIndexed<string, IHelperDescriptor<BlockHelperOptions>> GetBlockHelpers()
+        {
+            return Configuration.BlockHelpers;
         }
     }
 }

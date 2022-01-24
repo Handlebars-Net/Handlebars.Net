@@ -1,5 +1,6 @@
 using System.IO;
 using HandlebarsDotNet.Helpers;
+using HandlebarsDotNet.Helpers.BlockHelpers;
 using HandlebarsDotNet.Runtime;
 
 namespace HandlebarsDotNet
@@ -16,7 +17,7 @@ namespace HandlebarsDotNet
     /// <summary>
     /// 
     /// </summary>
-    public interface IHandlebars
+    public interface IHandlebars : IHelpersRegistry
     {
         /// <summary>
         /// 
@@ -36,22 +37,14 @@ namespace HandlebarsDotNet
         void RegisterTemplate(string templateName, HandlebarsTemplate<TextWriter, object, object> template);
         
         void RegisterTemplate(string templateName, string template);
-        
-        void RegisterHelper(string helperName, HandlebarsHelper helperFunction);
-        
-        void RegisterHelper(string helperName, HandlebarsHelperWithOptions helperFunction);
-        
-        void RegisterHelper(string helperName, HandlebarsReturnHelper helperFunction);
 
-        void RegisterHelper(string helperName, HandlebarsReturnWithOptionsHelper helperFunction);
-
-        void RegisterHelper(string helperName, HandlebarsBlockHelper helperFunction);
+        void RegisterDecorator(string helperName, HandlebarsBlockDecorator helperFunction);
         
-        void RegisterHelper(string helperName, HandlebarsReturnBlockHelper helperFunction);
+        void RegisterDecorator(string helperName, HandlebarsDecorator helperFunction);
         
-        void RegisterHelper(IHelperDescriptor<BlockHelperOptions> helperObject);
+        void RegisterDecorator(string helperName, HandlebarsBlockDecoratorVoid helperFunction);
         
-        void RegisterHelper(IHelperDescriptor<HelperOptions> helperObject);
+        void RegisterDecorator(string helperName, HandlebarsDecoratorVoid helperFunction);
 
         /// <summary>
         /// Defines current environment configuration scope.

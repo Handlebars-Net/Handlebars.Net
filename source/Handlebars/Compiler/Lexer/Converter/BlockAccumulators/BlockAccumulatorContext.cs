@@ -54,7 +54,7 @@ namespace HandlebarsDotNet.Compiler
             {
                 var helperName = hitem.HelperName;
                 var helperPathInfo = PathInfo.Parse(helperName);
-                return hitem.IsBlock || !configuration.Helpers.ContainsKey(helperPathInfo) && configuration.BlockHelpers.ContainsKey(helperPathInfo);
+                return hitem.IsBlock || !configuration.Helpers.ContainsKey(helperPathInfo) && (configuration.BlockHelpers.ContainsKey(helperPathInfo) || configuration.BlockDecorators.ContainsKey(helperPathInfo));
             }
             return false;
         }

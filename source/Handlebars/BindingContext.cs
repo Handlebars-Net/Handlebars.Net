@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.Compiler;
 using HandlebarsDotNet.EqualityComparers;
+using HandlebarsDotNet.Helpers;
 using HandlebarsDotNet.ObjectDescriptors;
 using HandlebarsDotNet.PathStructure;
 using HandlebarsDotNet.Runtime;
@@ -10,7 +11,7 @@ using HandlebarsDotNet.ValueProviders;
 
 namespace HandlebarsDotNet
 {
-    public sealed partial class BindingContext : IDisposable
+    public sealed partial class BindingContext : IDisposable, IHelpersRegistry
     {
         internal readonly EntryIndex<ChainSegment>[] WellKnownVariables = new EntryIndex<ChainSegment>[8];
         
@@ -19,6 +20,8 @@ namespace HandlebarsDotNet
         private BindingContext()
         {
             InlinePartialTemplates = new CascadeIndex<string, Action<EncodedTextWriter, BindingContext>, StringEqualityComparer>(new StringEqualityComparer(StringComparison.OrdinalIgnoreCase));
+            Helpers = new CascadeIndex<string, IHelperDescriptor<HelperOptions>, StringEqualityComparer>(new StringEqualityComparer());
+            BlockHelpers = new CascadeIndex<string, IHelperDescriptor<BlockHelperOptions>, StringEqualityComparer>(new StringEqualityComparer());
             
             Bag = new CascadeIndex<string, object, StringEqualityComparer>(new StringEqualityComparer(StringComparison.OrdinalIgnoreCase));
             ContextDataObject = new FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer>(16, 7, ChainSegment.EqualityComparer);
@@ -95,6 +98,9 @@ namespace HandlebarsDotNet
             //in the context
             InlinePartialTemplates.Outer = ParentContext.InlinePartialTemplates;
 
+            Helpers.Outer = ParentContext.Helpers;
+            BlockHelpers.Outer = ParentContext.BlockHelpers;
+
             if (!(Value is HashParameterDictionary dictionary) || ParentContext.Value == null || ReferenceEquals(Value, ParentContext.Value)) return;
             
             // Populate value with parent context
@@ -104,6 +110,10 @@ namespace HandlebarsDotNet
         internal ICompiledHandlebarsConfiguration Configuration { get; private set; }
         
         internal CascadeIndex<string, Action<EncodedTextWriter, BindingContext>, StringEqualityComparer> InlinePartialTemplates { get; }
+        
+        internal CascadeIndex<string, IHelperDescriptor<HelperOptions>, StringEqualityComparer> Helpers { get; }
+        
+        internal CascadeIndex<string, IHelperDescriptor<BlockHelperOptions>, StringEqualityComparer> BlockHelpers { get; }
 
         internal TemplateDelegate PartialBlockTemplate { get; private set; }
         
@@ -176,5 +186,9 @@ namespace HandlebarsDotNet
                 hash[segment] = value;
             }
         }
+
+        IIndexed<string, IHelperDescriptor<HelperOptions>> IHelpersRegistry.GetHelpers() => Helpers;
+
+        IIndexed<string, IHelperDescriptor<BlockHelperOptions>> IHelpersRegistry.GetBlockHelpers() => BlockHelpers;
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
+using HandlebarsDotNet.Pools;
 using static Expressions.Shortcuts.ExpressionShortcuts;
 
 namespace HandlebarsDotNet.Compiler.Middlewares
@@ -10,13 +11,14 @@ namespace HandlebarsDotNet.Compiler.Middlewares
     {
         public Expression<T> Invoke<T>(Expression<T> expression) where T : Delegate
         {
-            var constants = new List<ConstantExpression>();
+            using var container = GenericObjectPool<List<ConstantExpression>>.Shared.Use();
+            var constants = container.Value;
             var closureCollectorVisitor = new ClosureCollectorVisitor(constants);
             expression = (Expression<T>) closureCollectorVisitor.Visit(expression);
 
             if (constants.Count == 0) return expression;
             
-            var closureBuilder = new ClosureBuilder();
+            using var closureBuilder = ClosureBuilder.Create();
             for (var index = 0; index < constants.Count; index++)
             {
                 var value = constants[index];

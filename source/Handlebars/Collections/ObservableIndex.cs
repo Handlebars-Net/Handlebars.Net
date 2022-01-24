@@ -112,6 +112,16 @@ namespace HandlebarsDotNet.Collections
             set => AddOrReplace(key, value);
         }
 
+        public void Clear()
+        {
+            using (_itemsLock.WriteLock())
+            {
+                _inner.Clear();   
+            }
+            
+            Publish(new DictionaryClearedObservableEvent<TValue>());
+        }
+
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
             KeyValuePair<TKey, TValue>[] array; 
@@ -145,6 +155,10 @@ namespace HandlebarsDotNet.Collections
                 case DictionaryAddedObservableEvent<TKey, TValue> addedObservableEvent:
                     AddOrReplace(addedObservableEvent.Key, addedObservableEvent.Value);
                     break;
+                case DictionaryClearedObservableEvent<TValue>:
+                    Clear();
+                    break;
+                
                 default:
                     throw new ArgumentOutOfRangeException(nameof(value));
             }
@@ -156,5 +170,10 @@ namespace HandlebarsDotNet.Collections
         public TKey Key { get; }
 
         public DictionaryAddedObservableEvent(TKey key, TValue value) : base(value) => Key = key;
+    }
+    
+    internal class DictionaryClearedObservableEvent<TValue> : ObservableEvent<TValue>
+    {
+        public DictionaryClearedObservableEvent() : base(default) {}
     }
 }

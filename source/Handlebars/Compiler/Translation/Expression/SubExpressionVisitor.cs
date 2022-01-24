@@ -22,7 +22,7 @@ namespace HandlebarsDotNet.Compiler
                     return HandleMethodCallExpression(callExpression);
                 
                 default:
-                    var expression = FunctionBuilder.Reduce(subex.Expression, CompilationContext);
+                    var expression = FunctionBuilder.Reduce(subex.Expression, CompilationContext, out _);
                     if (expression is MethodCallExpression lateBoundCall)
                         return HandleMethodCallExpression(lateBoundCall);
                     

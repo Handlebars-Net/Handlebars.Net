@@ -411,6 +411,32 @@ namespace HandlebarsDotNet.Test
             Assert.Equal("the value is not provided", c);
         }
 
+        // issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/300
+        [Fact]
+        public void PartialLayoutAndInlineBlock()
+        {
+            string layout = "{{#>body}}{{fallback}}{{/body}}";
+            string page = @"{{#>layout}}{{#*inline ""body""}}{{truebody}}{{/inline}}{{/body}}{{/layout}}";
+
+            var handlebars = Handlebars.Create();
+            var template = handlebars.Compile(page);
+
+            var data = new
+            {
+                fallback = "aaa",
+                truebody = "Hello world"
+            };
+
+            using (var reader = new StringReader(layout))
+            {
+                var partialTemplate = handlebars.Compile(reader);
+                handlebars.RegisterTemplate("layout", partialTemplate);
+            }
+            
+            var result = template(data);
+            Assert.Equal("Hello world", result);
+        }
+        
         private class SwitchHelper : IHelperDescriptor<BlockHelperOptions>
         {
             public PathInfo Name { get; } = "switch";

@@ -24,11 +24,20 @@ namespace HandlebarsDotNet
         {
             if (value is string str)
             {
-                writer.Write(str, false);
+                writer.WriteSafeString(str);
                 return;
             }
-            
-            writer.Write(value.ToString(), false);
+
+            var current = writer.SuppressEncoding;
+            try
+            {
+                writer.SuppressEncoding = true;
+                writer.Write(value);
+            }
+            finally
+            {
+                writer.SuppressEncoding = current;
+            }
         }
         
         /// <summary>
