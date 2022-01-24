@@ -11,22 +11,25 @@ namespace HandlebarsDotNet.Compiler.Middlewares
     {
         public Expression<T> Invoke<T>(Expression<T> expression) where T : Delegate
         {
-            using var container = GenericObjectPool<List<ConstantExpression>>.Shared.Use();
-            var constants = container.Value;
+            var constants = new List<ConstantExpression>();
             var closureCollectorVisitor = new ClosureCollectorVisitor(constants);
             expression = (Expression<T>) closureCollectorVisitor.Visit(expression);
 
             if (constants.Count == 0) return expression;
-            
-            using var closureBuilder = ClosureBuilder.Create();
-            for (var index = 0; index < constants.Count; index++)
+
+            KeyValuePair<ParameterExpression, Dictionary<Expression, Expression>> closureDefinition;
+            Closure closure;
+            using (var closureBuilder = ClosureBuilder.Create())
             {
-                var value = constants[index];
-                closureBuilder.Add(value);
+                for (var index = 0; index < constants.Count; index++)
+                {
+                    var value = constants[index];
+                    closureBuilder.Add(value);
+                }
+
+                closureDefinition = closureBuilder.Build(out closure);
             }
 
-            var closureDefinition = closureBuilder.Build(out var closure);
-            
             var closureVisitor = new ClosureVisitor(closureDefinition);
             expression = (Expression<T>) closureVisitor.Visit(expression);
 
