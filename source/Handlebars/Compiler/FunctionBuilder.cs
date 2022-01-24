@@ -3,24 +3,28 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using Expressions.Shortcuts;
+using HandlebarsDotNet.Polyfills;
 using static Expressions.Shortcuts.ExpressionShortcuts;
 
 namespace HandlebarsDotNet.Compiler
 {
     internal static class FunctionBuilder
     {
-        private static readonly TemplateDelegate EmptyLambda = 
+        private static readonly TemplateDelegate EmptyTemplateLambda = 
             (in EncodedTextWriter writer, BindingContext context) => { };
 
-        public static Expression Reduce(Expression expression, CompilationContext context)
+        public static Expression Reduce(Expression expression, CompilationContext context, out IReadOnlyList<DecoratorDefinition> decorators)
         {
+            var _decorators = new List<DecoratorDefinition>();
+            decorators = _decorators;
+            
             expression = new CommentVisitor().Visit(expression);
             expression = new UnencodedStatementVisitor(context).Visit(expression);
             expression = new PartialBinder(context).Visit(expression);
             expression = new StaticReplacer(context).Visit(expression);
             expression = new IteratorBinder(context).Visit(expression);
-            expression = new BlockHelperFunctionBinder(context).Visit(expression);
-            expression = new HelperFunctionBinder(context).Visit(expression);
+            expression = new BlockHelperFunctionBinder(context, _decorators).Visit(expression);
+            expression = new HelperFunctionBinder(context, _decorators).Visit(expression);
             expression = new BoolishConverter(context).Visit(expression);
             expression = new PathBinder(context).Visit(expression);
             expression = new SubExpressionVisitor(context).Visit(expression);
@@ -29,22 +33,19 @@ namespace HandlebarsDotNet.Compiler
             return expression;
         }
 
-        public static ExpressionContainer<TemplateDelegate> CreateExpression(IEnumerable<Expression> expressions, CompilationContext compilationContext)
+        public static ExpressionContainer<TemplateDelegate> CreateExpression(IEnumerable<Expression> expressions, CompilationContext compilationContext, out IReadOnlyList<DecoratorDefinition> decorators)
         {
             try
             {
+                decorators = ArrayEx.Empty<DecoratorDefinition>();
                 var enumerable = expressions as Expression[] ?? expressions.ToArray();
-                if (!enumerable.Any())
+                if (!enumerable.Any() || enumerable.IsOneOf<Expression, DefaultExpression>())
                 {
-                    return Arg(EmptyLambda);
-                }
-                if (enumerable.IsOneOf<Expression, DefaultExpression>())
-                {
-                    return Arg(EmptyLambda);
+                    return Arg(EmptyTemplateLambda);
                 }
 
                 var expression = (Expression) Expression.Block(enumerable);
-                expression = Reduce(expression, compilationContext);
+                expression = Reduce(expression, compilationContext, out decorators);
 
                 return Arg(ContextBinder.Bind(compilationContext, expression));
             }
@@ -54,11 +55,11 @@ namespace HandlebarsDotNet.Compiler
             }
         }
 
-        public static TemplateDelegate Compile(IEnumerable<Expression> expressions, CompilationContext compilationContext)
+        public static TemplateDelegate Compile(IEnumerable<Expression> expressions, CompilationContext compilationContext, out IReadOnlyList<DecoratorDefinition> decorators)
         {
             try
             {
-                var expression = CreateExpression(expressions, compilationContext);
+                var expression = CreateExpression(expressions, compilationContext, out decorators);
                 if (expression.Expression is ConstantExpression constantExpression)
                 {
                     return (TemplateDelegate) constantExpression.Value;

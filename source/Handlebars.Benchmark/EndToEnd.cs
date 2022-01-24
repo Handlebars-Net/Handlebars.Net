@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using BenchmarkDotNet.Attributes;
 using HandlebarsDotNet;
+using HandlebarsDotNet.Helpers;
+using HandlebarsDotNet.PathStructure;
 
 namespace HandlebarsNet.Benchmark
 {
@@ -66,9 +68,9 @@ namespace HandlebarsNet.Benchmark
             var handlebars = Handlebars.Create();
             using(handlebars.Configure())
             {
-                handlebars.RegisterHelper("pow1", (output, context, arguments) => output.WriteSafeString(((int) arguments[0] * (int) arguments[0]).ToString()));
-                handlebars.RegisterHelper("pow2", (output, context, arguments) => output.WriteSafeString(((int) arguments[0] * (int) arguments[0]).ToString()));
-                handlebars.RegisterHelper("pow5", (output, options, context, arguments) => output.WriteSafeString(((int) arguments[0] * (int) arguments[0]).ToString()));
+                handlebars.RegisterHelper(new PowHelper("pow1"));
+                handlebars.RegisterHelper(new PowHelper("pow2"));
+                handlebars.RegisterHelper(new BlockPowHelper("pow5"));
             }
 
             using (var reader = new StringReader(template))
@@ -78,10 +80,10 @@ namespace HandlebarsNet.Benchmark
 
             using(handlebars.Configure())
             {
-                handlebars.RegisterHelper("pow3", (output, context, arguments) => output.WriteSafeString(((int) arguments[0] * (int) arguments[0]).ToString()));
-                handlebars.RegisterHelper("pow4", (output, context, arguments) => output.WriteSafeString(((int) arguments[0] * (int) arguments[0]).ToString()));
+                handlebars.RegisterHelper(new PowHelper("pow3"));
+                handlebars.RegisterHelper(new PowHelper("pow4"));
             }
-
+            
             List<object> ObjectLevel1Generator()
             {
                 var level = new List<object>();
@@ -168,6 +170,40 @@ namespace HandlebarsNet.Benchmark
                 }
 
                 return level;
+            }
+        }
+        
+        private class PowHelper : IHelperDescriptor<HelperOptions>
+        {
+            public PowHelper(PathInfo name) => Name = name;
+
+            public PathInfo Name { get; }
+
+            public object Invoke(in HelperOptions options, in Context context, in Arguments arguments)
+            {
+                return ((int)arguments[0] * (int)arguments[0]).ToString();
+            }
+
+            public void Invoke(in EncodedTextWriter output, in HelperOptions options, in Context context, in Arguments arguments)
+            {
+                output.WriteSafeString(((int)arguments[0] * (int)arguments[0]).ToString());
+            }
+        }
+        
+        private class BlockPowHelper : IHelperDescriptor<BlockHelperOptions>
+        {
+            public BlockPowHelper(PathInfo name) => Name = name;
+
+            public PathInfo Name { get; }
+
+            public object Invoke(in BlockHelperOptions options, in Context context, in Arguments arguments)
+            {
+                return ((int)arguments[0] * (int)arguments[0]).ToString();
+            }
+
+            public void Invoke(in EncodedTextWriter output, in BlockHelperOptions options, in Context context, in Arguments arguments)
+            {
+                output.WriteSafeString(((int)arguments[0] * (int)arguments[0]).ToString());
             }
         }
         

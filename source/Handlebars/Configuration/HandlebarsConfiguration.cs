@@ -3,6 +3,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using HandlebarsDotNet.Collections;
+using HandlebarsDotNet.Decorators;
 using HandlebarsDotNet.EqualityComparers;
 using HandlebarsDotNet.Helpers;
 using HandlebarsDotNet.IO;
@@ -17,6 +18,10 @@ namespace HandlebarsDotNet
         public IIndexed<string, IHelperDescriptor<HelperOptions>> Helpers { get; }
         
         public IIndexed<string, IHelperDescriptor<BlockHelperOptions>> BlockHelpers { get; }
+        
+        public IIndexed<string, IDecoratorDescriptor<DecoratorOptions>> Decorators { get; }
+        
+        public IIndexed<string, IDecoratorDescriptor<BlockDecoratorOptions>> BlockDecorators { get; }
         
         public IIndexed<string, HandlebarsTemplate<TextWriter, object, object>> RegisteredTemplates { get; }
         
@@ -73,6 +78,8 @@ namespace HandlebarsDotNet
             var stringEqualityComparer = new StringEqualityComparer(StringComparison.OrdinalIgnoreCase);
             Helpers = new ObservableIndex<string, IHelperDescriptor<HelperOptions>, StringEqualityComparer>(stringEqualityComparer);
             BlockHelpers = new ObservableIndex<string, IHelperDescriptor<BlockHelperOptions>, StringEqualityComparer>(stringEqualityComparer);
+            Decorators = new ObservableIndex<string, IDecoratorDescriptor<DecoratorOptions>, StringEqualityComparer>(stringEqualityComparer);
+            BlockDecorators = new ObservableIndex<string, IDecoratorDescriptor<BlockDecoratorOptions>, StringEqualityComparer>(stringEqualityComparer);
             RegisteredTemplates = new ObservableIndex<string, HandlebarsTemplate<TextWriter, object, object>, StringEqualityComparer>(stringEqualityComparer);
             
             HelperResolvers = new ObservableList<IHelperResolver>();

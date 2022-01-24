@@ -3,20 +3,24 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using HandlebarsDotNet.Decorators;
 using HandlebarsDotNet.Helpers;
 using HandlebarsDotNet.PathStructure;
 using HandlebarsDotNet.Runtime;
 
 namespace HandlebarsDotNet.Compiler
 {
-    public class ClosureBuilder
+    public partial class ClosureBuilder
     {
-        private readonly List<KeyValuePair<ConstantExpression, PathInfo>> _pathInfos = new List<KeyValuePair<ConstantExpression, PathInfo>>();
-        private readonly List<KeyValuePair<ConstantExpression, TemplateDelegate>> _templateDelegates = new List<KeyValuePair<ConstantExpression, TemplateDelegate>>();
-        private readonly List<KeyValuePair<ConstantExpression, ChainSegment[]>> _blockParams = new List<KeyValuePair<ConstantExpression, ChainSegment[]>>();
-        private readonly List<KeyValuePair<ConstantExpression, Ref<IHelperDescriptor<HelperOptions>>>> _helpers = new List<KeyValuePair<ConstantExpression, Ref<IHelperDescriptor<HelperOptions>>>>();
-        private readonly List<KeyValuePair<ConstantExpression, Ref<IHelperDescriptor<BlockHelperOptions>>>> _blockHelpers = new List<KeyValuePair<ConstantExpression, Ref<IHelperDescriptor<BlockHelperOptions>>>>();
-        private readonly List<KeyValuePair<ConstantExpression, object>> _other = new List<KeyValuePair<ConstantExpression, object>>();
+        private readonly List<KeyValuePair<ConstantExpression, PathInfo>> _pathInfos = new();
+        private readonly List<KeyValuePair<ConstantExpression, TemplateDelegate>> _templateDelegates = new();
+        private readonly List<KeyValuePair<ConstantExpression, DecoratorDelegate>> _decoratorDelegates = new();
+        private readonly List<KeyValuePair<ConstantExpression, ChainSegment[]>> _blockParams = new();
+        private readonly List<KeyValuePair<ConstantExpression, Ref<IHelperDescriptor<HelperOptions>>>> _helpers = new();
+        private readonly List<KeyValuePair<ConstantExpression, Ref<IHelperDescriptor<BlockHelperOptions>>>> _blockHelpers = new();
+        private readonly List<KeyValuePair<ConstantExpression, Ref<IDecoratorDescriptor<DecoratorOptions>>>> _decorators = new();
+        private readonly List<KeyValuePair<ConstantExpression, Ref<IDecoratorDescriptor<BlockDecoratorOptions>>>> _blockDecorators = new();
+        private readonly List<KeyValuePair<ConstantExpression, object>> _other = new();
         
         public void Add(ConstantExpression constantExpression)
         {
@@ -32,9 +36,21 @@ namespace HandlebarsDotNet.Compiler
             {
                 _blockHelpers.Add(new KeyValuePair<ConstantExpression, Ref<IHelperDescriptor<BlockHelperOptions>>>(constantExpression, (Ref<IHelperDescriptor<BlockHelperOptions>>) constantExpression.Value));
             }
+            else if (constantExpression.Type == typeof(Ref<IDecoratorDescriptor<DecoratorOptions>>))
+            {
+                _decorators.Add(new KeyValuePair<ConstantExpression, Ref<IDecoratorDescriptor<DecoratorOptions>>>(constantExpression, (Ref<IDecoratorDescriptor<DecoratorOptions>>) constantExpression.Value));
+            }
+            else if (constantExpression.Type == typeof(Ref<IDecoratorDescriptor<BlockDecoratorOptions>>))
+            {
+                _blockDecorators.Add(new KeyValuePair<ConstantExpression, Ref<IDecoratorDescriptor<BlockDecoratorOptions>>>(constantExpression, (Ref<IDecoratorDescriptor<BlockDecoratorOptions>>) constantExpression.Value));
+            }
             else if (constantExpression.Type == typeof(TemplateDelegate))
             {
                 _templateDelegates.Add(new KeyValuePair<ConstantExpression, TemplateDelegate>(constantExpression, (TemplateDelegate) constantExpression.Value));
+            }
+            else if (constantExpression.Type == typeof(DecoratorDelegate))
+            {
+                _decoratorDelegates.Add(new KeyValuePair<ConstantExpression, DecoratorDelegate>(constantExpression, (DecoratorDelegate) constantExpression.Value));
             }
             else if (constantExpression.Type == typeof(ChainSegment[]))
             {
@@ -60,6 +76,9 @@ namespace HandlebarsDotNet.Compiler
             BuildKnownValues(arguments, _blockHelpers, 4);
             BuildKnownValues(arguments, _templateDelegates, 4);
             BuildKnownValues(arguments, _blockParams, 1);
+            BuildKnownValues(arguments, _decorators, 4);
+            BuildKnownValues(arguments, _blockDecorators, 4);
+            BuildKnownValues(arguments, _decoratorDelegates, 4);
             arguments.Add(_other.Select(o => o.Value).ToArray());
 
             closure = (Closure) constructor.Invoke(arguments.ToArray());
@@ -73,6 +92,9 @@ namespace HandlebarsDotNet.Compiler
             BuildKnownValuesExpressions(closureExpression, mapping, _blockHelpers, "BHD", 4);
             BuildKnownValuesExpressions(closureExpression, mapping, _templateDelegates, "TD", 4);
             BuildKnownValuesExpressions(closureExpression, mapping, _blockParams, "BP", 1);
+            BuildKnownValuesExpressions(closureExpression, mapping, _decorators, "DD", 4);
+            BuildKnownValuesExpressions(closureExpression, mapping, _blockDecorators, "BDD", 4);
+            BuildKnownValuesExpressions(closureExpression, mapping, _decoratorDelegates, "DDD", 4);
             
             var arrayField = closureType.GetField("A");
             var array = Expression.Field(closureExpression, arrayField!);
@@ -137,18 +159,36 @@ namespace HandlebarsDotNet.Compiler
         public readonly Ref<IHelperDescriptor<BlockHelperOptions>> BHD3;
         public readonly Ref<IHelperDescriptor<BlockHelperOptions>>[] BHDA;
         
+        public readonly Ref<IDecoratorDescriptor<DecoratorOptions>> DD0;
+        public readonly Ref<IDecoratorDescriptor<DecoratorOptions>> DD1;
+        public readonly Ref<IDecoratorDescriptor<DecoratorOptions>> DD2;
+        public readonly Ref<IDecoratorDescriptor<DecoratorOptions>> DD3;
+        public readonly Ref<IDecoratorDescriptor<DecoratorOptions>>[] DDA;
+        
+        public readonly Ref<IDecoratorDescriptor<BlockDecoratorOptions>> BDD0;
+        public readonly Ref<IDecoratorDescriptor<BlockDecoratorOptions>> BDD1;
+        public readonly Ref<IDecoratorDescriptor<BlockDecoratorOptions>> BDD2;
+        public readonly Ref<IDecoratorDescriptor<BlockDecoratorOptions>> BDD3;
+        public readonly Ref<IDecoratorDescriptor<BlockDecoratorOptions>>[] BDDA;
+        
         public readonly TemplateDelegate TD0;
         public readonly TemplateDelegate TD1;
         public readonly TemplateDelegate TD2;
         public readonly TemplateDelegate TD3;
         public readonly TemplateDelegate[] TDA;
         
+        public readonly DecoratorDelegate DDD0;
+        public readonly DecoratorDelegate DDD1;
+        public readonly DecoratorDelegate DDD2;
+        public readonly DecoratorDelegate DDD3;
+        public readonly DecoratorDelegate[] DDDA;
+        
         public readonly ChainSegment[] BP0;
         public readonly ChainSegment[][] BPA;
 
         public readonly object[] A;
 
-        internal Closure(PathInfo pi0, PathInfo pi1, PathInfo pi2, PathInfo pi3, PathInfo[] pia, Ref<IHelperDescriptor<HelperOptions>> hd0, Ref<IHelperDescriptor<HelperOptions>> hd1, Ref<IHelperDescriptor<HelperOptions>> hd2, Ref<IHelperDescriptor<HelperOptions>> hd3, Ref<IHelperDescriptor<HelperOptions>>[] hda, Ref<IHelperDescriptor<BlockHelperOptions>> bhd0, Ref<IHelperDescriptor<BlockHelperOptions>> bhd1, Ref<IHelperDescriptor<BlockHelperOptions>> bhd2, Ref<IHelperDescriptor<BlockHelperOptions>> bhd3, Ref<IHelperDescriptor<BlockHelperOptions>>[] bhda, TemplateDelegate td0, TemplateDelegate td1, TemplateDelegate td2, TemplateDelegate td3, TemplateDelegate[] tda, ChainSegment[] bp0, ChainSegment[][] bpa, object[] a)
+        internal Closure(PathInfo pi0, PathInfo pi1, PathInfo pi2, PathInfo pi3, PathInfo[] pia, Ref<IHelperDescriptor<HelperOptions>> hd0, Ref<IHelperDescriptor<HelperOptions>> hd1, Ref<IHelperDescriptor<HelperOptions>> hd2, Ref<IHelperDescriptor<HelperOptions>> hd3, Ref<IHelperDescriptor<HelperOptions>>[] hda, Ref<IHelperDescriptor<BlockHelperOptions>> bhd0, Ref<IHelperDescriptor<BlockHelperOptions>> bhd1, Ref<IHelperDescriptor<BlockHelperOptions>> bhd2, Ref<IHelperDescriptor<BlockHelperOptions>> bhd3, Ref<IHelperDescriptor<BlockHelperOptions>>[] bhda, TemplateDelegate td0, TemplateDelegate td1, TemplateDelegate td2, TemplateDelegate td3, TemplateDelegate[] tda, ChainSegment[] bp0, ChainSegment[][] bpa, Ref<IDecoratorDescriptor<DecoratorOptions>> dd0, Ref<IDecoratorDescriptor<DecoratorOptions>> dd1, Ref<IDecoratorDescriptor<DecoratorOptions>> dd2, Ref<IDecoratorDescriptor<DecoratorOptions>> dd3, Ref<IDecoratorDescriptor<DecoratorOptions>>[] dda, Ref<IDecoratorDescriptor<BlockDecoratorOptions>> bdd0, Ref<IDecoratorDescriptor<BlockDecoratorOptions>> bdd1, Ref<IDecoratorDescriptor<BlockDecoratorOptions>> bdd2, Ref<IDecoratorDescriptor<BlockDecoratorOptions>> bdd3, Ref<IDecoratorDescriptor<BlockDecoratorOptions>>[] bdda, DecoratorDelegate ddd0, DecoratorDelegate ddd1, DecoratorDelegate ddd2, DecoratorDelegate ddd3, DecoratorDelegate[] ddda, object[] a)
         {
             PI0 = pi0;
             PI1 = pi1;
@@ -172,6 +212,21 @@ namespace HandlebarsDotNet.Compiler
             TDA = tda;
             BP0 = bp0;
             BPA = bpa;
+            DD0 = dd0;
+            DD1 = dd1;
+            DD2 = dd2;
+            DD3 = dd3;
+            DDA = dda;
+            BDD0 = bdd0;
+            BDD1 = bdd1;
+            BDD2 = bdd2;
+            BDD3 = bdd3;
+            BDDA = bdda;
+            DDD0 = ddd0;
+            DDD1 = ddd1;
+            DDD2 = ddd2;
+            DDD3 = ddd3;
+            DDDA = ddda;
             A = a;
         }
     }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
+using HandlebarsDotNet.Pools;
 using static Expressions.Shortcuts.ExpressionShortcuts;
 
 namespace HandlebarsDotNet.Compiler.Middlewares
@@ -15,16 +16,20 @@ namespace HandlebarsDotNet.Compiler.Middlewares
             expression = (Expression<T>) closureCollectorVisitor.Visit(expression);
 
             if (constants.Count == 0) return expression;
-            
-            var closureBuilder = new ClosureBuilder();
-            for (var index = 0; index < constants.Count; index++)
+
+            KeyValuePair<ParameterExpression, Dictionary<Expression, Expression>> closureDefinition;
+            Closure closure;
+            using (var closureBuilder = ClosureBuilder.Create())
             {
-                var value = constants[index];
-                closureBuilder.Add(value);
+                for (var index = 0; index < constants.Count; index++)
+                {
+                    var value = constants[index];
+                    closureBuilder.Add(value);
+                }
+
+                closureDefinition = closureBuilder.Build(out closure);
             }
 
-            var closureDefinition = closureBuilder.Build(out var closure);
-            
             var closureVisitor = new ClosureVisitor(closureDefinition);
             expression = (Expression<T>) closureVisitor.Visit(expression);
 

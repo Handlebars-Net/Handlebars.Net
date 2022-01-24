@@ -8,7 +8,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
 {
     internal class WordParser : Parser
     {
-        private const string ValidWordStartCharactersString = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_$.@[]";
+        private const string ValidWordStartCharactersString = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_$.@[]*";
         private static readonly HashSet<char> ValidWordStartCharacters = new HashSet<char>();
 
         static WordParser()

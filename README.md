@@ -160,6 +160,38 @@ The animal, Chewy, is not a dog.
 */
 ```
 
+### Registering Decorators
+
+```c#
+[Fact]
+public void BasicDecorator(IHandlebars handlebars)
+{
+    string source = "{{#block @value-from-decorator}}{{*decorator 42}}{{@value}}{{/block}}";
+
+    var handlebars = Handlebars.Create();
+    handlebars.RegisterHelper("block", (output, options, context, arguments) =>
+    {
+        options.Data.CreateProperty("value", arguments[0], out _);
+        options.Template(output, context);
+    });
+    
+    handlebars.RegisterDecorator("decorator", 
+        (TemplateDelegate function, in DecoratorOptions options, in Context context, in Arguments arguments) =>
+    {
+        options.Data.CreateProperty("value-from-decorator", arguments[0], out _);
+    });
+    
+    var template = handlebars.Compile(source);
+    
+    var result = template(null);
+    Assert.Equal("42", result);
+}
+```
+For more examples see [DecoratorTests.cs](https://github.com/Handlebars-Net/Handlebars.Net/tree/master/source/Handlebars.Test/DecoratorTests.cs)
+
+#### Known limitations:
+- helpers registered inside of a decorator will not override existing registrations
+
 ### Register custom value formatter
 
 In case you need to apply custom value formatting (e.g. `DateTime`) you can use `IFormatter` and `IFormatterProvider` interfaces:
@@ -262,7 +294,7 @@ Will not encode:\
 &#96; (backtick)\
 ' (single quote)
 
-Will encode non-ascii characters `â`, `ß`, ...\
+Will encode non-ascii characters `ï¿½`, `ï¿½`, ...\
 Into HTML entities (`&lt;`, `&#226;`, `&#223;`, ...).
 
 ##### Areas
@@ -277,12 +309,12 @@ public void UseCanonicalHtmlEncodingRules()
     handlebars.Configuration.TextEncoder = new HtmlEncoder();
 
     var source = "{{Text}}";
-    var value = new { Text = "< â" };
+    var value = new { Text = "< ï¿½" };
 
     var template = handlebars.Compile(source);
     var actual = template(value);
             
-    Assert.Equal("&lt; â", actual);
+    Assert.Equal("&lt; ï¿½", actual);
 }
 ```
 
@@ -300,8 +332,6 @@ Nearly all time spent in rendering is in the routine that resolves values agains
 - The next fastest is a POCO (typically a few milliseconds for an average-sized template and model), which uses traditional reflection and is fairly fast.
 - Rendering starts to get slower (into the tens of milliseconds or more) on dynamic objects.
 - The slowest (up to hundreds of milliseconds or worse) tend to be objects with custom type implementations (such as `ICustomTypeDescriptor`) that are not optimized for heavy reflection.
-
-~~A frequent performance issue that comes up is JSON.NET's `JObject`, which for reasons we haven't fully researched, has very slow reflection characteristics when used as a model in Handlebars.Net. A simple fix is to just use JSON.NET's built-in ability to deserialize a JSON string to an `ExpandoObject` instead of a `JObject`. This will yield nearly an order of magnitude improvement in render times on average.~~
 
 ## Future roadmap
 

@@ -18,26 +18,82 @@ namespace HandlebarsDotNet.Compiler
         
         protected override Expression VisitIteratorExpression(IteratorExpression iex)
         {
-            var context = CompilationContext.Args.BindingContext;
-            var writer = CompilationContext.Args.EncodedWriter;
-
-            var template = FunctionBuilder.Compile(new[] {iex.Template}, new CompilationContext(CompilationContext));
-            var ifEmpty = FunctionBuilder.Compile(new[] {iex.IfEmpty}, new CompilationContext(CompilationContext));
+            var direction = iex.HelperName[0] switch
+            {
+                '#' => BlockHelperDirection.Direct,
+                '^' => BlockHelperDirection.Inverse,
+                _ => throw new HandlebarsCompilerException($"Tried to convert {iex.HelperName} expression to iterator block", iex.Context)
+            };
+            
+            var template = FunctionBuilder.Compile(new[] {iex.Template}, CompilationContext, out var directDecorators);
+            var ifEmpty = FunctionBuilder.Compile(new[] {iex.IfEmpty}, CompilationContext, out var inverseDecorators);
 
             if (iex.Sequence is PathExpression pathExpression)
             {
                 pathExpression.Context = PathExpression.ResolutionContext.Parameter;
             }
-            
-            var compiledSequence = Arg<object>(FunctionBuilder.Reduce(iex.Sequence, CompilationContext));
-            var blockParamsValues = CreateBlockParams();
-            
-            return iex.HelperName[0] switch
+
+            switch (direction)
             {
-                '#' => Call(() => Iterator.Iterate(context, writer, blockParamsValues, compiledSequence, template, ifEmpty)),
-                '^' => Call(() => Iterator.Iterate(context, writer, blockParamsValues, compiledSequence, ifEmpty, template)),
-                _ => throw new HandlebarsCompilerException($"Tried to convert {iex.HelperName} expression to iterator block", iex.Context) 
-            };
+                case BlockHelperDirection.Direct when directDecorators.Count > 0:
+                {
+                    var context = CompilationContext.Args.BindingContext;
+                    var writer = CompilationContext.Args.EncodedWriter;
+                    var compiledSequence = Arg<object>(FunctionBuilder.Reduce(iex.Sequence, CompilationContext, out _));
+                    var blockParamsValues = CreateBlockParams();
+                    var templateDelegate = FunctionBuilder.Compile(
+                        new []
+                        {
+                            Call(() => Iterator.Iterate(context, writer, blockParamsValues, compiledSequence, template, ifEmpty)).Expression
+                        }, 
+                        CompilationContext, 
+                        out _
+                    );
+
+                    var decorator = directDecorators.Compile(CompilationContext);
+                    return Call(() => decorator.Invoke(writer, context, templateDelegate))
+                        .Call(f => f.Invoke(writer, context));
+                }
+                case BlockHelperDirection.Inverse when inverseDecorators.Count > 0:
+                {
+                    var context = CompilationContext.Args.BindingContext;
+                    var writer = CompilationContext.Args.EncodedWriter;
+                    var compiledSequence = Arg<object>(FunctionBuilder.Reduce(iex.Sequence, CompilationContext, out _));
+                    var blockParamsValues = CreateBlockParams();
+                    var templateDelegate = FunctionBuilder.Compile(
+                        new []
+                        {
+                            Call(() => Iterator.Iterate(context, writer, blockParamsValues, compiledSequence, ifEmpty, template)).Expression
+                        }, 
+                        CompilationContext, 
+                        out _
+                    );
+
+                    var decorator = inverseDecorators.Compile(CompilationContext);
+                    return Call(() => decorator.Invoke(writer, context, templateDelegate))
+                        .Call(f => f.Invoke(writer, context));
+                }
+                case BlockHelperDirection.Direct:
+                {
+                    var context = CompilationContext.Args.BindingContext;
+                    var writer = CompilationContext.Args.EncodedWriter;
+                    var compiledSequence = Arg<object>(FunctionBuilder.Reduce(iex.Sequence, CompilationContext, out _));
+                    var blockParamsValues = CreateBlockParams();
+                    return Call(() => Iterator.Iterate(context, writer, blockParamsValues, compiledSequence, template, ifEmpty));
+                }
+                case BlockHelperDirection.Inverse:
+                {
+                    var context = CompilationContext.Args.BindingContext;
+                    var writer = CompilationContext.Args.EncodedWriter;
+                    var compiledSequence = Arg<object>(FunctionBuilder.Reduce(iex.Sequence, CompilationContext, out _));
+                    var blockParamsValues = CreateBlockParams();
+                    return Call(() => Iterator.Iterate(context, writer, blockParamsValues, compiledSequence, ifEmpty, template));
+                }
+                default:
+                {
+                    throw new HandlebarsCompilerException($"Tried to convert {iex.HelperName} expression to iterator block", iex.Context);
+                }
+            }
 
             ExpressionContainer<ChainSegment[]> CreateBlockParams()
             {

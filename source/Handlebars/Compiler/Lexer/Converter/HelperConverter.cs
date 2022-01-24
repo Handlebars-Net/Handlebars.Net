@@ -77,7 +77,7 @@ namespace HandlebarsDotNet.Compiler
             if (pathInfo.IsBlockHelper || pathInfo.IsInversion || pathInfo.IsBlockClose || pathInfo.IsThis) return false;
             name = pathInfo.TrimmedPath;
             
-            return _configuration.Helpers.ContainsKey(pathInfo) || BuiltInHelpers.Contains(name);
+            return _configuration.Helpers.ContainsKey(pathInfo) || _configuration.Decorators.ContainsKey(pathInfo) || BuiltInHelpers.Contains(name);
         }
 
         private bool IsRegisteredBlockHelperName(string name, bool isRaw)
@@ -90,7 +90,7 @@ namespace HandlebarsDotNet.Compiler
 
             name = pathInfo.TrimmedPath;
             
-            return _configuration.BlockHelpers.ContainsKey(pathInfo) || BuiltInHelpers.Contains(name);
+            return _configuration.BlockHelpers.ContainsKey(pathInfo) || _configuration.BlockDecorators.ContainsKey(pathInfo) || BuiltInHelpers.Contains(name);
         }
         
         private bool IsUnregisteredBlockHelperName(string name, bool isRaw, IEnumerable<object> sequence)
@@ -100,6 +100,10 @@ namespace HandlebarsDotNet.Compiler
             
             if (!isRaw && !(pathInfo.IsBlockHelper || pathInfo.IsInversion)) return false;
             name = name.Substring(1);
+            if (name.StartsWith("*"))
+            {
+                name = name.Substring(1);
+            }
 
             var expectedBlockName = $"/{name}";
             return sequence.OfType<WordExpressionToken>().Any(o =>

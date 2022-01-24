@@ -4,9 +4,8 @@ using HandlebarsDotNet.ValueProviders;
 
 namespace HandlebarsDotNet
 {
-    public interface IHelperOptions
+    public interface IHelperOptions : IOptions
     {
-        BindingContext Frame { get; }
         DataValues Data { get; }
         PathInfo Name { get; }
     }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.Compiler.Resolvers;
+using HandlebarsDotNet.Decorators;
 using HandlebarsDotNet.Features;
 using HandlebarsDotNet.Helpers;
 using HandlebarsDotNet.IO;
@@ -38,6 +39,10 @@ namespace HandlebarsDotNet
         IIndexed<PathInfoLight, Ref<IHelperDescriptor<HelperOptions>>> Helpers { get; }
         
         IIndexed<PathInfoLight, Ref<IHelperDescriptor<BlockHelperOptions>>> BlockHelpers { get; }
+        
+        IIndexed<PathInfoLight, Ref<IDecoratorDescriptor<DecoratorOptions>>> Decorators { get; }
+        
+        IIndexed<PathInfoLight, Ref<IDecoratorDescriptor<BlockDecoratorOptions>>> BlockDecorators { get; }
         
         IAppendOnlyList<IHelperResolver> HelperResolvers { get; }
         

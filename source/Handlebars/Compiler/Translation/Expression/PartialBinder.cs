@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using Expressions.Shortcuts;
+using HandlebarsDotNet.Polyfills;
 using static Expressions.Shortcuts.ExpressionShortcuts;
 
 namespace HandlebarsDotNet.Compiler
@@ -22,28 +24,66 @@ namespace HandlebarsDotNet.Compiler
 
         protected override Expression VisitPartialExpression(PartialExpression pex)
         {
-            var bindingContext = CompilationContext.Args.BindingContext;
-            var writer = CompilationContext.Args.EncodedWriter;
-            
+            IReadOnlyList<DecoratorDefinition> decorators = ArrayEx.Empty<DecoratorDefinition>();
             var partialBlockTemplate = pex.Fallback != null 
-                ? FunctionBuilder.Compile(new[] { pex.Fallback }, new CompilationContext(CompilationContext)) 
+                ? FunctionBuilder.Compile(new[] { pex.Fallback }, CompilationContext, out decorators) 
                 : null;
-
-            if (pex.Argument != null || partialBlockTemplate != null)
+            
+            if (decorators.Count > 0)
             {
-                var value = pex.Argument != null
-                    ? Arg<object>(FunctionBuilder.Reduce(pex.Argument, CompilationContext))
-                    : bindingContext.Property(o => o.Value);
+                var bindingContext = CompilationContext.Args.BindingContext;
+                var writer = CompilationContext.Args.EncodedWriter;
+            
+                var parentContext = bindingContext;
+                if (pex.Argument != null || partialBlockTemplate != null)
+                {
+                    var value = pex.Argument != null
+                        ? Arg<object>(FunctionBuilder.Reduce(pex.Argument, CompilationContext, out _))
+                        : bindingContext.Property(o => o.Value);
                 
-                var partialTemplate = Arg(partialBlockTemplate);
-                bindingContext = bindingContext.Call(o => o.CreateChildContext(value, partialTemplate));
-            }
+                    var partialTemplate = Arg(partialBlockTemplate);
+                    bindingContext = bindingContext.Call(o => o.CreateChildContext(value, partialTemplate));
+                }
 
-            var partialName = Cast<string>(pex.PartialName);
-            var configuration = Arg(CompilationContext.Configuration);
-            return Call(() =>
-                InvokePartialWithFallback(partialName, bindingContext, writer, (ICompiledHandlebarsConfiguration) configuration)
-            );
+                var partialName = Cast<string>(pex.PartialName);
+                var configuration = Arg(CompilationContext.Configuration);
+                var templateDelegate = FunctionBuilder.Compile(
+                    new []
+                    {
+                        Call(() =>
+                            InvokePartialWithFallback(partialName, bindingContext, writer, (ICompiledHandlebarsConfiguration) configuration)
+                        ).Expression
+                    }, 
+                    CompilationContext, 
+                    out _
+                );
+
+                var decorator = decorators.Compile(CompilationContext);
+                return Call(() => decorator.Invoke(writer, parentContext, templateDelegate))
+                    .Call(f => f.Invoke(writer, parentContext));
+            }
+            else
+            {
+                var bindingContext = CompilationContext.Args.BindingContext;
+                var writer = CompilationContext.Args.EncodedWriter;
+            
+                if (pex.Argument != null || partialBlockTemplate != null)
+                {
+                    var value = pex.Argument != null
+                        ? Arg<object>(FunctionBuilder.Reduce(pex.Argument, CompilationContext, out _))
+                        : bindingContext.Property(o => o.Value);
+                
+                    var partialTemplate = Arg(partialBlockTemplate);
+                    bindingContext = bindingContext.Call(o => o.CreateChildContext(value, partialTemplate));
+                }
+
+                var partialName = Cast<string>(pex.PartialName);
+                var configuration = Arg(CompilationContext.Configuration);
+                
+                return Call(() =>
+                    InvokePartialWithFallback(partialName, bindingContext, writer, (ICompiledHandlebarsConfiguration) configuration)
+                );
+            }
         }
 
         private static void InvokePartialWithFallback(

@@ -2,60 +2,11 @@
 using System.Collections.Concurrent;
 using System.IO;
 using HandlebarsDotNet.Compiler;
+using HandlebarsDotNet.Decorators;
 using HandlebarsDotNet.Helpers;
 
 namespace HandlebarsDotNet
 {
-    /// <summary>
-    /// InlineHelper: {{#helper arg1 arg2}}
-    /// </summary>
-    /// <param name="output"></param>
-    /// <param name="context"></param>
-    /// <param name="arguments"></param>
-    public delegate void HandlebarsHelper(EncodedTextWriter output, Context context, Arguments arguments);
-    
-    /// <summary>
-    /// InlineHelper: {{#helper arg1 arg2}}
-    /// </summary>
-    /// <param name="output"></param>
-    /// <param name="options"></param>
-    /// <param name="context"></param>
-    /// <param name="arguments"></param>
-    public delegate void HandlebarsHelperWithOptions(in EncodedTextWriter output, in HelperOptions options, in Context context, in Arguments arguments);
-    
-    /// <summary>
-    /// InlineHelper: {{#helper arg1 arg2}}, supports <see cref="object"/> value return
-    /// </summary>
-    /// <param name="context"></param>
-    /// <param name="arguments"></param>
-    public delegate object HandlebarsReturnHelper(Context context, Arguments arguments);
-    
-    /// <summary>
-    /// InlineHelper: {{#helper arg1 arg2}}, supports <see cref="object"/> value return
-    /// </summary>
-    /// <param name="options"></param>
-    /// <param name="context"></param>
-    /// <param name="arguments"></param>
-    public delegate object HandlebarsReturnWithOptionsHelper(in HelperOptions options, in Context context, in Arguments arguments);
-    
-    /// <summary>
-    /// BlockHelper: {{#helper}}..{{/helper}}
-    /// </summary>
-    /// <param name="output"></param>
-    /// <param name="options"></param>
-    /// <param name="context"></param>
-    /// <param name="arguments"></param>
-    public delegate void HandlebarsBlockHelper(EncodedTextWriter output, BlockHelperOptions options, Context context, Arguments arguments);
-    
-    /// <summary>
-    /// BlockHelper: {{#helper}}..{{/helper}}
-    /// </summary>
-    /// <param name="options"></param>
-    /// <param name="context"></param>
-    /// <param name="arguments"></param>
-    public delegate object HandlebarsReturnBlockHelper(BlockHelperOptions options, Context context, Arguments arguments);
-
-    
     public sealed class Handlebars
     {
         // Lazy-load Handlebars environment to ensure thread safety.  See Jon Skeet's excellent article on this for more info. http://csharpindepth.com/Articles/General/Singleton.aspx
@@ -197,6 +148,26 @@ namespace HandlebarsDotNet
         public static void RegisterHelper(IHelperDescriptor<BlockHelperOptions> helperObject)
         {
             Instance.RegisterHelper(helperObject);
+        }
+        
+        public void RegisterDecorator(string helperName, HandlebarsBlockDecorator helperFunction)
+        {
+            Instance.RegisterDecorator(helperName, helperFunction);
+        }
+
+        public void RegisterDecorator(string helperName, HandlebarsDecorator helperFunction)
+        {
+            Instance.RegisterDecorator(helperName, helperFunction);
+        }
+        
+        public void RegisterDecorator(string helperName, HandlebarsBlockDecoratorVoid helperFunction)
+        {
+            Instance.RegisterDecorator(helperName, helperFunction);
+        }
+
+        public void RegisterDecorator(string helperName, HandlebarsDecoratorVoid helperFunction)
+        {
+            Instance.RegisterDecorator(helperName, helperFunction);
         }
 
         /// <summary>
