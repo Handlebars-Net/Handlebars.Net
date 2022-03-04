@@ -40,7 +40,7 @@ namespace HandlebarsDotNet
             }
 
             public ReusableStringWriter Create() => new ReusableStringWriter();
-
+            public bool TryClaim(ReusableStringWriter item) => true;
             public bool Return(ReusableStringWriter item) => _policy.Return(item.GetStringBuilder());
         }
     }

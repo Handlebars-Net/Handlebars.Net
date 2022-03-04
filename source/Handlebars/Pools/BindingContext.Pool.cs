@@ -1,3 +1,4 @@
+using System.Threading;
 using HandlebarsDotNet.Compiler;
 using HandlebarsDotNet.Pools;
 
@@ -17,6 +18,8 @@ namespace HandlebarsDotNet
         {
             return Pool.CreateContext(configuration, value, parent, partialBlockTemplate);
         }
+
+        private int _claimed;
         
         public void Dispose() => Pool.Return(this);
         
@@ -39,12 +42,23 @@ namespace HandlebarsDotNet
                 return context;
             }
 
-            internal struct BindingContextPolicy : IInternalObjectPoolPolicy<BindingContext>
+            internal readonly struct BindingContextPolicy : IInternalObjectPoolPolicy<BindingContext>
             {
-                public BindingContext Create() => new BindingContext();
+                public BindingContext Create() => new(claim: true);
+
+                public bool TryClaim(BindingContext item)
+                {
+                    return Interlocked
+                        .CompareExchange(ref item._claimed, 1, 0) == 0;
+                }
 
                 public bool Return(BindingContext item)
                 {
+                    var shouldReturn = Interlocked
+                        .CompareExchange(ref item._claimed, 0, 1) == 1;
+                    
+                    if (!shouldReturn) return false;
+                    
                     item.Root = null;
                     item.Value = null;
                     item.ParentContext = null;

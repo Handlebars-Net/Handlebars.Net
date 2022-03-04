@@ -17,8 +17,10 @@ namespace HandlebarsDotNet
         
         internal readonly DeferredValue<BindingContext, ObjectDescriptor> Descriptor;
 
-        private BindingContext()
+        private BindingContext(bool claim)
         {
+            _claimed = claim ? 1 : 0;
+            
             InlinePartialTemplates = new CascadeIndex<string, Action<EncodedTextWriter, BindingContext>, StringEqualityComparer>(new StringEqualityComparer(StringComparison.OrdinalIgnoreCase));
             Helpers = new CascadeIndex<string, IHelperDescriptor<HelperOptions>, StringEqualityComparer>(new StringEqualityComparer());
             BlockHelpers = new CascadeIndex<string, IHelperDescriptor<BlockHelperOptions>, StringEqualityComparer>(new StringEqualityComparer());

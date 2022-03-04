@@ -66,6 +66,7 @@ namespace HandlebarsDotNet
         private readonly struct Policy : IInternalObjectPoolPolicy<EncodedTextWriterWrapper>
         {
 	        public EncodedTextWriterWrapper Create() => new EncodedTextWriterWrapper();
+	        public bool TryClaim(EncodedTextWriterWrapper item) => true;
 
 	        public bool Return(EncodedTextWriterWrapper obj)
 	        {

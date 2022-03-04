@@ -66,7 +66,7 @@ namespace HandlebarsDotNet
         private struct Policy : IInternalObjectPoolPolicy<TextEncoderWrapper>
         {
             public TextEncoderWrapper Create() => new TextEncoderWrapper();
-
+            public bool TryClaim(TextEncoderWrapper item) => true;
             public bool Return(TextEncoderWrapper item)
             {
                 item._enabled = true;

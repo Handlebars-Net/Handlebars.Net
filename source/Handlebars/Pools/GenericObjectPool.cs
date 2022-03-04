@@ -10,6 +10,7 @@
         public readonly struct Policy : IInternalObjectPoolPolicy<T>
         {
             public T Create() => new ();
+            public bool TryClaim(T item) => true;
             public bool Return(T item) => true;
         }
     }

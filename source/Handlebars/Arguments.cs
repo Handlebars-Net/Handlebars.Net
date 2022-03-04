@@ -322,7 +322,7 @@ namespace HandlebarsDotNet
             private struct Policy : IInternalObjectPoolPolicy<Enumerator>
             {
                 public Enumerator Create() => new Enumerator();
-
+                public bool TryClaim(Enumerator item) => true;
                 public bool Return(Enumerator item)
                 {
                     item.Reset();

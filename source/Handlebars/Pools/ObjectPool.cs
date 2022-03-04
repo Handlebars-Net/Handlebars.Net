@@ -18,11 +18,11 @@ namespace HandlebarsDotNet.Pools
     
         public T Get()
         {
-            if (_queue.TryDequeue(out var item))
+            if (_queue.TryDequeue(out var item) && _policy.TryClaim(item))
             {
                 return item;
             }
-    
+
             return _policy.Create();
         }
     
@@ -36,6 +36,7 @@ namespace HandlebarsDotNet.Pools
     internal interface IInternalObjectPoolPolicy<T>
     {
         T Create();
+        bool TryClaim(T item);
         bool Return(T item);
     }
 }

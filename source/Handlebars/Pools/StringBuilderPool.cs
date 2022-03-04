@@ -31,6 +31,8 @@ namespace HandlebarsDotNet.Pools
                 return new StringBuilder(InitialCapacity);
             }
 
+            public bool TryClaim(StringBuilder item) => true;
+
             public bool Return(StringBuilder item)
             {
                 if (item.Capacity > MaximumRetainedCapacity)

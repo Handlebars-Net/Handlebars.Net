@@ -36,6 +36,7 @@ namespace HandlebarsDotNet.Compiler
         private readonly struct Policy : IInternalObjectPoolPolicy<ClosureBuilder>
         {
             public ClosureBuilder Create() => new ();
+            public bool TryClaim(ClosureBuilder item) => true;
             public bool Return(ClosureBuilder item) => true;
         }
     }
