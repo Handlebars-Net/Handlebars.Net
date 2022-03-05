@@ -40,6 +40,21 @@ namespace HandlebarsDotNet.Test
                 Assert.Equal(expected[index++], split.Current) ;
             }
         }
+
+        [Theory]
+        [InlineData("ab//bc", '/', new []{ "ab", "bc" })]
+        [InlineData("/a//c/d/e//", '/', new []{ "a", "c", "d", "e" })]
+        public void SplitRemoveEmpty(string input, char splitChar, string[] expected)
+        {
+            var substring = new Substring(input);
+            var split = Substring.Split(substring, splitChar, System.StringSplitOptions.RemoveEmptyEntries);
+
+            var index = 0;
+            while (split.MoveNext())
+            {
+                Assert.Equal(expected[index++], split.Current);
+            }
+        }
         
         [Theory]
         [InlineData("abc", 'a', "bc")]
