@@ -37,7 +37,7 @@ namespace HandlebarsDotNet.Test
             var index = 0;
             while (split.MoveNext())
             {
-                Assert.Equal(split.Current, expected[index++]);
+                Assert.Equal(expected[index++], split.Current) ;
             }
         }
         
@@ -49,7 +49,7 @@ namespace HandlebarsDotNet.Test
             var substring = Substring.TrimStart(input, trimChar);
             
             Assert.Equal(expected, substring.ToString());
-        }
+        } 
 
         [Theory]
         [InlineData("abc", 'c', "ab")]
