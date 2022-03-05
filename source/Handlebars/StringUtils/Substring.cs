@@ -271,11 +271,12 @@ namespace HandlebarsDotNet.StringUtils
             {
                 var substringStart = _index;
                 var substringLength = 0;
-                for (; _index < _substring.Length; _index++)
+                while (_index < _substring.Length)
                 {
                     if (_substring[_index] != _separator)
                     {
                         substringLength++;
+                        _index++;
                         continue;
                     }
 
