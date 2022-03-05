@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
@@ -676,6 +677,22 @@ namespace HandlebarsDotNet.Test
             var actual = Handlebars.Create(config).Compile(template).Invoke(value);
 
             Assert.Equal(expected, actual);
+        }
+
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/500
+        // Issue refers to the last letter being cut off when using 
+        // keys set in context
+        [Fact]
+        public void LastLetterCutOff()
+        {
+            var context = ImmutableDictionary<string, object>.Empty
+                .Add("Name", "abcd");
+
+            var template = "{{.Name}}";
+            var compiledTemplate = Handlebars.Compile(template);
+            string templateOutput = compiledTemplate(context);
+
+            Assert.Equal("abcd", templateOutput);
         }
     }
 }
