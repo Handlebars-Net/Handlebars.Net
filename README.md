@@ -28,6 +28,13 @@ Handlebars.Net doesn't use a scripting engine to run a Javascript library - it *
 
     dotnet add package Handlebars.Net
 
+## Extensions
+The following projects are extending Handlebars.Net:
+- [Handlebars.Net.Extension.Json](https://github.com/Handlebars-Net/Handlebars.Net.Extension.Json) (Adds `System.Text.Json.JsonDocument` support)
+- [Handlebars.Net.Extension.NewtonsoftJson](https://github.com/Handlebars-Net/Handlebars.Net.Extension.NewtonsoftJson) (Adds `Newtonsoft.Json` support)
+- [Handlebars.Net.Helpers](https://github.com/Handlebars-Net/Handlebars.Net.Helpers) (Additional helpers in the categories: 'Constants', 'Enumerable', 'Math', 'Regex', 'String', 'DateTime', 'Url' , 'DynamicLinq', 'Humanizer', 'Json', 'Random', 'Xeger' and 'XPath'.)
+
+
 ## Usage
 
 ```c#
