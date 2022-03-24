@@ -623,7 +623,19 @@ namespace HandlebarsDotNet.Test
             Assert.Equal(expected, actual1);
             Assert.Equal(expected, actual2);
         }
-        
+
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/457
+        [Fact]
+        public void StringLength()
+        {
+            var handlebars = Handlebars.Create();
+            var render = handlebars.Compile("{{str.length}}");
+            object data = new { str = "string" };
+
+            var actual = render(data);
+            Assert.Equal("6", actual);
+        }
+
         // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/470
         [Theory]
         [ClassData(typeof(EscapeExpressionGenerator))]

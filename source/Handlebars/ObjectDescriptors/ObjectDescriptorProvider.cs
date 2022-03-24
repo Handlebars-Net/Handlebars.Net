@@ -13,8 +13,6 @@ namespace HandlebarsDotNet.ObjectDescriptors
 {
     public sealed class ObjectDescriptorProvider : IObjectDescriptorProvider
     {
-        private static readonly Type StringType = typeof(string);
-        
         private readonly LookupSlim<Type, DeferredValue<Type, ChainSegment[]>, ReferenceEqualityComparer<Type>> _membersCache = new LookupSlim<Type, DeferredValue<Type, ChainSegment[]>, ReferenceEqualityComparer<Type>>(new ReferenceEqualityComparer<Type>());
         private readonly ReflectionMemberAccessor _reflectionMemberAccessor;
 
@@ -25,17 +23,11 @@ namespace HandlebarsDotNet.ObjectDescriptors
         
         public bool TryGetDescriptor(Type type, out ObjectDescriptor value)
         {
-            if (type == StringType)
-            {
-                value = ObjectDescriptor.Empty;
-                return false;
-            }
-            
             value = new ObjectDescriptor(
-                type, 
-                _reflectionMemberAccessor, 
-                GetProperties, 
-                self => new ObjectIterator(self), 
+                type,
+                _reflectionMemberAccessor,
+                GetProperties,
+                self => new ObjectIterator(self),
                 dependencies: _membersCache
             );
 
