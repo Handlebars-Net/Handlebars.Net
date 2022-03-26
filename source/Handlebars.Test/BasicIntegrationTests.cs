@@ -12,6 +12,7 @@ using Newtonsoft.Json.Linq;
 using HandlebarsDotNet.Features;
 using HandlebarsDotNet.IO;
 using HandlebarsDotNet.PathStructure;
+using HandlebarsDotNet.Runtime;
 using HandlebarsDotNet.ValueProviders;
 
 namespace HandlebarsDotNet.Test
@@ -55,6 +56,42 @@ namespace HandlebarsDotNet.Test
             };
             var result = template(data);
             Assert.Equal("Hello, Handlebars.Net!", result);
+        }
+        
+        [Fact]
+        public void BasicSharedEnvironment()
+        {
+            var handlebars = Handlebars.CreateSharedEnvironment();
+            handlebars.RegisterHelper("registerLateHelper", 
+                (in EncodedTextWriter writer, in HelperOptions options, in Context context, in Arguments arguments) =>
+                {
+                    var configuration = options.Frame
+                        .GetType()
+                        .GetProperty("Configuration", BindingFlags.Instance | BindingFlags.NonPublic)?
+                        .GetValue(options.Frame) as ICompiledHandlebarsConfiguration;
+                    
+                    if(configuration == null) return;
+                    
+                    var helpers = configuration.Helpers;
+
+                    const string name = "lateHelper";
+                    if (helpers.TryGetValue(name, out var @ref))
+                    {
+                        @ref.Value = new DelegateReturnHelperDescriptor(name, (c, a) => 42);
+                    }
+                });
+            
+            var _0_template = "{{registerLateHelper}}";
+            var _0 = handlebars.Compile(_0_template);
+            var _1_template = "{{lateHelper}}";
+            var _1 = handlebars.Compile(_1_template);
+            
+            var result = _1(null);
+            Assert.Equal("", result); // `lateHelper` is not registered yet
+
+            _0(null);
+            result = _1(null);
+            Assert.Equal("42", result);
         }
 
         [Theory]
@@ -110,7 +147,7 @@ namespace HandlebarsDotNet.Test
         }
         
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
-        public void CustcomDateTimeFormat(IHandlebars handlebars)
+        public void CustomDateTimeFormat(IHandlebars handlebars)
         {
             var source = "{{now}}";
 
@@ -420,6 +457,8 @@ false
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
         public void AliasedPropertyOnArray(IHandlebars handlebars)
         {
+            if(handlebars.IsSharedEnvironment) return;
+
             var source = "Array is {{ names.count }} item(s) long";
             handlebars.Configuration.UseCollectionMemberAliasProvider();
             var template = handlebars.Compile(source);
@@ -452,6 +491,8 @@ false
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
         public void AliasedPropertyOnList(IHandlebars handlebars)
         {
+            if(handlebars.IsSharedEnvironment) return;
+            
             var source = "Array is {{ names.Length }} item(s) long";
             handlebars.Configuration.UseCollectionMemberAliasProvider();
             var template = handlebars.Compile(source);

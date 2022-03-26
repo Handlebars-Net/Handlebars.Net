@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT'">$(TargetFrameworks);net452;net46;net461;net472</TargetFrameworks>
     <ProjectGuid>6BA232A6-8C4D-4C7D-BD75-1844FE9774AF</ProjectGuid>
     <RootNamespace>HandlebarsDotNet.Test</RootNamespace>

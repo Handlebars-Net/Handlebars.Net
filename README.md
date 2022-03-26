@@ -253,6 +253,56 @@ public void DateTimeFormatter(IHandlebars handlebars)
 #### Notes
 - Formatters are resolved in reverse order according to registration. If multiple providers can provide formatter for a type the last registered would be used.
 
+### Shared environment
+
+By default Handlebars will create standalone copy of environment for each compiled template. This is done in order to eliminate a chance of altering behavior of one template from inside of other one.
+
+Unfortunately, in case runtime has a lot of compiled templates (regardless of the template size) it may have significant memory footprint. This can be solved by using `SharedEnvironment`.
+
+Templates compiled in `SharedEnvironment` will share the same configuration.
+
+#### Limitations
+
+Only runtime configuration properties can be changed after the shared environment has been created. Changes to `Configuration.CompileTimeConfiguration` and other compile-time properties will have no effect. 
+
+#### Example
+
+```c#
+[Fact]
+public void BasicSharedEnvironment()
+{
+    var handlebars = Handlebars.CreateSharedEnvironment();
+    handlebars.RegisterHelper("registerLateHelper", 
+        (in EncodedTextWriter writer, in HelperOptions options, in Context context, in Arguments arguments) =>
+        {
+            var configuration = options.Frame
+                .GetType()
+                .GetProperty("Configuration", BindingFlags.Instance | BindingFlags.NonPublic)?
+                .GetValue(options.Frame) as ICompiledHandlebarsConfiguration;
+            
+            var helpers = configuration?.Helpers;
+
+            const string name = "lateHelper";
+            if (helpers?.TryGetValue(name, out var @ref) ?? false)
+            {
+                @ref.Value = new DelegateReturnHelperDescriptor(name, (c, a) => 42);
+            }
+        });
+    
+    var _0_template = "{{registerLateHelper}}";
+    var _0 = handlebars.Compile(_0_template);
+    var _1_template = "{{lateHelper}}";
+    var _1 = handlebars.Compile(_1_template);
+    
+    var result = _1(null);
+    Assert.Equal("", result); // `lateHelper` is not registered yet
+
+    _0(null);
+    result = _1(null);
+    Assert.Equal("42", result);
+}
+```
+
 ### Compatibility feature toggles
 
 Compatibility feature toggles defines a set of settings responsible for controlling compilation/rendering behavior. Each of those settings would enable certain feature that would break compatibility with canonical Handlebars.

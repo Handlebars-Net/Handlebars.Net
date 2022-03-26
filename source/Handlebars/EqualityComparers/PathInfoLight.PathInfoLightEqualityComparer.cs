@@ -5,7 +5,7 @@ namespace HandlebarsDotNet
 {
     public readonly partial struct PathInfoLight
     {
-        internal sealed class PathInfoLightEqualityComparer : IEqualityComparer<PathInfoLight>
+        internal readonly struct PathInfoLightEqualityComparer : IEqualityComparer<PathInfoLight>
         {
             private readonly PathInfo.TrimmedPathEqualityComparer _comparer;
 

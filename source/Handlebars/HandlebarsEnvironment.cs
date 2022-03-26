@@ -4,7 +4,6 @@ using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.Compiler;
 using HandlebarsDotNet.Decorators;
 using HandlebarsDotNet.Helpers;
-using HandlebarsDotNet.Helpers.BlockHelpers;
 using HandlebarsDotNet.IO;
 using HandlebarsDotNet.ObjectDescriptors;
 using HandlebarsDotNet.Runtime;
@@ -37,8 +36,11 @@ namespace HandlebarsDotNet
         internal HandlebarsEnvironment(ICompiledHandlebarsConfiguration configuration)
         {
             CompiledConfiguration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            Configuration = CompiledConfiguration.UnderlingConfiguration;
+            IsSharedEnvironment = true;
         }
-        
+
+        public bool IsSharedEnvironment { get; }
         public HandlebarsConfiguration Configuration { get; }
         internal ICompiledHandlebarsConfiguration CompiledConfiguration { get; }
         ICompiledHandlebarsConfiguration ICompiledHandlebars.CompiledConfiguration => CompiledConfiguration;
@@ -113,6 +115,12 @@ namespace HandlebarsDotNet
                     compiledView(encodedTextWriter, newBindingContext);
                 }
             };
+        }
+
+        public IHandlebars CreateSharedEnvironment()
+        {
+            var configuration = CompiledConfiguration ?? new HandlebarsConfigurationAdapter(Configuration);
+            return new HandlebarsEnvironment(configuration);
         }
 
         public HandlebarsTemplate<TextWriter, object, object> Compile(TextReader template)
