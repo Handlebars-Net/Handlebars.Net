@@ -20,6 +20,14 @@ namespace HandlebarsDotNet
     public interface IHandlebars : IHelpersRegistry
     {
         /// <summary>
+        /// Creates shared Handlebars environment that is used to compile templates that share the same configuration
+        /// <para>Runtime only changes can be applied after object creation!</para>
+        /// </summary>
+        IHandlebars CreateSharedEnvironment();
+        
+        bool IsSharedEnvironment { get; }
+        
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="template"></param>

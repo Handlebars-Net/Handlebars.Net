@@ -18,6 +18,7 @@ namespace HandlebarsDotNet
 {
     internal class HandlebarsConfigurationAdapter : ICompiledHandlebarsConfiguration
     {
+        // observers are in WeakCollection, need to keep reference somewhere
         private readonly List<object> _observers = new List<object>();
         
         public HandlebarsConfigurationAdapter(HandlebarsConfiguration configuration)
@@ -33,6 +34,7 @@ namespace HandlebarsDotNet
                 new CollectionFormatterProvider(),
                 new ReadOnlyCollectionFormatterProvider()
             }.AddMany(configuration.FormatterProviders);
+            configuration.FormatterProviders.Subscribe(FormatterProviders);
             
             ObjectDescriptorProviders = CreateObjectDescriptorProvider(UnderlingConfiguration.ObjectDescriptorProviders);
             ExpressionMiddlewares = new ObservableList<IExpressionMiddleware>(configuration.CompileTimeConfiguration.ExpressionMiddleware)
@@ -78,7 +80,7 @@ namespace HandlebarsDotNet
         public IAppendOnlyList<IHelperResolver> HelperResolvers { get; }
         public IIndexed<string, HandlebarsTemplate<TextWriter, object, object>> RegisteredTemplates { get; }
         
-        private ObservableIndex<PathInfoLight, Ref<TDescriptor>, IEqualityComparer<PathInfoLight>> CreateHelpersSubscription<TDescriptor, TOptions>(IIndexed<string, TDescriptor> source) 
+        private ObservableIndex<PathInfoLight, Ref<TDescriptor>, PathInfoLight.PathInfoLightEqualityComparer> CreateHelpersSubscription<TDescriptor, TOptions>(IIndexed<string, TDescriptor> source) 
             where TOptions : struct, IOptions
             where TDescriptor : class, IDescriptor<TOptions>
         {
@@ -89,7 +91,7 @@ namespace HandlebarsDotNet
                 equalityComparer
             );
             
-            var target = new ObservableIndex<PathInfoLight, Ref<TDescriptor>, IEqualityComparer<PathInfoLight>>(equalityComparer, existingHelpers);
+            var target = new ObservableIndex<PathInfoLight, Ref<TDescriptor>, PathInfoLight.PathInfoLightEqualityComparer>(equalityComparer, existingHelpers);
 
             var observer = ObserverBuilder<ObservableEvent<TDescriptor>>.Create(target)
                 .OnEvent<DictionaryAddedObservableEvent<string, TDescriptor>>(
@@ -130,14 +132,8 @@ namespace HandlebarsDotNet
                 }
                 .AddMany(descriptorProviders);
 
-            var observer = ObserverBuilder<ObservableEvent<IObjectDescriptorProvider>>.Create(objectDescriptorProviders)
-                .OnEvent<AddedObservableEvent<IObjectDescriptorProvider>>((@event, state) => { state.Add(@event.Value); })
-                .Build();
+            descriptorProviders.Subscribe(objectDescriptorProviders);
 
-            _observers.Add(observer);
-            
-            descriptorProviders.Subscribe(observer);
-            
             return objectDescriptorProviders;
         }
     }

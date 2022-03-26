@@ -10,6 +10,7 @@ namespace HandlebarsDotNet.Test
         private readonly List<IHandlebars> _data = new()
         {
             Handlebars.Create(),
+            Handlebars.CreateSharedEnvironment(),
             Handlebars.Create(new HandlebarsConfiguration().Configure(o => o.Compatibility.RelaxedHelperNaming = true)),
             Handlebars.Create(new HandlebarsConfiguration().UseWarmUp(types =>
             {

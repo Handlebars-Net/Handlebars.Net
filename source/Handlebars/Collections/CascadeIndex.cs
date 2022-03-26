@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,72 +17,84 @@ namespace HandlebarsDotNet.Collections
     public class CascadeIndex<TKey, TValue, TComparer> : IIndexed<TKey, TValue> 
         where TComparer : IEqualityComparer<TKey>
     {
+        private readonly TComparer _comparer;
         public IReadOnlyIndexed<TKey, TValue> Outer { get; set; }
-        private readonly DictionarySlim<TKey, TValue, TComparer> _inner;
+        private DictionarySlim<TKey, TValue, TComparer> _inner;
 
         public CascadeIndex(TComparer comparer)
+            : this(null, comparer)
         {
-            Outer = null;
-            _inner = new DictionarySlim<TKey, TValue, TComparer>(comparer);
         }
         
-        public int Count => _inner.Count + OuterEnumerable().Count();
+        public CascadeIndex(IReadOnlyIndexed<TKey, TValue> outer, TComparer comparer)
+        {
+            _comparer = comparer;
+            Outer = outer;
+        }
+        
+        public int Count => (_inner?.Count ?? 0) + OuterEnumerable().Count();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddOrReplace(in TKey key, in TValue value)
         {
-            _inner.AddOrReplace(key, value);
+            (_inner ??= new DictionarySlim<TKey, TValue, TComparer>(_comparer)).AddOrReplace(key, value);
         }
 
         public void Clear()
         {
             Outer = null;
-            _inner.Clear();
+            _inner?.Clear();
         }
 
         public bool ContainsKey(in TKey key)
         {
-            return _inner.ContainsKey(key) || (Outer?.ContainsKey(key) ?? false);
+            return (_inner?.ContainsKey(key) ?? false) 
+                   || (Outer?.ContainsKey(key) ?? false);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryGetValue(in TKey key, out TValue value)
         {
-            if (_inner.TryGetValue(key, out value)) return true;
-            return Outer?.TryGetValue(key, out value) ?? false;
+            value = default;
+            return (_inner?.TryGetValue(key, out value) ?? false) 
+                   || (Outer?.TryGetValue(key, out value) ?? false);
         }
 
         public TValue this[in TKey key]
         {
             get
             {
-                if (_inner.TryGetValue(key, out var value)) return value;
-                if (Outer?.TryGetValue(key, out value) ?? false) return value;
-                throw new KeyNotFoundException($"{key}");
+                if (TryGetValue(key, out var value)) return value;
+                Throw.KeyNotFoundException($"{key}");
+                return default; // will never reach this point
             }
 
-            set => _inner.AddOrReplace(key, value);
+            set => AddOrReplace(key, value);
         }
 
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
-            var enumerator = _inner.GetEnumerator();
-            while (enumerator.MoveNext())
-            {
-                yield return enumerator.Current;
-            }
-
-            foreach (var pair in OuterEnumerable())
-            {
-                yield return pair;
-            }
+            foreach (var pair in InnerEnumerable()) yield return pair;
+            foreach (var pair in OuterEnumerable()) yield return pair;
         }
 
+        private IEnumerable<KeyValuePair<TKey, TValue>> InnerEnumerable()
+        {
+            if(_inner == null) yield break; 
+            
+            var outerEnumerator = _inner.GetEnumerator();
+            while (outerEnumerator.MoveNext())
+            {
+                if (_inner.ContainsKey(outerEnumerator.Current.Key)) continue;
+                yield return outerEnumerator.Current;
+            }
+        }
+        
         private IEnumerable<KeyValuePair<TKey, TValue>> OuterEnumerable()
         {
-            var outerEnumerator = Outer?.GetEnumerator();
-            if (outerEnumerator == null) yield break;
-
+            if(Outer == null) yield break;
+            
+            using var outerEnumerator = Outer.GetEnumerator();
             while (outerEnumerator.MoveNext())
             {
                 if (_inner.ContainsKey(outerEnumerator.Current.Key)) continue;
@@ -90,5 +103,10 @@ namespace HandlebarsDotNet.Collections
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        
+        private static class Throw
+        {
+            public static void KeyNotFoundException(string message, Exception exception = null) => throw new KeyNotFoundException(message, exception);
+        }
     }
 }

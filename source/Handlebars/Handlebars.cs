@@ -24,8 +24,19 @@ namespace HandlebarsDotNet
             configuration = configuration ?? new HandlebarsConfiguration();
             return new HandlebarsEnvironment(configuration);
         }
-        
-        
+
+        /// <summary>
+        /// Creates shared Handlebars environment that is used to compile templates that share the same configuration
+        /// <para>Runtime only changes can be applied after object creation!</para>
+        /// </summary>
+        /// <param name="configuration"></param>
+        /// <returns></returns>
+        public static IHandlebars CreateSharedEnvironment(HandlebarsConfiguration configuration = null)
+        {
+            configuration ??= new HandlebarsConfiguration();
+            return new HandlebarsEnvironment(new HandlebarsConfigurationAdapter(configuration));
+        }
+
         /// <summary>
         /// Creates standalone instance of <see cref="Handlebars"/> environment
         /// </summary>
