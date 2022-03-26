@@ -1,12 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-#if !NET451 && !NET452
-using System.Threading;
-#else
-using HandlebarsDotNet.Polyfills;
-#endif
-using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.IO;
 using HandlebarsDotNet.ObjectDescriptors;
 using HandlebarsDotNet.PathStructure;
@@ -16,14 +10,18 @@ namespace HandlebarsDotNet.Runtime
 {
     public sealed class AmbientContext : IDisposable
     {
-        private static readonly InternalObjectPool<AmbientContext, Policy> Pool = new InternalObjectPool<AmbientContext, Policy>(new Policy()); 
+        private static readonly InternalObjectPool<AmbientContext, Policy> Pool = new(new Policy()); 
         
-        private static readonly AsyncLocal<ImmutableStack<AmbientContext>> Local = new AsyncLocal<ImmutableStack<AmbientContext>>();
+        [ThreadStatic]
+        private static Stack<AmbientContext> _local;
+
+        private static Stack<AmbientContext> Local => 
+            _local ??= new Stack<AmbientContext>();
 
         public static AmbientContext Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => Local.Value.Peek();
+            get => Local.Count > 0 ? Local.Peek() : null;
         }
 
         public static AmbientContext Create(
@@ -67,12 +65,9 @@ namespace HandlebarsDotNet.Runtime
 
         public static DisposableContainer Use(AmbientContext ambientContext)
         {
-            Local.Value = Local.Value.Push(ambientContext);
+            Local.Push(ambientContext);
             
-            return new DisposableContainer(() =>
-            {
-                Local.Value = Local.Value.Pop(out _);
-            });
+            return new DisposableContainer(() => Local.Pop());
         }
         
         private AmbientContext()
@@ -89,14 +84,11 @@ namespace HandlebarsDotNet.Runtime
         
         public ObjectDescriptorFactory ObjectDescriptorFactory { get; private set; }
         
-        public Dictionary<string, object> Bag { get; } = new Dictionary<string, object>();
+        public Dictionary<string, object> Bag { get; } = new();
         
         private struct Policy : IInternalObjectPoolPolicy<AmbientContext>
         {
-            public AmbientContext Create()
-            {
-                return new AmbientContext();
-            }
+            public AmbientContext Create() => new();
 
             public bool Return(AmbientContext item)
             {
