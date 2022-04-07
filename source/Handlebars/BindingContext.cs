@@ -115,7 +115,7 @@ namespace HandlebarsDotNet
         
         internal CascadeIndex<string, IHelperDescriptor<BlockHelperOptions>, StringEqualityComparer> BlockHelpers { get; }
 
-        internal TemplateDelegate PartialBlockTemplate { get; private set; }
+        internal TemplateDelegate PartialBlockTemplate { get; set; }
         
         public object Value { get; set; }
 

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using Expressions.Shortcuts;
+using HandlebarsDotNet.PathStructure;
 using HandlebarsDotNet.Polyfills;
 using static Expressions.Shortcuts.ExpressionShortcuts;
 
@@ -92,6 +93,7 @@ namespace HandlebarsDotNet.Compiler
             EncodedTextWriter writer,
             ICompiledHandlebarsConfiguration configuration)
         {
+            partialName = partialName != null ? ChainSegment.Create(partialName).TrimmedValue : null;
             if (InvokePartial(partialName, context, writer, configuration)) return;
             if (context.PartialBlockTemplate == null)
             {
@@ -118,7 +120,16 @@ namespace HandlebarsDotNet.Compiler
                     return false;
                 }
 
-                context.PartialBlockTemplate(writer, context.ParentContext);
+                var partialBlockTemplate = context.PartialBlockTemplate;
+                try
+                {
+                    context.PartialBlockTemplate = context.ParentContext.PartialBlockTemplate;
+                    partialBlockTemplate(writer, context);
+                }
+                finally
+                {
+                    context.PartialBlockTemplate = partialBlockTemplate;
+                }
                 return true;
             }
 
