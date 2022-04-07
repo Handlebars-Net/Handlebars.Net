@@ -161,6 +161,23 @@ namespace HandlebarsDotNet.Test
             Assert.Equal(expected, result);
         }
         
+        // issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/515
+        [Fact]
+        public void ValidContextInNestedPartialBlock()
+        {
+            const string template = @"{{#> [a/b] c=this }}{{c.value}}{{/ [a/b] }}";
+            const string partial = "{{c.value}} {{> @partial-block }}";
+
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterTemplate("a/b", @partial);
+
+            var callback = handlebars.Compile(template);
+            var result = callback(new { value = 42 });
+
+            const string expected = @"42 42";
+            Assert.Equal(expected, result);
+        }
+        
         // issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/395
         [Fact]
         public void RenderingWithUnusedPartial()
