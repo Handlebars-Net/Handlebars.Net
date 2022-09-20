@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using HandlebarsDotNet.Compiler;
 using HandlebarsDotNet.Decorators;
 using HandlebarsDotNet.Helpers;
@@ -61,6 +63,17 @@ namespace HandlebarsDotNet
         public static HandlebarsTemplate<object, object> Compile(string template)
         {
             return Instance.Compile(template);
+        }
+
+        public static string Compile(string template, Dictionary<string, object> handlebars)
+        {
+            var sb = new StringBuilder();
+
+            var handlebarsTemplate = Handlebars.Compile(template);
+
+            sb.AppendLine(handlebarsTemplate(handlebars));
+
+            return sb.ToString();
         }
         
         public static HandlebarsTemplate<object, object> CompileView(string templatePath)
