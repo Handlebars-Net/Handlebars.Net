@@ -2085,6 +2085,20 @@ false
             Assert.Equal("abc", nestedObjectsHelperResult);
         }
 
+        [Theory]
+        [InlineData("Hello, {{customerName}}")]
+        public void BasicCompileWithoutInitiateTheClass(string source)
+        {
+            var dic = new Dictionary<string, object>()
+            {
+                {"customerName", "Handlebars.NET"}
+            };
+
+            var result = Handlebars.Compile(source, dic);
+
+            Assert.Equal("Hello, Handlebars.NET", result);
+        }
+
         private class StringHelperResolver : IHelperResolver
         {
             public bool TryResolveHelper(PathInfo name, Type targetType, out IHelperDescriptor<HelperOptions> helper)

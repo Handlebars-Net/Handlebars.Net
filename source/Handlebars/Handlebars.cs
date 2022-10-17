@@ -65,13 +65,13 @@ namespace HandlebarsDotNet
             return Instance.Compile(template);
         }
 
-        public static string Compile(string template, Dictionary<string, object> handlebars)
+        public static string Compile(string template, object handlebars)
         {
             var sb = new StringBuilder();
 
             var handlebarsTemplate = Handlebars.Compile(template);
 
-            sb.AppendLine(handlebarsTemplate(handlebars));
+            sb.Append(handlebarsTemplate(handlebars));
 
             return sb.ToString();
         }
