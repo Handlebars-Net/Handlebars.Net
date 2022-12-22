@@ -83,16 +83,19 @@ namespace HandlebarsDotNet.Test.ViewEngine
                 //Given a layout in a subfolder
                 { "partials/layout.hbs", "<div class=\"nav\">\r\n{{> nav}}\r\n</div>\r\n<div class=\"content\">\r\n{{> content}}\r\n</div>"},
 
-                { "template.hbs", "{{#> layout}}\r\n{{#*inline \"nav\"}}\r\nMy Nav\r\n{{/inline}}\r\n{{#*inline \"content\"}}\r\nMy Content\r\n{{/inline}}\r\n{{/layout}}"}
+                { "template.hbs", "{{#> layout}}\r\n{{#*inline \"nav\"}}\r\n{{Text}}\r\n{{/inline}}\r\n{{#*inline \"content\"}}\r\nMy Content\r\n{{/inline}}\r\n{{/layout}}"}
             };
 
             //When a viewengine renders that view
             var handleBars = Handlebars.Create(new HandlebarsConfiguration() { FileSystem = files });
             var renderView = handleBars.CompileView("template.hbs");
-            var output = renderView(null);
+            var output = renderView(new Dictionary<string, string>
+            {
+                { "Text", "<My Nav>" }
+            });
 
             //Then the correct output should be rendered
-            Assert.Equal("<div class=\"nav\">\r\nMy Nav\r\n</div>\r\n<div class=\"content\">\r\nMy Content\r\n</div>", output);
+            Assert.Equal("<div class=\"nav\">\r\n&lt;My Nav&gt;\r\n</div>\r\n<div class=\"content\">\r\nMy Content\r\n</div>", output);
         }
 
         [Fact]
