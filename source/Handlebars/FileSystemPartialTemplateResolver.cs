@@ -27,7 +27,7 @@ namespace HandlebarsDotNet
 
                 handlebarsTemplateRegistrations.RegisteredTemplates.AddOrReplace(partialName, (writer, o, data) =>
                 {
-                    writer.Write(compiled(o, data));
+                    ((EncodedTextWriterWrapper)writer).Write(compiled(o, data), false);
                 });
 
                 return true;
