@@ -723,5 +723,15 @@ namespace HandlebarsDotNet.Test
 
             Assert.Equal("abcd", templateOutput);
         }
+
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/535
+        // Issue refers to invalid template causing OutOfMemoryException
+        [Fact]
+        public void UnrecognisedExpressionThrowsOutOfMemoryException()
+        {
+            var source = "{{Name | invalid}}";
+
+            Assert.Throws<HandlebarsCompilerException>(()=> Handlebars.Compile(source));
+        }
     }
 }
