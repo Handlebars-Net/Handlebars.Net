@@ -442,6 +442,57 @@ false
         }
 
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void PathRelativeBinding_WithDefaultValue(IHandlebars handlebars)
+        {
+            var template =
+                @"{{#each users}}
+                    {{this/person.name/firstName}}
+                    {{#with this/person.name}}
+                        {{lastName}}
+                        {{lookup (lookup ../this/../users @index) 'twitter' 'N/A'}}
+                    {{/with}}
+                {{/each}}";
+
+            var handlebarsTemplate = handlebars.Compile(template);
+
+            var data = new
+            {
+                users = new object[]
+                {
+                    new
+                    {
+                        person = new
+                        {
+                            name = new
+                            {
+                                firstName = "Garry",
+                                lastName = "Finch"
+                            }
+                        },
+                        jobTitle = "Front End Technical Lead",
+                    },
+                    new
+                    {
+                        person = new
+                        {
+                            name = new
+                            {
+                                firstName = "Karen",
+                                lastName = "Finch"
+                            }
+                        },
+                        jobTitle = "Photographer",
+                        twitter = "photobasics"
+                    }
+                }
+            };
+
+            var result = handlebarsTemplate(data);
+            var actual = string.Join(" ", result.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries).Select(o => o.Trim(' ')));
+            Assert.Equal("Garry Finch N/A Karen Finch photobasics", actual);
+        }
+
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
         public void BasicPropertyOnArray(IHandlebars handlebars)
         {
             var source = "Array is {{ names.Length }} item(s) long";
