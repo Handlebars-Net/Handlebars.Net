@@ -4,7 +4,7 @@ namespace HandlebarsDotNet.Helpers
 {
     public sealed class LookupReturnHelperDescriptor : IHelperDescriptor<HelperOptions>
     {
-        public PathInfo Name => "lookup";
+        public PathInfo Name { get; } = "lookup";
 
         public object Invoke(in HelperOptions options, in Context context, in Arguments arguments)
         {
@@ -15,11 +15,9 @@ namespace HandlebarsDotNet.Helpers
 
             var segment = ChainSegment.Create(arguments[1]);
 
-            var defaultValueIfNotFound = arguments.Length == 3 ? arguments[2] : UndefinedBindingResult.Create(segment);
-
-            return options.TryAccessMember(arguments[0], segment, out var value)
-                ? value
-                : defaultValueIfNotFound;
+            return !options.TryAccessMember(arguments[0], segment, out var value)
+                ? arguments.Length == 3 ? arguments[2] : UndefinedBindingResult.Create(segment)
+                : value;
         }
 
         public void Invoke(in EncodedTextWriter output, in HelperOptions options, in Context context, in Arguments arguments)
