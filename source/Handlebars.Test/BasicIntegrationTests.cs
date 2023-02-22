@@ -682,8 +682,7 @@ false
                 input = new
                 {
                     first = 1,
-                    second = new
-                    {
+                    second = new {
                         third = 3
                     }
                 }
