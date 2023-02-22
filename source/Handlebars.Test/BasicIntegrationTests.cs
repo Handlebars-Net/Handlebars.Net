@@ -1,3 +1,4 @@
+using Xunit;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -5,14 +6,14 @@ using System.Dynamic;
 using System.Linq;
 using System.Reflection;
 using HandlebarsDotNet.Compiler;
-using HandlebarsDotNet.Features;
 using HandlebarsDotNet.Helpers;
-using HandlebarsDotNet.IO;
-using HandlebarsDotNet.PathStructure;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using NSubstitute.ExceptionExtensions;
-using Xunit;
+using HandlebarsDotNet.Features;
+using HandlebarsDotNet.IO;
+using HandlebarsDotNet.PathStructure;
+using HandlebarsDotNet.Runtime;
+using HandlebarsDotNet.ValueProviders;
 
 namespace HandlebarsDotNet.Test
 {
@@ -441,6 +442,19 @@ false
         }
 
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicPropertyOnArray(IHandlebars handlebars)
+        {
+            var source = "Array is {{ names.Length }} item(s) long";
+            var template = handlebars.Compile(source);
+            var data = new
+            {
+                names = new[] { new { name = "Foo" }, new { name = "Handlebars.Net" } }
+            };
+            var result = template(data);
+            Assert.Equal("Array is 2 item(s) long", result);
+        }
+
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
         public void PathRelativeBinding_WithDefaultValue(IHandlebars handlebars)
         {
             var template =
@@ -528,19 +542,6 @@ false
             // Act
             var ex = Assert.Throws<HandlebarsException>(() => handlebarsTemplate(data));
             Assert.Equal("{{lookup}} helper must have two or three arguments", ex.Message);
-        }
-
-        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
-        public void BasicPropertyOnArray(IHandlebars handlebars)
-        {
-            var source = "Array is {{ names.Length }} item(s) long";
-            var template = handlebars.Compile(source);
-            var data = new
-            {
-                names = new[] { new { name = "Foo" }, new { name = "Handlebars.Net" } }
-            };
-            var result = template(data);
-            Assert.Equal("Array is 2 item(s) long", result);
         }
 
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
@@ -1769,12 +1770,12 @@ false
             var source = @"{{#is ProgramID """"}}no program{{/is}}{{#is ProgramID ""1081""}}some program text{{/is}}";
 
             handlebars.RegisterHelper("is", (output, options, context, args) =>
+            {
+                if (args[0] == args[1])
                 {
-                    if (args[0] == args[1])
-                    {
-                        options.Template(output, context);
-                    }
-                });
+                    options.Template(output, context);
+                }
+            });
 
 
             var template = handlebars.Compile(source);
