@@ -63,6 +63,7 @@ namespace HandlebarsDotNet
         public bool ThrowOnUnresolvedBindingExpression => UnderlingConfiguration.ThrowOnUnresolvedBindingExpression;
         public IPartialTemplateResolver PartialTemplateResolver => UnderlingConfiguration.PartialTemplateResolver;
         public IMissingPartialTemplateHandler MissingPartialTemplateHandler => UnderlingConfiguration.MissingPartialTemplateHandler;
+        public short PartialRecursionDepthLimit => UnderlingConfiguration.PartialRecursionDepthLimit;
         public Compatibility Compatibility => UnderlingConfiguration.Compatibility;
 
         public bool NoEscape => UnderlingConfiguration.NoEscape;
