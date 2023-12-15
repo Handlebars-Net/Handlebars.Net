@@ -58,7 +58,7 @@ namespace HandlebarsDotNet
             Length = 1;
         }
         
-        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Arguments(object arg1, object arg2) : this()
         {
             _useArray = false;
