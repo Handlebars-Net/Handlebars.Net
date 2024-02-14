@@ -661,6 +661,30 @@ namespace HandlebarsDotNet.Test
         }
 
         [Fact]
+        public void RecursionUnboundedBlockPartialWithSpecialNamedPartial()
+        {
+            string source = "{{#>myPartial}}{{>myPartial}}{{/myPartial}}";
+
+            var template = Handlebars.Compile(source);
+
+            var partialSource = "{{> @partial-block }}";
+            using (var reader = new StringReader(partialSource))
+            {
+                var partialTemplate = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("myPartial", partialTemplate);
+            }
+
+            string Result() => template(null);
+            var ex = Assert.Throws<HandlebarsRuntimeException>(Result);
+            Assert.Equal("Runtime error while rendering partial 'myPartial', see inner exception for more information", ex.Message);
+            ex = Assert.IsType<HandlebarsRuntimeException>(ex.InnerException);
+            Assert.Equal("Runtime error while rendering partial 'myPartial', see inner exception for more information", ex.Message);
+            ex = Assert.IsType<HandlebarsRuntimeException>(ex.InnerException);
+            Assert.Equal("Referenced partial name @partial-block could not be resolved", ex.Message);
+            Assert.Null(ex.InnerException);
+        }
+
+        [Fact]
         public void TemplateWithSpecialNamedPartial()
         {
             string source = "Single template referencing {{> @partial-block }} should throw runtime exception";
@@ -716,6 +740,84 @@ namespace HandlebarsDotNet.Test
             var data = new {};
             var result = template(data);
             Assert.Equal("Hello, world!", result);
+        }
+
+        [Fact]
+        public void RecursionUnboundedPartial()
+        {
+            string source = "{{>list}}";
+
+            var template = Handlebars.Compile(source);
+
+            var partialSource = "{{>list}}";
+            using (var reader = new StringReader(partialSource))
+            {
+                var partialTemplate = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("list", partialTemplate);
+            }
+
+            string Result() => template(null);
+            var ex = Assert.Throws<HandlebarsRuntimeException>(Result);
+            while (ex.InnerException != null)
+                ex = Assert.IsType<HandlebarsRuntimeException>(ex.InnerException);
+            Assert.Equal("Runtime error while rendering partial 'list', exceeded recursion depth limit of 100", ex.Message);
+        }
+
+        [Fact]
+        public void RecursionBoundedToLimitPartial()
+        {
+            string source = "{{>list}}{{>list}}";
+
+            var template = Handlebars.Compile(source);
+
+            var partialSource = "x{{#each items}}{{#if items}}{{>list}}{{/if}}{{/each}}";
+            using (var reader = new StringReader(partialSource))
+            {
+                var partialTemplate = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("list", partialTemplate);
+            }
+
+            var data = new Dictionary<string, object>();
+            var items = data;
+            for (var depth = 0; depth < Handlebars.Configuration.PartialRecursionDepthLimit; depth++)
+            {
+                var nestedItems = new Dictionary<string, object>();
+                items.Add("items", new[] { nestedItems });
+                items = nestedItems;
+            }
+
+            var result = template(data);
+            Assert.Equal(new string('x', Handlebars.Configuration.PartialRecursionDepthLimit * 2), result);
+        }
+
+        [Fact]
+        public void RecursionBoundedAboveLimitPartial()
+        {
+            string source = "{{>list}}";
+
+            var template = Handlebars.Compile(source);
+
+            var partialSource = "x{{#each items}}{{#if items}}{{>list}}{{/if}}{{/each}}";
+            using (var reader = new StringReader(partialSource))
+            {
+                var partialTemplate = Handlebars.Compile(reader);
+                Handlebars.RegisterTemplate("list", partialTemplate);
+            }
+
+            var data = new Dictionary<string, object>();
+            var items = data;
+            for (var depth = 0; depth < Handlebars.Configuration.PartialRecursionDepthLimit + 1; depth++)
+            {
+                var nestedItems = new Dictionary<string, object>();
+                items.Add("items", new[] { nestedItems });
+                items = nestedItems;
+            }
+
+            string Result() => template(data);
+            var ex = Assert.Throws<HandlebarsRuntimeException>(Result);
+            while (ex.InnerException != null)
+                ex = Assert.IsType<HandlebarsRuntimeException>(ex.InnerException);
+            Assert.Equal("Runtime error while rendering partial 'list', exceeded recursion depth limit of 100", ex.Message);
         }
     }
 }

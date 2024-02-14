@@ -36,6 +36,8 @@ namespace HandlebarsDotNet
         
         IMissingPartialTemplateHandler MissingPartialTemplateHandler { get; }
         
+        short PartialRecursionDepthLimit { get; }
+        
         IIndexed<PathInfoLight, Ref<IHelperDescriptor<HelperOptions>>> Helpers { get; }
         
         IIndexed<PathInfoLight, Ref<IHelperDescriptor<BlockHelperOptions>>> BlockHelpers { get; }

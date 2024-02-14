@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using System.Collections.Generic;
+using Xunit;
 
 namespace HandlebarsDotNet.Test
 {
@@ -354,6 +355,63 @@ namespace HandlebarsDotNet.Test
 
             var result = template(data);
             Assert.Equal("12", result);
+        }
+
+        [Fact]
+        public void RecursionUnboundedInlinePartial()
+        {
+            string source = "{{#*inline \"list\"}}{{>list}}{{/inline}}{{>list}}";
+
+            var template = Handlebars.Compile(source);
+
+            string Result() => template(null);
+            var ex = Assert.Throws<HandlebarsRuntimeException>(Result);
+            while (ex.InnerException != null)
+                ex = Assert.IsType<HandlebarsRuntimeException>(ex.InnerException);
+            Assert.Equal("Runtime error while rendering partial 'list', exceeded recursion depth limit of 100", ex.Message);
+        }
+
+        [Fact]
+        public void RecursionBoundedToLimitInlinePartial()
+        {
+            string source = "{{#*inline \"list\"}}x{{#each items}}{{#if items}}{{>list}}{{/if}}{{/each}}{{/inline}}{{>list}}{{>list}}";
+
+            var template = Handlebars.Compile(source);
+
+            var data = new Dictionary<string, object>();
+            var items = data;
+            for (var depth = 0; depth < Handlebars.Configuration.PartialRecursionDepthLimit; depth++)
+            {
+                var nestedItems = new Dictionary<string, object>();
+                items.Add("items", new[] { nestedItems });
+                items = nestedItems;
+            }
+
+            var result = template(data);
+            Assert.Equal(new string('x', Handlebars.Configuration.PartialRecursionDepthLimit * 2), result);
+        }
+
+        [Fact]
+        public void RecursionBoundedAboveLimitInlinePartial()
+        {
+            string source = "{{#*inline \"list\"}}x{{#each items}}{{#if items}}{{>list}}{{/if}}{{/each}}{{/inline}}{{>list}}";
+
+            var template = Handlebars.Compile(source);
+
+            var data = new Dictionary<string, object>();
+            var items = data;
+            for (var depth = 0; depth < Handlebars.Configuration.PartialRecursionDepthLimit + 1; depth++)
+            {
+                var nestedItems = new Dictionary<string, object>();
+                items.Add("items", new[] { nestedItems });
+                items = nestedItems;
+            }
+
+            string Result() => template(data);
+            var ex = Assert.Throws<HandlebarsRuntimeException>(Result);
+            while (ex.InnerException != null)
+                ex = Assert.IsType<HandlebarsRuntimeException>(ex.InnerException);
+            Assert.Equal("Runtime error while rendering partial 'list', exceeded recursion depth limit of 100", ex.Message);
         }
     }
 }

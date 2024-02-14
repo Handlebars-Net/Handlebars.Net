@@ -59,6 +59,11 @@ namespace HandlebarsDotNet
         /// </summary>
         public IMissingPartialTemplateHandler MissingPartialTemplateHandler { get; set; }
         
+        /// <summary>
+        /// Maximum depth to recurse into partial templates when evaluating the template. Defaults to 100.
+        /// </summary>
+        public short PartialRecursionDepthLimit { get; set; } = 100;
+        
         /// <inheritdoc cref="IMemberAliasProvider"/>
         public IAppendOnlyList<IMemberAliasProvider> AliasProviders { get; } = new ObservableList<IMemberAliasProvider>();
 

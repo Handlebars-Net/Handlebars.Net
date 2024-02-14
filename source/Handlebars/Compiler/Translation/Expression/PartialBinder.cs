@@ -133,10 +133,24 @@ namespace HandlebarsDotNet.Compiler
                 return true;
             }
 
+            void IncreaseDepth()
+            {
+                if (++context.PartialDepth > configuration.PartialRecursionDepthLimit)
+                    throw new HandlebarsRuntimeException($"Runtime error while rendering partial '{partialName}', exceeded recursion depth limit of {configuration.PartialRecursionDepthLimit}");
+            }
+
             //if we have an inline partial, skip the file system and RegisteredTemplates collection
             if (context.InlinePartialTemplates.TryGetValue(partialName, out var partial))
             {
-                partial(writer, context);
+                IncreaseDepth();
+                try
+                {
+                    partial(writer, context);
+                }
+                finally
+                {
+                    context.PartialDepth--;
+                }
                 return true;
             }
             
@@ -152,6 +166,7 @@ namespace HandlebarsDotNet.Compiler
                 }
             }
 
+            IncreaseDepth();
             try
             {
                 using var textWriter = writer.CreateWrapper();
@@ -161,6 +176,10 @@ namespace HandlebarsDotNet.Compiler
             catch (Exception exception)
             {
                 throw new HandlebarsRuntimeException($"Runtime error while rendering partial '{partialName}', see inner exception for more information", exception);
+            }
+            finally
+            {
+                context.PartialDepth--;
             }
         }
     }

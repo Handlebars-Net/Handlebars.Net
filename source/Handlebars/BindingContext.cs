@@ -117,6 +117,8 @@ namespace HandlebarsDotNet
 
         internal TemplateDelegate PartialBlockTemplate { get; set; }
         
+        internal short PartialDepth { get; set; }
+        
         public object Value { get; set; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
