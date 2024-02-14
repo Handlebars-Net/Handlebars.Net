@@ -173,7 +173,7 @@ namespace HandlebarsDotNet.PathStructure
                 if(Substring.LastIndexOf(segment, '[', out var startIndex) 
                    && !Substring.LastIndexOf(segment, ']', startIndex, out _))
                 {
-                    buffer.Append(in segment);
+                    if (!bufferHasOpenEscapeBlock) buffer.Append(in segment);
                     bufferHasOpenEscapeBlock = true;
                     continue;
                 }
