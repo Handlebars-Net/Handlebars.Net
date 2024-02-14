@@ -52,6 +52,7 @@ namespace HandlebarsDotNet.Test
         [InlineData("a/[b.c/d]/e", new [] {"a", "[b.c/d]", "e"})]
         [InlineData("a/[b.c/d/e/f]/e", new [] {"a", "[b.c/d/e/f]", "e"})]
         [InlineData("a/[a//b/c.d/e]/e", new [] {"a", "[a//b/c.d/e]", "e"})]
+        [InlineData("a/[b/c/d].[e/f/g]/h", new [] {"a", "[b/c/d].[e/f/g]", "h"})]
         public void SlashPath(string input, string[] expected)
         {
             var pathInfo = PathInfo.Parse(input);
