@@ -57,5 +57,14 @@ namespace HandlebarsDotNet.Test
                 Handlebars.Compile("{{#each enumerateMe}}test{{/if}}{{/each}}")(data);
             });
         }
+
+        [Fact]
+        public void TestNonClosingIgnoreBlockException()
+        {
+            Assert.Throws<HandlebarsParserException>(() =>
+            {
+                Handlebars.Compile("{{ [test }}")(new { });
+            });
+        }
    }
 }

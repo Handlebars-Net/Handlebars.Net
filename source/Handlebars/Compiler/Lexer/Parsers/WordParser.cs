@@ -44,16 +44,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
 
             while (true)
             {
-                if (isEscaped)
-                {
-                    var c = (char) reader.Read();
-                    if (c == ']') isEscaped = false;
-                    
-                    buffer.Append(c);
-                    continue;
-                }
-                
-                if (!inString)
+                if (!inString && !isEscaped)
                 {
                     var peek = (char) reader.Peek();
 
@@ -68,6 +59,15 @@ namespace HandlebarsDotNet.Compiler.Lexer
                 if (node == -1)
                 {
                     throw new HandlebarsParserException("Reached end of template before the expression was closed.", reader.GetContext());
+                }
+
+                if (isEscaped)
+                {
+                    var c = (char) node;
+                    if (c == ']') isEscaped = false;
+                    
+                    buffer.Append(c);
+                    continue;
                 }
 
                 if (node == '[' && !inString)
