@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     branches: [ master ]
- 
+
 jobs:
   build:
     name: Build
@@ -30,14 +30,14 @@ jobs:
         os: [ macos-latest, ubuntu-latest, windows-2019 ]
     steps:
       - uses: actions/checkout@master
-      - name: Setup dotnet 2.1
+      - name: Setup dotnet
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 2.1.x
-      - name: Setup dotnet 3.1
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: 3.1.x
+          dotnet-version: |
+              2.1.x
+              3.1.x
+              5.0.x
+              6.0.x
       - name: Clean package cache as a temporary workaround for https://github.com/actions/setup-dotnet/issues/155
         working-directory: ./source
         run: dotnet clean -c Release && dotnet nuget locals all --clear
@@ -52,14 +52,14 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - name: Setup dotnet 2.1
+      - name: Setup dotnet
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 2.1.x
-      - name: Setup dotnet 3.1
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: 3.1.x
+          dotnet-version: |
+              2.1.x
+              3.1.x
+              5.0.x
+              6.0.x
       - uses: actions/setup-java@v4
         with:
           java-version: '21' # The JDK version to make available on the path.
@@ -97,7 +97,7 @@ jobs:
           .\.sonar\scanner\dotnet-sonarscanner begin /k:"Handlebars-Net_Handlebars.Net" /o:"handlebars-net" /d:sonar.login="${{ env.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths="**/*.opencover.xml" /d:sonar.cs.vstest.reportsPaths="**/*.trx" /d:sonar.coverage.exclusions="**/*.md;source/Handlebars.Benchmark/**/*.*" /d:sonar.cpd.exclusions="source/Handlebars/Iterators/**/*.*"
           dotnet build source/Handlebars.sln -c Release
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ env.SONAR_TOKEN }}"
-        
+
   benchmark:
     name: Run Benchmark.Net
     runs-on: ubuntu-latest
@@ -105,7 +105,11 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 3.1.x
+          dotnet-version: |
+              2.1.x
+              3.1.x
+              5.0.x
+              6.0.x
       - name: Clean package cache as a temporary workaround for https://github.com/actions/setup-dotnet/issues/155
         working-directory: ./source
         run: dotnet clean -c Release && dotnet nuget locals all --clear
@@ -136,8 +140,8 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: Benchmark
-          path: source/Handlebars.Benchmark/BenchmarkDotNet.Artifacts/results/      
-        
+          path: source/Handlebars.Benchmark/BenchmarkDotNet.Artifacts/results/
+
   update_release_draft:
     name: Release Drafter
     runs-on: ubuntu-latest
