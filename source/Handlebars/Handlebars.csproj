@@ -38,6 +38,7 @@
     <RepositoryUrl>https://github.com/Handlebars-Net/Handlebars.Net</RepositoryUrl>
     <PackageReleaseNotes>https://github.com/Handlebars-Net/Handlebars.Net/releases/tag/$(Version)</PackageReleaseNotes>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
 
@@ -49,6 +50,10 @@
     </Content>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+  
   <ItemGroup Condition="'$(TargetFramework)'=='net451' or '$(TargetFramework)'=='net452' or '$(TargetFramework)'=='net46'">
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
