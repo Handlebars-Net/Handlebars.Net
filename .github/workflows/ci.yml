@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     branches: [ master ]
- 
+
 jobs:
   build:
     name: Build
@@ -60,6 +60,7 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: |
+            2.1.x
             3.1.x
             5.0.x
             6.0.x
@@ -99,7 +100,7 @@ jobs:
           .\.sonar\scanner\dotnet-sonarscanner begin /k:"Handlebars-Net_Handlebars.Net" /o:"handlebars-net" /d:sonar.login="${{ env.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths="**/*.opencover.xml" /d:sonar.cs.vstest.reportsPaths="**/*.trx" /d:sonar.coverage.exclusions="**/*.md;source/Handlebars.Benchmark/**/*.*" /d:sonar.cpd.exclusions="source/Handlebars/Iterators/**/*.*"
           dotnet build source/Handlebars.sln -c Release
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ env.SONAR_TOKEN }}"
-        
+
   benchmark:
     name: Run Benchmark.Net
     runs-on: ubuntu-latest
@@ -143,8 +144,8 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: Benchmark
-          path: source/Handlebars.Benchmark/BenchmarkDotNet.Artifacts/results/      
-        
+          path: source/Handlebars.Benchmark/BenchmarkDotNet.Artifacts/results/
+
   update_release_draft:
     name: Release Drafter
     runs-on: ubuntu-latest
