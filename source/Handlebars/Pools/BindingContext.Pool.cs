@@ -33,6 +33,7 @@ namespace HandlebarsDotNet
                 context.Value = value;
                 context.ParentContext = parent;
                 context.PartialBlockTemplate = partialBlockTemplate;
+                context.PartialDepth = parent?.PartialDepth ?? 0;
 
                 context.Initialize();
 
