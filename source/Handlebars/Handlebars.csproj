@@ -8,25 +8,6 @@
     <Version>2.0.0</Version>
     <RootNamespace>HandlebarsDotNet</RootNamespace>
     <SignAssembly Condition="'$(ShouldSignAssembly)' == 'true'">true</SignAssembly>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(TargetFramework)'=='netstandard1.3'">
-    <DefineConstants>$(DefineConstants);netstandard;netstandard1_3</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
-    <DefineConstants>$(DefineConstants);netstandard</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)'=='net451'">
-    <DefineConstants>$(DefineConstants);NET451</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)'=='net452'">
-    <DefineConstants>$(DefineConstants);NET452</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)'=='net46'">
-    <DefineConstants>$(DefineConstants);NET46</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <Authors>Rex Morgan</Authors>
     <Copyright>Copyright © 2014-2020 Rex Morgan</Copyright>
     <Description>Blistering-fast Handlebars.js templates in your .NET application.</Description>
