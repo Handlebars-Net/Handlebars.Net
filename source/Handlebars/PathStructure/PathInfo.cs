@@ -148,6 +148,7 @@ namespace HandlebarsDotNet.PathStructure
             var extendedEnumerator = ExtendedEnumerator<Substring>.Create(pathParts);
             using var container = StringBuilderPool.Shared.Use();
             var buffer = container.Value;
+            var bufferHasOpenEscapeBlock = false;
             
             while (extendedEnumerator.MoveNext())
             {
@@ -159,6 +160,7 @@ namespace HandlebarsDotNet.PathStructure
                     if(Substring.LastIndexOf(segment, ']', out var index) 
                        && !Substring.LastIndexOf(segment, '[', index, out _))
                     {
+                        bufferHasOpenEscapeBlock = false;
                         var chainSegment = GetPathChain(buffer.ToString());
                         if (chainSegment.Length > 1) isValidHelperLiteral = false;
 
@@ -171,7 +173,8 @@ namespace HandlebarsDotNet.PathStructure
                 if(Substring.LastIndexOf(segment, '[', out var startIndex) 
                    && !Substring.LastIndexOf(segment, ']', startIndex, out _))
                 {
-                    buffer.Append(in segment);
+                    if (!bufferHasOpenEscapeBlock) buffer.Append(in segment);
+                    bufferHasOpenEscapeBlock = true;
                     continue;
                 }
                 
@@ -192,7 +195,7 @@ namespace HandlebarsDotNet.PathStructure
 
                 if (chainSegments.Length > 1 && pathType != PathType.BlockHelper) isValidHelperLiteral = false;
 
-                segments.Add(new PathSegment(segment, chainSegments));
+                if (!bufferHasOpenEscapeBlock) segments.Add(new PathSegment(segment, chainSegments));
             }
 
             if (isValidHelperLiteral && segments.Count > 1) isValidHelperLiteral = false;
