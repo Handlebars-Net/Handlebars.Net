@@ -10,5 +10,6 @@ namespace HandlebarsDotNet.Collections
     {
         void AddOrReplace(in TKey key, in TValue value);
         new TValue this[in TKey key] { get; set; }
+        void Clear();
     }
 }

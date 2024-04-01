@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using HandlebarsDotNet.Pools;
 
 namespace HandlebarsDotNet.Compiler.Middlewares
 {
@@ -8,13 +9,14 @@ namespace HandlebarsDotNet.Compiler.Middlewares
     {
         public Expression<T> Invoke<T>(Expression<T> expression) where T : Delegate
         {
-            var visitor = new OptimizationVisitor();
+            using var container = GenericObjectPool<OptimizationVisitor>.Shared.Use();
+            using var visitor = container.Value;
             return (Expression<T>) visitor.Visit(expression);
         }
         
-        private class OptimizationVisitor : ExpressionVisitor
+        private class OptimizationVisitor : ExpressionVisitor, IDisposable
         {
-            private readonly Dictionary<object, ConstantExpression> _constantExpressions = new Dictionary<object, ConstantExpression>();
+            private readonly Dictionary<object, ConstantExpression> _constantExpressions = new();
             
             protected override Expression VisitBlock(BlockExpression node)
             {
@@ -55,6 +57,8 @@ namespace HandlebarsDotNet.Compiler.Middlewares
                     
                 return node;
             }
+
+            public void Dispose() => _constantExpressions.Clear();
         }
     }
 }

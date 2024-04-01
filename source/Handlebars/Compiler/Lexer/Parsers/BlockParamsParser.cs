@@ -23,7 +23,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
                 
                 reader.Read();
             
-                while (reader.Peek() != '|')
+                while (reader.Peek() != '|' && reader.Peek() != -1)
                 {
                     buffer.Append((char) reader.Read());
                 }

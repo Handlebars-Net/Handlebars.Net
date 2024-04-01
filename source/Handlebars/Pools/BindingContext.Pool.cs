@@ -50,6 +50,8 @@ namespace HandlebarsDotNet
                     item.ParentContext = null;
                     item.PartialBlockTemplate = null;
                     item.InlinePartialTemplates.Clear();
+                    item.Helpers.Clear();
+                    item.BlockHelpers.Clear();
                     item.Bag.Clear();
 
                     item.BlockParamsObject.OptionalClear();

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
@@ -157,6 +158,23 @@ namespace HandlebarsDotNet.Test
             End outer partial block<br />
         End outer partial";
             
+            Assert.Equal(expected, result);
+        }
+        
+        // issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/515
+        [Fact]
+        public void ValidContextInNestedPartialBlock()
+        {
+            const string template = @"{{#> [a/b] c=this }}{{c.value}}{{/ [a/b] }}";
+            const string partial = "{{c.value}} {{> @partial-block }}";
+
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterTemplate("a/b", @partial);
+
+            var callback = handlebars.Compile(template);
+            var result = callback(new { value = 42 });
+
+            const string expected = @"42 42";
             Assert.Equal(expected, result);
         }
         
@@ -411,6 +429,32 @@ namespace HandlebarsDotNet.Test
             Assert.Equal("the value is not provided", c);
         }
 
+        // issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/300
+        [Fact]
+        public void PartialLayoutAndInlineBlock()
+        {
+            string layout = "{{#>body}}{{fallback}}{{/body}}";
+            string page = @"{{#>layout}}{{#*inline ""body""}}{{truebody}}{{/inline}}{{/body}}{{/layout}}";
+
+            var handlebars = Handlebars.Create();
+            var template = handlebars.Compile(page);
+
+            var data = new
+            {
+                fallback = "aaa",
+                truebody = "Hello world"
+            };
+
+            using (var reader = new StringReader(layout))
+            {
+                var partialTemplate = handlebars.Compile(reader);
+                handlebars.RegisterTemplate("layout", partialTemplate);
+            }
+            
+            var result = template(data);
+            Assert.Equal("Hello world", result);
+        }
+        
         private class SwitchHelper : IHelperDescriptor<BlockHelperOptions>
         {
             public PathInfo Name { get; } = "switch";
@@ -596,7 +640,19 @@ namespace HandlebarsDotNet.Test
             Assert.Equal(expected, actual1);
             Assert.Equal(expected, actual2);
         }
-        
+
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/457
+        [Fact]
+        public void StringLength()
+        {
+            var handlebars = Handlebars.Create();
+            var render = handlebars.Compile("{{str.length}}");
+            object data = new { str = "string" };
+
+            var actual = render(data);
+            Assert.Equal("6", actual);
+        }
+
         // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/470
         [Theory]
         [ClassData(typeof(EscapeExpressionGenerator))]
@@ -650,6 +706,32 @@ namespace HandlebarsDotNet.Test
             var actual = Handlebars.Create(config).Compile(template).Invoke(value);
 
             Assert.Equal(expected, actual);
+        }
+
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/500
+        // Issue refers to the last letter being cut off when using 
+        // keys set in context
+        [Fact]
+        public void LastLetterCutOff()
+        {
+            var context = ImmutableDictionary<string, object>.Empty
+                .Add("Name", "abcd");
+
+            var template = "{{.Name}}";
+            var compiledTemplate = Handlebars.Compile(template);
+            string templateOutput = compiledTemplate(context);
+
+            Assert.Equal("abcd", templateOutput);
+        }
+
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/535
+        // Issue refers to invalid template causing OutOfMemoryException
+        [Fact]
+        public void UnrecognisedExpressionThrowsOutOfMemoryException()
+        {
+            var source = "{{Name | invalid}}";
+
+            Assert.Throws<HandlebarsCompilerException>(()=> Handlebars.Compile(source));
         }
     }
 }

@@ -25,9 +25,9 @@ namespace HandlebarsDotNet
             _comparerTag = comparerTag;
         }
 
-        internal static IEqualityComparer<PathInfoLight> PlainPathComparer { get; } = new PathInfoLightEqualityComparer(false);
+        internal static PathInfoLightEqualityComparer PlainPathComparer { get; } = new PathInfoLightEqualityComparer(countParts: false, ignoreCase: true);
 
-        internal static IEqualityComparer<PathInfoLight> PlainPathWithPartsCountComparer { get; } = new PathInfoLightEqualityComparer();
+        internal static PathInfoLightEqualityComparer PlainPathWithPartsCountComparer { get; } = new PathInfoLightEqualityComparer(countParts: true, ignoreCase: true);
         
         /// <summary>
         /// Used for special handling of Relaxed Helper Names

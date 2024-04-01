@@ -1,29 +1,21 @@
 <Project>
-    <PropertyGroup>
-        <SignAssembly>false</SignAssembly>
-        <AssemblyOriginatorKeyFile>ToBeObtained.snk</AssemblyOriginatorKeyFile> <!-- obtainde during publish from secrets -->
-    </PropertyGroup>
-    
-    <PropertyGroup>
-        <PackageLicense>LICENSE</PackageLicense>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <Owner>Rex Morgan; Handlebars-Net</Owner>
-        <PublishRepositoryUrl>true</PublishRepositoryUrl>
-        <EmbedUntrackedSources>false</EmbedUntrackedSources>
-        <IncludeSymbols>true</IncludeSymbols>
-        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-        <LangVersion>8</LangVersion>
-    </PropertyGroup>
-    
-    <PropertyGroup>
-        <NoWarn>1591;1574;1584;1658</NoWarn>
-    </PropertyGroup>
-    
-    <ItemGroup>
-        <Content Include="..\..\LICENSE">
-            <Visible>false</Visible>
-            <Pack>true</Pack>
-            <PackagePath>.</PackagePath>
-        </Content>
-    </ItemGroup>
+	<PropertyGroup>
+		<SignAssembly>false</SignAssembly>
+		<AssemblyOriginatorKeyFile>ToBeObtained.snk</AssemblyOriginatorKeyFile> <!-- obtained during publish from secrets -->
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<Owner>Rex Morgan; Handlebars-Net</Owner>
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<EmbedUntrackedSources>false</EmbedUntrackedSources>
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<LangVersion>9</LangVersion>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<NoWarn>1591;1574;1584;1658</NoWarn>
+	</PropertyGroup>
 </Project>

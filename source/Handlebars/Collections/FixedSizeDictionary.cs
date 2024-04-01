@@ -288,6 +288,7 @@ namespace HandlebarsDotNet.Collections
             
             ref var entryReference = ref _entries[entry.Index];
             entryIndex = entryReference.Index + 1;
+            var downstreamEntryIndex = entryIndex - 1;
 
             for (; entryIndex < _entries.Length; entryIndex++)
             {
@@ -301,7 +302,10 @@ namespace HandlebarsDotNet.Collections
                 return;
             }
 
-            entryIndex = (bucketIndex * _bucketMask) - 1;
+            // we've searched all entries in -> direction, now visiting in  <- direction
+            entryIndex = downstreamEntryIndex - 1;
+            // handling special case when `downstreamEntryIndex` can result into value >= _entries.Length
+            if (entryIndex >= _entries.Length) entryIndex = _entries.Length - 1;
             for (; entryIndex >= 0; entryIndex--)
             {
                 entry = _entries[entryIndex];

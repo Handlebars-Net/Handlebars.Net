@@ -28,6 +28,13 @@ Handlebars.Net doesn't use a scripting engine to run a Javascript library - it *
 
     dotnet add package Handlebars.Net
 
+## Extensions
+The following projects are extending Handlebars.Net:
+- [Handlebars.Net.Extension.Json](https://github.com/Handlebars-Net/Handlebars.Net.Extension.Json) (Adds `System.Text.Json.JsonDocument` support)
+- [Handlebars.Net.Extension.NewtonsoftJson](https://github.com/Handlebars-Net/Handlebars.Net.Extension.NewtonsoftJson) (Adds `Newtonsoft.Json` support)
+- [Handlebars.Net.Helpers](https://github.com/Handlebars-Net/Handlebars.Net.Helpers) (Additional helpers in the categories: 'Constants', 'Enumerable', 'Math', 'Regex', 'String', 'DateTime', 'Url' , 'DynamicLinq', 'Humanizer', 'Json', 'Random', 'Xeger' and 'XPath'.)
+
+
 ## Usage
 
 ```c#
@@ -160,6 +167,38 @@ The animal, Chewy, is not a dog.
 */
 ```
 
+### Registering Decorators
+
+```c#
+[Fact]
+public void BasicDecorator(IHandlebars handlebars)
+{
+    string source = "{{#block @value-from-decorator}}{{*decorator 42}}{{@value}}{{/block}}";
+
+    var handlebars = Handlebars.Create();
+    handlebars.RegisterHelper("block", (output, options, context, arguments) =>
+    {
+        options.Data.CreateProperty("value", arguments[0], out _);
+        options.Template(output, context);
+    });
+    
+    handlebars.RegisterDecorator("decorator", 
+        (TemplateDelegate function, in DecoratorOptions options, in Context context, in Arguments arguments) =>
+    {
+        options.Data.CreateProperty("value-from-decorator", arguments[0], out _);
+    });
+    
+    var template = handlebars.Compile(source);
+    
+    var result = template(null);
+    Assert.Equal("42", result);
+}
+```
+For more examples see [DecoratorTests.cs](https://github.com/Handlebars-Net/Handlebars.Net/tree/master/source/Handlebars.Test/DecoratorTests.cs)
+
+#### Known limitations:
+- helpers registered inside of a decorator will not override existing registrations
+
 ### Register custom value formatter
 
 In case you need to apply custom value formatting (e.g. `DateTime`) you can use `IFormatter` and `IFormatterProvider` interfaces:
@@ -214,6 +253,56 @@ public void DateTimeFormatter(IHandlebars handlebars)
 #### Notes
 - Formatters are resolved in reverse order according to registration. If multiple providers can provide formatter for a type the last registered would be used.
 
+### Shared environment
+
+By default Handlebars will create standalone copy of environment for each compiled template. This is done in order to eliminate a chance of altering behavior of one template from inside of other one.
+
+Unfortunately, in case runtime has a lot of compiled templates (regardless of the template size) it may have significant memory footprint. This can be solved by using `SharedEnvironment`.
+
+Templates compiled in `SharedEnvironment` will share the same configuration.
+
+#### Limitations
+
+Only runtime configuration properties can be changed after the shared environment has been created. Changes to `Configuration.CompileTimeConfiguration` and other compile-time properties will have no effect. 
+
+#### Example
+
+```c#
+[Fact]
+public void BasicSharedEnvironment()
+{
+    var handlebars = Handlebars.CreateSharedEnvironment();
+    handlebars.RegisterHelper("registerLateHelper", 
+        (in EncodedTextWriter writer, in HelperOptions options, in Context context, in Arguments arguments) =>
+        {
+            var configuration = options.Frame
+                .GetType()
+                .GetProperty("Configuration", BindingFlags.Instance | BindingFlags.NonPublic)?
+                .GetValue(options.Frame) as ICompiledHandlebarsConfiguration;
+            
+            var helpers = configuration?.Helpers;
+
+            const string name = "lateHelper";
+            if (helpers?.TryGetValue(name, out var @ref) ?? false)
+            {
+                @ref.Value = new DelegateReturnHelperDescriptor(name, (c, a) => 42);
+            }
+        });
+    
+    var _0_template = "{{registerLateHelper}}";
+    var _0 = handlebars.Compile(_0_template);
+    var _1_template = "{{lateHelper}}";
+    var _1 = handlebars.Compile(_1_template);
+    
+    var result = _1(null);
+    Assert.Equal("", result); // `lateHelper` is not registered yet
+
+    _0(null);
+    result = _1(null);
+    Assert.Equal("42", result);
+}
+```
+
 ### Compatibility feature toggles
 
 Compatibility feature toggles defines a set of settings responsible for controlling compilation/rendering behavior. Each of those settings would enable certain feature that would break compatibility with canonical Handlebars.
@@ -262,7 +351,7 @@ Will not encode:\
 &#96; (backtick)\
 ' (single quote)
 
-Will encode non-ascii characters `â`, `ß`, ...\
+Will encode non-ascii characters `ï¿½`, `ï¿½`, ...\
 Into HTML entities (`&lt;`, `&#226;`, `&#223;`, ...).
 
 ##### Areas
@@ -277,12 +366,12 @@ public void UseCanonicalHtmlEncodingRules()
     handlebars.Configuration.TextEncoder = new HtmlEncoder();
 
     var source = "{{Text}}";
-    var value = new { Text = "< â" };
+    var value = new { Text = "< ï¿½" };
 
     var template = handlebars.Compile(source);
     var actual = template(value);
             
-    Assert.Equal("&lt; â", actual);
+    Assert.Equal("&lt; ï¿½", actual);
 }
 ```
 
@@ -300,8 +389,6 @@ Nearly all time spent in rendering is in the routine that resolves values agains
 - The next fastest is a POCO (typically a few milliseconds for an average-sized template and model), which uses traditional reflection and is fairly fast.
 - Rendering starts to get slower (into the tens of milliseconds or more) on dynamic objects.
 - The slowest (up to hundreds of milliseconds or worse) tend to be objects with custom type implementations (such as `ICustomTypeDescriptor`) that are not optimized for heavy reflection.
-
-~~A frequent performance issue that comes up is JSON.NET's `JObject`, which for reasons we haven't fully researched, has very slow reflection characteristics when used as a model in Handlebars.Net. A simple fix is to just use JSON.NET's built-in ability to deserialize a JSON string to an `ExpandoObject` instead of a `JObject`. This will yield nearly an order of magnitude improvement in render times on average.~~
 
 ## Future roadmap
 

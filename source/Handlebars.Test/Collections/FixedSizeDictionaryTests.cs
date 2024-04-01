@@ -16,6 +16,31 @@ namespace HandlebarsDotNet.Test.Collections
         }
 
         [Fact]
+        public void AddOrReplace_Collisions()
+        {
+            var comparer = new CollisionsComparer(new Random().Next());
+            var dictionary = new FixedSizeDictionary<object, object, CollisionsComparer>(16, 7, comparer);
+            for (var i = 0; i < dictionary.Capacity; i++)
+            {
+                dictionary.AddOrReplace(new object(), new object(), out _);
+            }
+        }
+        
+        private readonly struct CollisionsComparer : IEqualityComparer<object>
+        {
+            private readonly int _hash;
+
+            public CollisionsComparer(int hash)
+            {
+                _hash = hash;
+            }
+            
+            public bool Equals(object x, object y) => false;
+
+            public int GetHashCode(object obj) => _hash;
+        }
+
+        [Fact]
         public void AddOrReplace()
         {
             var objects = new object[245];

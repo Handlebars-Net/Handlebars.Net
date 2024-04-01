@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using HandlebarsDotNet.PathStructure;
+using HandlebarsDotNet.StringUtils;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -10,7 +11,7 @@ namespace HandlebarsDotNet.Compiler
         private static readonly HashSet<string> ConditionHelpers = new HashSet<string>(StringComparer.OrdinalIgnoreCase){ "#if", "#unless", "^if", "^unless" };
         private static readonly HashSet<string> IteratorHelpers = new HashSet<string>(StringComparer.OrdinalIgnoreCase){ "#each", "^each" };
 
-        public static BlockAccumulatorContext Create(Expression item, ICompiledHandlebarsConfiguration configuration)
+        public static BlockAccumulatorContext Create(Expression item, Expression parentItem, ICompiledHandlebarsConfiguration configuration)
         {
             BlockAccumulatorContext context = null;
             if (IsConditionalBlock(item))
@@ -28,6 +29,10 @@ namespace HandlebarsDotNet.Compiler
             else if (IsBlockHelper(item, configuration))
             {
                 context = new BlockHelperAccumulatorContext(item);
+            }
+            else if (IsDetachedClosingElement(item, parentItem, out var closingElement))
+            {
+                throw new HandlebarsCompilerException($"A closing element '{closingElement}' was found without a matching open element");
             }
 
             return context;
@@ -49,7 +54,7 @@ namespace HandlebarsDotNet.Compiler
             {
                 var helperName = hitem.HelperName;
                 var helperPathInfo = PathInfo.Parse(helperName);
-                return hitem.IsBlock || !configuration.Helpers.ContainsKey(helperPathInfo) && configuration.BlockHelpers.ContainsKey(helperPathInfo);
+                return hitem.IsBlock || !configuration.Helpers.ContainsKey(helperPathInfo) && (configuration.BlockHelpers.ContainsKey(helperPathInfo) || configuration.BlockDecorators.ContainsKey(helperPathInfo));
             }
             return false;
         }
@@ -64,17 +69,55 @@ namespace HandlebarsDotNet.Compiler
         private static bool IsPartialBlock (Expression item)
         {
             item = UnwrapStatement (item);
-            switch (item)
+            return item switch
             {
-                case PathExpression expression:
-                    return expression.Path.StartsWith("#>");
-                
-                case HelperExpression helperExpression:
-                    return helperExpression.HelperName.StartsWith("#>");
-                
-                default:
-                    return false;
+                PathExpression expression => expression.Path.StartsWith("#>"),
+                HelperExpression helperExpression => helperExpression.HelperName.StartsWith("#>"),
+                _ => false,
+            };
+        }
+
+        private static bool IsDetachedClosingElement(Expression item, Expression parentItem, out string closingElement)
+        {
+            closingElement = null;
+
+            var itemElement = GetItemElement(item);
+
+            if (itemElement == null) return false;
+
+            var parentItemElement = GetItemElement(parentItem);
+
+            if (!itemElement.StartsWith("/")) return false;
+
+            if (parentItemElement == null || IsClosingElementNotMatchOpenElement(itemElement, parentItemElement))
+            {
+                closingElement = itemElement;
+
+                return true;
             }
+
+            return false;
+        }
+
+        private static bool IsClosingElementNotMatchOpenElement(string closingElement, string openElement)
+        {
+            if (closingElement == null) throw new ArgumentNullException(nameof(closingElement));
+            if (openElement == null) throw new ArgumentNullException(nameof(openElement));
+
+            if (!openElement.StartsWith("#") || openElement.StartsWith("#>") || openElement.StartsWith("#*")) return false;
+
+            return new Substring(openElement, 1) != new Substring(closingElement, 1);
+        }
+
+        private static string GetItemElement(Expression item)
+        {
+            item = UnwrapStatement(item);
+            return item switch
+            {
+                PathExpression pathExpression => pathExpression.Path,
+                HelperExpression helperExpression => helperExpression.HelperName,
+                _ => null,
+            };
         }
 
         protected static Expression UnwrapStatement(Expression item)

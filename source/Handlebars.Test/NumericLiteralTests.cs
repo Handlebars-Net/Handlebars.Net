@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using HandlebarsDotNet.Compiler;
+﻿using System.Linq;
 using Xunit;
 
 namespace HandlebarsDotNet.Test
@@ -14,10 +12,37 @@ namespace HandlebarsDotNet.Test
                     var arr = args.AsEnumerable().Select(a => (object)int.Parse(a.ToString()));
                     writer.Write(arr.Aggregate(0, (a, i) => a + (int)i));
                 });
+
+            Handlebars.RegisterHelper("longAdd", (writer, context, args) =>
+            {
+                var arr = args.AsEnumerable().Select(a => long.Parse(a.ToString()));
+                var sum = arr.Sum();
+                writer.Write(sum);
+            });
+        }
+
+        [Theory]
+        [InlineData("{{longAdd 1000000000 9999999999}}")]
+        [InlineData("{{longAdd 1000000000  9999999999}}")]
+        [InlineData("{{longAdd 1000000000 9999999999 }}")]
+        [InlineData("{{longAdd 1000000000    9999999999}}")]
+        [InlineData("{{longAdd    1000000000    9999999999}}")]
+        [InlineData("{{longAdd 1000000000 \"9999999999\"}}")]
+        [InlineData("{{longAdd 1000000000 \"9999999999\" }}")]
+        [InlineData("{{longAdd 1000000000    \"9999999999\"}}")]
+        [InlineData("{{longAdd 1000000000    \"9999999999\" }}")]
+        [InlineData("{{longAdd \"1000000000\" 9999999999}}")]
+        [InlineData("{{longAdd \"1000000000\" \"9999999999\"}}")]
+        public void NumericLiteralLongTests(string source)
+        {
+            var template = Handlebars.Compile(source);
+            var data = new { };
+            var result = template(data);
+            Assert.Equal("10999999999", result);
         }
 
         [Fact]
-        public void NumericLiteralTest1()
+        public void NumericLiteralIntegerTest1()
         {
             var source = "{{numericLiteralAdd 3 4}}";
             var template = Handlebars.Compile(source);
@@ -27,7 +52,7 @@ namespace HandlebarsDotNet.Test
         }
 
         [Fact]
-        public void NumericLiteralTest2()
+        public void NumericLiteralIntegerTest2()
         {
             var source = "{{numericLiteralAdd 3  4}}";
             var template = Handlebars.Compile(source);
@@ -37,7 +62,7 @@ namespace HandlebarsDotNet.Test
         }
 
         [Fact]
-        public void NumericLiteralTest3()
+        public void NumericLiteralIntegerTest3()
         {
             var source = "{{numericLiteralAdd 3 4 }}";
             var template = Handlebars.Compile(source);
@@ -47,7 +72,7 @@ namespace HandlebarsDotNet.Test
         }
 
         [Fact]
-        public void NumericLiteralTest4()
+        public void NumericLiteralIntegerTest4()
         {
             var source = "{{numericLiteralAdd 3    4 }}";
             var template = Handlebars.Compile(source);
@@ -57,7 +82,7 @@ namespace HandlebarsDotNet.Test
         }
 
         [Fact]
-        public void NumericLiteralTest5()
+        public void NumericLiteralIntegerTest5()
         {
             var source = "{{numericLiteralAdd    3    4 }}";
             var template = Handlebars.Compile(source);
@@ -67,7 +92,7 @@ namespace HandlebarsDotNet.Test
         }
 
         [Fact]
-        public void NumericLiteralTest6()
+        public void NumericLiteralIntegerTest6()
         {
             var source = "{{numericLiteralAdd 3 \"4\"}}";
             var template = Handlebars.Compile(source);
@@ -77,7 +102,7 @@ namespace HandlebarsDotNet.Test
         }
 
         [Fact]
-        public void NumericLiteralTest7()
+        public void NumericLiteralIntegerTest7()
         {
             var source = "{{numericLiteralAdd 3 \"4\" }}";
             var template = Handlebars.Compile(source);
@@ -87,7 +112,7 @@ namespace HandlebarsDotNet.Test
         }
 
         [Fact]
-        public void NumericLiteralTest8()
+        public void NumericLiteralIntegerTest8()
         {
             var source = "{{numericLiteralAdd 3    \"4\" }}";
             var template = Handlebars.Compile(source);
@@ -97,7 +122,7 @@ namespace HandlebarsDotNet.Test
         }
 
         [Fact]
-        public void NumericLiteralTest9()
+        public void NumericLiteralIntegerTest9()
         {
             var source = "{{numericLiteralAdd    3   \"4\" }}";
             var template = Handlebars.Compile(source);
@@ -107,7 +132,7 @@ namespace HandlebarsDotNet.Test
         }
 
         [Fact]
-        public void NumericLiteralTest10()
+        public void NumericLiteralIntegerTest10()
         {
             var source = "{{numericLiteralAdd \"3\" 4}}";
             var template = Handlebars.Compile(source);
@@ -117,7 +142,7 @@ namespace HandlebarsDotNet.Test
         }
 
         [Fact]
-        public void NumericLiteralTest11()
+        public void NumericLiteralIntegerTest11()
         {
             var source = "{{numericLiteralAdd \"3\" 4 }}";
             var template = Handlebars.Compile(source);
@@ -127,4 +152,3 @@ namespace HandlebarsDotNet.Test
         }
     }
 }
-

@@ -12,30 +12,11 @@ using Newtonsoft.Json.Linq;
 using HandlebarsDotNet.Features;
 using HandlebarsDotNet.IO;
 using HandlebarsDotNet.PathStructure;
+using HandlebarsDotNet.Runtime;
+using HandlebarsDotNet.ValueProviders;
 
 namespace HandlebarsDotNet.Test
 {
-    public class HandlebarsEnvGenerator : IEnumerable<object[]>
-    {
-        private readonly List<IHandlebars> _data = new List<IHandlebars>
-        {
-            Handlebars.Create(),
-            Handlebars.Create(new HandlebarsConfiguration().Configure(o => o.Compatibility.RelaxedHelperNaming = true)),
-            Handlebars.Create(new HandlebarsConfiguration().UseWarmUp(types =>
-            {
-                types.Add(typeof(Dictionary<string, object>));
-                types.Add(typeof(Dictionary<int, object>));
-                types.Add(typeof(Dictionary<long, object>));
-                types.Add(typeof(Dictionary<string, string>));
-            })),
-            Handlebars.Create(new HandlebarsConfiguration().Configure(o => o.TextEncoder = new HtmlEncoder())),
-        };
-
-        public IEnumerator<object[]> GetEnumerator() => _data.Select(o => new object[] { o }).GetEnumerator();
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-    }
-    
     public class BasicIntegrationTests
     {
         private static string HtmlEncodeStringHelper(IHandlebars handlebars, string inputString)
@@ -77,6 +58,42 @@ namespace HandlebarsDotNet.Test
             Assert.Equal("Hello, Handlebars.Net!", result);
         }
 
+        [Fact]
+        public void BasicSharedEnvironment()
+        {
+            var handlebars = Handlebars.CreateSharedEnvironment();
+            handlebars.RegisterHelper("registerLateHelper",
+                (in EncodedTextWriter writer, in HelperOptions options, in Context context, in Arguments arguments) =>
+                {
+                    var configuration = options.Frame
+                        .GetType()
+                        .GetProperty("Configuration", BindingFlags.Instance | BindingFlags.NonPublic)?
+                        .GetValue(options.Frame) as ICompiledHandlebarsConfiguration;
+
+                    if (configuration == null) return;
+
+                    var helpers = configuration.Helpers;
+
+                    const string name = "lateHelper";
+                    if (helpers.TryGetValue(name, out var @ref))
+                    {
+                        @ref.Value = new DelegateReturnHelperDescriptor(name, (c, a) => 42);
+                    }
+                });
+
+            var _0_template = "{{registerLateHelper}}";
+            var _0 = handlebars.Compile(_0_template);
+            var _1_template = "{{lateHelper}}";
+            var _1 = handlebars.Compile(_1_template);
+
+            var result = _1(null);
+            Assert.Equal("", result); // `lateHelper` is not registered yet
+
+            _0(null);
+            result = _1(null);
+            Assert.Equal("42", result);
+        }
+
         [Theory]
         [ClassData(typeof(HandlebarsEnvGenerator))]
         public void EmptyIf(IHandlebars handlebars)
@@ -110,7 +127,7 @@ namespace HandlebarsDotNet.Test
             var expected = HtmlEncodeStringHelper(handlebars, "Hello, ('foo' is undefined)!");
             Assert.Equal(expected, result);
         }
-        
+
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
         public void PathUnresolvedBindingFormatter(IHandlebars handlebars)
         {
@@ -128,9 +145,9 @@ namespace HandlebarsDotNet.Test
             var expected = HtmlEncodeStringHelper(handlebars, "Hello, ('foo' is undefined)!");
             Assert.Equal(expected, result);
         }
-        
+
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
-        public void CustcomDateTimeFormat(IHandlebars handlebars)
+        public void CustomDateTimeFormat(IHandlebars handlebars)
         {
             var source = "{{now}}";
 
@@ -143,23 +160,23 @@ namespace HandlebarsDotNet.Test
             {
                 now = DateTime.Now
             };
-            
+
             var result = template(data);
             Assert.Equal(data.now.ToString(format), result);
         }
-        
+
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
         public void DefaultDateTimeFormat(IHandlebars handlebars)
         {
             var source = "{{time}}";
-            
+
             var template = handlebars.Compile(source);
             var time = "2020-11-19T23:36:08.4256520Z";
             var data = new
             {
                 time = DateTime.Parse(time).ToUniversalTime()
             };
-            
+
             var result = template(data);
             Assert.Equal(time, result);
         }
@@ -176,7 +193,7 @@ namespace HandlebarsDotNet.Test
             {
                 name = "Handlebars.Net"
             };
-            
+
             Assert.Throws<HandlebarsUndefinedBindingException>(() => template(data));
         }
 
@@ -186,7 +203,7 @@ namespace HandlebarsDotNet.Test
             var source = "Hello, {{foo.bar}}!";
 
             handlebars.Configuration.ThrowOnUnresolvedBindingExpression = true;
-            
+
             var template = handlebars.Compile(source);
 
             var data = new
@@ -194,7 +211,7 @@ namespace HandlebarsDotNet.Test
                 foo = (object)null
             };
             var ex = Assert.Throws<HandlebarsUndefinedBindingException>(() => template(data));
-            
+
             Assert.Equal("bar is undefined", ex.Message);
         }
 
@@ -330,7 +347,7 @@ false
             var result = template(data);
             Assert.Equal("Hello, Handlebars.Net!", result);
         }
-        
+
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
         public void BasicPathEnumerableNoSquareBracketsChildPath(IHandlebars handlebars)
         {
@@ -420,7 +437,7 @@ false
             };
 
             var result = handlebarsTemplate(data);
-            var actual = string.Join(" ", result.Split(new []{"\r\n"}, StringSplitOptions.RemoveEmptyEntries).Select(o => o.Trim(' ')));
+            var actual = string.Join(" ", result.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries).Select(o => o.Trim(' ')));
             Assert.Equal("Garry Finch gazraa Karen Finch photobasics", actual);
         }
 
@@ -436,10 +453,102 @@ false
             var result = template(data);
             Assert.Equal("Array is 2 item(s) long", result);
         }
-        
+
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void PathRelativeBinding_WithDefaultValue(IHandlebars handlebars)
+        {
+            var template =
+                @"{{#each users}}
+                    {{this/person.name/firstName}}
+                    {{#with this/person.name}}
+                        {{lastName}}
+                        {{lookup (lookup ../this/../users @index) 'twitter' 'N/A'}}
+                    {{/with}}
+                {{/each}}";
+
+            var handlebarsTemplate = handlebars.Compile(template);
+
+            var data = new
+            {
+                users = new object[]
+                {
+                    new
+                    {
+                        person = new
+                        {
+                            name = new
+                            {
+                                firstName = "Garry",
+                                lastName = "Finch"
+                            }
+                        },
+                        jobTitle = "Front End Technical Lead",
+                    },
+                    new
+                    {
+                        person = new
+                        {
+                            name = new
+                            {
+                                firstName = "Karen",
+                                lastName = "Finch"
+                            }
+                        },
+                        jobTitle = "Photographer",
+                        twitter = "photobasics"
+                    }
+                }
+            };
+
+            var result = handlebarsTemplate(data);
+            var actual = string.Join(" ", result.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries).Select(o => o.Trim(' ')));
+            Assert.Equal("Garry Finch N/A Karen Finch photobasics", actual);
+        }
+
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void PathRelativeBinding_WrongNumberOfArguments(IHandlebars handlebars)
+        {
+            // Arrange
+            var template =
+                @"{{#each users}}
+                    {{this/person.name/firstName}}
+                    {{#with this/person.name}}
+                        {{lastName}}
+                        {{lookup (lookup ../this/../users @index)}}
+                    {{/with}}
+                {{/each}}";
+
+            var handlebarsTemplate = handlebars.Compile(template);
+
+            var data = new
+            {
+                users = new object[]
+                {
+                    new
+                    {
+                        person = new
+                        {
+                            name = new
+                            {
+                                firstName = "Garry",
+                                lastName = "Finch"
+                            }
+                        },
+                        twitter = "test"
+                    }
+                }
+            };
+
+            // Act
+            var ex = Assert.Throws<HandlebarsException>(() => handlebarsTemplate(data));
+            Assert.Equal("{{lookup}} helper must have two or three arguments", ex.Message);
+        }
+
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
         public void AliasedPropertyOnArray(IHandlebars handlebars)
         {
+            if (handlebars.IsSharedEnvironment) return;
+
             var source = "Array is {{ names.count }} item(s) long";
             handlebars.Configuration.UseCollectionMemberAliasProvider();
             var template = handlebars.Compile(source);
@@ -450,15 +559,15 @@ false
             var result = template(data);
             Assert.Equal("Array is 2 item(s) long", result);
         }
-        
+
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
         public void CustomAliasedPropertyOnArray(IHandlebars handlebars)
         {
             var aliasProvider = new DelegatedMemberAliasProvider()
                 .AddAlias<IList>("myCountAlias", list => list.Count);
-            
+
             handlebars.Configuration.AliasProviders.Add(aliasProvider);
-            
+
             var source = "Array is {{ names.myCountAlias }} item(s) long";
             var template = handlebars.Compile(source);
             var data = new
@@ -468,10 +577,12 @@ false
             var result = template(data);
             Assert.Equal("Array is 2 item(s) long", result);
         }
-        
+
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
         public void AliasedPropertyOnList(IHandlebars handlebars)
         {
+            if (handlebars.IsSharedEnvironment) return;
+
             var source = "Array is {{ names.Length }} item(s) long";
             handlebars.Configuration.UseCollectionMemberAliasProvider();
             var template = handlebars.Compile(source);
@@ -560,7 +671,7 @@ false
             var result = template(data);
             Assert.Equal("Hello, my good friend Erik!", result);
         }
-        
+
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
         public void GlobalDataPropagation(IHandlebars handlebars)
         {
@@ -579,7 +690,7 @@ false
             var result = template(data, new { global1 = 2, global2 = 4 });
             Assert.Equal("1 2 3 4", result);
         }
-        
+
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
         public void TestSingleLoopDictionary(IHandlebars handlebars)
         {
@@ -595,7 +706,7 @@ false
             var result = template(data);
             Assert.Equal("ii=0 ii=1 ii=2 ", result);
         }
-        
+
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
         public void WithWithBlockParams(IHandlebars handlebars)
         {
@@ -679,7 +790,7 @@ false
             var result = template(data);
             Assert.Equal("hello world ", result);
         }
-        
+
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
         public void BasicListEnumerator(IHandlebars handlebars)
         {
@@ -696,7 +807,7 @@ false
             var result = template(data);
             Assert.Equal("hello world ", result);
         }
-        
+
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
         public void BasicObjectEnumeratorWithLast(IHandlebars handlebars)
         {
@@ -730,7 +841,7 @@ false
             var result = template(data);
             Assert.Equal("foo: hello bar: world ", result);
         }
-        
+
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
         public void ObjectEnumeratorWithBlockParams(IHandlebars handlebars)
         {
@@ -747,7 +858,7 @@ false
             var result = template(data);
             Assert.Equal("hello: foo world: bar ", result);
         }
-        
+
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
         public void ObjectEnumeratorWithWithContainingBlockParams(IHandlebars handlebars)
         {
@@ -781,7 +892,7 @@ false
             var result = template(data);
             Assert.Equal("hello world ", result);
         }
-        
+
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
         public void BasicDictionaryEnumeratorDeep(IHandlebars handlebars)
         {
@@ -813,7 +924,7 @@ false
                     }
                 }
             };
-            
+
             var result = template(data);
             Assert.Equal("1234", result);
         }
@@ -834,7 +945,7 @@ false
             var result = template(data);
             Assert.Equal("hello foo world bar ", result);
         }
-        
+
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
         public void DictionaryWithLastEnumerator(IHandlebars handlebars)
         {
@@ -1658,12 +1769,12 @@ false
             var source = @"{{#is ProgramID """"}}no program{{/is}}{{#is ProgramID ""1081""}}some program text{{/is}}";
 
             handlebars.RegisterHelper("is", (output, options, context, args) =>
+            {
+                if (args[0] == args[1])
                 {
-                    if (args[0] == args[1])
-                    {
-                        options.Template(output, context);
-                    }
-                });
+                    options.Template(output, context);
+                }
+            });
 
 
             var template = handlebars.Compile(source);
@@ -1750,74 +1861,74 @@ false
             // Act
             compile.Invoke(mock);
         }
-        
+
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
-        public void ShouldBeAbleToHandleFieldContainingDots(IHandlebars handlebars) 
-        { 
-            var source = "Everybody was {{ foo.bar }}-{{ [foo.bar] }} {{ foo.[bar.baz].buz }}!"; 
-            var template = handlebars.Compile(source); 
-            var data = new Dictionary<string, object>() 
-            { 
-                {"foo.bar", "fu"}, 
-                {"foo", new Dictionary<string,object>{{ "bar", "kung" }, { "bar.baz", new Dictionary<string, object> {{ "buz", "fighting" }} }} } 
-            }; 
-            var result = template(data); 
-            Assert.Equal("Everybody was kung-fu fighting!", result); 
-        } 
- 
-        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
-        public void ShouldBeAbleToHandleListWithNumericalFields(IHandlebars handlebars) 
-        { 
-            var source = "{{ [0] }}"; 
-            var template = handlebars.Compile(source); 
-            var data = new List<string> {"FOOBAR"}; 
-            var result = template(data); 
-            Assert.Equal("FOOBAR", result); 
-        } 
- 
-        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
-        public void ShouldBeAbleToHandleDictionaryWithNumericalFields(IHandlebars handlebars) 
-        { 
-            var source = "{{ [0] }}"; 
-            var template = handlebars.Compile(source); 
-            var data = new Dictionary<string,string> 
-            { 
-                {"0", "FOOBAR"}, 
-            }; 
-            var result = template(data); 
-            Assert.Equal("FOOBAR", result); 
-        } 
- 
-        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
-        public void ShouldBeAbleToHandleJObjectsWithNumericalFields(IHandlebars handlebars) 
-        { 
-            var source = "{{ [0] }}"; 
-            var template = handlebars.Compile(source); 
-            var data = new JObject 
-            { 
-                {"0", "FOOBAR"}, 
-            }; 
-            var result = template(data); 
-            Assert.Equal("FOOBAR", result); 
-        } 
- 
-        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
-        public void ShouldBeAbleToHandleKeysStartingAndEndingWithSquareBrackets(IHandlebars handlebars) 
-        { 
-            var source = 
-                "{{ noBracket }} {{ [noBracket] }} {{ [[startsWithBracket] }} {{ [endsWithBracket]] }} {{ [[bothBrackets]] }}"; 
-            var template = handlebars.Compile(source); 
-            var data = new Dictionary<string, string> 
-            { 
-                {"noBracket", "foo"}, 
-                {"[startsWithBracket", "bar"}, 
-                {"endsWithBracket]", "baz"}, 
-                {"[bothBrackets]", "buz"} 
-            }; 
-            var result = template(data); 
-            Assert.Equal("foo foo bar baz buz", result); 
+        public void ShouldBeAbleToHandleFieldContainingDots(IHandlebars handlebars)
+        {
+            var source = "Everybody was {{ foo.bar }}-{{ [foo.bar] }} {{ foo.[bar.baz].buz }}!";
+            var template = handlebars.Compile(source);
+            var data = new Dictionary<string, object>()
+            {
+                {"foo.bar", "fu"},
+                {"foo", new Dictionary<string,object>{{ "bar", "kung" }, { "bar.baz", new Dictionary<string, object> {{ "buz", "fighting" }} }} }
+            };
+            var result = template(data);
+            Assert.Equal("Everybody was kung-fu fighting!", result);
         }
-        
+
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void ShouldBeAbleToHandleListWithNumericalFields(IHandlebars handlebars)
+        {
+            var source = "{{ [0] }}";
+            var template = handlebars.Compile(source);
+            var data = new List<string> { "FOOBAR" };
+            var result = template(data);
+            Assert.Equal("FOOBAR", result);
+        }
+
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void ShouldBeAbleToHandleDictionaryWithNumericalFields(IHandlebars handlebars)
+        {
+            var source = "{{ [0] }}";
+            var template = handlebars.Compile(source);
+            var data = new Dictionary<string, string>
+            {
+                {"0", "FOOBAR"},
+            };
+            var result = template(data);
+            Assert.Equal("FOOBAR", result);
+        }
+
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void ShouldBeAbleToHandleJObjectsWithNumericalFields(IHandlebars handlebars)
+        {
+            var source = "{{ [0] }}";
+            var template = handlebars.Compile(source);
+            var data = new JObject
+            {
+                {"0", "FOOBAR"},
+            };
+            var result = template(data);
+            Assert.Equal("FOOBAR", result);
+        }
+
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void ShouldBeAbleToHandleKeysStartingAndEndingWithSquareBrackets(IHandlebars handlebars)
+        {
+            var source =
+                "{{ noBracket }} {{ [noBracket] }} {{ [[startsWithBracket] }} {{ [endsWithBracket]] }} {{ [[bothBrackets]] }}";
+            var template = handlebars.Compile(source);
+            var data = new Dictionary<string, string>
+            {
+                {"noBracket", "foo"},
+                {"[startsWithBracket", "bar"},
+                {"endsWithBracket]", "baz"},
+                {"[bothBrackets]", "buz"}
+            };
+            var result = template(data);
+            Assert.Equal("foo foo bar baz buz", result);
+        }
+
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
         public void BasicReturnFromHelper(IHandlebars Handlebars)
         {
@@ -1825,11 +1936,11 @@ false
             Handlebars.RegisterHelper(getData, (context, arguments) => arguments[0]);
             var source = $"{{{{{getData} 'data'}}}}";
             var template = Handlebars.Compile(source);
-            
+
             var result = template(new object());
             Assert.Equal("data", result);
         }
-        
+
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
         public void CollectionReturnFromHelper(IHandlebars handlebars)
         {
@@ -1840,17 +1951,17 @@ false
                     {"Nils", arguments[0].ToString()},
                     {"Yehuda", arguments[1].ToString()}
                 };
-        
+
                 return data;
             });
             var source = "{{#each (getData 'Darmstadt' 'San Francisco')}}{{@key}} lives in {{@value}}. {{/each}}";
             var template = handlebars.Compile(source);
-            
+
             var result = template(new object());
             Assert.Equal("Nils lives in Darmstadt. Yehuda lives in San Francisco. ", result);
         }
-        
-        
+
+
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
         public void ReturnFromHelperWithSubExpression(IHandlebars handlebars)
         {
@@ -1861,42 +1972,42 @@ false
                 writer.WriteSafeString(" ");
                 writer.WriteSafeString(arguments[1]);
             });
-        
+
             var getData = $"getData{Guid.NewGuid()}";
             handlebars.RegisterHelper(getData, (context, arguments) =>
             {
                 return arguments[0];
             });
-            
+
             var source = $"{{{{{getData} ({formatData} 'data' '42')}}}}";
             var template = handlebars.Compile(source);
-        
+
             var result = template(new object());
             Assert.Equal("data 42", result);
         }
-        
+
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
         public void ReturnFromHelperLateBindWithSubExpression(IHandlebars handlebars)
         {
             var formatData = $"formatData{Guid.NewGuid()}";
             var getData = $"getData{Guid.NewGuid()}";
-            
+
             var source = $"{{{{{getData} ({formatData} 'data' '42')}}}}";
             var template = handlebars.Compile(source);
-            
+
             handlebars.RegisterHelper(formatData, (writer, context, arguments) =>
             {
                 writer.WriteSafeString(arguments[0]);
                 writer.WriteSafeString(" ");
                 writer.WriteSafeString(arguments[1]);
             });
-            
+
             handlebars.RegisterHelper(getData, (context, arguments) => arguments[0]);
-            
+
             var result = template(new object());
             Assert.Equal("data 42", result);
         }
-        
+
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
         public void BasicLookup(IHandlebars handlebars)
         {
@@ -1904,14 +2015,14 @@ false
             var template = handlebars.Compile(source);
             var data = new
             {
-                people = new[]{"Nils", "Yehuda"},
-                cities = new[]{"Darmstadt", "San Francisco"}
+                people = new[] { "Nils", "Yehuda" },
+                cities = new[] { "Darmstadt", "San Francisco" }
             };
-            
+
             var result = template(data);
             Assert.Equal("Nils lives in Darmstadt Yehuda lives in San Francisco ", result);
         }
-        
+
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
         public void LookupAsSubExpression(IHandlebars handlebars)
         {
@@ -1946,7 +2057,7 @@ false
                     }
                 }
             };
-            
+
             var result = template(data);
             Assert.Equal("Nils lives in Darmstadt (Germany)Yehuda lives in San Francisco (USA)", result);
         }
@@ -1963,10 +2074,10 @@ false
 
             var func = handlebars.Compile(template);
             var actual = func(data);
-            
+
             Assert.Equal(expected, actual);
         }
-        
+
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
         private void CustomHelperResolverTest(IHandlebars handlebars)
         {
@@ -1974,9 +2085,9 @@ false
             var template = "{{ toLower input }}";
             var func = handlebars.Compile(template);
             var data = new { input = "ABC" };
-            
+
             var actual = func(data);
-            
+
             Assert.Equal(data.input.ToLower(), actual);
         }
 
@@ -1988,7 +2099,7 @@ false
         public void ReferencingDirectlyVariableWhenHelperRegistered(string helperName)
         {
             var source = "{{ ./" + helperName + " }}";
-            
+
             foreach (IHandlebars handlebars in new HandlebarsEnvGenerator().Select(o => o[0]))
             {
                 handlebars.RegisterHelper("one.two", (context, arguments) => 0);
@@ -1996,8 +2107,8 @@ false
                 var template = handlebars.Compile(source);
 
                 var actual = template(new { one = new { two = 42 } });
-            
-                Assert.Equal("42", actual);   
+
+                Assert.Equal("42", actual);
             }
         }
 
@@ -2039,10 +2150,29 @@ false
             var handlebars = Handlebars.Create(config);
             handlebars.Configuration.TextEncoder = useLegacyHandlebarsNetHtmlEncoding ? (ITextEncoder)new HtmlEncoderLegacy() : new HtmlEncoder();
             var compiledTemplate = handlebars.Compile(template);
-            
+
             var actual = compiledTemplate(value);
 
             Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void ChainedPathIteratorHelper()
+        {
+            var context = new
+            {
+                bundles = new
+                {
+                    styles = new
+                    {
+                        vendor = new[] { "a", "b", "c" }
+                    }
+                }
+            };
+
+            var nestedObjectsHelperResult = Handlebars.Compile("{{#bundles.styles.vendor}}{{this}}{{/bundles.styles.vendor}}")(context);
+
+            Assert.Equal("abc", nestedObjectsHelperResult);
         }
 
         private class StringHelperResolver : IHelperResolver
@@ -2059,11 +2189,11 @@ false
                         helper = null;
                         return false;
                     }
-                    
+
                     helper = new HelperDescriptor(name, method);
                     return true;
                 }
-                
+
                 helper = null;
                 return false;
             }
@@ -2073,7 +2203,7 @@ false
                 helper = null;
                 return false;
             }
-            
+
             private class HelperDescriptor : IHelperDescriptor<HelperOptions>
             {
                 private readonly MethodInfo _methodInfo;
@@ -2096,7 +2226,7 @@ false
                 }
             }
         }
-        
+
         private class CustomUndefinedFormatter : IFormatter, IFormatterProvider
         {
             public void Format<T>(T value, in EncodedTextWriter writer)
@@ -2116,7 +2246,7 @@ false
                 return true;
             }
         }
-        
+
         private class CustomDateTimeFormatter : IFormatter, IFormatterProvider
         {
             private readonly string _format;
@@ -2125,9 +2255,9 @@ false
 
             public void Format<T>(T value, in EncodedTextWriter writer)
             {
-                if(!(value is DateTime dateTime)) 
+                if (!(value is DateTime dateTime))
                     throw new ArgumentException("supposed to be DateTime");
-                
+
                 writer.Write($"{dateTime.ToString(_format)}");
             }
 

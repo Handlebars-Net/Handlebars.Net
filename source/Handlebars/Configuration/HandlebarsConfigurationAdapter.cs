@@ -6,6 +6,7 @@ using System.Reflection;
 using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.Compiler.Middlewares;
 using HandlebarsDotNet.Compiler.Resolvers;
+using HandlebarsDotNet.Decorators;
 using HandlebarsDotNet.EqualityComparers;
 using HandlebarsDotNet.Features;
 using HandlebarsDotNet.Helpers;
@@ -17,13 +18,13 @@ namespace HandlebarsDotNet
 {
     internal class HandlebarsConfigurationAdapter : ICompiledHandlebarsConfiguration
     {
+        // observers are in WeakCollection, need to keep reference somewhere
         private readonly List<object> _observers = new List<object>();
         
         public HandlebarsConfigurationAdapter(HandlebarsConfiguration configuration)
         {
             UnderlingConfiguration = configuration;
 
-            AliasProviders = new ObservableList<IMemberAliasProvider>(configuration.AliasProviders);
             HelperResolvers = new ObservableList<IHelperResolver>(configuration.HelperResolvers);
             RegisteredTemplates = new ObservableIndex<string, HandlebarsTemplate<TextWriter, object, object>, StringEqualityComparer>(new StringEqualityComparer(StringComparison.OrdinalIgnoreCase), configuration.RegisteredTemplates);
             AliasProviders = new ObservableList<IMemberAliasProvider>(configuration.AliasProviders);
@@ -33,6 +34,7 @@ namespace HandlebarsDotNet
                 new CollectionFormatterProvider(),
                 new ReadOnlyCollectionFormatterProvider()
             }.AddMany(configuration.FormatterProviders);
+            configuration.FormatterProviders.Subscribe(FormatterProviders);
             
             ObjectDescriptorProviders = CreateObjectDescriptorProvider(UnderlingConfiguration.ObjectDescriptorProviders);
             ExpressionMiddlewares = new ObservableList<IExpressionMiddleware>(configuration.CompileTimeConfiguration.ExpressionMiddleware)
@@ -46,8 +48,10 @@ namespace HandlebarsDotNet
                 .OrderBy(o => o.GetType().GetTypeInfo().GetCustomAttribute<FeatureOrderAttribute>()?.Order ?? 100)
                 .ToList();
             
-            Helpers = CreateHelpersSubscription(configuration.Helpers);
-            BlockHelpers = CreateHelpersSubscription(configuration.BlockHelpers);
+            Helpers = CreateHelpersSubscription<IHelperDescriptor<HelperOptions>, HelperOptions>(configuration.Helpers);
+            BlockHelpers = CreateHelpersSubscription<IHelperDescriptor<BlockHelperOptions>, BlockHelperOptions>(configuration.BlockHelpers);
+            Decorators = CreateHelpersSubscription<IDecoratorDescriptor<DecoratorOptions>, DecoratorOptions>(configuration.Decorators);
+            BlockDecorators = CreateHelpersSubscription<IDecoratorDescriptor<BlockDecoratorOptions>, BlockDecoratorOptions>(configuration.BlockDecorators);
         }
 
         public HandlebarsConfiguration UnderlingConfiguration { get; }
@@ -71,24 +75,26 @@ namespace HandlebarsDotNet
         
         public IIndexed<PathInfoLight, Ref<IHelperDescriptor<HelperOptions>>> Helpers { get; }
         public IIndexed<PathInfoLight, Ref<IHelperDescriptor<BlockHelperOptions>>> BlockHelpers { get; }
+        public IIndexed<PathInfoLight, Ref<IDecoratorDescriptor<DecoratorOptions>>> Decorators { get; }
+        public IIndexed<PathInfoLight, Ref<IDecoratorDescriptor<BlockDecoratorOptions>>> BlockDecorators { get; }
         public IAppendOnlyList<IHelperResolver> HelperResolvers { get; }
         public IIndexed<string, HandlebarsTemplate<TextWriter, object, object>> RegisteredTemplates { get; }
         
-        private ObservableIndex<PathInfoLight, Ref<IHelperDescriptor<TOptions>>, IEqualityComparer<PathInfoLight>> CreateHelpersSubscription<TOptions>(
-            IIndexed<string, IHelperDescriptor<TOptions>> source) 
-            where TOptions : struct, IHelperOptions
+        private ObservableIndex<PathInfoLight, Ref<TDescriptor>, PathInfoLight.PathInfoLightEqualityComparer> CreateHelpersSubscription<TDescriptor, TOptions>(IIndexed<string, TDescriptor> source) 
+            where TOptions : struct, IOptions
+            where TDescriptor : class, IDescriptor<TOptions>
         {
             var equalityComparer = Compatibility.RelaxedHelperNaming ? PathInfoLight.PlainPathComparer : PathInfoLight.PlainPathWithPartsCountComparer;
             var existingHelpers = source.ToIndexed(
                 o => (PathInfoLight) $"[{o.Key}]", 
-                o => new Ref<IHelperDescriptor<TOptions>>(o.Value),
+                o => new Ref<TDescriptor>(o.Value),
                 equalityComparer
             );
             
-            var target = new ObservableIndex<PathInfoLight, Ref<IHelperDescriptor<TOptions>>, IEqualityComparer<PathInfoLight>>(equalityComparer, existingHelpers);
+            var target = new ObservableIndex<PathInfoLight, Ref<TDescriptor>, PathInfoLight.PathInfoLightEqualityComparer>(equalityComparer, existingHelpers);
 
-            var observer = ObserverBuilder<ObservableEvent<IHelperDescriptor<TOptions>>>.Create(target)
-                .OnEvent<DictionaryAddedObservableEvent<string, IHelperDescriptor<TOptions>>>(
+            var observer = ObserverBuilder<ObservableEvent<TDescriptor>>.Create(target)
+                .OnEvent<DictionaryAddedObservableEvent<string, TDescriptor>>(
                     (@event, state) =>
                     {
                         PathInfoLight key = $"[{@event.Key}]";
@@ -98,13 +104,13 @@ namespace HandlebarsDotNet
                             return;
                         }
                         
-                        state.AddOrReplace(key, new Ref<IHelperDescriptor<TOptions>>(@event.Value));
+                        state.AddOrReplace(key, new Ref<TDescriptor>(@event.Value));
                     })
                 .Build();
 
             _observers.Add(observer);
             
-            source.As<ObservableIndex<string, IHelperDescriptor<TOptions>, StringEqualityComparer>>()?.Subscribe(observer);
+            source.As<ObservableIndex<string, TDescriptor, StringEqualityComparer>>()?.Subscribe(observer);
 
             return target;
         }
@@ -126,14 +132,8 @@ namespace HandlebarsDotNet
                 }
                 .AddMany(descriptorProviders);
 
-            var observer = ObserverBuilder<ObservableEvent<IObjectDescriptorProvider>>.Create(objectDescriptorProviders)
-                .OnEvent<AddedObservableEvent<IObjectDescriptorProvider>>((@event, state) => { state.Add(@event.Value); })
-                .Build();
+            descriptorProviders.Subscribe(objectDescriptorProviders);
 
-            _observers.Add(observer);
-            
-            descriptorProviders.Subscribe(observer);
-            
             return objectDescriptorProviders;
         }
     }

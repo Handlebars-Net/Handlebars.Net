@@ -18,6 +18,7 @@ namespace HandlebarsDotNet
         /// <para>This enables helper names to be not-valid Handlebars identifiers (e.g. <code>{{ one.two }}</code>)</para>
         /// <para>Such naming is not supported in Handlebarsjs and would break compatibility.</para>
         /// </summary>
+        [Obsolete("Toggle will be removed in the next major release")]
         public bool RelaxedHelperNaming { get; set; } = false;
     }
 }

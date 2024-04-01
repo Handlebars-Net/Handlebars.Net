@@ -16,6 +16,12 @@ namespace HandlebarsDotNet.Helpers.BlockHelpers
 
         public void Invoke(in EncodedTextWriter output, in BlockHelperOptions options, in Context context, in Arguments arguments)
         {
+            if(options.Frame.BlockHelpers.TryGetValue(Name, out var contextHelper))
+            {
+                contextHelper.Invoke(options, context, arguments);
+                return;
+            }
+            
             // TODO: add cache
             var configuration = options.Frame.Configuration;
             var helperResolvers = (ObservableList<IHelperResolver>) configuration.HelperResolvers;

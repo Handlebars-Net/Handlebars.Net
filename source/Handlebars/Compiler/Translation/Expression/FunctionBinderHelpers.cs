@@ -35,7 +35,7 @@ namespace HandlebarsDotNet.Compiler
         {
             var arguments = expressions
                 .ApplyOn<Expression, PathExpression>(path => path.Context = PathExpression.ResolutionContext.Parameter)
-                .Select(o => FunctionBuilder.Reduce(o, compilationContext))
+                .Select(o => FunctionBuilder.Reduce(o, compilationContext, out _))
                 .ToArray();
 
             if (arguments.Length == 0) return New(() => new Arguments(0));

@@ -12,6 +12,11 @@ namespace HandlebarsDotNet.Helpers
         public object Invoke(in HelperOptions options, in Context context, in Arguments arguments)
         {
             var bindingContext = options.Frame;
+
+            if(options.Frame.Helpers.TryGetValue(Name, out var contextHelper))
+            {
+                return contextHelper.Invoke(options, context, arguments);
+            }
             
             // TODO: add cache
             var configuration = options.Frame.Configuration;

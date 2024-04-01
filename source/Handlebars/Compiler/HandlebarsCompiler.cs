@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Expressions.Shortcuts;
 using HandlebarsDotNet.Compiler.Lexer;
 using HandlebarsDotNet.IO;
 using HandlebarsDotNet.PathStructure;
@@ -22,7 +23,17 @@ namespace HandlebarsDotNet.Compiler
             
             var tokens = Tokenizer.Tokenize(source).ToArray();
             var expressions = ExpressionBuilder.ConvertTokensToExpressions(tokens, configuration);
-            var action = FunctionBuilder.Compile(expressions, compilationContext);
+            var action = FunctionBuilder.Compile(expressions, compilationContext, out var decorators);
+
+            if (decorators.Count > 0)
+            {
+                var a1 = action;
+                var decorator = decorators.Compile(compilationContext);
+                action = (in EncodedTextWriter writer, BindingContext context) =>
+                {
+                    decorator(writer, context, a1)(writer, context);
+                };
+            }
             
             for (var index = 0; index < createdFeatures.Count; index++)
             {
@@ -47,7 +58,17 @@ namespace HandlebarsDotNet.Compiler
             var layoutToken = tokens.OfType<LayoutToken>().SingleOrDefault();
             
             var expressions = ExpressionBuilder.ConvertTokensToExpressions(tokens, configuration);
-            var compiledView = FunctionBuilder.Compile(expressions, compilationContext);
+            var compiledView = FunctionBuilder.Compile(expressions, compilationContext, out var decorators);
+            if (decorators.Count > 0)
+            {
+                var a1 = compiledView;
+                var decorator = decorators.Compile(compilationContext);
+                compiledView = (in EncodedTextWriter writer, BindingContext context) =>
+                {
+                    decorator(writer, context, a1)(writer, context);
+                };
+            }
+            
             if (layoutToken == null) return compiledView;
 
             var fs = configuration.FileSystem;
