@@ -22,7 +22,7 @@ namespace HandlebarsDotNet.Test
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
-        
+
         [Fact]
 		public void DynamicObjectBasicTest()
         {
@@ -36,7 +36,7 @@ namespace HandlebarsDotNet.Test
 
             Assert.Equal("Foo: 1\nBar: hello world", output);
         }
-        
+
         [Fact]
         public void DynamicObjectBasicIterationTest()
         {
@@ -106,7 +106,7 @@ namespace HandlebarsDotNet.Test
 
             Assert.Equal("Key1Val1Key2Val2", output);
         }
-        
+
         [Theory]
         [ClassData(typeof(EnvGenerator))]
         public void JsonTestArrayCount(IHandlebars handlebars)
@@ -121,7 +121,7 @@ namespace HandlebarsDotNet.Test
 
 	        Assert.Equal("2", output);
         }
-        
+
         [Theory]
         [ClassData(typeof(EnvGenerator))]
         public void JsonTestObjects(IHandlebars handlebars){
@@ -150,7 +150,7 @@ namespace HandlebarsDotNet.Test
 
             Assert.Equal("", output);
         }
-        
+
         [Theory]
         [ClassData(typeof(EnvGenerator))]
         public void WithParentIndexJsonNet(IHandlebars handlebars)
@@ -174,7 +174,7 @@ namespace HandlebarsDotNet.Test
                         {{/each}}
                     {{/each}}    
                 {{/each}}";
-            
+
             var template = handlebars.Compile( source );
             var data = new
                 {
@@ -281,13 +281,13 @@ namespace HandlebarsDotNet.Test
                                     index=[1:1:1]
                                     first=[False:False:False]
                                     last=[True:True:True]";
-            
+
             Func<string, string> makeFlat = text => text.Replace( " ", "" ).Replace( "\n", "" ).Replace( "\r", "" );
 
             Assert.Equal( makeFlat( expected ), makeFlat( result ) );
         }
 
-#if !netstandard
+#if NET452 || NET46 || NET461 || NET472
 
         [Fact]
         public void SystemJsonTestArrays()

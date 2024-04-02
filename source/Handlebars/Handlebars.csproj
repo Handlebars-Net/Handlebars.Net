@@ -3,30 +3,11 @@
   <PropertyGroup>
     <AssemblyName>Handlebars</AssemblyName>
     <ProjectGuid>9822C7B8-7E51-42BC-9A49-72A10491B202</ProjectGuid>
-    <TargetFrameworks>netstandard1.3;netstandard2.0;netstandard2.1</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">$(TargetFrameworks);net451;net452;net46</TargetFrameworks>
+    <TargetFrameworks>netstandard1.3;netstandard2.0;netstandard2.1;net6</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">$(TargetFrameworks);net451</TargetFrameworks>
     <Version>2.0.0</Version>
     <RootNamespace>HandlebarsDotNet</RootNamespace>
     <SignAssembly Condition="'$(ShouldSignAssembly)' == 'true'">true</SignAssembly>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(TargetFramework)'=='netstandard1.3'">
-    <DefineConstants>$(DefineConstants);netstandard;netstandard1_3</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
-    <DefineConstants>$(DefineConstants);netstandard</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)'=='net451'">
-    <DefineConstants>$(DefineConstants);NET451</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)'=='net452'">
-    <DefineConstants>$(DefineConstants);NET452</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)'=='net46'">
-    <DefineConstants>$(DefineConstants);NET46</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <Authors>Rex Morgan</Authors>
     <Copyright>Copyright © 2014-2020 Rex Morgan</Copyright>
     <Description>Blistering-fast Handlebars.js templates in your .NET application.</Description>
@@ -53,8 +34,8 @@
   <ItemGroup>
     <None Include="..\..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
-  
-  <ItemGroup Condition="'$(TargetFramework)'=='net451' or '$(TargetFramework)'=='net452' or '$(TargetFramework)'=='net46'">
+
+  <ItemGroup Condition="'$(TargetFramework)'=='net451'">
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
 
@@ -65,24 +46,17 @@
     <PackageReference Include="System.Diagnostics.Contracts" Version="4.3.0" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)'=='net451' or '$(TargetFramework)'=='net452' or '$(TargetFramework)'=='net46'">
+  <ItemGroup Condition="'$(TargetFramework)'=='net451'">
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
-    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.1'">
+  <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0' or '$(TargetFramework)'=='netstandard2.1'">
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="ExpressionShortcuts" Version="1.0.4.39" PrivateAssets="All" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(ContinuousIntegrationBuild)' == 'true'">
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+      <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

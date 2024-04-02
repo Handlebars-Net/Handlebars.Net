@@ -20,24 +20,24 @@ namespace HandlebarsDotNet
 		{
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			get => !_encoder.Enabled;
-			
+
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			set => _encoder.Enabled = !value;
 		}
-		
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public EncodedTextWriter(
 			TextWriter writer,
-			ITextEncoder encoder, 
-			IFormatterProvider formatterProvider, 
+			ITextEncoder encoder,
+			IFormatterProvider formatterProvider,
 			bool suppressEncoding = false)
 		{
 			UnderlyingWriter = writer;
 			_formatterProvider = formatterProvider;
-			_encoder = encoder != null 
-				? TextEncoderWrapper.Create(encoder) 
+			_encoder = encoder != null
+				? TextEncoderWrapper.Create(encoder)
 				: TextEncoderWrapper.Null;
-			
+
 			SuppressEncoding = suppressEncoding;
 		}
 
@@ -52,7 +52,7 @@ namespace HandlebarsDotNet
 				_encoder.Encode(value, UnderlyingWriter);
 				return;
 			}
-			
+
 			UnderlyingWriter.Write(value);
 		}
 
@@ -70,7 +70,7 @@ namespace HandlebarsDotNet
 				UnderlyingWriter.Write(value[i]);
 			}
 		}
-		
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Write(Substring value, bool encode = true)
 		{
@@ -85,7 +85,7 @@ namespace HandlebarsDotNet
 				UnderlyingWriter.Write(value[i]);
 			}
 		}
-		
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Write<T>(T value, bool encode) where T: IEnumerator<char>
 		{
@@ -100,7 +100,7 @@ namespace HandlebarsDotNet
 				UnderlyingWriter.Write(value.Current);
 			}
 		}
-		
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Write(string value) => Write(value, true);
 
@@ -119,26 +119,26 @@ namespace HandlebarsDotNet
 			switch (value)
 			{
 				case null:
-				case string v when string.IsNullOrEmpty(v): 
+				case string v when string.IsNullOrEmpty(v):
 				case StringBuilder st when st.Length == 0:
 				case Substring substring when substring.Length == 0:
 					return;
-				
+
 				case string v: Write(v, true); return;
 				case StringBuilder v: Write(v, true); return;
-				case Substring v: Write(v, true); return; 
-				
+				case Substring v: Write(v, true); return;
+
 				default:
 					WriteFormatted(value);
 					return;
 			}
 		}
-		
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private void WriteFormatted<T>(T value)
 		{
 			var type = typeof(T);
-#if netstandard1_3
+#if NETSTANDARD1_3
 			if (type.GetTypeInfo().IsClass) type = value.GetType();
 #else
 			if (type.IsClass) type = value.GetType();
@@ -155,11 +155,11 @@ namespace HandlebarsDotNet
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			get => UnderlyingWriter.Encoding;
 		}
-		
+
 		public void Dispose() => _encoder.Dispose();
-		
+
 		public override string ToString() => UnderlyingWriter.ToString();
-		
+
 		private static class Throw
 		{
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]

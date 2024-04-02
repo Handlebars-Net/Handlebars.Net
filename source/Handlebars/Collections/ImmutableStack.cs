@@ -4,19 +4,19 @@ using HandlebarsDotNet.Pools;
 
 namespace HandlebarsDotNet.Collections
 {
-#if NET451 || NET452
+#if NET451
     [Serializable]
 #endif
     internal readonly struct ImmutableStack<T>
     {
         private readonly Node _container;
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private ImmutableStack(T value, Node parent)
             :this(Node.Create(value, parent))
         {
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private ImmutableStack(Node container) => _container = container;
 
@@ -26,8 +26,8 @@ namespace HandlebarsDotNet.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T Peek()
         {
-            return _container == null 
-                ? default 
+            return _container == null
+                ? default
                 : _container.Value;
         }
 
@@ -39,20 +39,20 @@ namespace HandlebarsDotNet.Collections
                 value = default;
                 return this;
             }
-            
+
             value = _container.Value;
             var parent = _container.Parent;
             _container.Dispose();
             return new ImmutableStack<T>(parent);
         }
-        
-#if NET451 || NET452
+
+#if NET451
         [Serializable]
 #endif
         private sealed class Node : IDisposable
         {
             private static readonly InternalObjectPool<Node, Policy> Pool = new InternalObjectPool<Node, Policy>(new Policy());
-            
+
             public Node Parent;
             public T Value;
 
@@ -63,9 +63,9 @@ namespace HandlebarsDotNet.Collections
                 item.Parent = parent;
                 return item;
             }
-            
+
             private Node() { }
-            
+
             private struct Policy : IInternalObjectPoolPolicy<Node>
             {
                 public Node Create() => new Node();
