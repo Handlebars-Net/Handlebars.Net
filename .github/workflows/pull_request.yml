@@ -16,7 +16,6 @@ jobs:
           dotnet-version: |
               2.1.x
               3.1.x
-              5.0.x
               6.0.x
       - name: Clean package cache as a temporary workaround for https://github.com/actions/setup-dotnet/issues/155
         working-directory: ./source
@@ -40,7 +39,6 @@ jobs:
           dotnet-version: |
               2.1.x
               3.1.x
-              5.0.x
               6.0.x
       - name: Clean package cache as a temporary workaround for https://github.com/actions/setup-dotnet/issues/155
         working-directory: ./source
@@ -62,7 +60,6 @@ jobs:
           dotnet-version: |
               2.1.x
               3.1.x
-              5.0.x
               6.0.x
       - uses: actions/setup-java@v4
         with:
@@ -112,7 +109,6 @@ jobs:
           dotnet-version: |
               2.1.x
               3.1.x
-              5.0.x
               6.0.x
       - name: Clean package cache as a temporary workaround for https://github.com/actions/setup-dotnet/issues/155
         working-directory: ./source
