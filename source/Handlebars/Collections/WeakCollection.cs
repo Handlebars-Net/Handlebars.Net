@@ -13,6 +13,8 @@ namespace HandlebarsDotNet.Collections
         
         public void Add(T value)
         {
+            // Need a way to reset _firstAvailableIndex periodically
+
             for (var index = _firstAvailableIndex; index < _store.Count; index++)
             {
                 if (_store[index] == null)
