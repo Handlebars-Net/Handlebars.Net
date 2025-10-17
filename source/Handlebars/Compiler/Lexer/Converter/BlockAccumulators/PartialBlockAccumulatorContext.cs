@@ -24,7 +24,12 @@ namespace HandlebarsDotNet.Compiler
 
         public override Expression GetAccumulatedBlock()
         {
-            var fallback = _body.Count == 0 ? null : _body.Count == 1 ? _body.First() : Expression.Block(_body);
+            var fallback = _body.Count switch
+            {
+                0 => Expression.Empty(),
+                1 => _body[0],
+                _ => Expression.Block(_body)
+            };
             return HandlebarsExpression.Partial(_startingNode.PartialName, _startingNode.Argument, fallback);
         }
 
