@@ -7,11 +7,11 @@ on:
 jobs:
   build:
     name: Build
-    runs-on: windows-2019
+    runs-on: windows-2022
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v5
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: |
               2.1.x
@@ -30,11 +30,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ macos-latest, ubuntu-latest, windows-2019 ]
+        os: [ macos-latest, ubuntu-latest, windows-2022 ]
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v5
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: |
               2.1.x
@@ -49,19 +49,19 @@ jobs:
 
   sonar-pr:
     name: SonarCloud
-    runs-on: windows-2019
+    runs-on: windows-2022
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: |
               2.1.x
               3.1.x
               6.0.x
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           java-version: '21' # The JDK version to make available on the path.
           distribution: 'zulu'
@@ -69,14 +69,14 @@ jobs:
         working-directory: ./source
         run: dotnet clean -c Release && dotnet nuget locals all --clear
       - name: Cache SonarCloud packages
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~\sonar\cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
       - name: Cache SonarCloud scanner
         id: cache-sonar-scanner
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: .\.sonar\scanner
           key: ${{ runner.os }}-sonar-scanner
@@ -103,8 +103,8 @@ jobs:
     name: Run Benchmark.Net
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-dotnet@v1
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: |
               2.1.x
@@ -138,7 +138,7 @@ jobs:
           alert-comment-cc-users: '@zjklee'
 
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: Benchmark
           path: source/Handlebars.Benchmark/BenchmarkDotNet.Artifacts/results/

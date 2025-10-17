@@ -56,7 +56,7 @@
 
   <ItemGroup>
     <PackageReference Include="ExpressionShortcuts" Version="1.0.4.39" PrivateAssets="All" />
-      <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+      <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>
