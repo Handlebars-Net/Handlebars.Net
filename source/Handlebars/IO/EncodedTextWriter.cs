@@ -138,11 +138,7 @@ namespace HandlebarsDotNet
 		private void WriteFormatted<T>(T value)
 		{
 			var type = typeof(T);
-#if NETSTANDARD1_3
-			if (type.GetTypeInfo().IsClass) type = value.GetType();
-#else
 			if (type.IsClass) type = value.GetType();
-#endif
 
 			if (!_formatterProvider.TryCreateFormatter(type, out var formatter))
 				Throw.CannotResolveFormatter(type);

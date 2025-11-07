@@ -10,7 +10,7 @@ namespace HandlebarsNet.Benchmark
         public static void Main(string[] args)
         {
             var job = Job.MediumRun
-                .WithToolchain(CsProjCoreToolchain.NetCoreApp31)
+                .WithToolchain(CsProjCoreToolchain.NetCoreApp80)
                 .WithLaunchCount(1);
 
             var manualConfig = DefaultConfig.Instance
