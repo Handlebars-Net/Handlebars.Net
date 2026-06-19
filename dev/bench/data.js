@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1781838530360,
+  "lastUpdate": 1781844349274,
   "repoUrl": "https://github.com/Handlebars-Net/Handlebars.Net",
   "entries": {
     "Benchmark.Net Benchmark": [
@@ -9438,6 +9438,120 @@ window.BENCHMARK_DATA = {
             "value": 223.22689525286356,
             "unit": "ns",
             "range": "± 0.07793005583702994"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rex@rexmorgan.net",
+            "name": "Rex Morgan",
+            "username": "rexm"
+          },
+          "committer": {
+            "email": "rex@rexmorgan.net",
+            "name": "Rex Morgan",
+            "username": "rexm"
+          },
+          "distinct": true,
+          "id": "b27c58d57ff53b5d5111065385bbd82a487398f4",
+          "message": "chore: drop EOL framework targets, resolve CVE in test deps\n\n- Remove net451, netstandard1.3 (EOL 2016) and net6.0 (EOL 2024) from Handlebars.csproj; now targets netstandard2.0, netstandard2.1, net8.0\n- Remove net472 (EOL 2024) from Handlebars.Test.csproj and all net472-specific package references\n- Replace abandoned CsQuery.NetStandard with AngleSharp 1.5.1 in tests, eliminating transitive GHSA-xcvr-qv8h-m7xw (High) via Microsoft.NETCore.Jit 1.0.2\n- Update coverlet.collector 1.2.1 → 10.0.1, xunit 2.4.1 → 2.9.3, xunit.runner.visualstudio 2.4.1 → 3.1.5\n- Set LangVersion to latest in Directory.Build.props\n\nCo-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>",
+          "timestamp": "2026-06-19T00:39:35-04:00",
+          "tree_id": "8eb26d222da644fbd3c028b44b94ffa47323b25b",
+          "url": "https://github.com/Handlebars-Net/Handlebars.Net/commit/b27c58d57ff53b5d5111065385bbd82a487398f4"
+        },
+        "date": 1781844348357,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "HandlebarsNet.Benchmark.Compilation.Template",
+            "value": 26683547.45535714,
+            "unit": "ns",
+            "range": "± 200939.56441550166"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithoutParameters",
+            "value": 115.07570105791092,
+            "unit": "ns",
+            "range": "± 0.26516211257811717"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.EndToEnd.Default(N: 5, DataType: \"dictionary\")",
+            "value": 66153.87568547175,
+            "unit": "ns",
+            "range": "± 207.85171965198123"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.EndToEnd.Default(N: 5, DataType: \"object\")",
+            "value": 73019.991013747,
+            "unit": "ns",
+            "range": "± 68.62800822530072"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.LargeArray.Default(N: 20000)",
+            "value": 992831.9460100447,
+            "unit": "ns",
+            "range": "± 3911.394560385296"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.LargeArray.Default(N: 40000)",
+            "value": 1970574.5423677885,
+            "unit": "ns",
+            "range": "± 6411.009469833058"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.LargeArray.Default(N: 80000)",
+            "value": 4092283.2625,
+            "unit": "ns",
+            "range": "± 13499.290331699458"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithOneParameter",
+            "value": 115.47113646268845,
+            "unit": "ns",
+            "range": "± 0.19567446607741928"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithTwoParameter",
+            "value": 120.85495026906331,
+            "unit": "ns",
+            "range": "± 0.08878685715855836"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithoutParameters",
+            "value": 193.36892531599318,
+            "unit": "ns",
+            "range": "± 0.20237682559103548"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithOneParameter",
+            "value": 115.81137003348424,
+            "unit": "ns",
+            "range": "± 0.09771438554192438"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithTwoParameter",
+            "value": 148.4044598511287,
+            "unit": "ns",
+            "range": "± 0.31330051912395124"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithoutParameters",
+            "value": 216.8109907422747,
+            "unit": "ns",
+            "range": "± 0.33638874418275777"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithOneParameter",
+            "value": 227.55361437002819,
+            "unit": "ns",
+            "range": "± 1.8312216326252253"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithTwoParameter",
+            "value": 232.43689373561315,
+            "unit": "ns",
+            "range": "± 0.2844537170168106"
           }
         ]
       }
