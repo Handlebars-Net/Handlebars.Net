@@ -9,17 +9,13 @@ jobs:
     name: Build
     runs-on: windows-2019
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v4
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
-            2.1.x
-            3.1.x
             6.0.x
-      - name: Clean package cache as a temporary workaround for https://github.com/actions/setup-dotnet/issues/155
-        working-directory: ./source
-        run: dotnet clean -c Release && dotnet nuget locals all --clear
+            10.0.x
       - name: Build
         working-directory: ./source
         run: dotnet build -c Release
@@ -32,17 +28,13 @@ jobs:
       matrix:
         os: [ macos-latest, ubuntu-latest, windows-2019 ]
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v4
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
-              2.1.x
-              3.1.x
               6.0.x
-      - name: Clean package cache as a temporary workaround for https://github.com/actions/setup-dotnet/issues/155
-        working-directory: ./source
-        run: dotnet clean -c Release && dotnet nuget locals all --clear
+              10.0.x
       - name: Test
         working-directory: ./source
         run: dotnet test --logger:trx --logger:GitHubActions
@@ -51,32 +43,28 @@ jobs:
     name: SonarCloud
     runs-on: windows-2019
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
-              2.1.x
-              3.1.x
               6.0.x
+              10.0.x
       - uses: actions/setup-java@v4
         with:
-          java-version: '21' # The JDK version to make available on the path.
+          java-version: '21'
           distribution: 'zulu'
-      - name: Clean package cache as a temporary workaround for https://github.com/actions/setup-dotnet/issues/155
-        working-directory: ./source
-        run: dotnet clean -c Release && dotnet nuget locals all --clear
       - name: Cache SonarCloud packages
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~\sonar\cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
       - name: Cache SonarCloud scanner
         id: cache-sonar-scanner
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: .\.sonar\scanner
           key: ${{ runner.os }}-sonar-scanner
@@ -95,24 +83,20 @@ jobs:
           SONAR_TOKEN: 22a5e1c1df52b7200ac14fc139ed1dfbe53dda4d
         shell: powershell
         run: |
-          .\.sonar\scanner\dotnet-sonarscanner begin /k:"Handlebars-Net_Handlebars.Net" /o:"handlebars-net" /d:sonar.login="${{ env.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths="**/*.opencover.xml" /d:sonar.cs.vstest.reportsPaths="**/*.trx" /d:sonar.coverage.exclusions="**/*.md;source/Handlebars.Benchmark/**/*.*" /d:sonar.cpd.exclusions="source/Handlebars/Iterators/**/*.*"
+          .\.sonar\scanner\dotnet-sonarscanner begin /k:"Handlebars-Net_Handlebars.Net" /o:"handlebars-net" /d:sonar.token="${{ env.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths="**/*.opencover.xml" /d:sonar.cs.vstest.reportsPaths="**/*.trx" /d:sonar.coverage.exclusions="**/*.md;source/Handlebars.Benchmark/**/*.*" /d:sonar.cpd.exclusions="source/Handlebars/Iterators/**/*.*"
           dotnet build source/Handlebars.sln -c Release
-          .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ env.SONAR_TOKEN }}"
+          .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="${{ env.SONAR_TOKEN }}"
 
   benchmark:
     name: Run Benchmark.Net
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-dotnet@v1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
-              2.1.x
-              3.1.x
               6.0.x
-      - name: Clean package cache as a temporary workaround for https://github.com/actions/setup-dotnet/issues/155
-        working-directory: ./source
-        run: dotnet clean -c Release && dotnet nuget locals all --clear
+              10.0.x
       - name: Run benchmark
         working-directory: ./source/Handlebars.Benchmark
         run: dotnet run -c Release --exporters json --filter '*' -m --join
@@ -122,7 +106,7 @@ jobs:
         run: |
           filePath=$(find . -type f -name 'BenchmarkRun-joined-*-report-full-compressed.json' | rev | cut -d '/' -f1 | rev)
           echo $filePath
-          echo "::set-output name=file::$filePath"
+          echo "file=$filePath" >> $GITHUB_OUTPUT
       - name: Store benchmark result
         uses: Happypig375/github-action-benchmark@v1.8.2
         with:
@@ -131,13 +115,12 @@ jobs:
           output-file-path: source/Handlebars.Benchmark/BenchmarkDotNet.Artifacts/results/${{ steps.benchmarkfilename.outputs.file }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: true
-          # Show alert with commit comment on detecting possible performance regression
           alert-threshold: '200%'
           comment-on-alert: true
           fail-on-alert: false
           alert-comment-cc-users: '@zjklee'
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: Benchmark
           path: source/Handlebars.Benchmark/BenchmarkDotNet.Artifacts/results/
