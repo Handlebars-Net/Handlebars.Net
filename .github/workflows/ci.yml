@@ -108,7 +108,7 @@ jobs:
           echo $filePath
           echo "file=$filePath" >> $GITHUB_OUTPUT
       - name: Store benchmark result
-        uses: Happypig375/github-action-benchmark@v1.8.2
+        uses: Happypig375/github-action-benchmark@e7cb068f90622402c0ae5b54e2c781052fcd9343 # v1.8.2
         with:
           name: Benchmark.Net Benchmark
           tool: 'benchmarkdotnet'
@@ -130,6 +130,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build, test, sonar-ci]
     steps:
-      - uses: release-drafter/release-drafter@v5
+      - uses: release-drafter/release-drafter@09c613e259eb8d4e7c81c2cb00618eb5fc4575a7 # v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
