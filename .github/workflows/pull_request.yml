@@ -80,12 +80,15 @@ jobs:
       - name: Build and analyze
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-          SONAR_TOKEN: 22a5e1c1df52b7200ac14fc139ed1dfbe53dda4d
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          PR_KEY: ${{ github.event.number }}
+          PR_BRANCH: ${{ github.event.pull_request.head.ref }}
+          PR_BASE: ${{ github.event.pull_request.base.ref }}
         shell: powershell
         run: |
-          .\.sonar\scanner\dotnet-sonarscanner begin /k:"Handlebars-Net_Handlebars.Net" /o:"handlebars-net" /d:sonar.token="${{ env.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths="**/*.opencover.xml" /d:sonar.cs.vstest.reportsPaths="**/*.trx" /d:sonar.coverage.exclusions="**/*.md;source/Handlebars.Benchmark/**/*.*" /d:sonar.cpd.exclusions="source/Handlebars/Iterators/**/*.*" /d:sonar.pullrequest.key=${{ github.event.number }} /d:sonar.pullrequest.branch=${{ github.event.pull_request.head.ref }} /d:sonar.pullrequest.base=${{ github.event.pull_request.base.ref }}
+          .\.sonar\scanner\dotnet-sonarscanner begin /k:"Handlebars-Net_Handlebars.Net" /o:"handlebars-net" /d:sonar.token="$env:SONAR_TOKEN" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths="**/*.opencover.xml" /d:sonar.cs.vstest.reportsPaths="**/*.trx" /d:sonar.coverage.exclusions="**/*.md;source/Handlebars.Benchmark/**/*.*" /d:sonar.cpd.exclusions="source/Handlebars/Iterators/**/*.*" /d:sonar.pullrequest.key="$env:PR_KEY" /d:sonar.pullrequest.branch="$env:PR_BRANCH" /d:sonar.pullrequest.base="$env:PR_BASE"
           dotnet build source/Handlebars.sln -c Release
-          .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="${{ env.SONAR_TOKEN }}"
+          .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="$env:SONAR_TOKEN"
 
   benchmark:
     name: Run Benchmark.Net
