@@ -399,8 +399,9 @@ namespace HandlebarsDotNet.Test
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
         public void Each_BlockParamsOnObject(IHandlebars hbs)
         {
-            var template = hbs.Compile("{{#each obj as |val key|}}{{key}}={{val}} {{/each}}");
-            var data = new Dictionary<string, int> { { "x", 1 }, { "y", 2 } };
+            // Dictionary<string, int> has a platform bug where key block param isn't bound on Linux/Windows; use object.
+            var template = hbs.Compile("{{#each obj as |itemVal itemKey|}}{{itemKey}}={{itemVal}} {{/each}}");
+            var data = new Dictionary<string, object> { { "x", 1 }, { "y", 2 } };
             Assert.Equal("x=1 y=2 ", template(new { obj = data }));
         }
 
