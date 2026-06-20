@@ -733,5 +733,33 @@ namespace HandlebarsDotNet.Test
 
             Assert.Throws<HandlebarsCompilerException>(()=> Handlebars.Compile(source));
         }
+
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/605
+        // #if not evaluated when variable name contains invisible characters (BOM)
+        [Fact]
+        public void Issue605_IfNotEvaluatedWithBomCharacter()
+        {
+            // The ﻿ (BOM) is embedded in the identifier name
+            string source =
+                "<div class=\"entry\">\n" +
+                "<h1>{{title}}</h1>\n" +
+                "<div class=\"body\">\n" +
+                "{{body}}\n" +
+                "{{#if someCondition﻿}}\n" +
+                "<p>Show additional text</p>\n" +
+                "{{/if}}\n" +
+                "</div>\n" +
+                "</div>";
+
+            var handlebars = Handlebars.Create();
+            var template = handlebars.Compile(source);
+            var data = new {
+                title = "My new post",
+                body = "This is my first post!",
+                someCondition = true
+            };
+            var actual = template(data);
+            Assert.Contains("Show additional text", actual);
+        }
     }
 }
