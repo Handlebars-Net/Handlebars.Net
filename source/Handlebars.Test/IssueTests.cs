@@ -733,5 +733,47 @@ namespace HandlebarsDotNet.Test
 
             Assert.Throws<HandlebarsCompilerException>(()=> Handlebars.Compile(source));
         }
+
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/462
+        // Compile replaces \\ (double backslash) with \ (single backslash)
+        [Fact]
+        public void Issue462_DoubleBackslashPreservedInOutput()
+        {
+            var handlebars = Handlebars.Create();
+            // Template contains two backslashes as literal text
+            var compiledTemplate = handlebars.Compile(@"\\");
+            var result = compiledTemplate(null);
+            Assert.Equal(@"\\", result);
+        }
+
+        [Fact]
+        public void Issue462_SingleBackslashPreservedInOutput()
+        {
+            var handlebars = Handlebars.Create();
+            var compiledTemplate = handlebars.Compile(@"\");
+            var result = compiledTemplate(null);
+            Assert.Equal(@"\", result);
+        }
+
+        [Fact]
+        public void Issue462_DoubleBackslashBeforeExpressionStillCollapses()
+        {
+            // \\{{name}} should still produce a single literal backslash followed by the evaluated expression
+            var handlebars = Handlebars.Create();
+            var compiledTemplate = handlebars.Compile(@"\\{{name}}");
+            var result = compiledTemplate(new { name = "World" });
+            Assert.Equal(@"\World", result);
+        }
+
+        [Fact]
+        public void Issue462_DoubleBackslashInMixedTemplate()
+        {
+            // Template with backslashes mixed: \\to preserves both backslashes (not before {{),
+            // but \\{{name}} collapses to single backslash + evaluated expression (spec behavior)
+            var handlebars = Handlebars.Create();
+            var compiledTemplate = handlebars.Compile(@"path\\to\\{{name}}");
+            var result = compiledTemplate(new { name = "file" });
+            Assert.Equal(@"path\\to\file", result);
+        }
     }
 }
