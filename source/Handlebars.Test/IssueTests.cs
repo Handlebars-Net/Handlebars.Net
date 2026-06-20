@@ -225,9 +225,7 @@ namespace HandlebarsDotNet.Test
 
             var transformed = navTemplate(context).Trim();
 
-            Assert.Equal(@"<div>
-    <div>Menu Item: Getting Started</div>
-</div>", transformed);
+            Assert.Equal("<div>\n    <div>Menu Item: Getting Started</div>\n</div>", transformed);
         }
 
         // issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/394
