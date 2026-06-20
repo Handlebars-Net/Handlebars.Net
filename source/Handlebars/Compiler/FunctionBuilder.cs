@@ -11,7 +11,7 @@ namespace HandlebarsDotNet.Compiler
     internal static class FunctionBuilder
     {
         private static readonly TemplateDelegate EmptyTemplateLambda = 
-            (in EncodedTextWriter writer, BindingContext context) => { };
+            (EncodedTextWriter writer, BindingContext context) => { };
 
         public static Expression Reduce(Expression expression, CompilationContext context, out IReadOnlyList<DecoratorDefinition> decorators)
         {

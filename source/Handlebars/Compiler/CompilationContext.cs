@@ -9,7 +9,7 @@ namespace HandlebarsDotNet.Compiler
         {
             Configuration = configuration;
             BindingContext = Expression.Parameter(typeof(BindingContext), "context");
-            EncodedWriter = Expression.Parameter(typeof(EncodedTextWriter).MakeByRefType(), "writer");
+            EncodedWriter = Expression.Parameter(typeof(EncodedTextWriter), "writer");
             
             Args = new CompilationContextArgs(this);
         }
@@ -18,7 +18,7 @@ namespace HandlebarsDotNet.Compiler
         {
             Configuration = context.Configuration;
             BindingContext = Expression.Parameter(typeof(BindingContext), "context");
-            EncodedWriter = Expression.Parameter(typeof(EncodedTextWriter).MakeByRefType(), "writer");
+            EncodedWriter = Expression.Parameter(typeof(EncodedTextWriter), "writer");
             
             Args = new CompilationContextArgs(this);
         }
