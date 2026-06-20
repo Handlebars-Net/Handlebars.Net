@@ -734,6 +734,37 @@ namespace HandlebarsDotNet.Test
             Assert.Throws<HandlebarsCompilerException>(()=> Handlebars.Compile(source));
         }
 
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/546
+        // Single quote should be HTML-encoded as &#x27; in standard {{expression}} output
+        [Fact]
+        public void Issue546_SingleQuoteIsHtmlEncoded()
+        {
+            var handlebars = Handlebars.Create();
+            var render = handlebars.Compile("{{input}}");
+            object data = new { input = "test'1" };
+            var actual = render(data);
+
+            Assert.DoesNotContain("'", actual);
+            Assert.Contains("&#x27;", actual);
+        }
+
+        [Theory]
+        [InlineData("&", "&amp;")]
+        [InlineData("<", "&lt;")]
+        [InlineData(">", "&gt;")]
+        [InlineData("\"", "&quot;")]
+        [InlineData("'", "&#x27;")]
+        [InlineData("`", "&#x60;")]
+        [InlineData("=", "&#x3D;")]
+        public void Issue546_HtmlSpecialCharsAreEncoded(string input, string expected)
+        {
+            var handlebars = Handlebars.Create();
+            var render = handlebars.Compile("{{value}}");
+            var actual = render(new { value = input });
+
+            Assert.Equal(expected, actual);
+        }
+      
         // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/462
         // Compile replaces \\ (double backslash) with \ (single backslash)
         [Fact]
