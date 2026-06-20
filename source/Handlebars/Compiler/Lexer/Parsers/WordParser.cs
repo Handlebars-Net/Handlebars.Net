@@ -45,7 +45,9 @@ namespace HandlebarsDotNet.Compiler.Lexer
         private static bool IsWord(ExtendedStringReader reader)
         {
             var peek = reader.Peek();
-            return ValidWordStartCharacters.Contains((char) peek);
+            if (peek == -1) return false;
+            var c = (char) peek;
+            return ValidWordStartCharacters.Contains(c) || char.IsLetter(c);
         }
 
         private static string AccumulateWord(ExtendedStringReader reader)
