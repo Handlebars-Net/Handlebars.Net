@@ -750,5 +750,32 @@ Block:{{#> @partial-block }}{{/@partial-block}}");
             Assert.Contains("Plain: Block content", actual);
             Assert.Contains("Block:Block content", actual);
         }
+      
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/458
+        // System.NotImplementedException: byref delegate on Xamarin.iOS / Mono
+        // The Mono runtime does not support delegates with byref (in/ref) parameters.
+        // TemplateDelegate previously used `in EncodedTextWriter` which produced a
+        // byref delegate incompatible with Mono's AOT/JIT compiler.
+        [Fact]
+        public void Issue458_BasicTemplateCompilationAndRender()
+        {
+            // Validates the scenario that fails on Mono: simple compile + render
+            var handlebars = Handlebars.Create();
+            var render = handlebars.Compile("{{input}}");
+            object data = new { input = 42 };
+            var actual = render(data);
+            Assert.Equal("42", actual);
+        }
+
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/458
+        // Ensures block helpers still work after the byref delegate fix
+        [Fact]
+        public void Issue458_BlockHelperTemplateCompilationAndRender()
+        {
+            var handlebars = Handlebars.Create();
+            var render = handlebars.Compile("{{#if show}}visible{{/if}}");
+            var actual = render(new { show = true });
+            Assert.Equal("visible", actual);
+        }
     }
 }
