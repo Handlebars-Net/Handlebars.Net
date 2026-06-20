@@ -1040,8 +1040,9 @@ Block:{{#> @partial-block }}{{/@partial-block}}");
             var render = handlebars.Compile("{{#if show}}visible{{/if}}");
             var actual = render(new { show = true });
             Assert.Equal("visible", actual);
+        }
 
-// Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/349
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/349
         // Backslash-backslash not followed by {{ should pass through verbatim
         [Fact]
         public void DoubleBackslashNotBeforeMustachePassesThroughVerbatim()
