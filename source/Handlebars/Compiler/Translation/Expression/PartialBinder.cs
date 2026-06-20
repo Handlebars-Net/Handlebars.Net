@@ -98,7 +98,7 @@ namespace HandlebarsDotNet.Compiler
             if (context.PartialBlockTemplate == null)
             {
                 if (configuration.MissingPartialTemplateHandler == null)
-                    throw new HandlebarsRuntimeException($"Referenced partial name {partialName} could not be resolved");
+                    throw new HandlebarsRuntimeException($"Referenced partial name '{partialName}' could not be resolved. If you registered the partial on the static Handlebars class, make sure to also compile and render using the same static class (or register the partial on the IHandlebars instance you are using to compile).");
                 
                 configuration.MissingPartialTemplateHandler.Handle(configuration, partialName, writer);
                 return;
