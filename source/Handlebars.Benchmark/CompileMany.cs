@@ -12,8 +12,10 @@ namespace HandlebarsNet.Benchmark
     // WeakReference slots are not reclaimed, WeakCollection.Add() must scan an ever-growing
     // list before finding a slot, making compilation O(N²) over the environment lifetime.
     //
-    // Per-compile time and allocation should be O(1): the N=1000 row should be ~10× the
-    // N=100 row. A larger ratio indicates observer-slot accumulation has regressed.
+    // Per-compile time and allocation should be O(1): the N=100 row should be ~10× the
+    // N=10 row. A larger ratio (≥50×) indicates observer-slot accumulation has regressed
+    // into O(N²) scan behaviour. N=1000 is intentionally omitted: with [IterationSetup]
+    // forcing InvocationCount=1, MediumRun × 1000 compilations exceeds CI time budgets.
     [MemoryDiagnoser]
     public class CompileMany
     {
@@ -27,7 +29,7 @@ namespace HandlebarsNet.Benchmark
             "{{#each order.items}}  - {{name}} x{{qty}}\n{{/each}}" +
             "Ship to: {{address.city}}, {{address.country}}";
 
-        [Params(10, 100, 1000)]
+        [Params(10, 100)]
         public int N { get; set; }
 
         // IterationSetup (not GlobalSetup) so each BDN measurement starts from a clean
