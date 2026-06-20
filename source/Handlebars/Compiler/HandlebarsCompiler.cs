@@ -8,7 +8,7 @@ using HandlebarsDotNet.PathStructure;
 
 namespace HandlebarsDotNet.Compiler
 {
-    public delegate void TemplateDelegate(in EncodedTextWriter writer, BindingContext context);
+    public delegate void TemplateDelegate(EncodedTextWriter writer, BindingContext context);
     
     internal static class HandlebarsCompiler
     {
@@ -29,7 +29,7 @@ namespace HandlebarsDotNet.Compiler
             {
                 var a1 = action;
                 var decorator = decorators.Compile(compilationContext);
-                action = (in EncodedTextWriter writer, BindingContext context) =>
+                action = (EncodedTextWriter writer, BindingContext context) =>
                 {
                     decorator(writer, context, a1)(writer, context);
                 };
@@ -63,7 +63,7 @@ namespace HandlebarsDotNet.Compiler
             {
                 var a1 = compiledView;
                 var decorator = decorators.Compile(compilationContext);
-                compiledView = (in EncodedTextWriter writer, BindingContext context) =>
+                compiledView = (EncodedTextWriter writer, BindingContext context) =>
                 {
                     decorator(writer, context, a1)(writer, context);
                 };
@@ -78,7 +78,7 @@ namespace HandlebarsDotNet.Compiler
 
             var compiledLayout = CompileView(readerFactoryFactory, layoutPath, new CompilationContext(compilationContext));
             
-            return (in EncodedTextWriter writer, BindingContext context) =>
+            return (EncodedTextWriter writer, BindingContext context) =>
             {
                 var config = context.Configuration;
                 using var bindingContext = BindingContext.Create(config, null);

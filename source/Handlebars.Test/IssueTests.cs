@@ -756,5 +756,111 @@ namespace HandlebarsDotNet.Test
             var result = template(data);
             Assert.Contains("test@example.com", result);
         }
+      
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/541
+        // DictionarySlim.AddOrReplace was missing a return after updating an existing key's value,
+        // causing it to always call AddValue even when the key already existed.
+        // Under sustained load (many IHandlebars instances each registering the same helper names),
+        // this caused unbounded growth in the internal dictionary leading to OutOfMemoryException.
+        [Fact]
+        public void RegisterHelperRepeatedly_ShouldNotCauseUnboundedGrowth()
+        {
+            // Each iteration creates a new IHandlebars instance and registers the same helper name.
+            // With the bug present, every RegisterHelper call adds a new entry even for the same key,
+            // causing unbounded growth in the internal DictionarySlim.
+            // With the fix, AddOrReplace correctly updates in-place and the count stays bounded.
+            const int iterations = 1000;
+            for (var i = 0; i < iterations; i++)
+            {
+                var hbs = Handlebars.Create();
+                hbs.RegisterHelper("myHelper", (output, context, arguments) =>
+                {
+                    output.WriteSafeString("hello");
+                });
+
+                // Registering the same helper name again on the same instance should replace, not grow.
+                hbs.RegisterHelper("myHelper", (output, context, arguments) =>
+                {
+                    output.WriteSafeString("world");
+                });
+
+                var template = hbs.Compile("{{myHelper}}");
+                var result = template(new { });
+                Assert.Equal("world", result);
+            }
+        }
+
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/541
+        // Tests that registering the same helper name multiple times on a single IHandlebars instance
+        // does not grow the internal helpers dictionary (AddOrReplace must truly replace, not append).
+        [Fact]
+        public void RegisterHelper_SameNameRepeatedly_ShouldNotGrowHelpersCount()
+        {
+            var hbs = Handlebars.Create();
+
+            // Register the same helper name many times.
+            for (var i = 0; i < 100; i++)
+            {
+                var captured = i;
+                hbs.RegisterHelper("myHelper", (output, context, arguments) =>
+                {
+                    output.WriteSafeString(captured.ToString());
+                });
+            }
+
+            // With the bug, AddOrReplace was not returning after finding the key, so each
+            // registration added a new entry — the count would be 100 instead of 1.
+            // With the fix, each registration replaces the existing entry.
+            Assert.Single(hbs.Configuration.Helpers);
+
+            // Also verify the last-registered implementation is active.
+            var template = hbs.Compile("{{myHelper}}");
+            var result = template(new { });
+            Assert.Equal("99", result);
+        }
+      
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/519
+        [Fact]
+        public void Issue519_PartialBlockUsableAsBlockAndInIf()
+        {
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterTemplate("myPartial",
+                @"Conditional:{{#if @partial-block}} {{> @partial-block}}{{/if}}
+Plain: {{> @partial-block}}
+Block:{{#> @partial-block }}{{/@partial-block}}");
+
+            var render = handlebars.Compile("{{#> myPartial}}Block content{{/myPartial}}");
+            var actual = render(new { });
+            Assert.Contains("Conditional: Block content", actual);
+            Assert.Contains("Plain: Block content", actual);
+            Assert.Contains("Block:Block content", actual);
+        }
+      
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/458
+        // System.NotImplementedException: byref delegate on Xamarin.iOS / Mono
+        // The Mono runtime does not support delegates with byref (in/ref) parameters.
+        // TemplateDelegate previously used `in EncodedTextWriter` which produced a
+        // byref delegate incompatible with Mono's AOT/JIT compiler.
+        [Fact]
+        public void Issue458_BasicTemplateCompilationAndRender()
+        {
+            // Validates the scenario that fails on Mono: simple compile + render
+            var handlebars = Handlebars.Create();
+            var render = handlebars.Compile("{{input}}");
+            object data = new { input = 42 };
+            var actual = render(data);
+            Assert.Equal("42", actual);
+        }
+
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/458
+        // Ensures block helpers still work after the byref delegate fix
+        [Fact]
+        public void Issue458_BlockHelperTemplateCompilationAndRender()
+        {
+            var handlebars = Handlebars.Create();
+            var render = handlebars.Compile("{{#if show}}visible{{/if}}");
+            var actual = render(new { show = true });
+            Assert.Equal("visible", actual);
+        }
     }
 }
