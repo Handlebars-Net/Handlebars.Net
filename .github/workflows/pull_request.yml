@@ -7,19 +7,15 @@ on:
 jobs:
   build:
     name: Build
-    runs-on: windows-2019
+    runs-on: windows-latest
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v4
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
-              2.1.x
-              3.1.x
               6.0.x
-      - name: Clean package cache as a temporary workaround for https://github.com/actions/setup-dotnet/issues/155
-        working-directory: ./source
-        run: dotnet clean -c Release && dotnet nuget locals all --clear
+              10.0.x
       - name: Build
         working-directory: ./source
         run: dotnet build -c Release
@@ -30,53 +26,47 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ macos-latest, ubuntu-latest, windows-2019 ]
+        os: [ macos-latest, ubuntu-latest, windows-latest ]
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v4
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
-              2.1.x
-              3.1.x
               6.0.x
-      - name: Clean package cache as a temporary workaround for https://github.com/actions/setup-dotnet/issues/155
-        working-directory: ./source
-        run: dotnet clean -c Release && dotnet nuget locals all --clear
+              10.0.x
       - name: Test
         working-directory: ./source
         run: dotnet test --logger:trx --logger:GitHubActions
 
   sonar-pr:
     name: SonarCloud
-    runs-on: windows-2019
+    # Secrets are not available for fork PRs; skip rather than fail with an empty token.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
-              2.1.x
-              3.1.x
               6.0.x
+              10.0.x
       - uses: actions/setup-java@v4
         with:
-          java-version: '21' # The JDK version to make available on the path.
+          java-version: '21'
           distribution: 'zulu'
-      - name: Clean package cache as a temporary workaround for https://github.com/actions/setup-dotnet/issues/155
-        working-directory: ./source
-        run: dotnet clean -c Release && dotnet nuget locals all --clear
       - name: Cache SonarCloud packages
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~\sonar\cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
       - name: Cache SonarCloud scanner
         id: cache-sonar-scanner
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: .\.sonar\scanner
           key: ${{ runner.os }}-sonar-scanner
@@ -92,53 +82,50 @@ jobs:
       - name: Build and analyze
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-          SONAR_TOKEN: 22a5e1c1df52b7200ac14fc139ed1dfbe53dda4d
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          PR_KEY: ${{ github.event.number }}
+          PR_BRANCH: ${{ github.event.pull_request.head.ref }}
+          PR_BASE: ${{ github.event.pull_request.base.ref }}
         shell: powershell
         run: |
-          .\.sonar\scanner\dotnet-sonarscanner begin /k:"Handlebars-Net_Handlebars.Net" /o:"handlebars-net" /d:sonar.login="${{ env.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths="**/*.opencover.xml" /d:sonar.cs.vstest.reportsPaths="**/*.trx" /d:sonar.coverage.exclusions="**/*.md;source/Handlebars.Benchmark/**/*.*" /d:sonar.cpd.exclusions="source/Handlebars/Iterators/**/*.*" /d:sonar.pullrequest.key=${{ github.event.number }} /d:sonar.pullrequest.branch=${{ github.event.pull_request.head.ref }} /d:sonar.pullrequest.base=${{ github.event.pull_request.base.ref }}
+          .\.sonar\scanner\dotnet-sonarscanner begin /k:"Handlebars-Net_Handlebars.Net" /o:"handlebars-net" /d:sonar.token="$env:SONAR_TOKEN" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths="**/*.opencover.xml" /d:sonar.cs.vstest.reportsPaths="**/*.trx" /d:sonar.coverage.exclusions="**/*.md;source/Handlebars.Benchmark/**/*.*" /d:sonar.cpd.exclusions="source/Handlebars/Iterators/**/*.*" /d:sonar.pullrequest.key="$env:PR_KEY" /d:sonar.pullrequest.branch="$env:PR_BRANCH" /d:sonar.pullrequest.base="$env:PR_BASE"
           dotnet build source/Handlebars.sln -c Release
-          .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ env.SONAR_TOKEN }}"
+          .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="$env:SONAR_TOKEN"
 
   benchmark:
     name: Run Benchmark.Net
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-dotnet@v1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
-              2.1.x
-              3.1.x
               6.0.x
-      - name: Clean package cache as a temporary workaround for https://github.com/actions/setup-dotnet/issues/155
-        working-directory: ./source
-        run: dotnet clean -c Release && dotnet nuget locals all --clear
+              10.0.x
       - name: Run benchmark
         working-directory: ./source/Handlebars.Benchmark
-        run: dotnet run -c Release --exporters json --filter '*' -m --join
+        run: dotnet run -c Release -f net10.0 --exporters json --filter '*' --join
       - name: Get benchmark file name
         working-directory: ./source/Handlebars.Benchmark/BenchmarkDotNet.Artifacts/results
         id: benchmarkfilename
         run: |
           filePath=$(find . -type f -name 'BenchmarkRun-joined-*-report-full-compressed.json' | rev | cut -d '/' -f1 | rev)
           echo $filePath
-          echo "::set-output name=file::$filePath"
+          echo "file=$filePath" >> $GITHUB_OUTPUT
       - name: Store benchmark result
-        uses: Happypig375/github-action-benchmark@v1.8.2
+        uses: Happypig375/github-action-benchmark@e7cb068f90622402c0ae5b54e2c781052fcd9343 # v1.8.2
         with:
           name: Benchmark.Net Benchmark
           tool: 'benchmarkdotnet'
           output-file-path: source/Handlebars.Benchmark/BenchmarkDotNet.Artifacts/results/${{ steps.benchmarkfilename.outputs.file }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: false # disabled for PRs
-          # Show alert with commit comment on detecting possible performance regression
           alert-threshold: '200%'
           comment-on-alert: true
           fail-on-alert: false
           alert-comment-cc-users: '@zjklee'
-
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: Benchmark
           path: source/Handlebars.Benchmark/BenchmarkDotNet.Artifacts/results/
