@@ -8,13 +8,13 @@ namespace HandlebarsDotNet.Compiler
     internal class ConditionalBlockAccumulatorContext : BlockAccumulatorContext
     {
         private enum TestType { Direct, Reverse }
-        
+
         private static readonly HashSet<string> ValidHelperNames = new HashSet<string> { "if", "unless" };
-        
+
         private readonly List<ConditionalExpression> _conditionalBlock = new List<ConditionalExpression>();
         private Expression _currentCondition;
         private List<Expression> _bodyBuffer = new List<Expression>();
-        
+
         public sealed override string BlockName { get; protected set; }
 
         public ConditionalBlockAccumulatorContext(Expression startingNode)

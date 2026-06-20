@@ -30,7 +30,6 @@ namespace HandlebarsDotNet.Compiler
             var @object = Arg<object>(condition);
             var includeZero = Arg<bool>(hashParameters.Parameters.Count == 1 ? hashParameters.Parameters[IncludeZero] : Expression.Constant(false));
             return Call(() => HandlebarsUtils.IsTruthyOrNonEmpty(@object, includeZero));
-
         }
     }
 }
