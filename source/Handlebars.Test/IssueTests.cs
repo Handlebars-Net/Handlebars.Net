@@ -734,6 +734,23 @@ namespace HandlebarsDotNet.Test
             Assert.Throws<HandlebarsCompilerException>(()=> Handlebars.Compile(source));
         }
 
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/519
+        [Fact]
+        public void Issue519_PartialBlockUsableAsBlockAndInIf()
+        {
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterTemplate("myPartial",
+                @"Conditional:{{#if @partial-block}} {{> @partial-block}}{{/if}}
+Plain: {{> @partial-block}}
+Block:{{#> @partial-block }}{{/@partial-block}}");
+
+            var render = handlebars.Compile("{{#> myPartial}}Block content{{/myPartial}}");
+            var actual = render(new { });
+            Assert.Contains("Conditional: Block content", actual);
+            Assert.Contains("Plain: Block content", actual);
+            Assert.Contains("Block:Block content", actual);
+        }
+      
         // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/458
         // System.NotImplementedException: byref delegate on Xamarin.iOS / Mono
         // The Mono runtime does not support delegates with byref (in/ref) parameters.
