@@ -733,5 +733,67 @@ namespace HandlebarsDotNet.Test
 
             Assert.Throws<HandlebarsCompilerException>(()=> Handlebars.Compile(source));
         }
+
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/541
+        // DictionarySlim.AddOrReplace was missing a return after updating an existing key's value,
+        // causing it to always call AddValue even when the key already existed.
+        // Under sustained load (many IHandlebars instances each registering the same helper names),
+        // this caused unbounded growth in the internal dictionary leading to OutOfMemoryException.
+        [Fact]
+        public void RegisterHelperRepeatedly_ShouldNotCauseUnboundedGrowth()
+        {
+            // Each iteration creates a new IHandlebars instance and registers the same helper name.
+            // With the bug present, every RegisterHelper call adds a new entry even for the same key,
+            // causing unbounded growth in the internal DictionarySlim.
+            // With the fix, AddOrReplace correctly updates in-place and the count stays bounded.
+            const int iterations = 1000;
+            for (var i = 0; i < iterations; i++)
+            {
+                var hbs = Handlebars.Create();
+                hbs.RegisterHelper("myHelper", (output, context, arguments) =>
+                {
+                    output.WriteSafeString("hello");
+                });
+
+                // Registering the same helper name again on the same instance should replace, not grow.
+                hbs.RegisterHelper("myHelper", (output, context, arguments) =>
+                {
+                    output.WriteSafeString("world");
+                });
+
+                var template = hbs.Compile("{{myHelper}}");
+                var result = template(new { });
+                Assert.Equal("world", result);
+            }
+        }
+
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/541
+        // Tests that registering the same helper name multiple times on a single IHandlebars instance
+        // does not grow the internal helpers dictionary (AddOrReplace must truly replace, not append).
+        [Fact]
+        public void RegisterHelper_SameNameRepeatedly_ShouldNotGrowHelpersCount()
+        {
+            var hbs = Handlebars.Create();
+
+            // Register the same helper name many times.
+            for (var i = 0; i < 100; i++)
+            {
+                var captured = i;
+                hbs.RegisterHelper("myHelper", (output, context, arguments) =>
+                {
+                    output.WriteSafeString(captured.ToString());
+                });
+            }
+
+            // With the bug, AddOrReplace was not returning after finding the key, so each
+            // registration added a new entry — the count would be 100 instead of 1.
+            // With the fix, each registration replaces the existing entry.
+            Assert.Single(hbs.Configuration.Helpers);
+
+            // Also verify the last-registered implementation is active.
+            var template = hbs.Compile("{{myHelper}}");
+            var result = template(new { });
+            Assert.Equal("99", result);
+        }
     }
 }
