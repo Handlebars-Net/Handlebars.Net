@@ -91,6 +91,16 @@ namespace HandlebarsDotNet.Compiler
                 helper = new Ref<IHelperDescriptor<HelperOptions>>(lateBindHelperDescriptor);
                 configuration.Helpers.AddOrReplace(pathInfoLight, helper);
             }
+            else if (helper.Value is LateBindHelperDescriptor existingLateBindHelper
+                     && !string.Equals(existingLateBindHelper.Name.Path, pathInfo.Path, System.StringComparison.Ordinal))
+            {
+                // The helpers dictionary uses case-insensitive keys, so "TEST" and "test" map to the
+                // same slot. If the cached LateBindHelperDescriptor was stored for a differently-cased
+                // path, create a new one that carries the exact casing of the current expression so
+                // that runtime property lookup resolves to the right member.
+                var lateBindHelperDescriptor = new LateBindHelperDescriptor(pathInfo);
+                helper = new Ref<IHelperDescriptor<HelperOptions>>(lateBindHelperDescriptor);
+            }
             else if (configuration.Compatibility.RelaxedHelperNaming)
             {
                 pathInfoLight = pathInfoLight.TagComparer();
