@@ -12,7 +12,7 @@ namespace HandlebarsDotNet.MemberAccessors
             // Only string keys supported - indexer takes an object, but no nice
             // way to check if the hashtable check if it should be a different type.
             var dictionary = (IDictionary) instance;
-            value = dictionary[memberName.LowerInvariant];
+            value = dictionary[memberName.TrimmedValue];
             return true;
         }
     }

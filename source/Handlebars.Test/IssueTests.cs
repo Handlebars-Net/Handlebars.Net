@@ -733,5 +733,41 @@ namespace HandlebarsDotNet.Test
 
             Assert.Throws<HandlebarsCompilerException>(()=> Handlebars.Compile(source));
         }
+
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/521
+        // Hashtable with an uppercase key should be accessible using the same-cased expression.
+        // The IDictionary accessor was incorrectly lowercasing the lookup key.
+        [Fact]
+        public void HashtableUppercaseKeyResolvesWithMatchingExpression()
+        {
+            var template = Handlebars.Compile("Hello {{NAME}}");
+            var result = template(new Hashtable { { "NAME", "alice" } });
+            Assert.Equal("Hello alice", result);
+        }
+
+        [Fact]
+        public void HashtableLowercaseKeyStillResolves()
+        {
+            var template = Handlebars.Compile("Hello {{name}}");
+            var result = template(new Hashtable { { "name", "bob" } });
+            Assert.Equal("Hello bob", result);
+        }
+
+        [Fact]
+        public void GenericDictionaryUppercaseKeyUnchanged()
+        {
+            var template = Handlebars.Compile("Hello {{NAME}}");
+            var result = template(new Dictionary<string, string> { { "NAME", "charlie" } });
+            Assert.Equal("Hello charlie", result);
+        }
+
+        [Fact]
+        public void HashtableLookupIsCaseSensitive()
+        {
+            // {{name}} should NOT resolve a key "NAME" — JS objects are case-sensitive
+            var template = Handlebars.Compile("Hello {{name}}");
+            var result = template(new Hashtable { { "NAME", "dave" } });
+            Assert.Equal("Hello ", result);
+        }
     }
 }
