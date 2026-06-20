@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using AngleSharp.Html.Parser;
 using Xunit;
 
 namespace HandlebarsDotNet.Test.ViewEngine
@@ -39,8 +40,8 @@ namespace HandlebarsDotNet.Test.ViewEngine
                 }
             );
 
-            var cq = CsQuery.CQ.CreateDocument(output);
-            Assert.Equal("This is the blog title", cq["section.copyright a"].Text());
+            var doc = new HtmlParser().ParseDocument(output);
+            Assert.Equal("This is the blog title", doc.QuerySelector("section.copyright a")?.TextContent);
         }
         
         [Fact]
@@ -72,8 +73,8 @@ namespace HandlebarsDotNet.Test.ViewEngine
                     title = "This is the blog title"
                 }
             });
-            var cq = CsQuery.CQ.CreateDocument(output);
-            Assert.Equal("My Post Title", cq["h2.post-title a"].Text());
+            var doc = new HtmlParser().ParseDocument(output);
+            Assert.Equal("My Post Title", doc.QuerySelector("h2.post-title a")?.TextContent);
         }
 
         [Fact]
@@ -100,8 +101,8 @@ namespace HandlebarsDotNet.Test.ViewEngine
                     post_class = "somepostclass"
                 }
             });
-            var cq = CsQuery.CQ.CreateDocument(output);
-            Assert.Equal("My Post Title", cq["h1.post-title"].Html());
+            var doc = new HtmlParser().ParseDocument(output);
+            Assert.Equal("My Post Title", doc.QuerySelector("h1.post-title")?.InnerHtml);
         }
 
         private static void AddHelpers(IHandlebars handlebars)
@@ -136,8 +137,8 @@ namespace HandlebarsDotNet.Test.ViewEngine
                     post_class = "somepostclass"
                 }
             });
-            var cq = CsQuery.CQ.CreateDocument(output);
-            Assert.Equal("My Post Title", cq["h1.post-title"].Html());
+            var doc = new HtmlParser().ParseDocument(output);
+            Assert.Equal("My Post Title", doc.QuerySelector("h1.post-title")?.InnerHtml);
         }
 
         [Fact]
@@ -171,8 +172,8 @@ namespace HandlebarsDotNet.Test.ViewEngine
                     }
                 }
             });
-            var cq = CsQuery.CQ.CreateDocument(output);
-            Assert.Equal("My Post Title", cq["h2.post-title a"].Text());
+            var doc = new HtmlParser().ParseDocument(output);
+            Assert.Equal("My Post Title", doc.QuerySelector("h2.post-title a")?.TextContent);
         }
 
         class DiskFileSystem : ViewEngineFileSystem
