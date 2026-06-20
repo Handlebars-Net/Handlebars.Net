@@ -733,5 +733,28 @@ namespace HandlebarsDotNet.Test
 
             Assert.Throws<HandlebarsCompilerException>(()=> Handlebars.Compile(source));
         }
+
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/466
+        // Dictionary keys were inaccessible in nested #each when data is a mix of Dictionary and List
+        [Fact]
+        public void Issue466_NestedEachWithMixedDictionaryAndList()
+        {
+            var handlebars = Handlebars.Create();
+            var source = "{{#each this.users}}{{#each friends}}{{emailAddress}} {{/each}}{{/each}}";
+            var template = handlebars.Compile(source);
+
+            var friends = new List<Dictionary<object, object>>
+            {
+                new Dictionary<object, object> { { "emailAddress", "test@example.com" } }
+            };
+            var users = new List<Dictionary<object, object>>
+            {
+                new Dictionary<object, object> { { "friends", friends } }
+            };
+            var data = new Dictionary<object, object> { { "users", users } };
+
+            var result = template(data);
+            Assert.Contains("test@example.com", result);
+        }
     }
 }
