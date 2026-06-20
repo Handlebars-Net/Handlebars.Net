@@ -437,7 +437,7 @@ false
             };
 
             var result = handlebarsTemplate(data);
-            var actual = string.Join(" ", result.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries).Select(o => o.Trim(' ')));
+            var actual = string.Join(" ", result.Split(new[] { "\n" }, StringSplitOptions.RemoveEmptyEntries).Select(o => o.Trim()));
             Assert.Equal("Garry Finch gazraa Karen Finch photobasics", actual);
         }
 
@@ -501,7 +501,7 @@ false
             };
 
             var result = handlebarsTemplate(data);
-            var actual = string.Join(" ", result.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries).Select(o => o.Trim(' ')));
+            var actual = string.Join(" ", result.Split(new[] { "\n" }, StringSplitOptions.RemoveEmptyEntries).Select(o => o.Trim()));
             Assert.Equal("Garry Finch N/A Karen Finch photobasics", actual);
         }
 

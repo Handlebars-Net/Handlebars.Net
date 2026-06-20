@@ -127,6 +127,7 @@ namespace HandlebarsDotNet
 				case string v: Write(v, true); return;
 				case StringBuilder v: Write(v, true); return;
 				case Substring v: Write(v, true); return;
+				case SafeString safe: Write(safe.Value, false); return;
 
 				default:
 					WriteFormatted(value);
