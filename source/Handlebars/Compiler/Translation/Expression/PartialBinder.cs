@@ -12,6 +12,12 @@ namespace HandlebarsDotNet.Compiler
     {
         private static string SpecialPartialBlockName = "@partial-block";
 
+        private static string ToPartialName(object value)
+        {
+            if (value is SafeString safe) return safe.Value;
+            return (string) value;
+        }
+
         private CompilationContext CompilationContext { get; }
         
         public PartialBinder(CompilationContext compilationContext)
@@ -46,7 +52,8 @@ namespace HandlebarsDotNet.Compiler
                     bindingContext = bindingContext.Call(o => o.CreateChildContext(value, partialTemplate));
                 }
 
-                var partialName = Cast<string>(pex.PartialName);
+                var partialNameObj = Arg<object>(pex.PartialName);
+                var partialName = Call(() => ToPartialName(partialNameObj));
                 var configuration = Arg(CompilationContext.Configuration);
                 var templateDelegate = FunctionBuilder.Compile(
                     new []
@@ -54,8 +61,8 @@ namespace HandlebarsDotNet.Compiler
                         Call(() =>
                             InvokePartialWithFallback(partialName, bindingContext, writer, (ICompiledHandlebarsConfiguration) configuration)
                         ).Expression
-                    }, 
-                    CompilationContext, 
+                    },
+                    CompilationContext,
                     out _
                 );
 
@@ -67,18 +74,19 @@ namespace HandlebarsDotNet.Compiler
             {
                 var bindingContext = CompilationContext.Args.BindingContext;
                 var writer = CompilationContext.Args.EncodedWriter;
-            
+
                 if (pex.Argument != null || partialBlockTemplate != null)
                 {
                     var value = pex.Argument != null
                         ? Arg<object>(FunctionBuilder.Reduce(pex.Argument, CompilationContext, out _))
                         : bindingContext.Property(o => o.Value);
-                
+
                     var partialTemplate = Arg(partialBlockTemplate);
                     bindingContext = bindingContext.Call(o => o.CreateChildContext(value, partialTemplate));
                 }
 
-                var partialName = Cast<string>(pex.PartialName);
+                var partialNameObj = Arg<object>(pex.PartialName);
+                var partialName = Call(() => ToPartialName(partialNameObj));
                 var configuration = Arg(CompilationContext.Configuration);
                 
                 return Call(() =>
