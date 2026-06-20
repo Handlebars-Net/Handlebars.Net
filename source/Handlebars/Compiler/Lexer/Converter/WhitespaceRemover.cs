@@ -14,6 +14,8 @@ namespace HandlebarsDotNet.Compiler
         private static readonly Regex MatchFirstEndsWithWhitespace = new Regex(@"(^|\r?\n)\s*?$", RegexOptions.Compiled);
         private static readonly Regex MatchEndsWithWhitespace = new Regex(@"\r?\n\s*?$");
         private static readonly Regex TrimEndRegex = new Regex(@"[ \t]+\z", RegexOptions.Compiled);
+        // Captures trailing whitespace (spaces/tabs) after the last newline — this is the partial's indentation
+        private static readonly Regex ExtractIndentRegex = new Regex(@"(?:^|\r?\n)([ \t]*)$", RegexOptions.Compiled);
         
         private static readonly WhitespaceRemover Remover = new WhitespaceRemover();
 
@@ -59,6 +61,26 @@ namespace HandlebarsDotNet.Compiler
 
                 if (IsStandalone(statement) && IsNextWhitespace(list, i) && IsPrevWhitespace(list, i))
                 {
+                    // For standalone partials, extract the preceding indentation and store it on the
+                    // PartialExpression so it can be applied to every line of the rendered output.
+                    if (statement.Body is PartialExpression partialExpr)
+                    {
+                        var indent = ExtractIndent(list, i);
+                        if (!string.IsNullOrEmpty(indent))
+                        {
+                            var indentedPartial = HandlebarsExpression.Partial(
+                                partialExpr.PartialName,
+                                partialExpr.Argument,
+                                partialExpr.Fallback,
+                                indent);
+                            list[i] = HandlebarsExpression.Statement(
+                                indentedPartial,
+                                statement.IsEscaped,
+                                statement.TrimBefore,
+                                statement.TrimAfter);
+                        }
+                    }
+
                     if (!statement.TrimBefore)
                     {
                         TrimBefore(list, i, false);
@@ -69,6 +91,15 @@ namespace HandlebarsDotNet.Compiler
                     }
                 }
             }
+        }
+
+        private static string ExtractIndent(IList<object> list, int index)
+        {
+            if (index < 1) return string.Empty;
+            if (!(list[index - 1] is StaticToken prev)) return string.Empty;
+
+            var match = ExtractIndentRegex.Match(prev.Value);
+            return match.Success ? match.Groups[1].Value : string.Empty;
         }
 
         private static bool IsNextWhitespace(IList<object> list, int index)

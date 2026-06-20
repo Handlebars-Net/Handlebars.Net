@@ -29,14 +29,14 @@ namespace HandlebarsDotNet.Test
                 {"Chewy", "hamster" }
             };
 
-            var template = "{{#each this}}The animal, {{@key}}, {{#StringEqualityBlockHelper @value 'dog'}}is a dog{{else}}is not a dog{{/StringEqualityBlockHelper}}.\r\n{{/each}}";
+            var template = "{{#each this}}The animal, {{@key}}, {{#StringEqualityBlockHelper @value 'dog'}}is a dog{{else}}is not a dog{{/StringEqualityBlockHelper}}.\n{{/each}}";
             var compiledTemplate = handlebars.Compile(template);
             string templateOutput = compiledTemplate(animals);
             
             Assert.Equal(
-                "The animal, Fluffy, is not a dog.\r\n" + 
-                         "The animal, Fido, is a dog.\r\n" + 
-                         "The animal, Chewy, is not a dog.\r\n", 
+                "The animal, Fluffy, is not a dog.\n" + 
+                         "The animal, Fido, is a dog.\n" + 
+                         "The animal, Chewy, is not a dog.\n", 
                 templateOutput
             );
         }

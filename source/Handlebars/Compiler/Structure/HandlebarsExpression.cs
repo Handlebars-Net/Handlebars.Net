@@ -102,6 +102,11 @@ namespace HandlebarsDotNet.Compiler
             return new PartialExpression(partialName, argument, fallback);
         }
 
+        public static PartialExpression Partial(Expression partialName, Expression argument, Expression fallback, string indent)
+        {
+            return new PartialExpression(partialName, argument, fallback, indent);
+        }
+
         public static BoolishExpression Boolish(Expression condition, HashParametersExpression hashParameters)
         {
             return new BoolishExpression(condition, hashParameters);
