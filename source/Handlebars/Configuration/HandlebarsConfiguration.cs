@@ -88,7 +88,7 @@ namespace HandlebarsDotNet
             RegisteredTemplates = new ObservableIndex<string, HandlebarsTemplate<TextWriter, object, object>, StringEqualityComparer>(stringEqualityComparer);
             
             HelperResolvers = new ObservableList<IHelperResolver>();
-            TextEncoder = new HtmlEncoderLegacy();
+            TextEncoder = new HtmlEncoder();
             FormatterProviders.Add(_undefinedFormatter);
         }
     }

@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq.Expressions;
+using System.Text;
 using Expressions.Shortcuts;
+using HandlebarsDotNet.IO;
 using HandlebarsDotNet.PathStructure;
 using HandlebarsDotNet.Polyfills;
 using static Expressions.Shortcuts.ExpressionShortcuts;
@@ -11,6 +14,12 @@ namespace HandlebarsDotNet.Compiler
     internal class PartialBinder : HandlebarsExpressionVisitor
     {
         private static string SpecialPartialBlockName = "@partial-block";
+
+        private static string ToPartialName(object value)
+        {
+            if (value is SafeString safe) return safe.Value;
+            return (string) value;
+        }
 
         private CompilationContext CompilationContext { get; }
         
@@ -26,36 +35,38 @@ namespace HandlebarsDotNet.Compiler
         protected override Expression VisitPartialExpression(PartialExpression pex)
         {
             IReadOnlyList<DecoratorDefinition> decorators = ArrayEx.Empty<DecoratorDefinition>();
-            var partialBlockTemplate = pex.Fallback != null 
-                ? FunctionBuilder.Compile(new[] { pex.Fallback }, CompilationContext, out decorators) 
+            var partialBlockTemplate = pex.Fallback != null
+                ? FunctionBuilder.Compile(new[] { pex.Fallback }, CompilationContext, out decorators)
                 : null;
-            
+
             if (decorators.Count > 0)
             {
                 var bindingContext = CompilationContext.Args.BindingContext;
                 var writer = CompilationContext.Args.EncodedWriter;
-            
+
                 var parentContext = bindingContext;
                 if (pex.Argument != null || partialBlockTemplate != null)
                 {
                     var value = pex.Argument != null
                         ? Arg<object>(FunctionBuilder.Reduce(pex.Argument, CompilationContext, out _))
                         : bindingContext.Property(o => o.Value);
-                
+
                     var partialTemplate = Arg(partialBlockTemplate);
                     bindingContext = bindingContext.Call(o => o.CreateChildContext(value, partialTemplate));
                 }
 
-                var partialName = Cast<string>(pex.PartialName);
+                var partialNameObj = Arg<object>(pex.PartialName);
+                var partialName = Call(() => ToPartialName(partialNameObj));
                 var configuration = Arg(CompilationContext.Configuration);
+                var indent = Arg(pex.Indent);
                 var templateDelegate = FunctionBuilder.Compile(
                     new []
                     {
                         Call(() =>
-                            InvokePartialWithFallback(partialName, bindingContext, writer, (ICompiledHandlebarsConfiguration) configuration)
+                            InvokePartialWithFallback(partialName, bindingContext, writer, (ICompiledHandlebarsConfiguration) configuration, indent)
                         ).Expression
-                    }, 
-                    CompilationContext, 
+                    },
+                    CompilationContext,
                     out _
                 );
 
@@ -67,22 +78,24 @@ namespace HandlebarsDotNet.Compiler
             {
                 var bindingContext = CompilationContext.Args.BindingContext;
                 var writer = CompilationContext.Args.EncodedWriter;
-            
+
                 if (pex.Argument != null || partialBlockTemplate != null)
                 {
                     var value = pex.Argument != null
                         ? Arg<object>(FunctionBuilder.Reduce(pex.Argument, CompilationContext, out _))
                         : bindingContext.Property(o => o.Value);
-                
+
                     var partialTemplate = Arg(partialBlockTemplate);
                     bindingContext = bindingContext.Call(o => o.CreateChildContext(value, partialTemplate));
                 }
 
-                var partialName = Cast<string>(pex.PartialName);
+                var partialNameObj = Arg<object>(pex.PartialName);
+                var partialName = Call(() => ToPartialName(partialNameObj));
                 var configuration = Arg(CompilationContext.Configuration);
-                
+                var indent = Arg(pex.Indent);
+
                 return Call(() =>
-                    InvokePartialWithFallback(partialName, bindingContext, writer, (ICompiledHandlebarsConfiguration) configuration)
+                    InvokePartialWithFallback(partialName, bindingContext, writer, (ICompiledHandlebarsConfiguration) configuration, indent)
                 );
             }
         }
@@ -91,27 +104,76 @@ namespace HandlebarsDotNet.Compiler
             string partialName,
             BindingContext context,
             EncodedTextWriter writer,
-            ICompiledHandlebarsConfiguration configuration)
+            ICompiledHandlebarsConfiguration configuration,
+            string indent = null)
         {
             partialName = partialName != null ? ChainSegment.Create(partialName).TrimmedValue : null;
-            if (InvokePartial(partialName, context, writer, configuration)) return;
+            if (InvokePartial(partialName, context, writer, configuration, indent)) return;
             if (context.PartialBlockTemplate == null)
             {
                 if (configuration.MissingPartialTemplateHandler == null)
                     throw new HandlebarsRuntimeException($"Referenced partial name {partialName} could not be resolved");
-                
+
                 configuration.MissingPartialTemplateHandler.Handle(configuration, partialName, writer);
                 return;
             }
 
-            context.PartialBlockTemplate(writer, context);
+            if (!string.IsNullOrEmpty(indent))
+            {
+                using var innerWriter = ReusableStringWriter.Get(writer.UnderlyingWriter.FormatProvider);
+                using var textWriter = new EncodedTextWriter(innerWriter, configuration.TextEncoder, FormatterProvider.Current, true);
+                context.PartialBlockTemplate(textWriter, context);
+                WriteWithIndent(writer, innerWriter.ToString(), indent);
+            }
+            else
+            {
+                context.PartialBlockTemplate(writer, context);
+            }
+        }
+
+        /// <summary>
+        /// Writes <paramref name="content"/> to <paramref name="writer"/>, prepending <paramref name="indent"/>
+        /// to every non-empty line.  All lines including the first receive the indent because the
+        /// WhitespaceRemover already stripped the leading whitespace from the static token that preceded
+        /// the partial tag.  An empty trailing segment after the last newline does not receive an indent.
+        /// Newlines are normalised to <c>\n</c> so that output is consistent across platforms regardless
+        /// of whether the partial source was checked out with <c>\r\n</c> line endings.
+        /// </summary>
+        private static void WriteWithIndent(EncodedTextWriter writer, string content, string indent)
+        {
+            if (string.IsNullOrEmpty(content))
+            {
+                return;
+            }
+
+            // Normalise line endings to \n so Windows \r\n does not produce \r artifacts.
+            var normalised = content.Replace("\r\n", "\n").Replace("\r", "\n");
+
+            var pos = 0;
+            while (pos < normalised.Length)
+            {
+                var newlinePos = normalised.IndexOf('\n', pos);
+                if (newlinePos < 0)
+                {
+                    // No more newlines — write indent + rest and stop
+                    writer.Write(indent, false);
+                    writer.Write(normalised.Substring(pos), false);
+                    break;
+                }
+
+                // Write indent + the segment up to and including the \n
+                writer.Write(indent, false);
+                writer.Write(normalised.Substring(pos, newlinePos - pos + 1), false);
+                pos = newlinePos + 1;
+            }
         }
 
         private static bool InvokePartial(
             string partialName,
             BindingContext context,
             EncodedTextWriter writer,
-            ICompiledHandlebarsConfiguration configuration)
+            ICompiledHandlebarsConfiguration configuration,
+            string indent = null)
         {
             if (partialName.Equals(SpecialPartialBlockName))
             {
@@ -124,7 +186,17 @@ namespace HandlebarsDotNet.Compiler
                 try
                 {
                     context.PartialBlockTemplate = context.ParentContext.PartialBlockTemplate;
-                    partialBlockTemplate(writer, context);
+                    if (!string.IsNullOrEmpty(indent))
+                    {
+                        using var innerWriter = ReusableStringWriter.Get(writer.UnderlyingWriter.FormatProvider);
+                        using var textWriter = new EncodedTextWriter(innerWriter, configuration.TextEncoder, FormatterProvider.Current, true);
+                        partialBlockTemplate(textWriter, context);
+                        WriteWithIndent(writer, innerWriter.ToString(), indent);
+                    }
+                    else
+                    {
+                        partialBlockTemplate(writer, context);
+                    }
                 }
                 finally
                 {
@@ -145,7 +217,17 @@ namespace HandlebarsDotNet.Compiler
                 IncreaseDepth();
                 try
                 {
-                    partial(writer, context);
+                    if (!string.IsNullOrEmpty(indent))
+                    {
+                        using var innerWriter = ReusableStringWriter.Get(writer.UnderlyingWriter.FormatProvider);
+                        using var textWriter = new EncodedTextWriter(innerWriter, configuration.TextEncoder, FormatterProvider.Current, true);
+                        partial(textWriter, context);
+                        WriteWithIndent(writer, innerWriter.ToString(), indent);
+                    }
+                    else
+                    {
+                        partial(writer, context);
+                    }
                 }
                 finally
                 {
@@ -153,12 +235,12 @@ namespace HandlebarsDotNet.Compiler
                 }
                 return true;
             }
-            
+
             // Partial is not found, so call the resolver and attempt to load it.
             if (!configuration.RegisteredTemplates.ContainsKey(partialName))
             {
                 var handlebars = Handlebars.Create(configuration);
-                if (configuration.PartialTemplateResolver == null 
+                if (configuration.PartialTemplateResolver == null
                     || !configuration.PartialTemplateResolver.TryRegisterPartial(handlebars, partialName, (string) context.Extensions.Optional("templatePath")))
                 {
                     // Template not found.
@@ -169,8 +251,21 @@ namespace HandlebarsDotNet.Compiler
             IncreaseDepth();
             try
             {
-                using var textWriter = writer.CreateWrapper();
-                configuration.RegisteredTemplates[partialName](textWriter, context);
+                if (!string.IsNullOrEmpty(indent))
+                {
+                    using var innerWriter = ReusableStringWriter.Get(writer.UnderlyingWriter.FormatProvider);
+                    using (var encodedInner = new EncodedTextWriter(innerWriter, configuration.TextEncoder, FormatterProvider.Current, true))
+                    {
+                        using var textWriter = encodedInner.CreateWrapper();
+                        configuration.RegisteredTemplates[partialName](textWriter, context);
+                    }
+                    WriteWithIndent(writer, innerWriter.ToString(), indent);
+                }
+                else
+                {
+                    using var textWriter = writer.CreateWrapper();
+                    configuration.RegisteredTemplates[partialName](textWriter, context);
+                }
                 return true;
             }
             catch (Exception exception)

@@ -147,17 +147,11 @@ namespace HandlebarsDotNet.Test
             var callback = handlebars.Compile(view);
             string result = callback(new object());
 
-            const string expected = @"Begin outer partial<br />
-            Begin outer partial block
-<br />
-        Begin inner partial<br />
-            Begin inner partial block<br />
-          View<br />
-            End  inner partial block<br />
-        End inner partial<br />
-            End outer partial block<br />
-        End outer partial";
-            
+            // Issue #614: partial indentation is now preserved (Handlebars.js behaviour).
+            // Each standalone {{>@partial-block}} applies its own leading whitespace as indent
+            // to every line of the rendered block content.
+            const string expected = "Begin outer partial<br />\n            Begin outer partial block\n                <br />\n                        Begin inner partial<br />\n                            Begin inner partial block<br />\n                                          View<br />\n                            End  inner partial block<br />\n                        End inner partial<br />\n            End outer partial block<br />\n        End outer partial";
+
             Assert.Equal(expected, result);
         }
         
@@ -231,9 +225,7 @@ namespace HandlebarsDotNet.Test
 
             var transformed = navTemplate(context).Trim();
 
-            Assert.Equal(@"<div>
-    <div>Menu Item: Getting Started</div>
-</div>", transformed);
+            Assert.Equal("<div>\n    <div>Menu Item: Getting Started</div>\n</div>", transformed);
         }
 
         // issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/394
@@ -734,6 +726,164 @@ namespace HandlebarsDotNet.Test
             Assert.Throws<HandlebarsCompilerException>(()=> Handlebars.Compile(source));
         }
 
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/521
+        // Hashtable with an uppercase key should be accessible using the same-cased expression.
+        // The IDictionary accessor was incorrectly lowercasing the lookup key.
+        [Fact]
+        public void HashtableUppercaseKeyResolvesWithMatchingExpression()
+        {
+            var template = Handlebars.Compile("Hello {{NAME}}");
+            var result = template(new Hashtable { { "NAME", "alice" } });
+            Assert.Equal("Hello alice", result);
+        }
+
+        [Fact]
+        public void HashtableLowercaseKeyStillResolves()
+        {
+            var template = Handlebars.Compile("Hello {{name}}");
+            var result = template(new Hashtable { { "name", "bob" } });
+            Assert.Equal("Hello bob", result);
+        }
+
+        [Fact]
+        public void GenericDictionaryUppercaseKeyUnchanged()
+        {
+            var template = Handlebars.Compile("Hello {{NAME}}");
+            var result = template(new Dictionary<string, string> { { "NAME", "charlie" } });
+            Assert.Equal("Hello charlie", result);
+        }
+
+        [Fact]
+        public void HashtableLookupIsCaseSensitive()
+        {
+            // {{name}} should NOT resolve a key "NAME" — JS objects are case-sensitive
+            var template = Handlebars.Compile("Hello {{name}}");
+            var result = template(new Hashtable { { "NAME", "dave" } });
+            Assert.Equal("Hello ", result);
+        }
+      
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/605
+        // #if not evaluated when variable name contains invisible characters (BOM)
+        [Fact]
+        public void Issue605_IfNotEvaluatedWithBomCharacter()
+        {
+            // The ﻿ (BOM) is embedded in the identifier name
+            string source =
+                "<div class=\"entry\">\n" +
+                "<h1>{{title}}</h1>\n" +
+                "<div class=\"body\">\n" +
+                "{{body}}\n" +
+                "{{#if someCondition﻿}}\n" +
+                "<p>Show additional text</p>\n" +
+                "{{/if}}\n" +
+                "</div>\n" +
+                "</div>";
+
+            var handlebars = Handlebars.Create();
+            var template = handlebars.Compile(source);
+            var data = new {
+                title = "My new post",
+                body = "This is my first post!",
+                someCondition = true
+            };
+            var actual = template(data);
+            Assert.Contains("Show additional text", actual);
+        }
+      
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/546
+        // Single quote should be HTML-encoded as &#x27; in standard {{expression}} output
+        [Fact]
+        public void Issue546_SingleQuoteIsHtmlEncoded()
+        {
+            var handlebars = Handlebars.Create();
+            var render = handlebars.Compile("{{input}}");
+            object data = new { input = "test'1" };
+            var actual = render(data);
+
+            Assert.DoesNotContain("'", actual);
+            Assert.Contains("&#x27;", actual);
+        }
+
+        [Theory]
+        [InlineData("&", "&amp;")]
+        [InlineData("<", "&lt;")]
+        [InlineData(">", "&gt;")]
+        [InlineData("\"", "&quot;")]
+        [InlineData("'", "&#x27;")]
+        [InlineData("`", "&#x60;")]
+        [InlineData("=", "&#x3D;")]
+        public void Issue546_HtmlSpecialCharsAreEncoded(string input, string expected)
+        {
+            var handlebars = Handlebars.Create();
+            var render = handlebars.Compile("{{value}}");
+            var actual = render(new { value = input });
+
+            Assert.Equal(expected, actual);
+        }
+      
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/462
+        // Compile replaces \\ (double backslash) with \ (single backslash)
+        [Fact]
+        public void Issue462_DoubleBackslashPreservedInOutput()
+        {
+            var handlebars = Handlebars.Create();
+            // Template contains two backslashes as literal text
+            var compiledTemplate = handlebars.Compile(@"\\");
+            var result = compiledTemplate(null);
+            Assert.Equal(@"\\", result);
+        }
+
+        [Fact]
+        public void Issue462_SingleBackslashPreservedInOutput()
+        {
+            var handlebars = Handlebars.Create();
+            var compiledTemplate = handlebars.Compile(@"\");
+            var result = compiledTemplate(null);
+            Assert.Equal(@"\", result);
+        }
+
+        [Fact]
+        public void Issue462_DoubleBackslashBeforeExpressionStillCollapses()
+        {
+            // \\{{name}} should still produce a single literal backslash followed by the evaluated expression
+            var handlebars = Handlebars.Create();
+            var compiledTemplate = handlebars.Compile(@"\\{{name}}");
+            var result = compiledTemplate(new { name = "World" });
+            Assert.Equal(@"\World", result);
+        }
+
+        [Fact]
+        public void Issue462_DoubleBackslashInMixedTemplate()
+        {
+            // Template with backslashes mixed: \\to preserves both backslashes (not before {{),
+            // but \\{{name}} collapses to single backslash + evaluated expression (spec behavior)
+            var handlebars = Handlebars.Create();
+            var compiledTemplate = handlebars.Compile(@"path\\to\\{{name}}");
+            var result = compiledTemplate(new { name = "file" });
+            Assert.Equal(@"path\\to\file", result);
+        }
+      
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/539
+        // Parent context (../) resolves to wrong value inside a custom block helper used within #each
+        [Fact]
+        public void Issue539_ParentContextInsideCustomBlockHelperInEach()
+        {
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterHelper("ifCond", (writer, options, context, parameters) =>
+            {
+                if (parameters.Length == 3 && parameters[0]?.ToString() == parameters[2]?.ToString())
+                    options.Template(writer, context);
+                else
+                    options.Inverse(writer, context);
+            });
+
+            var source = @"{{#each loop}}{{#ifCond another '===' 'value'}}{{../this.foo}}{{/ifCond}}{{/each}}";
+            var template = handlebars.Compile(source);
+            var data = new { foo = "bar", loop = new object[] { new { another = "value" } } };
+            var result = template(data);
+            Assert.Equal("bar", result.Trim());
+        }
+      
         // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/584
         [Fact]
         public void Issue584_EscapedDoubleQuoteInHelperStringArgument()
@@ -890,6 +1040,50 @@ Block:{{#> @partial-block }}{{/@partial-block}}");
             var render = handlebars.Compile("{{#if show}}visible{{/if}}");
             var actual = render(new { show = true });
             Assert.Equal("visible", actual);
+        }
+
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/349
+        // Backslash-backslash not followed by {{ should pass through verbatim
+        [Fact]
+        public void DoubleBackslashNotBeforeMustachePassesThroughVerbatim()
+        {
+            // Template string (C# verbatim): \\*.{{Name}}
+            // Actual characters: \, \, *, ., {, {, N, a, m, e, }, }
+            // Expected output:   \, \, *, ., W, o, r, l, d
+            var template = Handlebars.Compile(@"\\*.{{Name}}");
+            var result = template(new { Name = "World" });
+            Assert.Equal(@"\\*.World", result);
+        }
+
+        [Fact]
+        public void DoubleBackslashNotBeforeMustacheInJsonLikeTemplate()
+        {
+            // Reproduces the exact scenario from issue #349:
+            // a JSON-like template where \\ must survive rendering unchanged.
+            // C# string "**\\\\*.{{Name}}" has chars: *, *, \, \, *, ., {, {, N, a, m, e, }, }
+            // Expected output chars:                  *, *, \, \, *, ., W, o, r, l, d
+            var template = Handlebars.Compile("{\"Description\":\"**\\\\*.{{Name}}\"}");
+            var result = template(new { Name = "World" });
+            Assert.Equal("{\"Description\":\"**\\\\*.World\"}", result);
+        }
+
+        [Fact]
+        public void DoubleBackslashBeforeMustacheStillProducesSingleBackslash()
+        {
+            // Existing spec behavior (8.3) must be preserved:
+            // \\{{name}} → \Alice  (the \\ before {{ means literal \, then evaluate)
+            var template = Handlebars.Compile(@"\\{{name}}");
+            var result = template(new { name = "Alice" });
+            Assert.Equal(@"\Alice", result);
+        }
+
+        [Fact]
+        public void SingleBackslashNotBeforeMustachePassesThroughVerbatim()
+        {
+            // A single backslash not before {{ should pass through unchanged
+            var template = Handlebars.Compile(@"\*.{{Name}}");
+            var result = template(new { Name = "World" });
+            Assert.Equal(@"\*.World", result);
         }
     }
 }

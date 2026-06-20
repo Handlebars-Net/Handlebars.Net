@@ -34,6 +34,8 @@ namespace HandlebarsDotNet
                     return !b;
                 case string s:
                     return s == string.Empty;
+                case SafeString safe:
+                    return safe.Value == string.Empty;
             }
 
             if (IsNumber(value) && !includeZero)

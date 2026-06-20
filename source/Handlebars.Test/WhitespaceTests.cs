@@ -212,7 +212,9 @@ namespace HandlebarsDotNet.Test
             }
 
             var result = template(data);
-            Assert.Equal("Here are:\nMarcMarc", result);
+            // Issue #614: standalone partial indentation is now preserved (Handlebars.js behaviour).
+            // "  " indent for the first partial, " " indent for the second.
+            Assert.Equal("Here are:\n  Marc Marc", result);
         }
 
     }
