@@ -4,7 +4,7 @@ using Expressions.Shortcuts;
 
 namespace HandlebarsDotNet.Compiler
 {
-    public delegate TemplateDelegate DecoratorDelegate(in EncodedTextWriter writer, BindingContext context, TemplateDelegate function);
+    public delegate TemplateDelegate DecoratorDelegate(EncodedTextWriter writer, BindingContext context, TemplateDelegate function);
     
     internal readonly struct DecoratorDefinition
     {
@@ -20,7 +20,7 @@ namespace HandlebarsDotNet.Compiler
         
         public DecoratorDelegate Compile(CompilationContext context)
         {
-            if (Function is null || Decorator is null) return (in EncodedTextWriter writer, BindingContext bindingContext, TemplateDelegate function) => function;
+            if (Function is null || Decorator is null) return (EncodedTextWriter writer, BindingContext bindingContext, TemplateDelegate function) => function;
 
             var lambda = Expression.Lambda<DecoratorDelegate>(
                 Decorator, 
@@ -47,7 +47,7 @@ namespace HandlebarsDotNet.Compiler
                 var definition = decoratorDefinitions[index];
                 var f = definition.Compile(context);
                 var current = decorator;
-                decorator = (in EncodedTextWriter writer, BindingContext bindingContext, TemplateDelegate function) => 
+                decorator = (EncodedTextWriter writer, BindingContext bindingContext, TemplateDelegate function) =>
                     f(writer, bindingContext, current(writer, bindingContext, function));
             }
 

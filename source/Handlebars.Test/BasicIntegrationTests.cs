@@ -1440,6 +1440,38 @@ false
         }
 
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicNumericZeroWhenIncludeZeroTrue(IHandlebars handlebars)
+        {
+            string source = "Hello, {{#if zero includeZero=true}}Truthy!{{/if}}";
+
+            var template = handlebars.Compile(source);
+
+            var data = new
+            {
+                zero = 0
+            };
+
+            var result = template(data);
+            Assert.Equal("Hello, Truthy!", result);
+        }
+
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicNumericZeroWhenIncludeZeroFalse(IHandlebars handlebars)
+        {
+            string source = "Hello, {{#if zero includeZero=false}}Truthy!{{/if}}";
+
+            var template = handlebars.Compile(source);
+
+            var data = new
+            {
+                zero = 0
+            };
+
+            var result = template(data);
+            Assert.Equal("Hello, ", result);
+        }
+
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
         public void BasicStringFalsy(IHandlebars handlebars)
         {
             string source = "Hello, {{#if falsy}}Truthy!{{/if}}";
