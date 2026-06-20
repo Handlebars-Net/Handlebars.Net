@@ -8,13 +8,13 @@ namespace HandlebarsDotNet.Compiler
     internal class ConditionalBlockAccumulatorContext : BlockAccumulatorContext
     {
         private enum TestType { Direct, Reverse }
-        
+
         private static readonly HashSet<string> ValidHelperNames = new HashSet<string> { "if", "unless" };
-        
+
         private readonly List<ConditionalExpression> _conditionalBlock = new List<ConditionalExpression>();
         private Expression _currentCondition;
         private List<Expression> _bodyBuffer = new List<Expression>();
-        
+
         public sealed override string BlockName { get; protected set; }
 
         public ConditionalBlockAccumulatorContext(Expression startingNode)
@@ -30,7 +30,8 @@ namespace HandlebarsDotNet.Compiler
                 throw new HandlebarsCompilerException($"Tried to convert {BlockName} expression to conditional block", helperExpression.Context);
             }
 
-            var argument = HandlebarsExpression.Boolish(helperExpression.Arguments.Single());
+            var (value, hashParameters) = UnwrapBoolishHelperArguments(helperExpression.Arguments, helperExpression.Context);
+            var argument = HandlebarsExpression.Boolish(value, hashParameters);
 
             _currentCondition = BlockName switch
             {
@@ -115,7 +116,9 @@ namespace HandlebarsDotNet.Compiler
         private Expression GetElseIfTestExpression(Expression item)
         {
             item = UnwrapStatement(item);
-            return HandlebarsExpression.Boolish(((HelperExpression)item).Arguments.Skip(1).Single());
+            var helperExpression = (HelperExpression)item;
+            var (value, hashParameters) = UnwrapBoolishHelperArguments(helperExpression.Arguments.Skip(1), helperExpression.Context);
+            return HandlebarsExpression.Boolish(value, hashParameters);
         }
 
         private bool IsClosingNode(Expression item)
@@ -132,6 +135,24 @@ namespace HandlebarsDotNet.Compiler
             }
 
             return expressions.SingleOrDefault() ?? Expression.Empty();
+        }
+
+        private static (Expression Value, HashParametersExpression HashParameters) UnwrapBoolishHelperArguments(IEnumerable<Expression> arguments, IReaderContext context)
+        {
+            var value = arguments.First();
+            if (arguments.Count() == 1)
+            {
+                var blankHashParameters = HandlebarsExpression.HashParametersExpression(new Dictionary<string, Expression>());
+                return (value, blankHashParameters);
+            }
+
+            if (arguments.Count() == 2 && arguments.Last() is HashParametersExpression hashParameters)
+            {
+                return (value, hashParameters);
+            }
+
+            throw new HandlebarsCompilerException("Invalid argument list for conditional block.", context);
+
         }
     }
 }

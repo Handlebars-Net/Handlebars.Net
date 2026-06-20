@@ -17,7 +17,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
             //Given a layout in a subfolder
             var files = new FakeFileSystem()
             {
-                {"views\\somelayout.hbs", "layout start\r\n{{{body}}}\r\nlayout end"},
+                {"views\\somelayout.hbs", "layout start\n{{{body}}}\nlayout end"},
                 //And a view in the same folder which uses that layout
                 { "views\\someview.hbs", "{{!< somelayout}}This is the body"}
             };
@@ -28,7 +28,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
             var output = renderView(null);
 
             //Then the correct output should be rendered
-            Assert.Equal("layout start\r\nThis is the body\r\nlayout end", output);
+            Assert.Equal("layout start\nThis is the body\nlayout end", output);
         }
         [Fact]
         public void CanLoadAWriterViewWithALayout()
@@ -36,7 +36,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
             //Given a layout in a subfolder
             var files = new FakeFileSystem()
             {
-                {"views\\somelayout.hbs", "layout start\r\n{{{body}}}\r\nlayout end"},
+                {"views\\somelayout.hbs", "layout start\n{{{body}}}\nlayout end"},
                 //And a view in the same folder which uses that layout
                 { "views\\someview.hbs", "{{!< somelayout}}This is the body"}
             };
@@ -50,7 +50,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
             var output = sb.ToString();
 
             //Then the correct output should be rendered
-            Assert.Equal("layout start\r\nThis is the body\r\nlayout end", output);
+            Assert.Equal("layout start\nThis is the body\nlayout end", output);
         }
 
         [Fact]
@@ -59,7 +59,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
             //Given a layout in the root
             var files = new FakeFileSystem()
             {
-                {"somelayout.hbs", "layout start\r\n{{{body}}}\r\nlayout end"},
+                {"somelayout.hbs", "layout start\n{{{body}}}\nlayout end"},
                 //And a view in a subfolder folder which uses that layout
                 { "views\\someview.hbs", "{{!< somelayout}}This is the body"}
             };
@@ -70,7 +70,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
             var output = render(null);
 
             //Then the correct output should be rendered
-            Assert.Equal("layout start\r\nThis is the body\r\nlayout end", output);
+            Assert.Equal("layout start\nThis is the body\nlayout end", output);
         }
 
         [Fact]
@@ -81,9 +81,9 @@ namespace HandlebarsDotNet.Test.ViewEngine
             var files = new FakeFileSystem()
             {
                 //Given a layout in a subfolder
-                { "partials/layout.hbs", "<div class=\"nav\">\r\n{{> nav}}\r\n</div>\r\n<div class=\"content\">\r\n{{> content}}\r\n</div>"},
+                { "partials/layout.hbs", "<div class=\"nav\">\n{{> nav}}\n</div>\n<div class=\"content\">\n{{> content}}\n</div>"},
 
-                { "template.hbs", "{{#> layout}}\r\n{{#*inline \"nav\"}}\r\n{{Text}}\r\n{{/inline}}\r\n{{#*inline \"content\"}}\r\nMy Content\r\n{{/inline}}\r\n{{/layout}}"}
+                { "template.hbs", "{{#> layout}}\n{{#*inline \"nav\"}}\n{{Text}}\n{{/inline}}\n{{#*inline \"content\"}}\nMy Content\n{{/inline}}\n{{/layout}}"}
             };
 
             //When a viewengine renders that view
@@ -95,7 +95,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
             });
 
             //Then the correct output should be rendered
-            Assert.Equal("<div class=\"nav\">\r\n&lt;My Nav&gt;\r\n</div>\r\n<div class=\"content\">\r\nMy Content\r\n</div>", output);
+            Assert.Equal("<div class=\"nav\">\n&lt;My Nav&gt;\n</div>\n<div class=\"content\">\nMy Content\n</div>", output);
         }
 
         [Fact]
@@ -104,7 +104,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
             //Given a layout in the root
             var files = new FakeFileSystem()
             {
-                {"somelayout.hbs", "{{var1}} start\r\n{{{body}}}\r\n{{var1}} end"},
+                {"somelayout.hbs", "{{var1}} start\n{{{body}}}\n{{var1}} end"},
                 //And a view in a subfolder folder which uses that layout
                 { "views\\someview.hbs", "{{!< somelayout}}This is the {{var2}}"}
             };
@@ -115,7 +115,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
             var output = renderView(new { var1 = "layout", var2 = "body" });
 
             //Then the correct output should be rendered
-            Assert.Equal("layout start\r\nThis is the body\r\nlayout end", output);
+            Assert.Equal("layout start\nThis is the body\nlayout end", output);
         }
 
         [Fact]
@@ -124,7 +124,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
             //Given a layout in the root
             var files = new FakeFileSystem()
             {
-                {"somelayout.hbs", "{{var1}} start\r\n{{{body}}}\r\n{{var1}} end"},
+                {"somelayout.hbs", "{{var1}} start\n{{{body}}}\n{{var1}} end"},
                 //And a view in a subfolder folder which uses that layout
                 { "views\\someview.hbs", "{{!< somelayout}}This is the {{var2}}"}
             };
@@ -135,7 +135,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
             var output = render(new { var1 = "layout", var2 = "body" });
 
             //Then the correct output should be rendered
-            Assert.Equal("layout start\r\nThis is the body\r\nlayout end", output);
+            Assert.Equal("layout start\nThis is the body\nlayout end", output);
         }
 
         [Fact]
@@ -162,8 +162,8 @@ namespace HandlebarsDotNet.Test.ViewEngine
         {
             var files = new FakeFileSystem()
             {
-                { "views\\layout.hbs", "Start\r\n{{{body}}}\r\nEnd" },
-                { "views\\someview.hbs", "{{!< layout}}\r\n\r\nTemplate\r\n{{!--\r\n<div>Commented out HTML</div>\r\n--}}" },
+                { "views\\layout.hbs", "Start\n{{{body}}}\nEnd" },
+                { "views\\someview.hbs", "{{!< layout}}\n\nTemplate\n{{!--\n<div>Commented out HTML</div>\n--}}" },
             };
 
             var handlebarsConfiguration = new HandlebarsConfiguration() { FileSystem = files };
@@ -171,7 +171,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
             var render = handlebars.CompileView("views\\someview.hbs");
             var output = render(null);
 
-            Assert.Equal("Start\r\n\r\nTemplate\r\n\r\nEnd", output);
+            Assert.Equal("Start\n\nTemplate\n\nEnd", output);
         }
 
         [Fact]
@@ -179,8 +179,8 @@ namespace HandlebarsDotNet.Test.ViewEngine
         {
             var files = new FakeFileSystem
                         {
-                            { "views\\layout.hbs", "Layout: {{property}}\r\n{{{body}}}" },
-                            { "views\\someview.hbs", "{{!< layout}}\r\n\r\nBody: {{property}}" },
+                            { "views\\layout.hbs", "Layout: {{property}}\n{{{body}}}" },
+                            { "views\\someview.hbs", "{{!< layout}}\n\nBody: {{property}}" },
                         };
 
             var handlebarsConfiguration = new HandlebarsConfiguration { FileSystem = files };
@@ -193,7 +193,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
                 }
             );
 
-            Assert.Equal("Layout: Foo\r\n\r\nBody: Foo", output);
+            Assert.Equal("Layout: Foo\n\nBody: Foo", output);
         }
 
         [Fact]
@@ -201,8 +201,8 @@ namespace HandlebarsDotNet.Test.ViewEngine
         {
             var files = new FakeFileSystem
                         {
-                            { "views\\layout.hbs", "Layout: {{property}}\r\n{{{body}}}" },
-                            { "views\\someview.hbs", "{{!< layout}}\r\n\r\nBody: {{property}}" },
+                            { "views\\layout.hbs", "Layout: {{property}}\n{{{body}}}" },
+                            { "views\\someview.hbs", "{{!< layout}}\n\nBody: {{property}}" },
                         };
 
             dynamic model = new MyDynamicModel();
@@ -211,7 +211,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
             var render = handlebars.CompileView("views\\someview.hbs");
             var output = render(model);
 
-            Assert.Equal("Layout: Foo\r\n\r\nBody: Foo", output);
+            Assert.Equal("Layout: Foo\n\nBody: Foo", output);
         }
 
         [Fact]
@@ -219,9 +219,9 @@ namespace HandlebarsDotNet.Test.ViewEngine
         {
             var files = new FakeFileSystem
                         {
-                            { "views\\parent_layout.hbs", "Parent layout: {{property}}\r\n{{{body}}}" },
-                            { "views\\layout.hbs", "{{!< parent_layout}}\r\nLayout: {{property}}\r\n{{{body}}}" },
-                            { "views\\someview.hbs", "{{!< layout}}\r\n\r\nBody: {{property}}" },
+                            { "views\\parent_layout.hbs", "Parent layout: {{property}}\n{{{body}}}" },
+                            { "views\\layout.hbs", "{{!< parent_layout}}\nLayout: {{property}}\n{{{body}}}" },
+                            { "views\\someview.hbs", "{{!< layout}}\n\nBody: {{property}}" },
                         };
 
             var handlebarsConfiguration = new HandlebarsConfiguration { FileSystem = files };
@@ -234,7 +234,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
                 }
             );
 
-            Assert.Equal("Parent layout: Foo\r\nLayout: Foo\r\n\r\nBody: Foo", output);
+            Assert.Equal("Parent layout: Foo\nLayout: Foo\n\nBody: Foo", output);
         }
 
         [Fact]
@@ -242,8 +242,8 @@ namespace HandlebarsDotNet.Test.ViewEngine
         {
             var files = new FakeFileSystem
                         {
-                            { "views\\layout.hbs", "Layout: {{property}}\r\n{{{body}}}" },
-                            { "views\\someview.hbs", "{{!< layout}}\r\n\r\nBody: {{property}}" },
+                            { "views\\layout.hbs", "Layout: {{property}}\n{{{body}}}" },
+                            { "views\\someview.hbs", "{{!< layout}}\n\nBody: {{property}}" },
                         };
 
             var handlebarsConfiguration = new HandlebarsConfiguration { FileSystem = files };
@@ -251,7 +251,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
             var render = handlebars.CompileView("views\\someview.hbs");
             var output = render(null);
 
-            Assert.Equal("Layout: \r\n\r\nBody: ", output);
+            Assert.Equal("Layout: \n\nBody: ", output);
         }
 
         [Fact]

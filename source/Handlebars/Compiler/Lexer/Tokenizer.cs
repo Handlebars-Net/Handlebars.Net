@@ -122,8 +122,18 @@ namespace HandlebarsDotNet.Compiler.Lexer
                 {
                     if ((char)node == '\\' && (char)source.Peek() == '\\')
                     {
-                        source.Read();
-                        buffer.Append('\\');
+                        source.Read(); // consume second '\'
+                        if ((char)source.Peek() == '{')
+                        {
+                            // \\{{ → single literal backslash followed by evaluated expression
+                            buffer.Append('\\');
+                        }
+                        else
+                        {
+                            // \\ not followed by {{ → preserve both backslashes verbatim
+                            buffer.Append('\\');
+                            buffer.Append('\\');
+                        }
                         node = source.Read();
                     }
                     else if ((char)node == '\\' && (char)source.Peek() == '{')

@@ -23,74 +23,69 @@ namespace HandlebarsDotNet.Test
         // 1. HTML ENCODING EDGE CASES
         // ─────────────────────────────────────────────────────────────
 
-        // [SPEC GAP] The default encoder (HtmlEncoderLegacy) does not encode ', `, or =.
-        // SPEC:    Handlebars.js encodes &, <, >, ", ', `, and = for XSS safety.
-        // CURRENT: HtmlEncoderLegacy (set as HandlebarsConfiguration default) omits ', `, and =.
-        //          HtmlEncoder (opt-in via HandlebarsConfiguration.TextEncoder) encodes all 7.
-        // SOURCE:  HtmlEncoderLegacy.cs — the comment there states the omissions are intentional.
-        //          HandlebarsConfiguration.cs line 91 sets the default to HtmlEncoderLegacy.
-        // COMPAT:  HIGH — switching the default would break any code that embeds ' ` = in
-        //          templates and expects them to pass through unescaped. A major version bump
-        //          (or an opt-out flag) would be required to change this default safely.
+        // The default encoder (HtmlEncoder) encodes all 7 characters per Handlebars.js spec:
+        // &, <, >, ", ', `, and =. This was fixed in issue #546 — previously the default was
+        // HtmlEncoderLegacy which omitted ', `, and =. Users who need legacy behavior can
+        // configure TextEncoder = new HtmlEncoderLegacy() explicitly.
 
         [Fact]
-        public void HtmlEncoding_SingleQuote_DefaultEncoderGap()
+        public void HtmlEncoding_SingleQuote_DefaultEncoderSpec()
         {
-            // Gap test: default HtmlEncoderLegacy does NOT encode single quotes
+            // Default HtmlEncoder encodes single quotes per Handlebars.js spec (issue #546)
             var hbs = Handlebars.Create();
-            Assert.Equal("it's", hbs.Compile("{{val}}")(new { val = "it's" }));
-        }
-
-        [Fact]
-        public void HtmlEncoding_SingleQuote_FullEncoderSpec()
-        {
-            // Spec-compliant behavior available via opt-in HtmlEncoder
-            var hbs = Handlebars.Create(new HandlebarsConfiguration { TextEncoder = new HtmlEncoder() });
             Assert.Equal("it&#x27;s", hbs.Compile("{{val}}")(new { val = "it's" }));
         }
 
         [Fact]
-        public void HtmlEncoding_Backtick_DefaultEncoderGap()
+        public void HtmlEncoding_SingleQuote_LegacyEncoderPassesThrough()
         {
-            var hbs = Handlebars.Create();
-            Assert.Equal("a`b", hbs.Compile("{{val}}")(new { val = "a`b" }));
+            // Legacy encoder does NOT encode single quotes (opt-in for backward compatibility)
+            var hbs = Handlebars.Create(new HandlebarsConfiguration { TextEncoder = new HtmlEncoderLegacy() });
+            Assert.Equal("it's", hbs.Compile("{{val}}")(new { val = "it's" }));
         }
 
         [Fact]
-        public void HtmlEncoding_Backtick_FullEncoderSpec()
+        public void HtmlEncoding_Backtick_DefaultEncoderSpec()
         {
-            var hbs = Handlebars.Create(new HandlebarsConfiguration { TextEncoder = new HtmlEncoder() });
+            var hbs = Handlebars.Create();
             Assert.Equal("a&#x60;b", hbs.Compile("{{val}}")(new { val = "a`b" }));
         }
 
         [Fact]
-        public void HtmlEncoding_Equals_DefaultEncoderGap()
+        public void HtmlEncoding_Backtick_LegacyEncoderPassesThrough()
         {
-            var hbs = Handlebars.Create();
-            Assert.Equal("a=b", hbs.Compile("{{val}}")(new { val = "a=b" }));
+            var hbs = Handlebars.Create(new HandlebarsConfiguration { TextEncoder = new HtmlEncoderLegacy() });
+            Assert.Equal("a`b", hbs.Compile("{{val}}")(new { val = "a`b" }));
         }
 
         [Fact]
-        public void HtmlEncoding_Equals_FullEncoderSpec()
+        public void HtmlEncoding_Equals_DefaultEncoderSpec()
         {
-            var hbs = Handlebars.Create(new HandlebarsConfiguration { TextEncoder = new HtmlEncoder() });
+            var hbs = Handlebars.Create();
             Assert.Equal("a&#x3D;b", hbs.Compile("{{val}}")(new { val = "a=b" }));
         }
 
         [Fact]
-        public void HtmlEncoding_AllSpecialCharsAtOnce_DefaultEncoderGap()
+        public void HtmlEncoding_Equals_LegacyEncoderPassesThrough()
         {
-            // Default encoder: &, <, >, " are encoded; ', `, = are not
-            var hbs = Handlebars.Create();
-            Assert.Equal("&amp;&lt;&gt;&quot;'`=", hbs.Compile("{{val}}")(new { val = "&<>\"'`=" }));
+            var hbs = Handlebars.Create(new HandlebarsConfiguration { TextEncoder = new HtmlEncoderLegacy() });
+            Assert.Equal("a=b", hbs.Compile("{{val}}")(new { val = "a=b" }));
         }
 
         [Fact]
-        public void HtmlEncoding_AllSpecialCharsAtOnce_FullEncoderSpec()
+        public void HtmlEncoding_AllSpecialCharsAtOnce_DefaultEncoderSpec()
         {
-            // Opt-in HtmlEncoder encodes all 7 characters per Handlebars.js spec
-            var hbs = Handlebars.Create(new HandlebarsConfiguration { TextEncoder = new HtmlEncoder() });
+            // Default HtmlEncoder encodes all 7 characters per Handlebars.js spec (issue #546)
+            var hbs = Handlebars.Create();
             Assert.Equal("&amp;&lt;&gt;&quot;&#x27;&#x60;&#x3D;", hbs.Compile("{{val}}")(new { val = "&<>\"'`=" }));
+        }
+
+        [Fact]
+        public void HtmlEncoding_AllSpecialCharsAtOnce_LegacyEncoder()
+        {
+            // Legacy encoder: &, <, >, " are encoded; ', `, = are not
+            var hbs = Handlebars.Create(new HandlebarsConfiguration { TextEncoder = new HtmlEncoderLegacy() });
+            Assert.Equal("&amp;&lt;&gt;&quot;'`=", hbs.Compile("{{val}}")(new { val = "&<>\"'`=" }));
         }
 
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]

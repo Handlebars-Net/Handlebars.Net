@@ -147,17 +147,11 @@ namespace HandlebarsDotNet.Test
             var callback = handlebars.Compile(view);
             string result = callback(new object());
 
-            const string expected = @"Begin outer partial<br />
-            Begin outer partial block
-<br />
-        Begin inner partial<br />
-            Begin inner partial block<br />
-          View<br />
-            End  inner partial block<br />
-        End inner partial<br />
-            End outer partial block<br />
-        End outer partial";
-            
+            // Issue #614: partial indentation is now preserved (Handlebars.js behaviour).
+            // Each standalone {{>@partial-block}} applies its own leading whitespace as indent
+            // to every line of the rendered block content.
+            const string expected = "Begin outer partial<br />\n            Begin outer partial block\n                <br />\n                        Begin inner partial<br />\n                            Begin inner partial block<br />\n                                          View<br />\n                            End  inner partial block<br />\n                        End inner partial<br />\n            End outer partial block<br />\n        End outer partial";
+
             Assert.Equal(expected, result);
         }
         
@@ -231,9 +225,7 @@ namespace HandlebarsDotNet.Test
 
             var transformed = navTemplate(context).Trim();
 
-            Assert.Equal(@"<div>
-    <div>Menu Item: Getting Started</div>
-</div>", transformed);
+            Assert.Equal("<div>\n    <div>Menu Item: Getting Started</div>\n</div>", transformed);
         }
 
         // issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/394
@@ -746,6 +738,397 @@ namespace HandlebarsDotNet.Test
             var data = new Dictionary<string, object> { { "姓", "山田" }, { "名", "太郎" } };
             var result = template(data);
             Assert.Equal("Hello 山田 太郎,", result);
+        }
+      
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/545
+        // Partial registered on an instance should be found during render on that same instance
+        [Fact]
+        public void Issue545_PartialRegisteredOnInstanceIsFoundDuringRender()
+        {
+            // This is the CORRECT pattern — register and compile on same instance
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterTemplate("content", "<p>{{message}}</p>");
+            var template = handlebars.Compile("<div>{{> content}}</div>");
+            var result = template(new { message = "Hello" });
+            Assert.Equal("<div><p>Hello</p></div>", result);
+        }
+
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/545
+        // Mixing static registration with instance compilation should give a helpful error message
+        [Fact]
+        public void Issue545_MixingStaticAndInstanceGivesHelpfulError()
+        {
+            // Register on static instance
+            Handlebars.RegisterTemplate("staticContent545", "<p>static</p>");
+
+            // Compile on a different instance — should give a useful error
+            var handlebars = Handlebars.Create();
+            var template = handlebars.Compile("<div>{{> staticContent545}}</div>");
+            var ex = Assert.Throws<HandlebarsRuntimeException>(() => template(new { }));
+            // The error should mention the partial name clearly
+            Assert.Contains("staticContent545", ex.Message);
+            // The error should hint that the user may have registered on the wrong instance
+            Assert.Contains("static Handlebars class", ex.Message);
+        }
+          
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/521
+        // Hashtable with an uppercase key should be accessible using the same-cased expression.
+        // The IDictionary accessor was incorrectly lowercasing the lookup key.
+        [Fact]
+        public void HashtableUppercaseKeyResolvesWithMatchingExpression()
+        {
+            var template = Handlebars.Compile("Hello {{NAME}}");
+            var result = template(new Hashtable { { "NAME", "alice" } });
+            Assert.Equal("Hello alice", result);
+        }
+
+        [Fact]
+        public void HashtableLowercaseKeyStillResolves()
+        {
+            var template = Handlebars.Compile("Hello {{name}}");
+            var result = template(new Hashtable { { "name", "bob" } });
+            Assert.Equal("Hello bob", result);
+        }
+
+        [Fact]
+        public void GenericDictionaryUppercaseKeyUnchanged()
+        {
+            var template = Handlebars.Compile("Hello {{NAME}}");
+            var result = template(new Dictionary<string, string> { { "NAME", "charlie" } });
+            Assert.Equal("Hello charlie", result);
+        }
+
+        [Fact]
+        public void HashtableLookupIsCaseSensitive()
+        {
+            // {{name}} should NOT resolve a key "NAME" — JS objects are case-sensitive
+            var template = Handlebars.Compile("Hello {{name}}");
+            var result = template(new Hashtable { { "NAME", "dave" } });
+            Assert.Equal("Hello ", result);
+        }
+      
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/605
+        // #if not evaluated when variable name contains invisible characters (BOM)
+        [Fact]
+        public void Issue605_IfNotEvaluatedWithBomCharacter()
+        {
+            // The ﻿ (BOM) is embedded in the identifier name
+            string source =
+                "<div class=\"entry\">\n" +
+                "<h1>{{title}}</h1>\n" +
+                "<div class=\"body\">\n" +
+                "{{body}}\n" +
+                "{{#if someCondition﻿}}\n" +
+                "<p>Show additional text</p>\n" +
+                "{{/if}}\n" +
+                "</div>\n" +
+                "</div>";
+
+            var handlebars = Handlebars.Create();
+            var template = handlebars.Compile(source);
+            var data = new {
+                title = "My new post",
+                body = "This is my first post!",
+                someCondition = true
+            };
+            var actual = template(data);
+            Assert.Contains("Show additional text", actual);
+        }
+      
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/546
+        // Single quote should be HTML-encoded as &#x27; in standard {{expression}} output
+        [Fact]
+        public void Issue546_SingleQuoteIsHtmlEncoded()
+        {
+            var handlebars = Handlebars.Create();
+            var render = handlebars.Compile("{{input}}");
+            object data = new { input = "test'1" };
+            var actual = render(data);
+
+            Assert.DoesNotContain("'", actual);
+            Assert.Contains("&#x27;", actual);
+        }
+
+        [Theory]
+        [InlineData("&", "&amp;")]
+        [InlineData("<", "&lt;")]
+        [InlineData(">", "&gt;")]
+        [InlineData("\"", "&quot;")]
+        [InlineData("'", "&#x27;")]
+        [InlineData("`", "&#x60;")]
+        [InlineData("=", "&#x3D;")]
+        public void Issue546_HtmlSpecialCharsAreEncoded(string input, string expected)
+        {
+            var handlebars = Handlebars.Create();
+            var render = handlebars.Compile("{{value}}");
+            var actual = render(new { value = input });
+
+            Assert.Equal(expected, actual);
+        }
+      
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/462
+        // Compile replaces \\ (double backslash) with \ (single backslash)
+        [Fact]
+        public void Issue462_DoubleBackslashPreservedInOutput()
+        {
+            var handlebars = Handlebars.Create();
+            // Template contains two backslashes as literal text
+            var compiledTemplate = handlebars.Compile(@"\\");
+            var result = compiledTemplate(null);
+            Assert.Equal(@"\\", result);
+        }
+
+        [Fact]
+        public void Issue462_SingleBackslashPreservedInOutput()
+        {
+            var handlebars = Handlebars.Create();
+            var compiledTemplate = handlebars.Compile(@"\");
+            var result = compiledTemplate(null);
+            Assert.Equal(@"\", result);
+        }
+
+        [Fact]
+        public void Issue462_DoubleBackslashBeforeExpressionStillCollapses()
+        {
+            // \\{{name}} should still produce a single literal backslash followed by the evaluated expression
+            var handlebars = Handlebars.Create();
+            var compiledTemplate = handlebars.Compile(@"\\{{name}}");
+            var result = compiledTemplate(new { name = "World" });
+            Assert.Equal(@"\World", result);
+        }
+
+        [Fact]
+        public void Issue462_DoubleBackslashInMixedTemplate()
+        {
+            // Template with backslashes mixed: \\to preserves both backslashes (not before {{),
+            // but \\{{name}} collapses to single backslash + evaluated expression (spec behavior)
+            var handlebars = Handlebars.Create();
+            var compiledTemplate = handlebars.Compile(@"path\\to\\{{name}}");
+            var result = compiledTemplate(new { name = "file" });
+            Assert.Equal(@"path\\to\file", result);
+        }
+      
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/539
+        // Parent context (../) resolves to wrong value inside a custom block helper used within #each
+        [Fact]
+        public void Issue539_ParentContextInsideCustomBlockHelperInEach()
+        {
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterHelper("ifCond", (writer, options, context, parameters) =>
+            {
+                if (parameters.Length == 3 && parameters[0]?.ToString() == parameters[2]?.ToString())
+                    options.Template(writer, context);
+                else
+                    options.Inverse(writer, context);
+            });
+
+            var source = @"{{#each loop}}{{#ifCond another '===' 'value'}}{{../this.foo}}{{/ifCond}}{{/each}}";
+            var template = handlebars.Compile(source);
+            var data = new { foo = "bar", loop = new object[] { new { another = "value" } } };
+            var result = template(data);
+            Assert.Equal("bar", result.Trim());
+        }
+      
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/584
+        [Fact]
+        public void Issue584_EscapedDoubleQuoteInHelperStringArgument()
+        {
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterHelper("myHelper", (writer, context, args) =>
+            {
+                writer.WriteSafeString(args[0]?.ToString() + "|" + args[1]?.ToString());
+            });
+
+            // Double-quoted string arg with escaped double-quote inside
+            var template = handlebars.Compile("{{myHelper name \"hello \\\"world\\\"\"}}");
+            var data = new { name = "test" };
+            var result = template(data);
+            Assert.Equal("test|hello \"world\"", result);
+        }
+
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/584
+        [Fact]
+        public void Issue584_SingleQuoteStringArgStillWorks()
+        {
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterHelper("myHelper", (context, args) => args[0]?.ToString());
+
+            var template = handlebars.Compile("{{myHelper 'hello world'}}");
+            var result = template(new { });
+            Assert.Equal("hello world", result);
+        }
+      
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/466
+        // Dictionary keys were inaccessible in nested #each when data is a mix of Dictionary and List
+        [Fact]
+        public void Issue466_NestedEachWithMixedDictionaryAndList()
+        {
+            var handlebars = Handlebars.Create();
+            var source = "{{#each this.users}}{{#each friends}}{{emailAddress}} {{/each}}{{/each}}";
+            var template = handlebars.Compile(source);
+
+            var friends = new List<Dictionary<object, object>>
+            {
+                new Dictionary<object, object> { { "emailAddress", "test@example.com" } }
+            };
+            var users = new List<Dictionary<object, object>>
+            {
+                new Dictionary<object, object> { { "friends", friends } }
+            };
+            var data = new Dictionary<object, object> { { "users", users } };
+
+            var result = template(data);
+            Assert.Contains("test@example.com", result);
+        }
+      
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/541
+        // DictionarySlim.AddOrReplace was missing a return after updating an existing key's value,
+        // causing it to always call AddValue even when the key already existed.
+        // Under sustained load (many IHandlebars instances each registering the same helper names),
+        // this caused unbounded growth in the internal dictionary leading to OutOfMemoryException.
+        [Fact]
+        public void RegisterHelperRepeatedly_ShouldNotCauseUnboundedGrowth()
+        {
+            // Each iteration creates a new IHandlebars instance and registers the same helper name.
+            // With the bug present, every RegisterHelper call adds a new entry even for the same key,
+            // causing unbounded growth in the internal DictionarySlim.
+            // With the fix, AddOrReplace correctly updates in-place and the count stays bounded.
+            const int iterations = 1000;
+            for (var i = 0; i < iterations; i++)
+            {
+                var hbs = Handlebars.Create();
+                hbs.RegisterHelper("myHelper", (output, context, arguments) =>
+                {
+                    output.WriteSafeString("hello");
+                });
+
+                // Registering the same helper name again on the same instance should replace, not grow.
+                hbs.RegisterHelper("myHelper", (output, context, arguments) =>
+                {
+                    output.WriteSafeString("world");
+                });
+
+                var template = hbs.Compile("{{myHelper}}");
+                var result = template(new { });
+                Assert.Equal("world", result);
+            }
+        }
+
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/541
+        // Tests that registering the same helper name multiple times on a single IHandlebars instance
+        // does not grow the internal helpers dictionary (AddOrReplace must truly replace, not append).
+        [Fact]
+        public void RegisterHelper_SameNameRepeatedly_ShouldNotGrowHelpersCount()
+        {
+            var hbs = Handlebars.Create();
+
+            // Register the same helper name many times.
+            for (var i = 0; i < 100; i++)
+            {
+                var captured = i;
+                hbs.RegisterHelper("myHelper", (output, context, arguments) =>
+                {
+                    output.WriteSafeString(captured.ToString());
+                });
+            }
+
+            // With the bug, AddOrReplace was not returning after finding the key, so each
+            // registration added a new entry — the count would be 100 instead of 1.
+            // With the fix, each registration replaces the existing entry.
+            Assert.Single(hbs.Configuration.Helpers);
+
+            // Also verify the last-registered implementation is active.
+            var template = hbs.Compile("{{myHelper}}");
+            var result = template(new { });
+            Assert.Equal("99", result);
+        }
+      
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/519
+        [Fact]
+        public void Issue519_PartialBlockUsableAsBlockAndInIf()
+        {
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterTemplate("myPartial",
+                @"Conditional:{{#if @partial-block}} {{> @partial-block}}{{/if}}
+Plain: {{> @partial-block}}
+Block:{{#> @partial-block }}{{/@partial-block}}");
+
+            var render = handlebars.Compile("{{#> myPartial}}Block content{{/myPartial}}");
+            var actual = render(new { });
+            Assert.Contains("Conditional: Block content", actual);
+            Assert.Contains("Plain: Block content", actual);
+            Assert.Contains("Block:Block content", actual);
+        }
+      
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/458
+        // System.NotImplementedException: byref delegate on Xamarin.iOS / Mono
+        // The Mono runtime does not support delegates with byref (in/ref) parameters.
+        // TemplateDelegate previously used `in EncodedTextWriter` which produced a
+        // byref delegate incompatible with Mono's AOT/JIT compiler.
+        [Fact]
+        public void Issue458_BasicTemplateCompilationAndRender()
+        {
+            // Validates the scenario that fails on Mono: simple compile + render
+            var handlebars = Handlebars.Create();
+            var render = handlebars.Compile("{{input}}");
+            object data = new { input = 42 };
+            var actual = render(data);
+            Assert.Equal("42", actual);
+        }
+
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/458
+        // Ensures block helpers still work after the byref delegate fix
+        [Fact]
+        public void Issue458_BlockHelperTemplateCompilationAndRender()
+        {
+            var handlebars = Handlebars.Create();
+            var render = handlebars.Compile("{{#if show}}visible{{/if}}");
+            var actual = render(new { show = true });
+            Assert.Equal("visible", actual);
+        }
+
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/349
+        // Backslash-backslash not followed by {{ should pass through verbatim
+        [Fact]
+        public void DoubleBackslashNotBeforeMustachePassesThroughVerbatim()
+        {
+            // Template string (C# verbatim): \\*.{{Name}}
+            // Actual characters: \, \, *, ., {, {, N, a, m, e, }, }
+            // Expected output:   \, \, *, ., W, o, r, l, d
+            var template = Handlebars.Compile(@"\\*.{{Name}}");
+            var result = template(new { Name = "World" });
+            Assert.Equal(@"\\*.World", result);
+        }
+
+        [Fact]
+        public void DoubleBackslashNotBeforeMustacheInJsonLikeTemplate()
+        {
+            // Reproduces the exact scenario from issue #349:
+            // a JSON-like template where \\ must survive rendering unchanged.
+            // C# string "**\\\\*.{{Name}}" has chars: *, *, \, \, *, ., {, {, N, a, m, e, }, }
+            // Expected output chars:                  *, *, \, \, *, ., W, o, r, l, d
+            var template = Handlebars.Compile("{\"Description\":\"**\\\\*.{{Name}}\"}");
+            var result = template(new { Name = "World" });
+            Assert.Equal("{\"Description\":\"**\\\\*.World\"}", result);
+        }
+
+        [Fact]
+        public void DoubleBackslashBeforeMustacheStillProducesSingleBackslash()
+        {
+            // Existing spec behavior (8.3) must be preserved:
+            // \\{{name}} → \Alice  (the \\ before {{ means literal \, then evaluate)
+            var template = Handlebars.Compile(@"\\{{name}}");
+            var result = template(new { name = "Alice" });
+            Assert.Equal(@"\Alice", result);
+        }
+
+        [Fact]
+        public void SingleBackslashNotBeforeMustachePassesThroughVerbatim()
+        {
+            // A single backslash not before {{ should pass through unchanged
+            var template = Handlebars.Compile(@"\*.{{Name}}");
+            var result = template(new { Name = "World" });
+            Assert.Equal(@"\*.World", result);
         }
     }
 }
