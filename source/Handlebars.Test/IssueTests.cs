@@ -147,17 +147,11 @@ namespace HandlebarsDotNet.Test
             var callback = handlebars.Compile(view);
             string result = callback(new object());
 
-            const string expected = @"Begin outer partial<br />
-            Begin outer partial block
-<br />
-        Begin inner partial<br />
-            Begin inner partial block<br />
-          View<br />
-            End  inner partial block<br />
-        End inner partial<br />
-            End outer partial block<br />
-        End outer partial";
-            
+            // Issue #614: partial indentation is now preserved (Handlebars.js behaviour).
+            // Each standalone {{>@partial-block}} applies its own leading whitespace as indent
+            // to every line of the rendered block content.
+            const string expected = "Begin outer partial<br />\n            Begin outer partial block\n                <br />\n                        Begin inner partial<br />\n                            Begin inner partial block<br />\n                                          View<br />\n                            End  inner partial block<br />\n                        End inner partial<br />\n            End outer partial block<br />\n        End outer partial";
+
             Assert.Equal(expected, result);
         }
         
