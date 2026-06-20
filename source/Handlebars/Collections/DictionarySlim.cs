@@ -183,7 +183,10 @@ namespace HandlebarsDotNet.Collections
                 (uint)i < (uint)entries.Length; i = entries[i].Next)
             {
                 if (_comparer.Equals(key, entries[i].Key))
+                {
                     entries[i].Value = value;
+                    return;
+                }
                 if (collisionCount == entries.Length)
                 {
                     // The chain of entries forms a loop; which means a concurrent update has happened.

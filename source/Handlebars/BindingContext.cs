@@ -156,7 +156,20 @@ namespace HandlebarsDotNet
                 return BlockParamsObject.TryGetValue(segment, out value)
                    || ContextDataObject.TryGetValue(wellKnownVariable, out value);
             }
-            
+
+            // Special handling for @partial-block: return the PartialBlockTemplate delegate
+            // so that {{#if @partial-block}} is truthy when a block partial is provided.
+            if (segment.LowerInvariant == "partial-block")
+            {
+                if (PartialBlockTemplate != null)
+                {
+                    value = PartialBlockTemplate;
+                    return true;
+                }
+                value = UndefinedBindingResult.Create(segment.TrimmedValue);
+                return false;
+            }
+
             return BlockParamsObject.TryGetValue(segment, out value)
                    || ContextDataObject.TryGetValue(segment, out value);
         }
