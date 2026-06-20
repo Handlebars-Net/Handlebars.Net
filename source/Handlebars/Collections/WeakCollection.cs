@@ -29,9 +29,13 @@ namespace HandlebarsDotNet.Collections
                     return;
                 }
             }
-            
+
             _store.Add(new WeakReference<T>(value));
-            _firstAvailableIndex = _store.Count;
+            // Reset to 0 so the next Add() scans the full list and can reclaim any slots
+            // that became dead (GC-collected) since the last full pass. Without this reset,
+            // _firstAvailableIndex stays pinned at _store.Count after every append, dead
+            // slots are never reused, and the WeakReference/GC-handle count grows without bound.
+            _firstAvailableIndex = 0;
         }
         
         public void Remove(T value)
