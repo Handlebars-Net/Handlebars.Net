@@ -112,9 +112,10 @@ namespace HandlebarsDotNet.Compiler
         protected virtual Expression VisitBoolishExpression(BoolishExpression bex)
         {
             Expression condition = Visit(bex.Condition);
+            HashParametersExpression hashParameters = (HashParametersExpression)VisitHashParametersExpression(bex.HashParameters);
             if (condition != bex.Condition)
             {
-                return HandlebarsExpression.Boolish(condition);
+                return HandlebarsExpression.Boolish(condition, hashParameters);
             }
             return bex;
         }
