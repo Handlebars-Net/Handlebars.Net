@@ -71,7 +71,7 @@ namespace HandlebarsDotNet
         /// BlockHelper body
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Template(in EncodedTextWriter writer, in Context context) => Template(writer, context.Value);
+        public void Template(in EncodedTextWriter writer, in Context context) => OriginalTemplate(writer, Frame);
         
         /// <summary>
         /// BlockHelper body
@@ -113,7 +113,7 @@ namespace HandlebarsDotNet
         /// BlockHelper body
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Inverse(in EncodedTextWriter writer, in Context context) => Inverse(writer, context.Value);
+        public void Inverse(in EncodedTextWriter writer, in Context context) => OriginalInverse(writer, Frame);
         
         /// <summary>
         /// BlockHelper body
