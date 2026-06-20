@@ -680,7 +680,7 @@ namespace HandlebarsDotNet.Test
             ex = Assert.IsType<HandlebarsRuntimeException>(ex.InnerException);
             Assert.Equal("Runtime error while rendering partial 'myPartial', see inner exception for more information", ex.Message);
             ex = Assert.IsType<HandlebarsRuntimeException>(ex.InnerException);
-            Assert.Equal("Referenced partial name @partial-block could not be resolved", ex.Message);
+            Assert.StartsWith("Referenced partial name '@partial-block' could not be resolved", ex.Message);
             Assert.Null(ex.InnerException);
         }
 
@@ -694,7 +694,7 @@ namespace HandlebarsDotNet.Test
             var data = new {};
 
             var ex = Assert.Throws<HandlebarsRuntimeException>(() => template(data));
-            Assert.Equal("Referenced partial name @partial-block could not be resolved", ex.Message);
+            Assert.StartsWith("Referenced partial name '@partial-block' could not be resolved", ex.Message);
         }
 
         public class TestMissingPartialTemplateHandler : IMissingPartialTemplateHandler

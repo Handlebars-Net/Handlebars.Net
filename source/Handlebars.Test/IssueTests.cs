@@ -726,6 +726,37 @@ namespace HandlebarsDotNet.Test
             Assert.Throws<HandlebarsCompilerException>(()=> Handlebars.Compile(source));
         }
 
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/545
+        // Partial registered on an instance should be found during render on that same instance
+        [Fact]
+        public void Issue545_PartialRegisteredOnInstanceIsFoundDuringRender()
+        {
+            // This is the CORRECT pattern — register and compile on same instance
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterTemplate("content", "<p>{{message}}</p>");
+            var template = handlebars.Compile("<div>{{> content}}</div>");
+            var result = template(new { message = "Hello" });
+            Assert.Equal("<div><p>Hello</p></div>", result);
+        }
+
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/545
+        // Mixing static registration with instance compilation should give a helpful error message
+        [Fact]
+        public void Issue545_MixingStaticAndInstanceGivesHelpfulError()
+        {
+            // Register on static instance
+            Handlebars.RegisterTemplate("staticContent545", "<p>static</p>");
+
+            // Compile on a different instance — should give a useful error
+            var handlebars = Handlebars.Create();
+            var template = handlebars.Compile("<div>{{> staticContent545}}</div>");
+            var ex = Assert.Throws<HandlebarsRuntimeException>(() => template(new { }));
+            // The error should mention the partial name clearly
+            Assert.Contains("staticContent545", ex.Message);
+            // The error should hint that the user may have registered on the wrong instance
+            Assert.Contains("static Handlebars class", ex.Message);
+        }
+          
         // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/521
         // Hashtable with an uppercase key should be accessible using the same-cased expression.
         // The IDictionary accessor was incorrectly lowercasing the lookup key.
