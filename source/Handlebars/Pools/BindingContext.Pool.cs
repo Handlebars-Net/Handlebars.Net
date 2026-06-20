@@ -46,6 +46,8 @@ namespace HandlebarsDotNet
 
                 public bool Return(BindingContext item)
                 {
+                    item.Configuration = null;
+
                     item.Root = null;
                     item.Value = null;
                     item.ParentContext = null;
