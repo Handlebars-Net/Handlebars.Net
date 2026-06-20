@@ -10,18 +10,20 @@ namespace HandlebarsDotNet
         /// Implementation of JS's `==`
         /// </summary>
         /// <param name="value"></param>
+        /// <param name="includeZero">Determined whether the numerical <c>0</c> is considered to be truthy. Default <c>false</c></param>
         /// <returns></returns>
-        public static bool IsTruthy(object value)
+        public static bool IsTruthy(object value, bool includeZero = false)
         {
-            return !IsFalsy(value);
+            return !IsFalsy(value, includeZero);
         }
 
         /// <summary>
         /// Implementation of JS's `!=`
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">The value whose falsy-ness is to be determined</param>
+        /// <param name="includeZero">Determined whether the numerical <c>0</c> is considered to be truthy</param>
         /// <returns></returns>
-        public static bool IsFalsy(object value)
+        public static bool IsFalsy(object value, bool includeZero)
         {
             switch (value)
             {
@@ -36,21 +38,21 @@ namespace HandlebarsDotNet
                     return safe.Value == string.Empty;
             }
 
-            if (IsNumber(value))
+            if (IsNumber(value) && !includeZero)
             {
                 return !Convert.ToBoolean(value);
             }
             return false;
         }
         
-        public static bool IsTruthyOrNonEmpty(object value)
+        public static bool IsTruthyOrNonEmpty(object value, bool includeZero = false)
         {
-            return !IsFalsyOrEmpty(value);
+            return !IsFalsyOrEmpty(value, includeZero);
         }
         
-        public static bool IsFalsyOrEmpty(object value)
+        public static bool IsFalsyOrEmpty(object value, bool includeZero = false)
         {
-            if(IsFalsy(value))
+            if(IsFalsy(value, includeZero))
             {
                 return true;
             }
