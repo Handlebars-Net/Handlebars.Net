@@ -1041,5 +1041,49 @@ Block:{{#> @partial-block }}{{/@partial-block}}");
             var actual = render(new { show = true });
             Assert.Equal("visible", actual);
         }
+
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/349
+        // Backslash-backslash not followed by {{ should pass through verbatim
+        [Fact]
+        public void DoubleBackslashNotBeforeMustachePassesThroughVerbatim()
+        {
+            // Template string (C# verbatim): \\*.{{Name}}
+            // Actual characters: \, \, *, ., {, {, N, a, m, e, }, }
+            // Expected output:   \, \, *, ., W, o, r, l, d
+            var template = Handlebars.Compile(@"\\*.{{Name}}");
+            var result = template(new { Name = "World" });
+            Assert.Equal(@"\\*.World", result);
+        }
+
+        [Fact]
+        public void DoubleBackslashNotBeforeMustacheInJsonLikeTemplate()
+        {
+            // Reproduces the exact scenario from issue #349:
+            // a JSON-like template where \\ must survive rendering unchanged.
+            // C# string "**\\\\*.{{Name}}" has chars: *, *, \, \, *, ., {, {, N, a, m, e, }, }
+            // Expected output chars:                  *, *, \, \, *, ., W, o, r, l, d
+            var template = Handlebars.Compile("{\"Description\":\"**\\\\*.{{Name}}\"}");
+            var result = template(new { Name = "World" });
+            Assert.Equal("{\"Description\":\"**\\\\*.World\"}", result);
+        }
+
+        [Fact]
+        public void DoubleBackslashBeforeMustacheStillProducesSingleBackslash()
+        {
+            // Existing spec behavior (8.3) must be preserved:
+            // \\{{name}} → \Alice  (the \\ before {{ means literal \, then evaluate)
+            var template = Handlebars.Compile(@"\\{{name}}");
+            var result = template(new { name = "Alice" });
+            Assert.Equal(@"\Alice", result);
+        }
+
+        [Fact]
+        public void SingleBackslashNotBeforeMustachePassesThroughVerbatim()
+        {
+            // A single backslash not before {{ should pass through unchanged
+            var template = Handlebars.Compile(@"\*.{{Name}}");
+            var result = template(new { Name = "World" });
+            Assert.Equal(@"\*.World", result);
+        }
     }
 }
