@@ -123,7 +123,7 @@ namespace HandlebarsDotNet.Test
             var helpers = new List<DecoratorDelegate>();
             for (int i = 0; i < count; i++)
             {
-                DecoratorDelegate helper = (in EncodedTextWriter writer, BindingContext context, TemplateDelegate function) => function;
+                DecoratorDelegate helper = (EncodedTextWriter writer, BindingContext context, TemplateDelegate function) => function;
                 builder.Add(Const(helper));
                 helpers.Add(helper);
             }
