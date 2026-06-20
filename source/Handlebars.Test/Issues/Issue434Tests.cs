@@ -14,9 +14,7 @@ namespace HandlebarsDotNet.Test
             data.TEST = "Upper";
             data.test = "Lower";
             var result = template(data);
-            var parts = result.Split(' ');
-            Assert.Equal("Upper", parts[0]);
-            Assert.Equal("Lower", parts[1]);
+            Assert.Equal("Upper Lower", result);
         }
     }
 }
