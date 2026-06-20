@@ -733,5 +733,19 @@ namespace HandlebarsDotNet.Test
 
             Assert.Throws<HandlebarsCompilerException>(()=> Handlebars.Compile(source));
         }
+
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/416
+        // Non-ASCII characters not supported as the first character of a placeholder identifier
+        [Fact]
+        public void Issue416_UnicodeFirstCharacterInIdentifier()
+        {
+            var config = new HandlebarsConfiguration { TextEncoder = new HtmlEncoder() };
+            var handlebars = Handlebars.Create(config);
+            // Japanese characters as identifiers — first char is non-ASCII
+            var template = handlebars.Compile("Hello {{姓}} {{名}},");
+            var data = new Dictionary<string, object> { { "姓", "山田" }, { "名", "太郎" } };
+            var result = template(data);
+            Assert.Equal("Hello 山田 太郎,", result);
+        }
     }
 }
