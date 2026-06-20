@@ -24,10 +24,16 @@ namespace HandlebarsDotNet.Compiler
 
         public override Expression GetAccumulatedBlock()
         {
+            Expression fallback = _body.Count == 0
+                ? null
+                : _body.Count == 1
+                    ? _body.First()
+                    : Expression.Block(_body);
+
             return HandlebarsExpression.Partial(
                 _startingNode.PartialName,
                 _startingNode.Argument,
-                _body.Count > 1 ? Expression.Block(_body) : _body.First());
+                fallback);
         }
 
         public override bool IsClosingElement(Expression item)
