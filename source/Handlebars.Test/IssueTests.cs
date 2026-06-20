@@ -734,6 +734,128 @@ namespace HandlebarsDotNet.Test
             Assert.Throws<HandlebarsCompilerException>(()=> Handlebars.Compile(source));
         }
 
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/605
+        // #if not evaluated when variable name contains invisible characters (BOM)
+        [Fact]
+        public void Issue605_IfNotEvaluatedWithBomCharacter()
+        {
+            // The ﻿ (BOM) is embedded in the identifier name
+            string source =
+                "<div class=\"entry\">\n" +
+                "<h1>{{title}}</h1>\n" +
+                "<div class=\"body\">\n" +
+                "{{body}}\n" +
+                "{{#if someCondition﻿}}\n" +
+                "<p>Show additional text</p>\n" +
+                "{{/if}}\n" +
+                "</div>\n" +
+                "</div>";
+
+            var handlebars = Handlebars.Create();
+            var template = handlebars.Compile(source);
+            var data = new {
+                title = "My new post",
+                body = "This is my first post!",
+                someCondition = true
+            };
+            var actual = template(data);
+            Assert.Contains("Show additional text", actual);
+        }
+      
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/546
+        // Single quote should be HTML-encoded as &#x27; in standard {{expression}} output
+        [Fact]
+        public void Issue546_SingleQuoteIsHtmlEncoded()
+        {
+            var handlebars = Handlebars.Create();
+            var render = handlebars.Compile("{{input}}");
+            object data = new { input = "test'1" };
+            var actual = render(data);
+
+            Assert.DoesNotContain("'", actual);
+            Assert.Contains("&#x27;", actual);
+        }
+
+        [Theory]
+        [InlineData("&", "&amp;")]
+        [InlineData("<", "&lt;")]
+        [InlineData(">", "&gt;")]
+        [InlineData("\"", "&quot;")]
+        [InlineData("'", "&#x27;")]
+        [InlineData("`", "&#x60;")]
+        [InlineData("=", "&#x3D;")]
+        public void Issue546_HtmlSpecialCharsAreEncoded(string input, string expected)
+        {
+            var handlebars = Handlebars.Create();
+            var render = handlebars.Compile("{{value}}");
+            var actual = render(new { value = input });
+
+            Assert.Equal(expected, actual);
+        }
+      
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/462
+        // Compile replaces \\ (double backslash) with \ (single backslash)
+        [Fact]
+        public void Issue462_DoubleBackslashPreservedInOutput()
+        {
+            var handlebars = Handlebars.Create();
+            // Template contains two backslashes as literal text
+            var compiledTemplate = handlebars.Compile(@"\\");
+            var result = compiledTemplate(null);
+            Assert.Equal(@"\\", result);
+        }
+
+        [Fact]
+        public void Issue462_SingleBackslashPreservedInOutput()
+        {
+            var handlebars = Handlebars.Create();
+            var compiledTemplate = handlebars.Compile(@"\");
+            var result = compiledTemplate(null);
+            Assert.Equal(@"\", result);
+        }
+
+        [Fact]
+        public void Issue462_DoubleBackslashBeforeExpressionStillCollapses()
+        {
+            // \\{{name}} should still produce a single literal backslash followed by the evaluated expression
+            var handlebars = Handlebars.Create();
+            var compiledTemplate = handlebars.Compile(@"\\{{name}}");
+            var result = compiledTemplate(new { name = "World" });
+            Assert.Equal(@"\World", result);
+        }
+
+        [Fact]
+        public void Issue462_DoubleBackslashInMixedTemplate()
+        {
+            // Template with backslashes mixed: \\to preserves both backslashes (not before {{),
+            // but \\{{name}} collapses to single backslash + evaluated expression (spec behavior)
+            var handlebars = Handlebars.Create();
+            var compiledTemplate = handlebars.Compile(@"path\\to\\{{name}}");
+            var result = compiledTemplate(new { name = "file" });
+            Assert.Equal(@"path\\to\file", result);
+        }
+      
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/539
+        // Parent context (../) resolves to wrong value inside a custom block helper used within #each
+        [Fact]
+        public void Issue539_ParentContextInsideCustomBlockHelperInEach()
+        {
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterHelper("ifCond", (writer, options, context, parameters) =>
+            {
+                if (parameters.Length == 3 && parameters[0]?.ToString() == parameters[2]?.ToString())
+                    options.Template(writer, context);
+                else
+                    options.Inverse(writer, context);
+            });
+
+            var source = @"{{#each loop}}{{#ifCond another '===' 'value'}}{{../this.foo}}{{/ifCond}}{{/each}}";
+            var template = handlebars.Compile(source);
+            var data = new { foo = "bar", loop = new object[] { new { another = "value" } } };
+            var result = template(data);
+            Assert.Equal("bar", result.Trim());
+        }
+      
         // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/584
         [Fact]
         public void Issue584_EscapedDoubleQuoteInHelperStringArgument()
