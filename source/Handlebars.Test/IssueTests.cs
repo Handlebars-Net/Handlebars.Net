@@ -734,6 +734,27 @@ namespace HandlebarsDotNet.Test
             Assert.Throws<HandlebarsCompilerException>(()=> Handlebars.Compile(source));
         }
 
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/539
+        // Parent context (../) resolves to wrong value inside a custom block helper used within #each
+        [Fact]
+        public void Issue539_ParentContextInsideCustomBlockHelperInEach()
+        {
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterHelper("ifCond", (writer, options, context, parameters) =>
+            {
+                if (parameters.Length == 3 && parameters[0]?.ToString() == parameters[2]?.ToString())
+                    options.Template(writer, context);
+                else
+                    options.Inverse(writer, context);
+            });
+
+            var source = @"{{#each loop}}{{#ifCond another '===' 'value'}}{{../this.foo}}{{/ifCond}}{{/each}}";
+            var template = handlebars.Compile(source);
+            var data = new { foo = "bar", loop = new object[] { new { another = "value" } } };
+            var result = template(data);
+            Assert.Equal("bar", result.Trim());
+        }
+      
         // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/584
         [Fact]
         public void Issue584_EscapedDoubleQuoteInHelperStringArgument()
