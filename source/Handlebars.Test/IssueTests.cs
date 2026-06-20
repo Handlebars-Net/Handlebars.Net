@@ -734,6 +734,58 @@ namespace HandlebarsDotNet.Test
             Assert.Throws<HandlebarsCompilerException>(()=> Handlebars.Compile(source));
         }
 
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/584
+        [Fact]
+        public void Issue584_EscapedDoubleQuoteInHelperStringArgument()
+        {
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterHelper("myHelper", (writer, context, args) =>
+            {
+                writer.WriteSafeString(args[0]?.ToString() + "|" + args[1]?.ToString());
+            });
+
+            // Double-quoted string arg with escaped double-quote inside
+            var template = handlebars.Compile("{{myHelper name \"hello \\\"world\\\"\"}}");
+            var data = new { name = "test" };
+            var result = template(data);
+            Assert.Equal("test|hello \"world\"", result);
+        }
+
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/584
+        [Fact]
+        public void Issue584_SingleQuoteStringArgStillWorks()
+        {
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterHelper("myHelper", (context, args) => args[0]?.ToString());
+
+            var template = handlebars.Compile("{{myHelper 'hello world'}}");
+            var result = template(new { });
+            Assert.Equal("hello world", result);
+        }
+      
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/466
+        // Dictionary keys were inaccessible in nested #each when data is a mix of Dictionary and List
+        [Fact]
+        public void Issue466_NestedEachWithMixedDictionaryAndList()
+        {
+            var handlebars = Handlebars.Create();
+            var source = "{{#each this.users}}{{#each friends}}{{emailAddress}} {{/each}}{{/each}}";
+            var template = handlebars.Compile(source);
+
+            var friends = new List<Dictionary<object, object>>
+            {
+                new Dictionary<object, object> { { "emailAddress", "test@example.com" } }
+            };
+            var users = new List<Dictionary<object, object>>
+            {
+                new Dictionary<object, object> { { "friends", friends } }
+            };
+            var data = new Dictionary<object, object> { { "users", users } };
+
+            var result = template(data);
+            Assert.Contains("test@example.com", result);
+        }
+      
         // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/541
         // DictionarySlim.AddOrReplace was missing a return after updating an existing key's value,
         // causing it to always call AddValue even when the key already existed.
