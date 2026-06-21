@@ -51,7 +51,7 @@ namespace HandlebarsDotNet.Collections
 #endif
         private sealed class Node : IDisposable
         {
-            private static readonly InternalObjectPool<Node, Policy> Pool = new InternalObjectPool<Node, Policy>(new Policy());
+            private static readonly InternalObjectPool<Node, Policy> Pool = new InternalObjectPool<Node, Policy>(new Policy()); // NOSONAR S2743 — one pool per T is intentional: Node<int> and Node<string> cannot share a pool
 
             public Node Parent;
             public T Value;
@@ -68,7 +68,7 @@ namespace HandlebarsDotNet.Collections
 
             private struct Policy : IInternalObjectPoolPolicy<Node>
             {
-                public Node Create() => new Node();
+                Node IInternalObjectPoolPolicy<Node>.Create() => new Node();
 
                 public bool Return(Node item)
                 {

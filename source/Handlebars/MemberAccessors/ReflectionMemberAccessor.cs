@@ -53,10 +53,10 @@ namespace HandlebarsDotNet.MemberAccessors
 
         private sealed class RawObjectTypeDescriptor
         {
-            private delegate TValue ValueTypeGetterDelegate<T, TValue>(ref T instance);
+            private delegate TValue ValueTypeGetterDelegate<T, out TValue>(ref T instance);
 
             private static readonly MethodInfo CreateGetDelegateMethodInfo = typeof(RawObjectTypeDescriptor)
-                .GetMethod(nameof(CreateGetDelegate), BindingFlags.Static | BindingFlags.NonPublic);
+                .GetMethod(nameof(CreateGetDelegate), BindingFlags.Static | BindingFlags.NonPublic); // NOSONAR S3011 — accessing own private method by name for generic delegate construction; no external access bypassed
 
             private static readonly Func<KeyValuePair<ChainSegment, Type>, Func<object, object>> ValueGetterFactory = o => GetValueGetter(o.Key, o.Value);
 

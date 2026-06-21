@@ -48,50 +48,40 @@ namespace HandlebarsDotNet.Compiler
         {
             for (var i = 0; i < list.Count; i++)
             {
-                var statement = list[i] as StatementExpression;
-                if (statement == null) continue;
+                if (list[i] is StatementExpression statement)
+                    ProcessStatement(list, i, statement);
+            }
+        }
 
-                if (statement.TrimBefore)
-                {
-                    TrimBefore(list, i, true);
-                }
-                if (statement.TrimAfter)
-                {
-                    TrimAfter(list, i, true);
-                }
+        private static void ProcessStatement(IList<object> list, int index, StatementExpression statement)
+        {
+            if (statement.TrimBefore) TrimBefore(list, index, true);
+            if (statement.TrimAfter) TrimAfter(list, index, true);
 
-                if (IsStandalone(statement) && IsNextWhitespace(list, i) && IsPrevWhitespace(list, i))
-                {
-                    // For standalone partials, extract the preceding indentation and store it on the
-                    // PartialExpression so it can be applied to every line of the rendered output.
-                    if (statement.Body is PartialExpression partialExpr)
-                    {
-                        var indent = ExtractIndent(list, i);
-                        if (!string.IsNullOrEmpty(indent))
-                        {
-                            var indentedPartial = HandlebarsExpression.Partial(
-                                partialExpr.PartialName,
-                                partialExpr.Argument,
-                                partialExpr.Fallback,
-                                indent);
-                            list[i] = HandlebarsExpression.Statement(
-                                indentedPartial,
-                                statement.IsEscaped,
-                                statement.TrimBefore,
-                                statement.TrimAfter);
-                        }
-                    }
+            if (!IsStandalone(statement) || !IsNextWhitespace(list, index) || !IsPrevWhitespace(list, index)) return;
 
-                    if (!statement.TrimBefore)
-                    {
-                        TrimBefore(list, i, false);
-                    }
-                    if (!statement.TrimAfter)
-                    {
-                        TrimAfter(list, i, false);
-                    }
+            // For standalone partials, extract the preceding indentation and store it on the
+            // PartialExpression so it can be applied to every line of the rendered output.
+            if (statement.Body is PartialExpression partialExpr)
+            {
+                var indent = ExtractIndent(list, index);
+                if (!string.IsNullOrEmpty(indent))
+                {
+                    var indentedPartial = HandlebarsExpression.Partial(
+                        partialExpr.PartialName,
+                        partialExpr.Argument,
+                        partialExpr.Fallback,
+                        indent);
+                    list[index] = HandlebarsExpression.Statement(
+                        indentedPartial,
+                        statement.IsEscaped,
+                        statement.TrimBefore,
+                        statement.TrimAfter);
                 }
             }
+
+            if (!statement.TrimBefore) TrimBefore(list, index, false);
+            if (!statement.TrimAfter) TrimAfter(list, index, false);
         }
 
         private static string ExtractIndent(IList<object> list, int index)

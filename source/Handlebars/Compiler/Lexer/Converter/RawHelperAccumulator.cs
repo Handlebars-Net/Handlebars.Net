@@ -19,41 +19,31 @@ namespace HandlebarsDotNet.Compiler
         public override IEnumerable<object> ConvertTokens(IEnumerable<object> sequence)
         {
             var enumerator = sequence.GetEnumerator();
-
             while (enumerator.MoveNext())
             {
-                var item = enumerator.Current;
-                if (item is StartExpressionToken startExpressionTokenItem)
+                if (enumerator.Current is StartExpressionToken start)
                 {
-                    yield return item;
-
-                    if (!startExpressionTokenItem.IsRaw)
-                    {
-                        continue;
-                    }
-
-                    item = GetNext(enumerator);
-                    if (!(item is HelperExpression helperExpression))
-                    {
-                        throw new HandlebarsCompilerException("Expected HelperExpression, got " + item);
-                    }
-
-                    yield return item;
-
-                    foreach (var param in CollectParameters(enumerator, helperExpression.HelperName))
-                    {
-                        yield return param;
-                    }
-                    foreach (var bodyMember in CollectBody(enumerator, helperExpression.HelperName))
-                    {
-                        yield return bodyMember;
-                    }
+                    yield return start;
+                    foreach (var t in HandleRawStart(enumerator, start)) yield return t;
                 }
                 else
                 {
-                    yield return item;
+                    yield return enumerator.Current;
                 }
             }
+        }
+
+        private IEnumerable<object> HandleRawStart(IEnumerator<object> enumerator, StartExpressionToken start)
+        {
+            if (!start.IsRaw) yield break;
+
+            var item = GetNext(enumerator);
+            if (!(item is HelperExpression helperExpression))
+                throw new HandlebarsCompilerException("Expected HelperExpression, got " + item);
+
+            yield return item;
+            foreach (var param in CollectParameters(enumerator, helperExpression.HelperName)) yield return param;
+            foreach (var bodyMember in CollectBody(enumerator, helperExpression.HelperName)) yield return bodyMember;
         }
 
         private IEnumerable<object> CollectParameters(IEnumerator<object> enumerator, string rawHelperName)

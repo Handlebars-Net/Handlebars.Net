@@ -321,7 +321,7 @@ namespace HandlebarsDotNet
             
             private struct Policy : IInternalObjectPoolPolicy<Enumerator>
             {
-                public Enumerator Create() => new Enumerator();
+                Enumerator IInternalObjectPoolPolicy<Enumerator>.Create() => new Enumerator();
 
                 public bool Return(Enumerator item)
                 {

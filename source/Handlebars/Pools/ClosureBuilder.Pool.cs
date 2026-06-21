@@ -3,7 +3,7 @@ using HandlebarsDotNet.Pools;
 
 namespace HandlebarsDotNet.Compiler
 {
-    public partial class ClosureBuilder : IDisposable
+    public sealed partial class ClosureBuilder : IDisposable
     {
         private static readonly ClosureBuilderPool Pool = new (new Policy());
         
@@ -35,7 +35,7 @@ namespace HandlebarsDotNet.Compiler
         
         private readonly struct Policy : IInternalObjectPoolPolicy<ClosureBuilder>
         {
-            public ClosureBuilder Create() => new ();
+            ClosureBuilder IInternalObjectPoolPolicy<ClosureBuilder>.Create() => new ();
             public bool Return(ClosureBuilder item) => true;
         }
     }

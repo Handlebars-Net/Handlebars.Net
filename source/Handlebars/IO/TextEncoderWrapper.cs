@@ -6,7 +6,7 @@ using HandlebarsDotNet.Pools;
 
 namespace HandlebarsDotNet
 {
-    internal class TextEncoderWrapper : ITextEncoder, IDisposable
+    internal sealed class TextEncoderWrapper : ITextEncoder, IDisposable
     {
         private static readonly InternalObjectPool<TextEncoderWrapper, Policy> Pool 
             = new InternalObjectPool<TextEncoderWrapper, Policy>(new Policy());
@@ -65,7 +65,7 @@ namespace HandlebarsDotNet
 
         private struct Policy : IInternalObjectPoolPolicy<TextEncoderWrapper>
         {
-            public TextEncoderWrapper Create() => new TextEncoderWrapper();
+            TextEncoderWrapper IInternalObjectPoolPolicy<TextEncoderWrapper>.Create() => new TextEncoderWrapper();
 
             public bool Return(TextEncoderWrapper item)
             {

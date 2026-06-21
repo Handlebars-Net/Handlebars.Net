@@ -10,7 +10,7 @@ using HandlebarsDotNet.Runtime;
 
 namespace HandlebarsDotNet.Compiler
 {
-    public partial class ClosureBuilder
+    public sealed partial class ClosureBuilder
     {
         private readonly List<KeyValuePair<ConstantExpression, PathInfo>> _pathInfos = new();
         private readonly List<KeyValuePair<ConstantExpression, TemplateDelegate>> _templateDelegates = new();

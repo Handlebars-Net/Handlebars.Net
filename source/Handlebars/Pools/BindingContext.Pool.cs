@@ -42,7 +42,7 @@ namespace HandlebarsDotNet
 
             internal struct BindingContextPolicy : IInternalObjectPoolPolicy<BindingContext>
             {
-                public BindingContext Create() => new BindingContext();
+                BindingContext IInternalObjectPoolPolicy<BindingContext>.Create() => new BindingContext();
 
                 public bool Return(BindingContext item)
                 {

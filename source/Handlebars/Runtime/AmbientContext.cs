@@ -88,7 +88,7 @@ namespace HandlebarsDotNet.Runtime
         
         private struct Policy : IInternalObjectPoolPolicy<AmbientContext>
         {
-            public AmbientContext Create() => new();
+            AmbientContext IInternalObjectPoolPolicy<AmbientContext>.Create() => new();
 
             public bool Return(AmbientContext item)
             {
