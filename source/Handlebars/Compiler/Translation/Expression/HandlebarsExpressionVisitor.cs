@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -6,38 +7,38 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class HandlebarsExpressionVisitor : ExpressionVisitor
     {
-        public override Expression Visit(Expression exp)
+        public override Expression Visit(Expression node)
         {
-            if (exp == null)
+            if (node == null)
             {
                 return null;
             }
-            switch ((HandlebarsExpressionType)exp.NodeType)
+            switch ((HandlebarsExpressionType)node.NodeType)
             {
                 case HandlebarsExpressionType.StatementExpression:
-                    return VisitStatementExpression((StatementExpression)exp);
+                    return VisitStatementExpression((StatementExpression)node);
                 case HandlebarsExpressionType.StaticExpression:
-                    return VisitStaticExpression((StaticExpression)exp);
+                    return VisitStaticExpression((StaticExpression)node);
                 case HandlebarsExpressionType.HelperExpression:
-                    return VisitHelperExpression((HelperExpression)exp);
+                    return VisitHelperExpression((HelperExpression)node);
                 case HandlebarsExpressionType.BlockExpression:
-                    return VisitBlockHelperExpression((BlockHelperExpression)exp);
+                    return VisitBlockHelperExpression((BlockHelperExpression)node);
                 case HandlebarsExpressionType.HashParameterAssignmentExpression:
-                    return exp;
+                    return node;
                 case HandlebarsExpressionType.HashParametersExpression:
-                    return VisitHashParametersExpression((HashParametersExpression)exp);
+                    return VisitHashParametersExpression((HashParametersExpression)node);
                 case HandlebarsExpressionType.PathExpression:
-                    return VisitPathExpression((PathExpression)exp);
+                    return VisitPathExpression((PathExpression)node);
                 case HandlebarsExpressionType.IteratorExpression:
-                    return VisitIteratorExpression((IteratorExpression)exp);
+                    return VisitIteratorExpression((IteratorExpression)node);
                 case HandlebarsExpressionType.PartialExpression:
-                    return VisitPartialExpression((PartialExpression)exp);
+                    return VisitPartialExpression((PartialExpression)node);
                 case HandlebarsExpressionType.BoolishExpression:
-                    return VisitBoolishExpression((BoolishExpression)exp);
+                    return VisitBoolishExpression((BoolishExpression)node);
                 case HandlebarsExpressionType.SubExpression:
-                    return VisitSubExpression((SubExpressionExpression)exp);
+                    return VisitSubExpression((SubExpressionExpression)node);
                 default:
-                    return base.Visit(exp);
+                    return base.Visit(node);
             }
         }
 
@@ -152,7 +153,7 @@ namespace HandlebarsDotNet.Compiler
 
         private IEnumerable<Expression> VisitExpressionList(IEnumerable<Expression> original)
         {
-            if (original == null) return null;
+            if (original == null) return Array.Empty<Expression>();
 
             var originalAsList = original as IReadOnlyList<Expression> ?? original.ToArray();
             List<Expression> list = null;

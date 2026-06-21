@@ -334,7 +334,7 @@ namespace HandlebarsDotNet
         private static class Throw
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static object IndexOutOfRangeException(string message = null) => throw new IndexOutOfRangeException(message);
+            public static object IndexOutOfRangeException(string message = null) => throw new ArgumentOutOfRangeException(message);
         }
     }
 }

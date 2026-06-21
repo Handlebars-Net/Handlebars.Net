@@ -42,7 +42,7 @@ namespace HandlebarsDotNet.Compiler
             {
                 BlockHelperDirection.Direct => bhex.HelperName.StartsWith("#*"),
                 BlockHelperDirection.Inverse => bhex.HelperName.StartsWith("^*"),
-                _ => throw new ArgumentOutOfRangeException()
+                _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, "Unexpected BlockHelperDirection value")
             };
 
             if (isDecorator)

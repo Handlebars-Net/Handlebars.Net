@@ -7,24 +7,23 @@ on:
 jobs:
   publish:
     name: Publish
-    runs-on: windows-2019
+    runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Obtain SNK
         id: obtain_snk
-        uses: timheuer/base64-to-file@v1.0.3
+        uses: timheuer/base64-to-file@a75dcdf3e46f8e5ac6765ca7598a7f0f3d1e5c0b # v1.0.3
         with:
           fileName: 'SigningKey.snk'
           encodedString: ${{ secrets.SNK_BASE64 }}
 
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
-              2.1.x
-              3.1.x
-              6.0.x
+              8.0.x
+              10.0.x
 
       - name: Clean package cache as a temporary workaround for https://github.com/actions/setup-dotnet/issues/155
         working-directory: ./source
@@ -36,4 +35,6 @@ jobs:
 
       - name: Publish to NuGet
         working-directory: ./source
-        run: dotnet nuget push **/*.nupkg -k ${{ secrets.NUGET_ORG_PUSH_KEY }} -s https://api.nuget.org/v3/index.json
+        env:
+          NUGET_KEY: ${{ secrets.NUGET_ORG_PUSH_KEY }}
+        run: dotnet nuget push **/*.nupkg -k $env:NUGET_KEY -s https://api.nuget.org/v3/index.json

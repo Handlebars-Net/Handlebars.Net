@@ -2,6 +2,7 @@ using System;
 
 namespace HandlebarsDotNet.Features
 {
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
     internal class FeatureOrderAttribute : Attribute
     {
         public int Order { get; }

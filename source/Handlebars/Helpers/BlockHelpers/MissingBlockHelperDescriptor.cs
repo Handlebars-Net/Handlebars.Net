@@ -38,7 +38,7 @@ namespace HandlebarsDotNet.Helpers.BlockHelpers
                     return;
                 
                 case null:
-                case object _ when HandlebarsUtils.IsFalsyOrEmpty(value):
+                case object _ when HandlebarsUtils.IsFalsyOrEmpty(value): // NOSONAR S2589 — `object _` is intentionally the catch-all; the `when` clause is the actual filter
                     inversion(writer, context);
                     return;
 

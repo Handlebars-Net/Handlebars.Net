@@ -37,23 +37,17 @@ namespace HandlebarsDotNet
         bool IMemberAliasProvider<object>.TryGetMemberByAlias(object instance, Type targetType, ChainSegment memberAlias,
             out object value)
         {
-            if (_aliases.TryGetValue(targetType, out var aliases))
+            if (_aliases.TryGetValue(targetType, out var aliases) && aliases.TryGetValue(memberAlias, out var accessor))
             {
-                if (aliases.TryGetValue(memberAlias, out var accessor))
-                {
-                    value = accessor(instance);
-                    return true;
-                }
+                value = accessor(instance);
+                return true;
             }
-            
+
             aliases = _aliases.FirstOrDefault(o => o.Key.IsAssignableFrom(targetType)).Value;
-            if (aliases != null)
+            if (aliases != null && aliases.TryGetValue(memberAlias, out var accessor2))
             {
-                if (aliases.TryGetValue(memberAlias, out var accessor))
-                {
-                    value = accessor(instance);
-                    return true;
-                }
+                value = accessor2(instance);
+                return true;
             }
 
             value = null;

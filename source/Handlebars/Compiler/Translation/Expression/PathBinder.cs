@@ -81,6 +81,7 @@ namespace HandlebarsDotNet.Compiler
             
             if (pex.Context == PathExpression.ResolutionContext.Parameter) return resolvePath;
             if (pathInfo.IsVariable || pathInfo.IsThis) return resolvePath;
+#pragma warning disable CS0618
             if (!pathInfo.IsValidHelperLiteral && !configuration.Compatibility.RelaxedHelperNaming) return resolvePath;
 
             var pathInfoLight = new PathInfoLight(pathInfo);
@@ -103,6 +104,7 @@ namespace HandlebarsDotNet.Compiler
             }
             else if (configuration.Compatibility.RelaxedHelperNaming)
             {
+#pragma warning restore CS0618
                 pathInfoLight = pathInfoLight.TagComparer();
                 if (!configuration.Helpers.ContainsKey(pathInfoLight))
                 {

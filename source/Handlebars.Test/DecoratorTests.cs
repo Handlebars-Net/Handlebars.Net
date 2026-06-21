@@ -46,7 +46,7 @@ namespace HandlebarsDotNet.Test
                 (TemplateDelegate function, in DecoratorOptions options, in Context context, in Arguments arguments) =>
                 {
                     var value = arguments.At<int>(0); 
-                    return (EncodedTextWriter writer, BindingContext bindingContext) =>
+                    return (writer, bindingContext) =>
                     {
                         writer.WriteSafeString(value);
                         function(writer, bindingContext);

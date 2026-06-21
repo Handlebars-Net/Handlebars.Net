@@ -114,7 +114,7 @@ namespace HandlebarsDotNet.Collections
         /// <returns>true if the key is present, otherwise false</returns>
         public bool ContainsKey(in TKey key)
         {
-            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (key is null) throw new ArgumentNullException(nameof(key));
             var entries = _entries;
             var collisionCount = 0;
             for (var i = _buckets[_comparer.GetHashCode(key) & (_buckets.Length-1)] - 1;
@@ -143,7 +143,7 @@ namespace HandlebarsDotNet.Collections
         /// <returns>true if the key is present, otherwise false</returns>
         public bool TryGetValue(in TKey key, out TValue value)
         {
-            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (key is null) throw new ArgumentNullException(nameof(key));
             var entries = _entries;
             var collisionCount = 0;
             for (var i = _buckets[_comparer.GetHashCode(key) & (_buckets.Length - 1)] - 1;
@@ -175,7 +175,7 @@ namespace HandlebarsDotNet.Collections
 
         public void AddOrReplace(in TKey key, in TValue value)
         {
-            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (key is null) throw new ArgumentNullException(nameof(key));
             var entries = _entries;
             var collisionCount = 0;
             var bucketIndex = _comparer.GetHashCode(key) & (_buckets.Length - 1);

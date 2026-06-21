@@ -73,7 +73,9 @@ namespace HandlebarsDotNet.Compiler
         private bool IsRegisteredHelperName(string name)
         {
             var pathInfo = PathInfo.Parse(name);
+#pragma warning disable CS0618
             if (!pathInfo.IsValidHelperLiteral && !_configuration.Compatibility.RelaxedHelperNaming) return false;
+#pragma warning restore CS0618
             if (pathInfo.IsBlockHelper || pathInfo.IsInversion || pathInfo.IsBlockClose || pathInfo.IsThis) return false;
             name = pathInfo.TrimmedPath;
             
@@ -83,7 +85,9 @@ namespace HandlebarsDotNet.Compiler
         private bool IsRegisteredBlockHelperName(string name, bool isRaw)
         {
             var pathInfo = PathInfo.Parse(name);
+#pragma warning disable CS0618
             if (!pathInfo.IsValidHelperLiteral && !_configuration.Compatibility.RelaxedHelperNaming) return false;
+#pragma warning restore CS0618
             if (!isRaw && !(pathInfo.IsBlockHelper || pathInfo.IsInversion)) return false;
             if (pathInfo.IsBlockClose) return false;
             if (pathInfo.IsThis) return false;
@@ -96,7 +100,9 @@ namespace HandlebarsDotNet.Compiler
         private bool IsUnregisteredBlockHelperName(string name, bool isRaw, IEnumerable<object> sequence)
         {
             var pathInfo = PathInfo.Parse(name);
+#pragma warning disable CS0618
             if (!pathInfo.IsValidHelperLiteral && !_configuration.Compatibility.RelaxedHelperNaming) return false;
+#pragma warning restore CS0618
             
             if (!isRaw && !(pathInfo.IsBlockHelper || pathInfo.IsInversion)) return false;
             name = name.Substring(1);

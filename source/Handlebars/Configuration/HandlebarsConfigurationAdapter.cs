@@ -85,7 +85,9 @@ namespace HandlebarsDotNet
             where TOptions : struct, IOptions
             where TDescriptor : class, IDescriptor<TOptions>
         {
+#pragma warning disable CS0618
             var equalityComparer = Compatibility.RelaxedHelperNaming ? PathInfoLight.PlainPathComparer : PathInfoLight.PlainPathWithPartsCountComparer;
+#pragma warning restore CS0618
             var existingHelpers = source.ToIndexed(
                 o => (PathInfoLight) $"[{o.Key}]", 
                 o => new Ref<TDescriptor>(o.Value),

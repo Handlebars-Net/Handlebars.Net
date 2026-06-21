@@ -35,7 +35,7 @@ namespace HandlebarsDotNet
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Encode<T>(T text, TextWriter target) where T : IEnumerator<char>
         {
-            if (text == null) return;
+            if (text is null) return;
 
             EncodeImpl(text, target);
         }

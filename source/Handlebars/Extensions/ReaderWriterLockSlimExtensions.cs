@@ -9,14 +9,14 @@ namespace HandlebarsDotNet
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DisposableContainer<ReaderWriterLockSlim> ReadLock(this ReaderWriterLockSlim @lock)
         {
-            @lock.EnterReadLock();
+            @lock.EnterReadLock(); // NOSONAR S7133 — lock released in DisposableContainer.Dispose via `using`
             return new DisposableContainer<ReaderWriterLockSlim>(@lock, l => l.ExitReadLock());
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DisposableContainer<ReaderWriterLockSlim> WriteLock(this ReaderWriterLockSlim @lock)
         {
-            @lock.EnterWriteLock();
+            @lock.EnterWriteLock(); // NOSONAR S7133 — lock released in DisposableContainer.Dispose via `using`
             return new DisposableContainer<ReaderWriterLockSlim>(@lock, l => l.ExitWriteLock());
         }
     }

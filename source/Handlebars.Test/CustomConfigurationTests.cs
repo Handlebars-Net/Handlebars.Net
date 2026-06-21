@@ -40,7 +40,7 @@ namespace HandlebarsDotNet.Test
             var template = "Hello {{person.name}} {{person.surname}} from {{person.address.homeCountry}}. You're {{{description}}}.";
             var output = this.HandlebarsInstance.Compile(template).Invoke(Value);
 
-            Assert.Equal(output, ExpectedOutput);
+            Assert.Equal(ExpectedOutput, output);
         }
 
         [Fact]
@@ -49,7 +49,7 @@ namespace HandlebarsDotNet.Test
             var template = "Hello {{person.name}} {{person.surname}} from {{person.address.HomeCountry}}. You're {{{description}}}.";
             var output = this.HandlebarsInstance.Compile(template).Invoke(Value);
 
-            Assert.Equal(output, ExpectedOutput);
+            Assert.Equal(ExpectedOutput, output);
         }
 
         [Fact]
@@ -58,7 +58,7 @@ namespace HandlebarsDotNet.Test
             var template = "Hello {{person.name}} {{person.surname}} from {{person.address.home_Country}}. You're {{{description}}}.";
             var output = this.HandlebarsInstance.Compile(template).Invoke(Value);
 
-            Assert.Equal(output, ExpectedOutput);
+            Assert.Equal(ExpectedOutput, output);
         }
 
         #endregion

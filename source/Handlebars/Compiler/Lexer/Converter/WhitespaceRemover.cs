@@ -8,14 +8,15 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class WhitespaceRemover : TokenConverter
     {
-        private static readonly Regex MatchLastStartsWithWhitespace = new Regex(@"^[ \t]*(\r?\n|$)", RegexOptions.Compiled);
-        private static readonly Regex MatchStartsWithWhitespace = new Regex(@"^[ \t]*\r?\n", RegexOptions.Compiled);
-        private static readonly Regex TrimStartRegex = new Regex(@"^[ \t]*\r?\n?", RegexOptions.Compiled);
-        private static readonly Regex MatchFirstEndsWithWhitespace = new Regex(@"(^|\r?\n)\s*?$", RegexOptions.Compiled);
-        private static readonly Regex MatchEndsWithWhitespace = new Regex(@"\r?\n\s*?$");
-        private static readonly Regex TrimEndRegex = new Regex(@"[ \t]+\z", RegexOptions.Compiled);
+        private static readonly TimeSpan RegexTimeout = TimeSpan.FromSeconds(1);
+        private static readonly Regex MatchLastStartsWithWhitespace = new Regex(@"^[ \t]*(\r?\n|$)", RegexOptions.Compiled, RegexTimeout);
+        private static readonly Regex MatchStartsWithWhitespace = new Regex(@"^[ \t]*\r?\n", RegexOptions.Compiled, RegexTimeout);
+        private static readonly Regex TrimStartRegex = new Regex(@"^[ \t]*\r?\n?", RegexOptions.Compiled, RegexTimeout);
+        private static readonly Regex MatchFirstEndsWithWhitespace = new Regex(@"(^|\r?\n)\s*?$", RegexOptions.Compiled, RegexTimeout);
+        private static readonly Regex MatchEndsWithWhitespace = new Regex(@"\r?\n\s*?$", RegexOptions.Compiled, RegexTimeout);
+        private static readonly Regex TrimEndRegex = new Regex(@"[ \t]+\z", RegexOptions.Compiled, RegexTimeout);
         // Captures trailing whitespace (spaces/tabs) after the last newline — this is the partial's indentation
-        private static readonly Regex ExtractIndentRegex = new Regex(@"(?:^|\r?\n)([ \t]*)$", RegexOptions.Compiled);
+        private static readonly Regex ExtractIndentRegex = new Regex(@"(?:^|\r?\n)([ \t]*)$", RegexOptions.Compiled, RegexTimeout);
         
         private static readonly WhitespaceRemover Remover = new WhitespaceRemover();
 

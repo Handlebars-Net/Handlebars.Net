@@ -13,7 +13,7 @@ namespace HandlebarsDotNet.MemberAccessors.DictionaryAccessors
         {
             var key = (TK) TypeConverter.ConvertFromString(memberName.TrimmedValue);
             var dictionary = (T) instance;
-            if (key != null && dictionary.TryGetValue(key, out var v))
+            if (key is not null && dictionary.TryGetValue(key, out var v))
             {
                 value = v;
                 return true;

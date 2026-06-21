@@ -41,7 +41,7 @@ namespace HandlebarsDotNet.Collections
         /// <param name="comparer"></param>
         public FixedSizeDictionary(int bucketsCount, int bucketSize, TComparer comparer)
         {
-            if (comparer == null) throw new ArgumentNullException(nameof(comparer));
+            if (comparer is null) throw new ArgumentNullException(nameof(comparer));
             if (bucketsCount > MaximumSize) throw new ArgumentException($" cannot be greater then {MaximumSize}", nameof(bucketsCount));
             if (bucketSize > HashHelper.Primes[HashHelper.Primes.Length - 1]) throw new ArgumentException($" cannot be greater then {HashHelper.Primes[HashHelper.Primes.Length - 1]}", nameof(bucketSize));
 

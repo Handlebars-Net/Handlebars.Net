@@ -63,7 +63,7 @@ namespace HandlebarsDotNet.Compiler
                     var templateDelegate = FunctionBuilder.Compile(
                         new []
                         {
-                            Call(() => Iterator.Iterate(context, writer, blockParamsValues, compiledSequence, ifEmpty, template)).Expression
+                            Call(() => Iterator.Iterate(context, writer, blockParamsValues, compiledSequence, ifEmpty, template)).Expression // NOSONAR S2234 — intentional swap: Inverse renders ifEmpty as the main body
                         }, 
                         CompilationContext, 
                         out _
@@ -87,7 +87,7 @@ namespace HandlebarsDotNet.Compiler
                     var writer = CompilationContext.Args.EncodedWriter;
                     var compiledSequence = Arg<object>(FunctionBuilder.Reduce(iex.Sequence, CompilationContext, out _));
                     var blockParamsValues = CreateBlockParams();
-                    return Call(() => Iterator.Iterate(context, writer, blockParamsValues, compiledSequence, ifEmpty, template));
+                    return Call(() => Iterator.Iterate(context, writer, blockParamsValues, compiledSequence, ifEmpty, template)); // NOSONAR S2234 — intentional swap: Inverse renders ifEmpty as the main body
                 }
                 default:
                 {

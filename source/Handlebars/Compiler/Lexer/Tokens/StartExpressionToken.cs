@@ -18,7 +18,14 @@
 
         public bool IsRaw { get; }
 
-        public override string Value => IsRaw ? "{{{{" : IsEscaped ? "{{" : "{{{";
+        public override string Value
+        {
+            get
+            {
+                if (IsRaw) return "{{{{";
+                return IsEscaped ? "{{" : "{{{";
+            }
+        }
 
         public override TokenType Type => TokenType.StartExpression;
     }

@@ -73,7 +73,7 @@ namespace HandlebarsDotNet.Collections
     public ref struct ExtendedEnumerator<T, TEnumerator>
         where TEnumerator: IEnumerator<T>
     {
-        private TEnumerator _enumerator;
+        private TEnumerator _enumerator; // NOSONAR S2933 — cannot be readonly: struct TEnumerator mutates on MoveNext() and readonly would cause a defensive copy
 
         private T _next;
         private int _index;

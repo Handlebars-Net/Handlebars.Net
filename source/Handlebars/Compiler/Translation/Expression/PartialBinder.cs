@@ -63,7 +63,7 @@ namespace HandlebarsDotNet.Compiler
                     new []
                     {
                         Call(() =>
-                            InvokePartialWithFallback(partialName, bindingContext, writer, (ICompiledHandlebarsConfiguration) configuration, indent)
+                            InvokePartialWithFallback(partialName, bindingContext, writer, (ICompiledHandlebarsConfiguration) configuration, indent) // NOSONAR S1944 — ExpressionShortcuts operator; not a runtime hierarchy cast
                         ).Expression
                     },
                     CompilationContext,
