@@ -58,12 +58,13 @@ namespace HandlebarsDotNet.Compiler
                 var partialNameObj = Arg<object>(pex.PartialName);
                 var partialName = Call(() => ToPartialName(partialNameObj));
                 var configuration = Arg(CompilationContext.Configuration);
+                var isBlock = Arg(pex.IsBlock);
                 var indent = Arg(pex.Indent);
                 var templateDelegate = FunctionBuilder.Compile(
                     new []
                     {
                         Call(() =>
-                            InvokePartialWithFallback(partialName, bindingContext, writer, (ICompiledHandlebarsConfiguration) configuration, indent) // NOSONAR S1944 — ExpressionShortcuts operator; not a runtime hierarchy cast
+                            InvokePartialWithFallback(partialName, bindingContext, writer, (ICompiledHandlebarsConfiguration) configuration, isBlock, indent) // NOSONAR S1944 — ExpressionShortcuts operator; not a runtime hierarchy cast
                         ).Expression
                     },
                     CompilationContext,
@@ -92,10 +93,11 @@ namespace HandlebarsDotNet.Compiler
                 var partialNameObj = Arg<object>(pex.PartialName);
                 var partialName = Call(() => ToPartialName(partialNameObj));
                 var configuration = Arg(CompilationContext.Configuration);
+                var isBlock = Arg(pex.IsBlock);
                 var indent = Arg(pex.Indent);
 
                 return Call(() =>
-                    InvokePartialWithFallback(partialName, bindingContext, writer, (ICompiledHandlebarsConfiguration) configuration, indent)
+                    InvokePartialWithFallback(partialName, bindingContext, writer, (ICompiledHandlebarsConfiguration) configuration, isBlock, indent)
                 );
             }
         }
@@ -105,10 +107,11 @@ namespace HandlebarsDotNet.Compiler
             BindingContext context,
             EncodedTextWriter writer,
             ICompiledHandlebarsConfiguration configuration,
-            string indent = null)
+            bool block,
+            string indent)
         {
             partialName = partialName != null ? ChainSegment.Create(partialName).TrimmedValue : null;
-            if (InvokePartial(partialName, context, writer, configuration, indent)) return;
+            if (InvokePartial(partialName, context, writer, configuration, block, indent)) return;
             if (context.PartialBlockTemplate == null)
             {
                 if (configuration.MissingPartialTemplateHandler == null)
@@ -173,16 +176,24 @@ namespace HandlebarsDotNet.Compiler
             BindingContext context,
             EncodedTextWriter writer,
             ICompiledHandlebarsConfiguration configuration,
-            string indent = null)
+            bool block,
+            string indent)
         {
             if (partialName.Equals(SpecialPartialBlockName))
             {
-                if (context.PartialBlockTemplate == null)
+                var partialBlockTemplate = context.PartialBlockTemplate;
+
+                // If we are a block, our contents are the fallback and SpecialPartialBlockName refers to our parent
+                if (block)
+                {
+                    partialBlockTemplate = context.ParentContext.PartialBlockTemplate;
+                }
+
+                if (partialBlockTemplate == null)
                 {
                     return false;
                 }
 
-                var partialBlockTemplate = context.PartialBlockTemplate;
                 try
                 {
                     context.PartialBlockTemplate = context.ParentContext.PartialBlockTemplate;

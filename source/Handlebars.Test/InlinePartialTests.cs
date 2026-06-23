@@ -264,6 +264,18 @@ namespace HandlebarsDotNet.Test
 
             var result2 = template(data);
             Assert.Equal("Hello, Pete Jones!", result2);
+            
+            source = "Hello, {{#>personInline}}{{/personInline}}!";
+            template = Handlebars.Compile(source);
+
+            var result3 = template(data);
+            Assert.Equal("Hello, !", result3);
+
+            source = "{{#*inline \"personInline\"}}{{firstName}} {{lastName}}{{/inline}}" + source;
+            template = Handlebars.Compile(source);
+
+            var result4 = template(data);
+            Assert.Equal("Hello, Pete Jones!", result4);
         }
 
         [Fact]
@@ -412,6 +424,42 @@ namespace HandlebarsDotNet.Test
             while (ex.InnerException != null)
                 ex = Assert.IsType<HandlebarsRuntimeException>(ex.InnerException);
             Assert.Equal("Runtime error while rendering partial 'list', exceeded recursion depth limit of 100", ex.Message);
+        }
+
+        [Fact]
+        public void BlockInlinePartialWithInlinePartials()
+        {
+            string partialSource = "{{#*inline \"greeting\"}}{{#>salutation}}Dear{{/salutation}} {{#>name}}{{firstName}} {{lastName}}{{/name}}{{/inline}}";
+
+            var data = new
+            {
+                firstName = "Pete",
+                lastName = "Jones"
+            };
+
+            string source = partialSource + "{{#>greeting}}{{/greeting}}";
+            var template = Handlebars.Compile(source);
+
+            var result1 = template(data);
+            Assert.Equal("Dear Pete Jones", result1);
+
+            source = partialSource + "{{#>greeting}}{{#*inline \"salutation\"}}Hello{{/inline}}{{/greeting}}";
+            template = Handlebars.Compile(source);
+
+            var result2 = template(data);
+            Assert.Equal("Hello Pete Jones", result2);
+            
+            source = partialSource + "{{#>greeting}}{{#*inline \"name\"}}Mr. {{lastName}}{{/inline}}{{/greeting}}";
+            template = Handlebars.Compile(source);
+
+            var result3 = template(data);
+            Assert.Equal("Dear Mr. Jones", result3);
+
+            source = partialSource + "{{#>greeting}}{{#*inline \"salutation\"}}Hello{{/inline}}{{#*inline \"name\"}}{{firstName}}{{/inline}}{{/greeting}}";
+            template = Handlebars.Compile(source);
+
+            var result4 = template(data);
+            Assert.Equal("Hello Pete", result4);
         }
     }
 }
