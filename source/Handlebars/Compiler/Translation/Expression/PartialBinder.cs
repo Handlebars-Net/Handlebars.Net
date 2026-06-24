@@ -1,13 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq.Expressions;
-using System.Text;
-using Expressions.Shortcuts;
 using HandlebarsDotNet.IO;
 using HandlebarsDotNet.PathStructure;
 using HandlebarsDotNet.Polyfills;
-using static Expressions.Shortcuts.ExpressionShortcuts;
+using static HandlebarsDotNet.ExpressionShortcuts.ExpressionShortcuts;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -142,7 +139,7 @@ namespace HandlebarsDotNet.Compiler
             }
 
             var pos = 0;
-            while (pos < content.Length)
+            while (pos < content!.Length)
             {
                 var newlinePos = content.IndexOf('\n', pos);
                 if (newlinePos < 0)
