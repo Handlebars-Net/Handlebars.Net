@@ -9,9 +9,9 @@ namespace HandlebarsDotNet.MemberAccessors.DictionaryAccessors
     {
         private static readonly TypeConverter TypeConverter = TypeDescriptor.GetConverter(typeof(TK));
 
-        public bool TryGetValue(object instance, ChainSegment memberName, out object value)
+        public bool TryGetValue(object instance, ChainSegment memberName, out object? value)
         {
-            var key = (TK) TypeConverter.ConvertFromString(memberName.TrimmedValue);
+            var key = (TK?) TypeConverter.ConvertFromString(memberName.TrimmedValue);
             var dictionary = (T) instance;
             if (key is not null && dictionary.TryGetValue(key, out var v))
             {

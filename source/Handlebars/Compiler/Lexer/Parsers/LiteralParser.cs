@@ -5,7 +5,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
 {
     internal class LiteralParser : Parser
     {
-        public override Token Parse(ExtendedStringReader reader)
+        public override Token? Parse(ExtendedStringReader reader)
         {
             var context = reader.GetContext();
             if (IsDelimitedLiteral(reader))

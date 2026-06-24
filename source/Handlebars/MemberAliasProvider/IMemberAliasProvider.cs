@@ -8,7 +8,7 @@ namespace HandlebarsDotNet
     /// </summary>
     public interface IMemberAliasProvider<in T>
     {
-        bool TryGetMemberByAlias(T instance, Type targetType, ChainSegment memberAlias, out object value);
+        bool TryGetMemberByAlias(T instance, Type targetType, ChainSegment memberAlias, out object? value);
     }
     
     /// <summary>

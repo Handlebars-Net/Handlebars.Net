@@ -11,27 +11,27 @@ namespace HandlebarsDotNet.Compiler.Lexer
             return Value;
         }
 
-        public static StaticToken Static(string value, IReaderContext context = null)
+        public static StaticToken Static(string value, IReaderContext? context = null)
         {
             return new StaticToken(value, context);
         }
 
-        public static LiteralExpressionToken Literal(string value, string delimiter = null, IReaderContext context = null)
+        public static LiteralExpressionToken Literal(string value, string? delimiter = null, IReaderContext? context = null)
         {
             return new LiteralExpressionToken(value, delimiter, context);
         }
 
-        public static WordExpressionToken Word(string word, IReaderContext context = null)
+        public static WordExpressionToken Word(string word, IReaderContext? context = null)
         {
             return new WordExpressionToken(word, context);
         }
 
-        public static StartExpressionToken StartExpression(bool isEscaped, bool trimWhitespace, bool isRaw, IReaderContext context = null)
+        public static StartExpressionToken StartExpression(bool isEscaped, bool trimWhitespace, bool isRaw, IReaderContext? context = null)
         {
             return new StartExpressionToken(isEscaped, trimWhitespace, isRaw, context);
         }
 
-        public static EndExpressionToken EndExpression(bool isEscaped, bool trimWhitespace, bool isRaw, IReaderContext context = null)
+        public static EndExpressionToken EndExpression(bool isEscaped, bool trimWhitespace, bool isRaw, IReaderContext? context = null)
         {
             return new EndExpressionToken(isEscaped, trimWhitespace, isRaw, context);
         }
@@ -41,7 +41,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
             return new CommentToken(comment);
         }
 
-        public static PartialToken Partial(IReaderContext context = null)
+        public static PartialToken Partial(IReaderContext? context = null)
         {
             return new PartialToken(context);
         }

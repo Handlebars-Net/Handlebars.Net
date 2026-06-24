@@ -29,15 +29,15 @@ namespace HandlebarsDotNet.Test
         {
             var stringWriter = new StringWriter();
             var formatterProvider = Substitute.For<IFormatterProvider>();
-            formatterProvider.TryCreateFormatter(Arg.Any<Type>(), out Arg.Any<IFormatter>())
+            formatterProvider.TryCreateFormatter(Arg.Any<Type>(), out Arg.Any<IFormatter?>())
                 .Returns(o =>
                 {
-                    new DefaultFormatterProvider().TryCreateFormatter(o[0] as Type, out var formatter);
+                    new DefaultFormatterProvider().TryCreateFormatter((Type)o[0], out var formatter);
                     o[1] = formatter;
                     return true;
                 });
             
-            formatterProvider.TryCreateFormatter(typeof(UndefinedBindingResult), out Arg.Any<IFormatter>())
+            formatterProvider.TryCreateFormatter(typeof(UndefinedBindingResult), out Arg.Any<IFormatter?>())
                 .Returns(o =>
                 {
                     o[1] = new UndefinedFormatter("{0}");

@@ -12,7 +12,7 @@ namespace HandlebarsDotNet.Compiler
         private static readonly HashSet<string> ValidHelperNames = new HashSet<string> { "if", "unless" };
 
         private readonly List<ConditionalExpression> _conditionalBlock = new List<ConditionalExpression>();
-        private Expression _currentCondition;
+        private Expression? _currentCondition;
         private List<Expression> _bodyBuffer = new List<Expression>();
 
         public sealed override string BlockName { get; protected set; }
@@ -47,7 +47,7 @@ namespace HandlebarsDotNet.Compiler
         {
             if (IsElseBlock(item))
             {
-                _conditionalBlock.Add(Expression.IfThen(_currentCondition, SinglifyExpressions(_bodyBuffer)));
+                _conditionalBlock.Add(Expression.IfThen(_currentCondition!, SinglifyExpressions(_bodyBuffer)));
                 if (IsElseIfBlock(item))
                 {
                     _currentCondition = GetElseIfTestExpression(item);
@@ -88,17 +88,20 @@ namespace HandlebarsDotNet.Compiler
             }
         }
 
-        public override Expression GetAccumulatedBlock()
+        public override Expression? AccumulatedBlock
         {
-            ConditionalExpression singleConditional = null;
-            foreach (var condition in _conditionalBlock.AsEnumerable().Reverse())
+            get
             {
-                singleConditional = Expression.IfThenElse(
-                    condition.Test,
-                    condition.IfTrue,
-                    (Expression)singleConditional ?? condition.IfFalse);
+                ConditionalExpression? singleConditional = null;
+                foreach (var condition in _conditionalBlock.AsEnumerable().Reverse())
+                {
+                    singleConditional = Expression.IfThenElse(
+                        condition.Test,
+                        condition.IfTrue,
+                        (Expression?)singleConditional ?? condition.IfFalse);
+                }
+                return singleConditional;
             }
-            return singleConditional;
         }
 
         private bool IsElseBlock(Expression item)
@@ -137,7 +140,7 @@ namespace HandlebarsDotNet.Compiler
             return expressions.SingleOrDefault() ?? Expression.Empty();
         }
 
-        private static (Expression Value, HashParametersExpression HashParameters) UnwrapBoolishHelperArguments(IEnumerable<Expression> arguments, IReaderContext context)
+        private static (Expression Value, HashParametersExpression HashParameters) UnwrapBoolishHelperArguments(IEnumerable<Expression> arguments, IReaderContext? context)
         {
             var value = arguments.First();
             if (arguments.Count() == 1)

@@ -195,12 +195,12 @@ namespace HandlebarsDotNet.Compiler
                    IsSectionOrClosingNode(statement.Body as PathExpression);
         }
 
-        private static bool IsSectionOrClosingNode(PathExpression pathExpression)
+        private static bool IsSectionOrClosingNode(PathExpression? pathExpression)
         {
             return (pathExpression != null) && pathExpression.Path.IndexOfAny(new[] {'#', '/', '^'}) == 0;
         }
 
-        private static bool IsBlockHelperOrInversion(HelperExpression helperExpression)
+        private static bool IsBlockHelperOrInversion(HelperExpression? helperExpression)
         {
             if (helperExpression == null) return false;
 

@@ -5,11 +5,11 @@ using HandlebarsDotNet.Runtime;
 
 namespace HandlebarsDotNet
 {
-    public delegate string HandlebarsTemplate<in TContext, in TData>(TContext context, TData data = null) 
+    public delegate string HandlebarsTemplate<in TContext, in TData>(TContext? context, TData? data = null) 
         where TData: class
         where TContext: class;
     
-    public delegate void HandlebarsTemplate<in TWriter, in TContext, in TData>(TWriter writer, TContext context, TData data = null)
+    public delegate void HandlebarsTemplate<in TWriter, in TContext, in TData>(TWriter writer, TContext? context, TData? data = null)
         where TWriter: TextWriter
         where TData: class
         where TContext: class;
@@ -38,7 +38,7 @@ namespace HandlebarsDotNet
         
         HandlebarsTemplate<object, object> CompileView(string templatePath);
         
-        HandlebarsTemplate<TextWriter, object, object> CompileView(string templatePath, ViewReaderFactory readerFactoryFactory);
+        HandlebarsTemplate<TextWriter, object, object> CompileView(string templatePath, ViewReaderFactory? readerFactoryFactory);
         
         HandlebarsConfiguration Configuration { get; }
         
@@ -71,7 +71,7 @@ namespace HandlebarsDotNet
     
     internal interface ICompiledHandlebars
     {
-        ICompiledHandlebarsConfiguration CompiledConfiguration { get; }
+        ICompiledHandlebarsConfiguration? CompiledConfiguration { get; }
     }
 }
 

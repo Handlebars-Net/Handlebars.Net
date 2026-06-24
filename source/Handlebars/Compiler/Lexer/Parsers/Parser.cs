@@ -2,7 +2,7 @@
 {
     internal abstract class Parser
     {
-        public abstract Token Parse(ExtendedStringReader reader);
+        public abstract Token? Parse(ExtendedStringReader reader);
     }
 }
 

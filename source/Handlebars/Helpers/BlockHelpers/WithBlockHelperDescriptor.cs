@@ -26,7 +26,7 @@ namespace HandlebarsDotNet.Helpers.BlockHelpers
 
             using var frame = options.CreateFrame(arguments[0]);
             var blockParamsValues = frame.BlockParams(options.BlockVariables);
-            blockParamsValues[0] = arguments[0];
+            blockParamsValues[0] = arguments[0]!;
 
             options.Template(output, frame);
         }

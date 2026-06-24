@@ -9,21 +9,20 @@ namespace HandlebarsDotNet.Compiler
     {
         public new static BlockParamsExpression Empty() => new BlockParamsExpression(null);
 
-        public readonly BlockParam BlockParam;
+        public readonly BlockParam? BlockParam;
         
-        private BlockParamsExpression(BlockParam blockParam)
+        private BlockParamsExpression(BlockParam? blockParam)
         {
             BlockParam = blockParam;
         }
-        
+
         public BlockParamsExpression(string action, string blockParams)
-            :this(new BlockParam
-            {
-                Action = action,
-                Parameters = blockParams.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries)
+            : this(new BlockParam(
+                action,
+                blockParams.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries)
                     .Select(ChainSegment.Create)
                     .ToArray()
-            })
+            ))
         {
         }
 
@@ -41,5 +40,11 @@ namespace HandlebarsDotNet.Compiler
     {
         public string Action { get; set; }
         public ChainSegment[] Parameters { get; set; }
+
+        public BlockParam(string action, ChainSegment[] parameters)
+        {
+            Action = action;
+            Parameters = parameters;
+        }
     }
 }

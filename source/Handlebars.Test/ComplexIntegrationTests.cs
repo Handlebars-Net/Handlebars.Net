@@ -132,7 +132,7 @@ namespace HandlebarsDotNet.Test
             });
 
             Handlebars.RegisterHelper("block_helper", (writer, options, context, arguments) => {
-                foreach(var item in arguments[0] as IEnumerable)
+                foreach(var item in (IEnumerable)arguments[0]!)
                 {
                     options.Template(writer, item);
                 }

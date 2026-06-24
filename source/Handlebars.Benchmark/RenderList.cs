@@ -11,8 +11,8 @@ namespace HandlebarsNet.Benchmark
     [MemoryDiagnoser]
     public class RenderList
     {
-        private HandlebarsTemplate<TextWriter, object, object> _template;
-        private object _data;
+        private HandlebarsTemplate<TextWriter, object, object> _template = null!; // -> Setup()
+        private object _data = null!; // -> Setup()
 
         private const string Source =
             "{{#each items}}" +
@@ -26,7 +26,7 @@ namespace HandlebarsNet.Benchmark
         public int N { get; set; }
 
         [Params("object", "dictionary")]
-        public string DataType { get; set; }
+        public string DataType { get; set; } = null!;
 
         [GlobalSetup]
         public void Setup()

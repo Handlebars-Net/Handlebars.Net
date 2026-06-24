@@ -2,13 +2,14 @@ using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.PathStructure;
 using HandlebarsDotNet.Runtime;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace HandlebarsDotNet.ValueProviders
 {
     [Obsolete("Use IteratorValues")]
     public readonly ref struct ObjectIteratorValues
     {
-        private readonly FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer> _data;
+        private readonly FixedSizeDictionary<ChainSegment, object?, ChainSegment.ChainSegmentEqualityComparer> _data;
 
         private readonly EntryIndex<ChainSegment>[] _wellKnownVariables;
 
@@ -24,13 +25,13 @@ namespace HandlebarsDotNet.ValueProviders
             _data.AddOrReplace(ChainSegment.Index, BoxedValues.Zero, out _wellKnownVariables[(int) ChainSegment.Index.WellKnownVariable]);
         }
 
-        public object Key
+        public object? Key
         {
             get => _data[_wellKnownVariables[(int) ChainSegment.Key.WellKnownVariable]];
             set => _data[_wellKnownVariables[(int) ChainSegment.Key.WellKnownVariable]] = value;
         }
 
-        public object Value
+        public object? Value
         {
             get => _data[_wellKnownVariables[(int) ChainSegment.Value.WellKnownVariable]];
             set => _data[_wellKnownVariables[(int) ChainSegment.Value.WellKnownVariable]] = value;
@@ -38,19 +39,19 @@ namespace HandlebarsDotNet.ValueProviders
 
         public object First
         {
-            get => _data[_wellKnownVariables[(int) ChainSegment.First.WellKnownVariable]];
+            get => _data[_wellKnownVariables[(int) ChainSegment.First.WellKnownVariable]]!;
             set => _data[_wellKnownVariables[(int) ChainSegment.First.WellKnownVariable]] = value;
         }
 
         public object Index
         {
-            get => _data[_wellKnownVariables[(int) ChainSegment.Index.WellKnownVariable]];
+            get => _data[_wellKnownVariables[(int) ChainSegment.Index.WellKnownVariable]]!;
             set => _data[_wellKnownVariables[(int) ChainSegment.Index.WellKnownVariable]] = value;
         }
 
         public object Last
         {
-            get => _data[_wellKnownVariables[(int) ChainSegment.Last.WellKnownVariable]];
+            get => _data[_wellKnownVariables[(int) ChainSegment.Last.WellKnownVariable]]!;
             set => _data[_wellKnownVariables[(int) ChainSegment.Last.WellKnownVariable]] = value;
         }
     }

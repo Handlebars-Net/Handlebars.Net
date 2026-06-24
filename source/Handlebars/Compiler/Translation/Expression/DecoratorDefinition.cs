@@ -26,7 +26,7 @@ namespace HandlebarsDotNet.Compiler
                 Decorator, 
                 context.EncodedWriter, 
                 context.BindingContext,
-                Function.Expression as ParameterExpression
+                (Function.Expression as ParameterExpression)!
             );
             
             return context.Configuration.ExpressionCompiler.Compile(lambda);

@@ -7,23 +7,25 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class HashParameterBinder : HandlebarsExpressionVisitor
     {
+        private static readonly NewExpression NewExpression =
+            (NewExpression) ((Expression<Func<HashParameterDictionary>>) (() => new HashParameterDictionary())).Body;
+
+        private static readonly MethodInfo AddMethod =
+            new Action<string, object>(new HashParameterDictionary().Add).GetMethodInfo();
+
         protected override Expression VisitHashParametersExpression(HashParametersExpression hpex)
         {
-            var addMethod = typeof(HashParameterDictionary).GetMethod("Add", new[] { typeof(string), typeof(object) });
-
             var elementInits = new List<ElementInit>();
 
             foreach (var parameter in hpex.Parameters)
             {
                 elementInits.Add(Expression.ElementInit(
-                    addMethod,
+                    AddMethod,
                     Expression.Constant(parameter.Key),
                     Visit(parameter.Value)));
             }
 
-            return Expression.ListInit(
-                Expression.New(typeof(HashParameterDictionary).GetConstructor(new Type[0])),
-                elementInits);
+            return Expression.ListInit(NewExpression, elementInits);
         }
     }
 }

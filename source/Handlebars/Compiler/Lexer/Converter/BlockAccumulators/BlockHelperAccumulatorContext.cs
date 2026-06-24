@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -10,8 +11,8 @@ namespace HandlebarsDotNet.Compiler
         private readonly HelperExpression _startingNode;
         private readonly bool _trimBefore;
         private readonly bool _trimAfter;
-        private Expression _accumulatedBody;
-        private Expression _accumulatedInversion;
+        private Expression? _accumulatedBody;
+        private Expression? _accumulatedInversion;
         private List<Expression> _body = new List<Expression>();
 
         public BlockHelperAccumulatorContext(Expression startingNode)
@@ -29,6 +30,7 @@ namespace HandlebarsDotNet.Compiler
         public sealed override string BlockName
         {
             get => _startingNode.HelperName;
+            [DoesNotReturn]
             protected set => throw new NotSupportedException();
         }
 
@@ -66,36 +68,39 @@ namespace HandlebarsDotNet.Compiler
             return item is PathExpression expression && expression.Path == "/" + helperName;
         }
 
-        public override Expression GetAccumulatedBlock()
+        public override Expression AccumulatedBlock
         {
-            if (_accumulatedBody == null)
+            get
             {
-                _accumulatedBody = GetBlockBody();
-                _accumulatedInversion = Expression.Block(Expression.Empty());
-            }
-            else if (_accumulatedInversion == null)
-            {
-                _accumulatedInversion = GetBlockBody();
-            }
+                if (_accumulatedBody == null)
+                {
+                    _accumulatedBody = GetBlockBody();
+                    _accumulatedInversion = Expression.Block(Expression.Empty());
+                }
+                else if (_accumulatedInversion == null)
+                {
+                    _accumulatedInversion = GetBlockBody();
+                }
 
-            var resultExpr = HandlebarsExpression.BlockHelper(
-                _startingNode.HelperName,
-                _startingNode.Arguments.Where(o => o.NodeType != (ExpressionType)HandlebarsExpressionType.BlockParamsExpression),
-                _startingNode.Arguments.OfType<BlockParamsExpression>().SingleOrDefault() ?? BlockParamsExpression.Empty(),
-                _accumulatedBody,
-                _accumulatedInversion,
-                _startingNode.IsRaw);
+                var resultExpr = HandlebarsExpression.BlockHelper(
+                    _startingNode.HelperName,
+                    _startingNode.Arguments.Where(o => o.NodeType != (ExpressionType)HandlebarsExpressionType.BlockParamsExpression),
+                    _startingNode.Arguments.OfType<BlockParamsExpression>().SingleOrDefault() ?? BlockParamsExpression.Empty(),
+                    _accumulatedBody,
+                    _accumulatedInversion,
+                    _startingNode.IsRaw);
 
-            if (_startingNode.IsRaw)
-            {
-                return HandlebarsExpression.Statement(
-                    resultExpr,
-                    false,
-                    _trimBefore,
-                    _trimAfter);
+                if (_startingNode.IsRaw)
+                {
+                    return HandlebarsExpression.Statement(
+                        resultExpr,
+                        false,
+                        _trimBefore,
+                        _trimAfter);
+                }
+
+                return resultExpr;
             }
-
-            return resultExpr;
         }
 
         private Expression GetBlockBody()

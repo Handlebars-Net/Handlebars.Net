@@ -28,17 +28,17 @@ namespace HandlebarsDotNet
         /// <inheritdoc cref="HandlebarsDotNet.Helpers.IHelperResolver"/>
         public IAppendOnlyList<IHelperResolver> HelperResolvers { get; }
         
-        public IExpressionNameResolver ExpressionNameResolver { get; set; }
+        public IExpressionNameResolver? ExpressionNameResolver { get; set; }
         
-        public ITextEncoder TextEncoder { get; set; }
+        public ITextEncoder? TextEncoder { get; set; }
         
         /// <inheritdoc cref="IFormatProvider"/>
         public IFormatProvider FormatProvider { get; set; } = CultureInfo.CurrentCulture;
         
-        public ViewEngineFileSystem FileSystem { get; set; }
+        public ViewEngineFileSystem? FileSystem { get; set; }
 
         [Obsolete("Register custom formatters using `Formatters` property")]
-        public string UnresolvedBindingFormatter
+        public string? UnresolvedBindingFormatter
         {
             get => _undefinedFormatter.FormatString;
             set => _undefinedFormatter.FormatString = value;
@@ -57,7 +57,7 @@ namespace HandlebarsDotNet
         /// <summary>
         /// The handler called when a partial template cannot be found.
         /// </summary>
-        public IMissingPartialTemplateHandler MissingPartialTemplateHandler { get; set; }
+        public IMissingPartialTemplateHandler? MissingPartialTemplateHandler { get; set; }
         
         /// <summary>
         /// Maximum depth to recurse into partial templates when evaluating the template. Defaults to 100.

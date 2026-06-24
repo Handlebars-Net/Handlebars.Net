@@ -3,6 +3,7 @@ using System.Collections;
 using Xunit;
 using System.Dynamic;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -139,7 +140,7 @@ namespace HandlebarsDotNet.Test
         [Theory]
         [ClassData(typeof(EnvGenerator))]
         public void JObjectTest(IHandlebars handlebars) {
-            object nullValue = null;
+            object? nullValue = null;
             JObject model = JObject.FromObject(new { Nested = new { Prop = "Prop" }, Nested2 = nullValue });
 
             var source = "{{NotExists.Prop}}";
@@ -320,16 +321,7 @@ namespace HandlebarsDotNet.Test
 
             public override bool TryGetMember(GetMemberBinder binder, out object result)
             {
-                if(_properties.ContainsKey(binder.Name))
-                {
-                    result = _properties[binder.Name];
-                    return true;
-                }
-                else
-                {
-                    result = null;
-                    return false;
-                }
+                return _properties.TryGetValue(binder.Name, out result!);
             }
         }
     }

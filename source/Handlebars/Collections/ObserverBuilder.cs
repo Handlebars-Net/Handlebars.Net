@@ -4,6 +4,7 @@ using System.Collections.Generic;
 namespace HandlebarsDotNet.Collections
 {
     internal static class ObserverBuilder<T>
+        where T: notnull
     {
         public static ObserverBuilder<T, TState> Create<TState>(TState state)
         {
@@ -12,13 +13,14 @@ namespace HandlebarsDotNet.Collections
     }
     
     internal class ObserverBuilder<T, TState>
+        where T: notnull
     {
         private readonly TState _state;
         private readonly Dictionary<Type, List<Action<T>>> _handlers = new Dictionary<Type, List<Action<T>>>();
 
         public ObserverBuilder(TState state) => _state = state;
 
-        public ObserverBuilder<T, TState> OnEvent<TEvent>(Action<TEvent, TState> handler, Func<TEvent, bool> predicate = null) where TEvent: T
+        public ObserverBuilder<T, TState> OnEvent<TEvent>(Action<TEvent, TState> handler, Func<TEvent, bool>? predicate = null) where TEvent: T
         {
             if (!_handlers.TryGetValue(typeof(TEvent), out var handlers))
             {

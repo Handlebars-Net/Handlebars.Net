@@ -1,11 +1,12 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace HandlebarsDotNet
 {
     internal static class TypeExtensions
     {
-        public static bool IsAssignableToGenericType(this Type givenType, Type genericType, out Type resolvedType)
+        public static bool IsAssignableToGenericType(this Type givenType, Type genericType, [MaybeNullWhen(false)] out Type resolvedType)
         {
             while (true)
             {

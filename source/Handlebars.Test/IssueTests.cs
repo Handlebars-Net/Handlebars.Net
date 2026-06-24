@@ -374,7 +374,7 @@ namespace HandlebarsDotNet.Test
             {
                 var undefinedBindingResult = arguments.At<UndefinedBindingResult>(0);
                 var separator = arguments.At<string>(1);
-                var values = Substring.TrimStart(undefinedBindingResult.Value, '[');
+                var values = Substring.TrimStart(undefinedBindingResult!.Value, '[');
                 values = Substring.TrimEnd(values, ']');
                 var substrings = Substring.Split(values, ',');
                 var extendedEnumerator = ExtendedEnumerator<Substring>.Create(substrings);
@@ -478,8 +478,8 @@ namespace HandlebarsDotNet.Test
 
             public void Invoke(in EncodedTextWriter output, in BlockHelperOptions options, in Context context, in Arguments arguments)
             {
-                if (!(bool) options.Data["__switchBlock"]) throw new InvalidOperationException();
-                if((bool) options.Data["__switchCaseMatched"]) return;
+                if (!(bool) options.Data["__switchBlock"]!) throw new InvalidOperationException();
+                if((bool) options.Data["__switchCaseMatched"]!) return;
                 
                 var value = options.Data["switchValue"];
                 if(!Equals(value, arguments[0])) return;
@@ -501,8 +501,8 @@ namespace HandlebarsDotNet.Test
 
             public void Invoke(in EncodedTextWriter output, in BlockHelperOptions options, in Context context, in Arguments arguments)
             {
-                if (!(bool) options.Data["__switchBlock"]) throw new InvalidOperationException();
-                if((bool) options.Data["__switchCaseMatched"]) return;
+                if (!(bool) options.Data["__switchBlock"]!) throw new InvalidOperationException();
+                if((bool) options.Data["__switchCaseMatched"]!) return;
                 
                 options.Template(output, options.Frame);  // execute `default` in switch context
             }
@@ -660,12 +660,12 @@ namespace HandlebarsDotNet.Test
         
         private class ClassWithAList
         {
-            public IEnumerable<string> TheList { get; set; }
+            public IEnumerable<string> TheList { get; set; } = null!;
         }
 
         private class ClassWithAListAndOtherMembers
         {
-            public IEnumerable<string> TheList { get; set; }
+            public IEnumerable<string> TheList { get; set; } = null!;
             public bool SomeBool { get; set; }
             public string SomeString { get; set; } = "I shouldn't show up!";
         }

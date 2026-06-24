@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using HandlebarsDotNet.PathStructure;
 
 namespace HandlebarsDotNet.MemberAccessors
@@ -14,6 +15,6 @@ namespace HandlebarsDotNet.MemberAccessors
         /// <param name="memberName"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        bool TryGetValue(object instance, ChainSegment memberName, out object value);
+        bool TryGetValue(object instance, ChainSegment memberName, out object? value);
     }
 }

@@ -6,7 +6,7 @@ namespace HandlebarsDotNet.Test
     {
         public class CustomPartialResolver : IPartialTemplateResolver
         {
-            public bool TryRegisterPartial(IHandlebars env, string partialName, string templatePath)
+            public bool TryRegisterPartial(IHandlebars env, string? partialName, string? templatePath)
             {
                 if (partialName == "person")
                 {

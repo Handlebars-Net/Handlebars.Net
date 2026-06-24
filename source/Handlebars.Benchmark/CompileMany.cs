@@ -19,7 +19,7 @@ namespace HandlebarsNet.Benchmark
     [MemoryDiagnoser]
     public class CompileMany
     {
-        private IHandlebars _env;
+        private IHandlebars _env = null!; // -> Setup()
 
         // A realistic multi-expression template; keeps compilation non-trivial.
         private const string Template =

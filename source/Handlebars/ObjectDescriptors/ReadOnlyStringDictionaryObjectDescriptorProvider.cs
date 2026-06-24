@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using HandlebarsDotNet.Collections;
@@ -14,12 +15,13 @@ namespace HandlebarsDotNet.ObjectDescriptors
     public sealed class ReadOnlyStringDictionaryObjectDescriptorProvider : IObjectDescriptorProvider
     {
         private static readonly object[] EmptyArray = ArrayEx.Empty<object>();
-        private static readonly MethodInfo CreateClassDescriptorMethodInfo = typeof(ReadOnlyStringDictionaryObjectDescriptorProvider)
-            .GetMethod(nameof(CreateDescriptor), BindingFlags.NonPublic | BindingFlags.Static);
+        private static readonly MethodInfo CreateClassDescriptorMethodInfo =
+            new Func<ObjectDescriptor>(CreateDescriptor<IReadOnlyDictionary<string, object>, object>)
+                .GetMethodInfo().GetGenericMethodDefinition();
 
-        private readonly LookupSlim<Type, DeferredValue<Type, Type>, ReferenceEqualityComparer<Type>> _typeCache = new LookupSlim<Type, DeferredValue<Type, Type>, ReferenceEqualityComparer<Type>>(new ReferenceEqualityComparer<Type>());
+        private readonly LookupSlim<Type, DeferredValue<Type, Type?>, ReferenceEqualityComparer<Type>> _typeCache = new LookupSlim<Type, DeferredValue<Type, Type?>, ReferenceEqualityComparer<Type>>(new ReferenceEqualityComparer<Type>());
 
-        public bool TryGetDescriptor(Type type, out ObjectDescriptor value)
+        public bool TryGetDescriptor(Type type, [MaybeNullWhen(false)] out ObjectDescriptor value)
         {
             var interfaceType = _typeCache.GetOrAdd(type, InterfaceTypeValueFactory).Value;
             if (interfaceType == null)
@@ -34,12 +36,12 @@ namespace HandlebarsDotNet.ObjectDescriptors
             var descriptorCreator = factory
                 .MakeGenericMethod(type, typeArgument);
 
-            value = (ObjectDescriptor) descriptorCreator.Invoke(null, EmptyArray);
+            value = (ObjectDescriptor) descriptorCreator.Invoke(null, EmptyArray)!;
             return true;
         }
         
-        private static readonly Func<Type, DeferredValue<Type, Type>> InterfaceTypeValueFactory = 
-            key => new DeferredValue<Type, Type>(key, type =>
+        private static readonly Func<Type, DeferredValue<Type, Type?>> InterfaceTypeValueFactory = 
+            key => new DeferredValue<Type, Type?>(key, type =>
             {
                 return type.GetInterfaces()
                     .FirstOrDefault(i =>

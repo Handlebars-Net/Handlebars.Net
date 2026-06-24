@@ -4,7 +4,7 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class PartialExpression : HandlebarsExpression
     {
-        public PartialExpression(Expression partialName, Expression argument, Expression fallback, bool isBlock = false, string indent = null)
+        public PartialExpression(Expression partialName, Expression? argument, Expression? fallback, bool isBlock = false, string? indent = null)
         {
             PartialName = partialName;
             Argument = argument;
@@ -17,9 +17,9 @@ namespace HandlebarsDotNet.Compiler
 
         public Expression PartialName { get; }
 
-        public Expression Argument { get; }
+        public Expression? Argument { get; }
 
-        public Expression Fallback { get; }
+        public Expression? Fallback { get; }
 
         public bool IsBlock { get; }
 
@@ -28,7 +28,7 @@ namespace HandlebarsDotNet.Compiler
         /// When non-null/non-empty, this indentation is prepended to every line of the rendered partial output,
         /// matching Handlebars.js standalone partial indentation behavior.
         /// </summary>
-        public string Indent { get; }
+        public string? Indent { get; }
     }
 }
 

@@ -25,7 +25,7 @@ namespace HandlebarsDotNet.PathStructure
         public static ChainSegment Create(object value)
         {
             if (value is ChainSegment segment) return segment;
-            var sValue = value as string ?? value.ToString();
+            var sValue = value as string ?? value.ToString()!;
             return ChainSegmentStore.Current?.Create(sValue) ?? new ChainSegment(sValue);
         }
         
@@ -99,7 +99,7 @@ namespace HandlebarsDotNet.PathStructure
         public override string ToString() => _value;
 
         /// <inheritdoc />
-        public bool Equals(ChainSegment other)
+        public bool Equals(ChainSegment? other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -107,7 +107,7 @@ namespace HandlebarsDotNet.PathStructure
         }
 
         /// <inheritdoc />
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
@@ -137,10 +137,10 @@ namespace HandlebarsDotNet.PathStructure
         }
 
         /// <inheritdoc cref="Equals(HandlebarsDotNet.PathStructure.ChainSegment)"/>
-        public static bool operator ==(ChainSegment a, ChainSegment b) => Equals(a, b);
+        public static bool operator ==(ChainSegment? a, ChainSegment? b) => Equals(a, b);
 
         /// <inheritdoc cref="Equals(HandlebarsDotNet.PathStructure.ChainSegment)"/>
-        public static bool operator !=(ChainSegment a, ChainSegment b) => !Equals(a, b);
+        public static bool operator !=(ChainSegment? a, ChainSegment? b) => !Equals(a, b);
 
         /// <inheritdoc cref="ToString"/>
         public static implicit operator string(ChainSegment segment) => segment._value;

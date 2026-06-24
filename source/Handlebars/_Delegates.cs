@@ -24,7 +24,7 @@ namespace HandlebarsDotNet
     /// </summary>
     /// <param name="context"></param>
     /// <param name="arguments"></param>
-    public delegate object HandlebarsReturnHelper(Context context, Arguments arguments);
+    public delegate object? HandlebarsReturnHelper(Context context, Arguments arguments);
     
     /// <summary>
     /// InlineHelper: {{#helper arg1 arg2}}, supports <see cref="object"/> value return
@@ -32,7 +32,7 @@ namespace HandlebarsDotNet
     /// <param name="options"></param>
     /// <param name="context"></param>
     /// <param name="arguments"></param>
-    public delegate object HandlebarsReturnWithOptionsHelper(in HelperOptions options, in Context context, in Arguments arguments);
+    public delegate object? HandlebarsReturnWithOptionsHelper(in HelperOptions options, in Context context, in Arguments arguments);
     
     /// <summary>
     /// BlockHelper: {{#helper}}..{{/helper}}
@@ -49,7 +49,7 @@ namespace HandlebarsDotNet
     /// <param name="options"></param>
     /// <param name="context"></param>
     /// <param name="arguments"></param>
-    public delegate object HandlebarsReturnBlockHelper(BlockHelperOptions options, Context context, Arguments arguments);
+    public delegate object? HandlebarsReturnBlockHelper(BlockHelperOptions options, Context context, Arguments arguments);
     
     public delegate TemplateDelegate HandlebarsBlockDecorator(TemplateDelegate function, in BlockDecoratorOptions options, in Context context, in Arguments arguments);
     

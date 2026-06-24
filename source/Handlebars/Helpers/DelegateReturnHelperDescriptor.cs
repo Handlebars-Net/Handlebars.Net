@@ -14,7 +14,7 @@ namespace HandlebarsDotNet.Helpers
 
         public PathInfo Name { get; }
 
-        public object Invoke(in HelperOptions options, in Context context, in Arguments arguments)
+        public object? Invoke(in HelperOptions options, in Context context, in Arguments arguments)
         {
             return _helper(context, arguments);
         }

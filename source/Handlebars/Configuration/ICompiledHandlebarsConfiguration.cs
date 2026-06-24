@@ -15,16 +15,16 @@ namespace HandlebarsDotNet
     public interface IHandlebarsTemplateRegistrations
     {
         IIndexed<string, HandlebarsTemplate<TextWriter, object, object>> RegisteredTemplates { get; }
-        ViewEngineFileSystem FileSystem { get; }
+        ViewEngineFileSystem? FileSystem { get; }
     }
     
     public interface ICompiledHandlebarsConfiguration : IHandlebarsTemplateRegistrations
     {
         HandlebarsConfiguration UnderlingConfiguration { get; }
         
-        IExpressionNameResolver ExpressionNameResolver { get; }
+        IExpressionNameResolver? ExpressionNameResolver { get; }
         
-        ITextEncoder TextEncoder { get; }
+        ITextEncoder? TextEncoder { get; }
         
         IFormatProvider FormatProvider { get; }
         
@@ -32,9 +32,9 @@ namespace HandlebarsDotNet
         
         bool ThrowOnUnresolvedBindingExpression { get; }
         
-        IPartialTemplateResolver PartialTemplateResolver { get; }
+        IPartialTemplateResolver? PartialTemplateResolver { get; }
         
-        IMissingPartialTemplateHandler MissingPartialTemplateHandler { get; }
+        IMissingPartialTemplateHandler? MissingPartialTemplateHandler { get; }
         
         short PartialRecursionDepthLimit { get; }
         
@@ -59,7 +59,7 @@ namespace HandlebarsDotNet
         
         /// <inheritdoc cref="IMemberAliasProvider"/>
         IAppendOnlyList<IMemberAliasProvider> AliasProviders { get; }
-        
+
         /// <inheritdoc cref="IExpressionCompiler"/>
         IExpressionCompiler ExpressionCompiler { get; set; }
 

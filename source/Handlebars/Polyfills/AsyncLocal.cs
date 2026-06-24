@@ -1,5 +1,6 @@
 #if NET451
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.Remoting.Messaging;
 
@@ -9,6 +10,7 @@ namespace HandlebarsDotNet.Polyfills
     {
         private const string Slot = "__AsyncLocalSlot";
 
+        [MaybeNull]
         public T Value
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

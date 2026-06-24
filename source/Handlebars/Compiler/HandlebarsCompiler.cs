@@ -72,7 +72,7 @@ namespace HandlebarsDotNet.Compiler
             if (layoutToken == null) return compiledView;
 
             var fs = configuration.FileSystem;
-            var layoutPath = fs.Closest(templatePath, layoutToken.Value + ".hbs");
+            var layoutPath = fs!.Closest(templatePath, layoutToken.Value + ".hbs");
             if (layoutPath == null)
                 throw new InvalidOperationException($"Cannot find layout '{layoutToken.Value}' for template '{templatePath}'");
 

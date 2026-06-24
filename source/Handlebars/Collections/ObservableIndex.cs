@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using HandlebarsDotNet.Runtime;
@@ -10,35 +11,36 @@ namespace HandlebarsDotNet.Collections
 {
     [DebuggerDisplay("Count = {Count}")]
     public class ObservableIndex<TKey, TValue, TComparer> : 
-        IObservable<ObservableEvent<TValue>>,
-        IObserver<ObservableEvent<TValue>>,
+        IObservable<IObservableEvent<TValue?>>,
+        IObserver<IObservableEvent<TValue?>>,
         IIndexed<TKey, TValue>
+        where TKey : notnull
         where TComparer: IEqualityComparer<TKey>
     {
         private readonly ReaderWriterLockSlim _observersLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
         private readonly ReaderWriterLockSlim _itemsLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
         
-        private readonly WeakCollection<IObserver<ObservableEvent<TValue>>> _observers;
+        private readonly WeakCollection<IObserver<IObservableEvent<TValue?>>> _observers;
         private readonly DictionarySlim<TKey, TValue, TComparer> _inner;
 
-        public ObservableIndex(TComparer comparer, IReadOnlyIndexed<TKey, TValue> outer = null)
+        public ObservableIndex(TComparer comparer, IReadOnlyIndexed<TKey, TValue>? outer = null)
         {
             _inner = outer != null ? new DictionarySlim<TKey, TValue, TComparer>(outer, comparer) : new DictionarySlim<TKey, TValue, TComparer>(comparer);
-            _observers = new WeakCollection<IObserver<ObservableEvent<TValue>>>();
-            if (outer is IObservable<ObservableEvent<TValue>> observableDictionary)
+            _observers = new WeakCollection<IObserver<IObservableEvent<TValue?>>>();
+            if (outer is IObservable<IObservableEvent<TValue?>> observableDictionary)
             {
                 observableDictionary.Subscribe(this);
             }
         }
         
-        public IDisposable Subscribe(IObserver<ObservableEvent<TValue>> observer)
+        public IDisposable Subscribe(IObserver<IObservableEvent<TValue?>> observer)
         {
             using (_observersLock.WriteLock())
             {
                 _observers.Add(observer);
             }
 
-            var disposableContainer = new DisposableContainer<WeakCollection<IObserver<ObservableEvent<TValue>>>, ReaderWriterLockSlim>(
+            var disposableContainer = new DisposableContainer<WeakCollection<IObserver<IObservableEvent<TValue?>>>, ReaderWriterLockSlim>(
                 _observers, _observersLock, (observers, @lock) =>
                 {
                     using (@lock.WriteLock())
@@ -51,7 +53,7 @@ namespace HandlebarsDotNet.Collections
             return disposableContainer;
         }
 
-        private void Publish(ObservableEvent<TValue> @event)
+        private void Publish(IObservableEvent<TValue?> @event)
         {
             using (_observersLock.ReadLock())
             {
@@ -98,7 +100,7 @@ namespace HandlebarsDotNet.Collections
             }
         }
         
-        public bool TryGetValue(in TKey key, out TValue value)
+        public bool TryGetValue(in TKey key, [MaybeNullWhen(false)] out TValue value)
         {
             using (_itemsLock.ReadLock())
             {
@@ -106,6 +108,7 @@ namespace HandlebarsDotNet.Collections
             }
         }
 
+        [MaybeNull]
         public TValue this[in TKey key]
         {
             get => TryGetValue(key, out var value) ? value : default;
@@ -148,7 +151,7 @@ namespace HandlebarsDotNet.Collections
             // nothing to do here
         }
 
-        public void OnNext(ObservableEvent<TValue> value)
+        public void OnNext(IObservableEvent<TValue?> value)
         {
             switch (value)
             {
@@ -172,7 +175,7 @@ namespace HandlebarsDotNet.Collections
         public DictionaryAddedObservableEvent(TKey key, TValue value) : base(value) => Key = key;
     }
     
-    internal class DictionaryClearedObservableEvent<TValue> : ObservableEvent<TValue>
+    internal class DictionaryClearedObservableEvent<TValue> : ObservableEvent<TValue?>
     {
         public DictionaryClearedObservableEvent() : base(default) {}
     }

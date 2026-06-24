@@ -11,7 +11,7 @@ namespace HandlebarsDotNet.MemberAccessors
             _accessors = accessors;
         }
 
-        public bool TryGetValue(object instance, ChainSegment memberName, out object value)
+        public bool TryGetValue(object instance, ChainSegment memberName, out object? value)
         {
             for (var index = 0; index < _accessors.Length; index++)
             {

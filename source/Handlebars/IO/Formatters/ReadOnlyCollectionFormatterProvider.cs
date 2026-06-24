@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace HandlebarsDotNet.IO
 {
@@ -9,7 +11,7 @@ namespace HandlebarsDotNet.IO
         private static readonly Type CollectionFormatterType = typeof(ReadOnlyCollectionFormatter<,>);
         private static readonly Type CollectionType = typeof(IReadOnlyCollection<>);
 
-        public bool TryCreateFormatter(Type type, out IFormatter formatter)
+        public bool TryCreateFormatter(Type type, [MaybeNullWhen(false)] out IFormatter formatter)
         {
             if (!type.GetTypeInfo().IsClass || !type.IsAssignableToGenericType(CollectionType, out var genericType))
             {
@@ -19,18 +21,22 @@ namespace HandlebarsDotNet.IO
 
             var genericTypeArgument = genericType.GetGenericArguments()[0];
             var targetType = CollectionFormatterType.MakeGenericType(genericTypeArgument, type);
-            formatter = (IFormatter) Activator.CreateInstance(targetType);
+            formatter = (IFormatter) Activator.CreateInstance(targetType)!;
             return true;
         }
         
         private class ReadOnlyCollectionFormatter<TValue, TCollection> : IFormatter
             where TCollection: class, IReadOnlyCollection<TValue>
         {
-            public void Format<T>(T value, in EncodedTextWriter writer)
+            public void Format<T>([NotNull] T value, in EncodedTextWriter writer)
             {
+                if (value is not TCollection collection)
+                {
+                    Throw.ValueOfWrongTypeOrNull(nameof(value));
+                    return;
+                }
                 var index = 0;
-                var collection = value as TCollection;
-                var lastIndex = collection!.Count - 1;
+                var lastIndex = collection.Count - 1;
                 using var enumerator = collection.GetEnumerator();
                 while (enumerator.MoveNext())
                 {
@@ -42,6 +48,13 @@ namespace HandlebarsDotNet.IO
 
                     ++index;
                 }
+            }
+
+            private static class Throw
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                [DoesNotReturn]
+                public static void ValueOfWrongTypeOrNull(string? paramName) => throw new ArgumentNullException(paramName);
             }
         }
     }

@@ -14,7 +14,7 @@ namespace HandlebarsDotNet.MemberAccessors.EnumerableAccessors
                 var typeArgument = genericType.GenericTypeArguments[0];
                 var accessorType = typeof(ListMemberAccessor<,>).MakeGenericType(genericType, typeArgument);
 
-                return (EnumerableMemberAccessor) Activator.CreateInstance(accessorType);
+                return (EnumerableMemberAccessor) Activator.CreateInstance(accessorType)!;
             }
             
             if (type.IsAssignableToGenericType(typeof(IReadOnlyList<>), out genericType))
@@ -22,7 +22,7 @@ namespace HandlebarsDotNet.MemberAccessors.EnumerableAccessors
                 var typeArgument = genericType.GenericTypeArguments[0];
                 var accessorType = typeof(ReadOnlyListMemberAccessor<,>).MakeGenericType(genericType, typeArgument);
 
-                return (EnumerableMemberAccessor) Activator.CreateInstance(accessorType);
+                return (EnumerableMemberAccessor) Activator.CreateInstance(accessorType)!;
             }
             
             if (type.IsAssignableToGenericType(typeof(IEnumerable<>), out genericType))
@@ -30,7 +30,7 @@ namespace HandlebarsDotNet.MemberAccessors.EnumerableAccessors
                 var typeArgument = genericType.GenericTypeArguments[0];
                 var accessorType = typeof(EnumerableMemberAccessor<,>).MakeGenericType(genericType, typeArgument);
 
-                return (EnumerableMemberAccessor) Activator.CreateInstance(accessorType);
+                return (EnumerableMemberAccessor) Activator.CreateInstance(accessorType)!;
             }
             
             return new EnumerableMemberAccessor();
@@ -38,7 +38,7 @@ namespace HandlebarsDotNet.MemberAccessors.EnumerableAccessors
         
         protected EnumerableMemberAccessor() { }
         
-        public virtual bool TryGetValue(object instance, ChainSegment memberName, out object value)
+        public virtual bool TryGetValue(object instance, ChainSegment memberName, out object? value)
         {
             if (int.TryParse(memberName.LowerInvariant, out var index) && index >= 0) 
                 return TryGetValueInternal(instance, index, out value);
@@ -47,7 +47,7 @@ namespace HandlebarsDotNet.MemberAccessors.EnumerableAccessors
             return false;
         }
 
-        protected virtual bool TryGetValueInternal(object instance, int index, out object value)
+        protected virtual bool TryGetValueInternal(object instance, int index, out object? value)
         {
             switch (instance)
             {

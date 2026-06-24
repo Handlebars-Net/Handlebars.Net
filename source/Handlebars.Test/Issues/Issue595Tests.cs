@@ -13,7 +13,7 @@ namespace HandlebarsDotNet.Test
         public void BlockParamFromWithShouldBePassableToHelperInInnerEach()
         {
             var handlebars = Handlebars.Create();
-            var receivedArgs = new List<object>();
+            var receivedArgs = new List<object?>();
 
             handlebars.RegisterHelper("Getattributes", (context, arguments) =>
             {
@@ -55,7 +55,7 @@ namespace HandlebarsDotNet.Test
             // The bug manifests when field resolves to UndefinedBindingResult and the helper
             // uses arguments.At<T>() (typed access) which calls TypeConverter.ConvertTo.
             var handlebars = Handlebars.Create();
-            var receivedArgs = new List<string>();
+            var receivedArgs = new List<string?>();
 
             handlebars.RegisterHelper("Getattributes", (context, arguments) =>
             {
@@ -96,7 +96,7 @@ namespace HandlebarsDotNet.Test
             // This test uses more iterations to increase the chance of pool reuse,
             // which is what triggers the stale-data bug.
             var handlebars = Handlebars.Create();
-            var receivedArgs = new List<string>();
+            var receivedArgs = new List<string?>();
 
             handlebars.RegisterHelper("Getattributes", (context, arguments) =>
             {

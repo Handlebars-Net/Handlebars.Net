@@ -5,11 +5,11 @@ namespace HandlebarsDotNet.Compiler.Lexer
 {
     internal class CommentParser : Parser
     {
-        public override Token Parse(ExtendedStringReader reader)
+        public override Token? Parse(ExtendedStringReader reader)
         {
             if (!IsComment(reader)) return null;
          
-            Token token = null;
+            Token? token = null;
             var buffer = AccumulateComment(reader, out bool isEscaped).Trim();
             if (buffer.StartsWith("<") && !isEscaped) //syntax for layout is {{!< layoutname }} - i.e. its inside a comment block
             {

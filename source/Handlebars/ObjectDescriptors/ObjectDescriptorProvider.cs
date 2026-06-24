@@ -33,13 +33,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
 
             return true;
         }
-        
-        private static readonly Func<ObjectDescriptor, object, IEnumerable<object>> GetProperties = (descriptor, o) =>
-        {
-            var cache = (LookupSlim<Type, DeferredValue<Type, ChainSegment[]>, ReferenceEqualityComparer<Type>>) descriptor.Dependencies[0];
-            return cache.GetOrAdd(descriptor.DescribedType, DescriptorValueFactory).Value;
-        };
-        
+
         private static readonly Func<Type, DeferredValue<Type, ChainSegment[]>> DescriptorValueFactory =
             key =>
             {
@@ -57,5 +51,11 @@ namespace HandlebarsDotNet.ObjectDescriptors
                         .ToArray();
                 });
             };
+
+        private static readonly Func<ObjectDescriptor, object, IEnumerable<object>> GetProperties = (descriptor, o) =>
+        {
+            var cache = (LookupSlim<Type, DeferredValue<Type, ChainSegment[]>, ReferenceEqualityComparer<Type>>) descriptor.Dependencies[0];
+            return cache.GetOrAdd(descriptor.DescribedType, DescriptorValueFactory).Value;
+        };
     }
 }
