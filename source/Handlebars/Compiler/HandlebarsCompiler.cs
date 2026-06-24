@@ -21,7 +21,7 @@ namespace HandlebarsDotNet.Compiler
                 createdFeatures[index].OnCompiling(configuration);
             }
             
-            var tokens = Tokenizer.Tokenize(source).ToArray();
+            var tokens = Tokenizer.Tokenize(source);
             var expressions = ExpressionBuilder.ConvertTokensToExpressions(tokens, configuration);
             var action = FunctionBuilder.Compile(expressions, compilationContext, out var decorators);
 
