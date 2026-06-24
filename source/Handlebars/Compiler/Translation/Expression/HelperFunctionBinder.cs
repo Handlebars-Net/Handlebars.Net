@@ -34,7 +34,7 @@ namespace HandlebarsDotNet.Compiler
                 return Expression.Empty();
             }
             
-            var pathInfo = PathInfoStore.Current.GetOrAdd(hex.HelperName);
+            var pathInfo = PathInfoStore.Current!.GetOrAdd(hex.HelperName);
 #pragma warning disable CS0618
             if(!pathInfo.IsValidHelperLiteral && !CompilationContext.Configuration.Compatibility.RelaxedHelperNaming) return Expression.Empty();
 #pragma warning restore CS0618
@@ -71,7 +71,7 @@ namespace HandlebarsDotNet.Compiler
         
         private DecoratorDefinition VisitDecoratorExpression(HelperExpression hex)
         {
-            var pathInfo = PathInfoStore.Current.GetOrAdd(hex.HelperName);
+            var pathInfo = PathInfoStore.Current!.GetOrAdd(hex.HelperName);
 #pragma warning disable CS0618
             if(!pathInfo.IsValidHelperLiteral && !CompilationContext.Configuration.Compatibility.RelaxedHelperNaming) return new DecoratorDefinition();
 #pragma warning restore CS0618

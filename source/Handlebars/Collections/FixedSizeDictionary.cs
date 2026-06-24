@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace HandlebarsDotNet.Collections
@@ -17,7 +18,6 @@ namespace HandlebarsDotNet.Collections
         IIndexed<TKey, TValue>,
         IReadOnlyDictionary<TKey, TValue> 
         where TKey : notnull
-        where TValue : notnull
         where TComparer : notnull, IEqualityComparer<TKey>
     {
         private const int MaximumSize = 1024;
@@ -154,7 +154,7 @@ namespace HandlebarsDotNet.Collections
         /// <summary>
         /// Performs lookup at guarantied O(1) ignoring actual key comparison
         /// </summary>
-        public bool TryGetValue(in EntryIndex<TKey> keyIndex, out TValue value)
+        public bool TryGetValue(in EntryIndex<TKey> keyIndex, [MaybeNullWhen(false)] out TValue value)
         {
             if (_count == 0 || keyIndex.Version != _version)
             {
@@ -176,7 +176,7 @@ namespace HandlebarsDotNet.Collections
         /// <summary>
         /// Performs lookup at best O(1) and worst O(m) where 'm' is number of collisions
         /// </summary>
-        public bool TryGetValue(in TKey key, out TValue value)
+        public bool TryGetValue(in TKey key, [MaybeNullWhen(false)] out TValue value)
         {
             if (_count == 0)
             {
@@ -224,6 +224,7 @@ namespace HandlebarsDotNet.Collections
             return false;
         }
 
+        [MaybeNull]
         public TValue this[in TKey key]
         {
             get => TryGetValue(key, out var value) ? value : default;
@@ -325,6 +326,7 @@ namespace HandlebarsDotNet.Collections
         /// Gets or replaces item at a given index at O(1)
         /// </summary>
         /// <param name="entryIndex"></param>
+        [MaybeNull]
         public TValue this[in EntryIndex<TKey> entryIndex]
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -448,14 +450,18 @@ namespace HandlebarsDotNet.Collections
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        bool IReadOnlyDictionary<TKey, TValue>.TryGetValue(TKey key, out TValue value) => TryGetValue(key, out value);
+#if NET8_0_OR_GREATER
+        bool IReadOnlyDictionary<TKey, TValue>.TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value) => TryGetValue(key, out value);
+#else
+        bool IReadOnlyDictionary<TKey, TValue>.TryGetValue(TKey key, out TValue value) => TryGetValue(key, out value!);
+#endif
 
         TValue IReadOnlyDictionary<TKey, TValue>.this[TKey key]
         {
             get
             {
                 if (!TryGetIndex(key, out var index)) throw new KeyNotFoundException();
-                return this[index];
+                return this[index]!;
             }
         }
 
@@ -527,6 +533,7 @@ namespace HandlebarsDotNet.Collections
         private static class Throw
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [DoesNotReturn]
             public static void CapacityShouldBeEqual(string paramName) => throw new ArgumentException(" capacity should be equal to source dictionary", paramName);
         }
     }
@@ -549,7 +556,7 @@ namespace HandlebarsDotNet.Collections
         public bool Equals(EntryIndex<TKey> other) 
             => IsNotEmpty == other.IsNotEmpty && Version == other.Version && Index == other.Index;
 
-        public override bool Equals(object obj) 
+        public override bool Equals(object? obj) 
             => obj is EntryIndex<TKey> other && Equals(other);
 
         public override int GetHashCode()

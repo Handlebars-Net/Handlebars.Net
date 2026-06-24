@@ -48,7 +48,7 @@ namespace HandlebarsDotNet.Compiler
                 if (pex.Argument != null || partialBlockTemplate != null)
                 {
                     var value = pex.Argument != null
-                        ? Arg<object>(FunctionBuilder.Reduce(pex.Argument, CompilationContext, out _))
+                        ? Arg<object?>(FunctionBuilder.Reduce(pex.Argument, CompilationContext, out _))
                         : bindingContext.Property(o => o.Value);
 
                     var partialTemplate = Arg(partialBlockTemplate);
@@ -83,7 +83,7 @@ namespace HandlebarsDotNet.Compiler
                 if (pex.Argument != null || partialBlockTemplate != null)
                 {
                     var value = pex.Argument != null
-                        ? Arg<object>(FunctionBuilder.Reduce(pex.Argument, CompilationContext, out _))
+                        ? Arg<object?>(FunctionBuilder.Reduce(pex.Argument, CompilationContext, out _))
                         : bindingContext.Property(o => o.Value);
 
                     var partialTemplate = Arg(partialBlockTemplate);
@@ -108,9 +108,9 @@ namespace HandlebarsDotNet.Compiler
             EncodedTextWriter writer,
             ICompiledHandlebarsConfiguration configuration,
             bool block,
-            string indent)
+            string? indent)
         {
-            partialName = partialName != null ? ChainSegment.Create(partialName).TrimmedValue : null;
+            partialName = ChainSegment.Create(partialName).TrimmedValue;
             if (InvokePartial(partialName, context, writer, configuration, block, indent)) return;
             if (context.PartialBlockTemplate == null)
             {
@@ -142,7 +142,7 @@ namespace HandlebarsDotNet.Compiler
         /// Newlines are normalised to <c>\n</c> so that output is consistent across platforms regardless
         /// of whether the partial source was checked out with <c>\r\n</c> line endings.
         /// </summary>
-        private static void WriteWithIndent(EncodedTextWriter writer, string content, string indent)
+        private static void WriteWithIndent(EncodedTextWriter writer, string? content, string? indent)
         {
             if (string.IsNullOrEmpty(content))
             {
@@ -177,7 +177,7 @@ namespace HandlebarsDotNet.Compiler
             EncodedTextWriter writer,
             ICompiledHandlebarsConfiguration configuration,
             bool block,
-            string indent)
+            string? indent)
         {
             if (partialName.Equals(SpecialPartialBlockName))
             {
@@ -186,7 +186,7 @@ namespace HandlebarsDotNet.Compiler
                 // If we are a block, our contents are the fallback and SpecialPartialBlockName refers to our parent
                 if (block)
                 {
-                    partialBlockTemplate = context.ParentContext.PartialBlockTemplate;
+                    partialBlockTemplate = context.ParentContext!.PartialBlockTemplate;
                 }
 
                 if (partialBlockTemplate == null)
@@ -196,7 +196,7 @@ namespace HandlebarsDotNet.Compiler
 
                 try
                 {
-                    context.PartialBlockTemplate = context.ParentContext.PartialBlockTemplate;
+                    context.PartialBlockTemplate = context.ParentContext!.PartialBlockTemplate;
                     if (!string.IsNullOrEmpty(indent))
                     {
                         using var innerWriter = ReusableStringWriter.Get(writer.UnderlyingWriter.FormatProvider);
@@ -252,7 +252,7 @@ namespace HandlebarsDotNet.Compiler
             {
                 var handlebars = Handlebars.Create(configuration);
                 if (configuration.PartialTemplateResolver == null
-                    || !configuration.PartialTemplateResolver.TryRegisterPartial(handlebars, partialName, (string) context.Extensions.Optional("templatePath")))
+                    || !configuration.PartialTemplateResolver.TryRegisterPartial(handlebars, partialName, (string?) context.Extensions.Optional("templatePath")))
                 {
                     // Template not found.
                     return false;
@@ -268,14 +268,14 @@ namespace HandlebarsDotNet.Compiler
                     using (var encodedInner = new EncodedTextWriter(innerWriter, configuration.TextEncoder, FormatterProvider.Current, true))
                     {
                         using var textWriter = encodedInner.CreateWrapper();
-                        configuration.RegisteredTemplates[partialName](textWriter, context);
+                        configuration.RegisteredTemplates[partialName]!(textWriter, context);
                     }
                     WriteWithIndent(writer, innerWriter.ToString(), indent);
                 }
                 else
                 {
                     using var textWriter = writer.CreateWrapper();
-                    configuration.RegisteredTemplates[partialName](textWriter, context);
+                    configuration.RegisteredTemplates[partialName]!(textWriter, context);
                 }
                 return true;
             }

@@ -45,7 +45,7 @@ namespace HandlebarsDotNet.Test
         [InlineData("\"", "&quot;")]
         [InlineData("&a&", "&amp;a&amp;")]
         [InlineData("a&a", "a&amp;a")]
-        public void EncodeTest(string input, string expected)
+        public void EncodeTest(string? input, string expected)
         {
             // Arrange
             using var writer = new StringWriter();
@@ -62,7 +62,7 @@ namespace HandlebarsDotNet.Test
         [InlineData("", "")]
         [InlineData("a", "a")]
         [InlineData("<", "&lt;")]
-        public void EncodeStringBuilderOverload(string input, string expected)
+        public void EncodeStringBuilderOverload(string? input, string expected)
         {
             using var writer = new StringWriter();
 
@@ -77,7 +77,7 @@ namespace HandlebarsDotNet.Test
         [InlineData(null, "")]
         [InlineData("a", "a")]
         [InlineData("<", "&lt;")]
-        public void EncodeCharEnumeratorOverload(string input, string expected)
+        public void EncodeCharEnumeratorOverload(string? input, string expected)
         {
             using var writer = new StringWriter();
 

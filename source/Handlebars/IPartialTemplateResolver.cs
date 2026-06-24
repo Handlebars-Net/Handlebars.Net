@@ -12,6 +12,6 @@
         /// <param name="partialName">The name of the partial to load.</param>
         /// <param name="templatePath"></param>
         /// <returns>True if the partial was found and loaded successfully. Otherwise false.</returns>
-        bool TryRegisterPartial(IHandlebars env, string partialName, string templatePath);
+        bool TryRegisterPartial(IHandlebars env, string? partialName, string? templatePath);
     }
 }

@@ -9,7 +9,7 @@ namespace HandlebarsDotNet.EqualityComparers
 
         public StringEqualityComparer(StringComparison stringComparison) => _stringComparison = stringComparison;
 
-        public bool Equals(string x, string y) => string.Equals(x, y, _stringComparison);
+        public bool Equals(string? x, string? y) => string.Equals(x, y, _stringComparison);
 
         public int GetHashCode(string obj) => obj.GetHashCode();
     }

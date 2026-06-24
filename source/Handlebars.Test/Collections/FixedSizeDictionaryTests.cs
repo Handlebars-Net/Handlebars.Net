@@ -35,7 +35,7 @@ namespace HandlebarsDotNet.Test.Collections
                 _hash = hash;
             }
             
-            public new bool Equals(object x, object y) => false;
+            public new bool Equals(object? x, object? y) => false;
 
             public int GetHashCode(object obj) => _hash;
         }

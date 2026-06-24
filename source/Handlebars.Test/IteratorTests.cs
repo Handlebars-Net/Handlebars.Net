@@ -287,7 +287,7 @@ namespace HandlebarsDotNet.Test
             var template = Handlebars.Compile(source);
             var data = new
                 {
-                    people = (object)null
+                    people = (object?)null
                 };
             var result = template(data);
             Assert.Equal("Hello, (no one listed)", result);
@@ -300,7 +300,7 @@ namespace HandlebarsDotNet.Test
             var template = Handlebars.Compile(source);
             var data = new
                 {
-                    people = (object[])null
+                    people = (object[]?)null
                 };
             var result = template(data);
             Assert.Equal("Hello, (no one listed)", result);

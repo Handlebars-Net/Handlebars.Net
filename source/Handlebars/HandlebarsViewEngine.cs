@@ -8,9 +8,9 @@ namespace HandlebarsDotNet
 
     public abstract class ViewEngineFileSystem
     {
-        public abstract string GetFileContent(string filename);
+        public abstract string? GetFileContent(string filename);
 
-        private static string GetDir(string currentFilePath)
+        private static string? GetDir(string currentFilePath)
         {
             if (currentFilePath == "") return null;
             var parts = currentFilePath.Split(new[] {'\\', '/'});
@@ -18,7 +18,7 @@ namespace HandlebarsDotNet
             return string.Join("/", parts.Take(parts.Length - 1));
         }
 
-        public string Closest(string filename, string otherFileName)
+        public string? Closest(string filename, string otherFileName)
         {
             var dir = GetDir(filename);
             while (true)

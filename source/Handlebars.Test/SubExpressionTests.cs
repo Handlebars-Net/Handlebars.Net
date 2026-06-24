@@ -80,7 +80,7 @@ namespace HandlebarsDotNet.Test
         {
             var handlebars = Handlebars.Create();
             handlebars.RegisterHelper("helper", (writer, context, args) => writer.Write($"Math {args[0]}"));
-            handlebars.RegisterHelper("subhelper", (writer, context, args) => writer.Write((int)args[0] + (int)args[1]));
+            handlebars.RegisterHelper("subhelper", (writer, context, args) => writer.Write((int)args[0]! + (int)args[1]!));
 
             var source = "{{helper (subhelper 1 2)}}";
 
@@ -122,7 +122,7 @@ namespace HandlebarsDotNet.Test
             });
 
             handlebars.RegisterHelper("add", (writer, context, args) => {
-                writer.Write((int)args[0] + (int)args[1]);
+                writer.Write((int)args[0]! + (int)args[1]!);
             });
 
             var source = "{{math (add 1 2) (add 3 4)}}";
@@ -145,7 +145,7 @@ namespace HandlebarsDotNet.Test
             });
 
             handlebars.RegisterHelper("add", (writer, context, args) => {
-                writer.Write((int)args[0] + (int)args[1]);
+                writer.Write((int)args[0]! + (int)args[1]!);
             });
 
             var source = "{{write (add 1 2) \"hello\"}}";

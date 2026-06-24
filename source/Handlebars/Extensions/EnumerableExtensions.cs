@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Collections;
 
@@ -70,7 +71,9 @@ namespace HandlebarsDotNet
             Func<T, TKey> keySelector,
             Func<T, TValue> valueSelector,
             TComparer comparer
-        ) where TComparer : IEqualityComparer<TKey>
+        )
+            where TKey : notnull
+            where TComparer : IEqualityComparer<TKey>
         {
             var dictionary = new DictionarySlim<TKey, TValue, TComparer>(comparer);
             foreach (var item in enumerable)
@@ -81,7 +84,7 @@ namespace HandlebarsDotNet
             return dictionary;
         }
 
-        public static TValue Optional<TKey, TValue>(this IReadOnlyIndexed<TKey, TValue> indexed, in TKey key)
+        public static TValue? Optional<TKey, TValue>(this IReadOnlyIndexed<TKey, TValue> indexed, in TKey key)
         {
             indexed.TryGetValue(key, out var value);
             return value;
@@ -101,7 +104,7 @@ namespace HandlebarsDotNet
             {
                 _value = value;
                 _enumerated = false;
-                Current = default;
+                Current = default!;
             }
 
             public SequenceOfOneClass<T> GetEnumerator() => this;
@@ -114,7 +117,7 @@ namespace HandlebarsDotNet
             {
                 if (_enumerated)
                 {
-                    Current = default;
+                    Current = default!;
                     return false;
                 }
                 _enumerated = true;
@@ -126,7 +129,7 @@ namespace HandlebarsDotNet
 
             public T Current { get; private set; }
 
-            object IEnumerator.Current => Current;
+            object? IEnumerator.Current => Current;
 
             public void Dispose()
             {

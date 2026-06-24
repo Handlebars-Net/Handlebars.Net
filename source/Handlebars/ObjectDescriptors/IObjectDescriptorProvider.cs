@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace HandlebarsDotNet.ObjectDescriptors
 {
@@ -12,6 +13,6 @@ namespace HandlebarsDotNet.ObjectDescriptors
         /// </summary>
         /// <param name="type"></param>
         /// <param name="value"></param>
-        bool TryGetDescriptor(Type type, out ObjectDescriptor value);
+        bool TryGetDescriptor(Type type, [MaybeNullWhen(false)] out ObjectDescriptor value);
     }
 }

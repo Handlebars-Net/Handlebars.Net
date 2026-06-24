@@ -9,13 +9,13 @@ namespace HandlebarsDotNet.Test
         {
             Handlebars.RegisterHelper("numericLiteralAdd", (writer, context, args) =>
                 {
-                    var arr = args.AsEnumerable().Select(a => (object)int.Parse(a.ToString()));
+                    var arr = args.AsEnumerable().Select(a => (object)int.Parse(a!.ToString()!));
                     writer.Write(arr.Aggregate(0, (a, i) => a + (int)i));
                 });
 
             Handlebars.RegisterHelper("longAdd", (writer, context, args) =>
             {
-                var arr = args.AsEnumerable().Select(a => long.Parse(a.ToString()));
+                var arr = args.AsEnumerable().Select(a => long.Parse(a!.ToString()!));
                 var sum = arr.Sum();
                 writer.Write(sum);
             });

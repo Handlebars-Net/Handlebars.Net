@@ -11,8 +11,8 @@ namespace HandlebarsNet.Benchmark
     [MemoryDiagnoser]
     public class RenderNested
     {
-        private HandlebarsTemplate<TextWriter, object, object> _template;
-        private object _data;
+        private HandlebarsTemplate<TextWriter, object, object> _template = null!; // -> Setup()
+        private object _data = null!; // -> Setup()
 
         private const int SectionCount = 5;
 
@@ -32,7 +32,7 @@ namespace HandlebarsNet.Benchmark
         public int RowsPerSection { get; set; }
 
         [Params("object", "dictionary")]
-        public string DataType { get; set; }
+        public string DataType { get; set; } = null!;
 
         [GlobalSetup]
         public void Setup()
@@ -53,7 +53,7 @@ namespace HandlebarsNet.Benchmark
         private static readonly string[] SectionNames = ["Traffic", "Revenue", "Errors", "Performance", "Conversion"];
         private static readonly string[] MetricLabels = ["Count", "Rate", "p50", "p99", "Total", "Delta", "Avg", "Max", "Min", "StdDev",
                                                           "Score", "Index", "Ratio", "Share", "Volume", "Trend", "Baseline", "Peak", "Trough", "Median"];
-        private static readonly string[] Units = ["req/s", "%", "ms", "$", null, null]; // nulls make ~half unitless
+        private static readonly string?[] Units = ["req/s", "%", "ms", "$", null, null]; // nulls make ~half unitless
 
         private object BuildObjectData()
         {
@@ -66,7 +66,7 @@ namespace HandlebarsNet.Benchmark
                 {
                     bool withinTarget = (s * RowsPerSection + r) % 4 != 0;
                     if (!withinTarget) alertCount++;
-                    string unit = Units[(s * RowsPerSection + r) % Units.Length];
+                    string? unit = Units[(s * RowsPerSection + r) % Units.Length];
                     metrics.Add(new
                     {
                         label        = MetricLabels[(s * RowsPerSection + r) % MetricLabels.Length],
@@ -94,13 +94,13 @@ namespace HandlebarsNet.Benchmark
             var sections = new List<Dictionary<string, object>>(SectionCount);
             for (int s = 0; s < SectionCount; s++)
             {
-                var metrics = new List<Dictionary<string, object>>(RowsPerSection);
+                var metrics = new List<Dictionary<string, object?>>(RowsPerSection);
                 for (int r = 0; r < RowsPerSection; r++)
                 {
                     bool withinTarget = (s * RowsPerSection + r) % 4 != 0;
                     if (!withinTarget) alertCount++;
-                    string unit = Units[(s * RowsPerSection + r) % Units.Length];
-                    metrics.Add(new Dictionary<string, object>
+                    string? unit = Units[(s * RowsPerSection + r) % Units.Length];
+                    metrics.Add(new Dictionary<string, object?>
                     {
                         ["label"]        = MetricLabels[(s * RowsPerSection + r) % MetricLabels.Length],
                         ["value"]        = $"{42.0 + s * 10 + r:F1}",

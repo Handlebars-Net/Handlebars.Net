@@ -6,6 +6,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace HandlebarsDotNet.Collections
@@ -14,6 +15,7 @@ namespace HandlebarsDotNet.Collections
     internal class DictionarySlim<TKey, TValue, TComparer> :
         IIndexed<TKey, TValue>
         where TComparer: IEqualityComparer<TKey>
+        where TKey : notnull
     {
         private readonly TComparer _comparer;
 
@@ -141,7 +143,7 @@ namespace HandlebarsDotNet.Collections
         /// <param name="key">Key to look for</param>
         /// <param name="value">Value found, otherwise default(TValue)</param>
         /// <returns>true if the key is present, otherwise false</returns>
-        public bool TryGetValue(in TKey key, out TValue value)
+        public bool TryGetValue(in TKey key, [MaybeNullWhen(false)] out TValue value)
         {
             if (key is null) throw new ArgumentNullException(nameof(key));
             var entries = _entries;
@@ -320,6 +322,7 @@ namespace HandlebarsDotNet.Collections
         private static class Throw
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [DoesNotReturn]
             public static void ConcurrentOperationsNotSupported() => throw new InvalidOperationException("ConcurrentOperationsNotSupported");
         }
     }

@@ -53,7 +53,7 @@ namespace HandlebarsDotNet.Compiler
                 }
                 else if (context.IsClosingElement(item))
                 {
-                    return context.GetAccumulatedBlock();
+                    return context.AccumulatedBlock;
                 }
                 else
                 {

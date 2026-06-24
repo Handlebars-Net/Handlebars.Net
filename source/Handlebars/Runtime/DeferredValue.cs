@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using HandlebarsDotNet.Collections;
+using HandlebarsDotNet.IO;
 
 namespace HandlebarsDotNet.Runtime
 {
@@ -8,7 +11,7 @@ namespace HandlebarsDotNet.Runtime
         private readonly TState _state;
         private readonly Func<TState, T> _factory;
         
-        private T _value;
+        private T? _value;
         private bool _isValueCreated;
 
         public DeferredValue(TState state, Func<TState, T> factory)
@@ -17,10 +20,10 @@ namespace HandlebarsDotNet.Runtime
             _factory = factory;
         }
 
-        public override string ToString()
+        public override string? ToString()
         {
             if (!_isValueCreated) return "Not yet created";
-            return _value.ToString();
+            return _value!.ToString();
         }
 
         public T Value
@@ -28,7 +31,7 @@ namespace HandlebarsDotNet.Runtime
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                if (_isValueCreated) return _value;
+                if (_isValueCreated) return _value!;
                 
                 _value = _factory(_state);
                 _isValueCreated = true;

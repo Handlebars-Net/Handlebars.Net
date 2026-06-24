@@ -9,22 +9,22 @@ namespace HandlebarsDotNet.Collections
 #endif
     internal readonly struct ImmutableStack<T>
     {
-        private readonly Node _container;
+        private readonly Node? _container;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private ImmutableStack(T value, Node parent)
+        private ImmutableStack(T value, Node? parent)
             :this(Node.Create(value, parent))
         {
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private ImmutableStack(Node container) => _container = container;
+        private ImmutableStack(Node? container) => _container = container;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ImmutableStack<T> Push(T value) => new ImmutableStack<T>(value, _container);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T Peek()
+        public T? Peek()
         {
             return _container == null
                 ? default
@@ -32,7 +32,7 @@ namespace HandlebarsDotNet.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ImmutableStack<T> Pop(out T value)
+        public ImmutableStack<T> Pop(out T? value)
         {
             if (_container == null)
             {
@@ -53,10 +53,10 @@ namespace HandlebarsDotNet.Collections
         {
             private static readonly InternalObjectPool<Node, Policy> Pool = new InternalObjectPool<Node, Policy>(new Policy()); // NOSONAR S2743 — one pool per T is intentional: Node<int> and Node<string> cannot share a pool
 
-            public Node Parent;
-            public T Value;
+            public Node? Parent;
+            public T? Value;
 
-            public static Node Create(T value = default, Node parent = null)
+            public static Node Create(T? value = default, Node? parent = null)
             {
                 var item = Pool.Get();
                 item.Value = value;

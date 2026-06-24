@@ -11,7 +11,7 @@ namespace HandlebarsDotNet.MemberAliasProvider
         private static readonly ChainSegment Count = ChainSegment.Create("Count");
         private static readonly ChainSegment Length = ChainSegment.Create("Length");
 
-        public bool TryGetMemberByAlias(object instance, Type targetType, ChainSegment memberAlias, out object value)
+        public bool TryGetMemberByAlias(object instance, Type targetType, ChainSegment memberAlias, out object? value)
         {
             switch (instance)
             {
@@ -23,7 +23,7 @@ namespace HandlebarsDotNet.MemberAliasProvider
                     value = array.Count;
                     return true;
 
-                case IEnumerable enumerable when ObjectDescriptorFactory.Current.TryGetDescriptor(targetType, out var descriptor) && descriptor.GetProperties != null:
+                case IEnumerable enumerable when ObjectDescriptorFactory.Current!.TryGetDescriptor(targetType, out var descriptor) && descriptor.GetProperties != null:
                     var properties = descriptor.GetProperties(descriptor, enumerable);
                     var property = properties.OfType<ChainSegment>().FirstOrDefault(o =>
                     {

@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HandlebarsDotNet.Iterators;
 using HandlebarsDotNet.MemberAccessors;
@@ -10,14 +11,15 @@ namespace HandlebarsDotNet.ObjectDescriptors
     public sealed class DictionaryObjectDescriptor : IObjectDescriptorProvider
     {
         private static readonly Type Type = typeof(IDictionary);
-        private static readonly MethodInfo Factory = typeof(DictionaryObjectDescriptor)
-            .GetMethod(nameof(ObjectDescriptorFactory), BindingFlags.Static | BindingFlags.NonPublic);
+
+        private static readonly MethodInfo Factory = new Func<ObjectDescriptor>(ObjectDescriptorFactory<IDictionary>)
+            .GetMethodInfo().GetGenericMethodDefinition();
         
         private static readonly DictionaryMemberAccessor DictionaryMemberAccessor = new DictionaryMemberAccessor();
         
         private static readonly Func<ObjectDescriptor, object, IEnumerable> GetProperties = (descriptor, arg) => ((IDictionary) arg).Keys;
 
-        public bool TryGetDescriptor(Type type, out ObjectDescriptor value)
+        public bool TryGetDescriptor(Type type, [MaybeNullWhen(false)] out ObjectDescriptor value)
         {
             if (!Type.IsAssignableFrom(type))
             {
@@ -25,7 +27,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
                 return false;
             }
             
-            value = (ObjectDescriptor) Factory.MakeGenericMethod(type).Invoke(null, ArrayEx.Empty<object>());
+            value = (ObjectDescriptor) Factory.MakeGenericMethod(type).Invoke(null, ArrayEx.Empty<object>())!;
             return true;
         }
 

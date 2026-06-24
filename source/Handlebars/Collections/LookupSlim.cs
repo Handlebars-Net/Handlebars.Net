@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 namespace HandlebarsDotNet.Collections
@@ -9,6 +10,7 @@ namespace HandlebarsDotNet.Collections
     [DebuggerDisplay("Count = {Count}")]
     internal sealed class LookupSlim<TKey, TValue, TComparer> : 
         IReadOnlyIndexed<TKey, TValue>
+        where TKey : notnull
         where TComparer : IEqualityComparer<TKey>
     {
         private readonly TComparer _comparer;
@@ -36,7 +38,7 @@ namespace HandlebarsDotNet.Collections
                 : value;
         }
 
-        public bool TryGetValue(in TKey key, out TValue value) => _inner.TryGetValue(key, out value);
+        public bool TryGetValue(in TKey key, [MaybeNullWhen(false)] out TValue value) => _inner.TryGetValue(key, out value);
 
         public int Count => _inner.Count;
 

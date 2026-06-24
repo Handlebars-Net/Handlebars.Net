@@ -632,27 +632,27 @@ namespace HandlebarsDotNet.Test
                     writer.Write("ifCond:Wrong number of arguments");
                     return;
                 }
-                if (args[0] == null || args[0].GetType().Name == "UndefinedBindingResult")
+                if (args[0] == null || args[0]!.GetType().Name == "UndefinedBindingResult")
                 {
                     writer.Write("ifCond:args[0] undefined");
                     return;
                 }
-                if (args[1] == null || args[1].GetType().Name == "UndefinedBindingResult")
+                if (args[1] == null || args[1]!.GetType().Name == "UndefinedBindingResult")
                 {
                     writer.Write("ifCond:args[1] undefined");
                     return;
                 }
-                if (args[2] == null || args[2].GetType().Name == "UndefinedBindingResult")
+                if (args[2] == null || args[2]!.GetType().Name == "UndefinedBindingResult")
                 {
                     writer.Write("ifCond:args[2] undefined");
                     return;
                 }
-                if (args[0].GetType().Name == "String" || args[0].GetType().Name == "JValue")
+                if (args[0]!.GetType().Name == "String" || args[0]!.GetType().Name == "JValue")
                 {
-                    var val1 = args[0].ToString();
-                    var val2 = args[2].ToString();
+                    var val1 = args[0]!.ToString()!;
+                    var val2 = args[2]!.ToString()!;
 
-                    switch (args[1].ToString())
+                    switch (args[1]!.ToString())
                     {
                         case ">":
                             if (val1.Length > val2.Length)
@@ -700,10 +700,10 @@ namespace HandlebarsDotNet.Test
                 }
                 else
                 {
-                    var val1 = float.Parse(args[0].ToString());
-                    var val2 = float.Parse(args[2].ToString());
+                    var val1 = float.Parse(args[0]!.ToString()!);
+                    var val2 = float.Parse(args[2]!.ToString()!);
 
-                    switch (args[1].ToString())
+                    switch (args[1]!.ToString())
                     {
                         case ">":
                             if (val1 > val2)
@@ -821,7 +821,7 @@ namespace HandlebarsDotNet.Test
         {
             var h = Handlebars.Create();
             h.RegisterHelper("myHelper", (writer, context, args) => {
-                var hash = args[2] as Dictionary<string, object>;
+                var hash = (Dictionary<string, object>) args[2]!;
                 foreach(var item in hash)
                 {
                     writer.Write(" {0}: {1}", item.Key, item.Value);
@@ -844,7 +844,7 @@ namespace HandlebarsDotNet.Test
         {
             Handlebars.RegisterHelper("isEqual", (writer, context, args) =>
             {
-                writer.WriteSafeString(args[0].ToString() == args[1].ToString() ? "true" : null);
+                writer.WriteSafeString(args[0]!.ToString() == args[1]!.ToString() ? "true" : null);
             });
         
             var source = "{{#if (isEqual arg1 arg2)}}True{{/if}}";
@@ -912,7 +912,7 @@ namespace HandlebarsDotNet.Test
             var source = "{{literalHelper Bool=true Integer=1 String=\"abc\"}}";
 
             Handlebars.RegisterHelper("literalHelper", (writer, context, arguments) => {
-                var parameters = arguments[0] as IDictionary<string, object>;
+                var parameters = (IDictionary<string, object>) arguments[0]!;
                 Assert.IsType<bool>(parameters["Bool"]);
                 Assert.IsType<int>(parameters["Integer"]);
                 Assert.IsType<string>(parameters["String"]);
@@ -1021,7 +1021,7 @@ namespace HandlebarsDotNet.Test
                 data.CreateProperty(ChainSegment.Value, null, out var valueIndex);
 
                 var iterationIndex = 0;
-                foreach (var item in (IEnumerable) arguments[0])
+                foreach (var item in (IEnumerable) arguments[0]!)
                 {
                     data[ChainSegment.Index] = iterationIndex;
                     data[valueIndex] = item;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -11,7 +12,7 @@ namespace HandlebarsDotNet
 {
 	public readonly struct EncodedTextWriter : IDisposable
 	{
-		private readonly IFormatterProvider _formatterProvider;
+		private readonly IFormatterProvider? _formatterProvider;
 		private readonly TextEncoderWrapper _encoder;
 
 		internal readonly TextWriter UnderlyingWriter;
@@ -28,8 +29,8 @@ namespace HandlebarsDotNet
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public EncodedTextWriter(
 			TextWriter writer,
-			ITextEncoder encoder,
-			IFormatterProvider formatterProvider,
+			ITextEncoder? encoder,
+			IFormatterProvider? formatterProvider,
 			bool suppressEncoding = false)
 		{
 			UnderlyingWriter = writer;
@@ -45,7 +46,7 @@ namespace HandlebarsDotNet
 		public TextWriter CreateWrapper() => EncodedTextWriterWrapper.From(this);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Write(string value, bool encode)
+		public void Write(string? value, bool encode)
 		{
 			if(encode && !SuppressEncoding)
 			{
@@ -102,19 +103,19 @@ namespace HandlebarsDotNet
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Write(string value) => Write(value, true);
+		public void Write(string? value) => Write(value, true);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Write(string format, params object[] arguments) => Write(string.Format(format, arguments), true);
+		public void Write(string format, params object?[] arguments) => Write(string.Format(format, arguments), true);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Write(char value) => Write(value.SequenceOfOne(), true);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Write(object value) => Write<object>(value);
+		public void Write(object? value) => Write<object>(value);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Write<T>(T value)
+		public void Write<T>(T? value)
 		{
 			switch (value)
 			{
@@ -136,7 +137,7 @@ namespace HandlebarsDotNet
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private void WriteFormatted<T>(T value)
+		private void WriteFormatted<T>([DisallowNull] T value)
 		{
 			var type = typeof(T);
 #if NETSTANDARD1_3
@@ -145,10 +146,10 @@ namespace HandlebarsDotNet
 			if (type.IsClass) type = value.GetType();
 #endif
 
-			if (!_formatterProvider.TryCreateFormatter(type, out var formatter))
+			if (_formatterProvider != null && _formatterProvider.TryCreateFormatter(type, out var formatter))
+				formatter.Format(value, this);
+			else
 				Throw.CannotResolveFormatter(type);
-
-			formatter.Format(value, this);
 		}
 
 		public Encoding Encoding
@@ -159,11 +160,12 @@ namespace HandlebarsDotNet
 
 		public void Dispose() => _encoder.Dispose();
 
-		public override string ToString() => UnderlyingWriter.ToString();
+		public override string? ToString() => UnderlyingWriter.ToString();
 
 		private static class Throw
 		{
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			[DoesNotReturn]
 			public static void CannotResolveFormatter(Type type) => throw new HandlebarsRuntimeException($"Cannot resolve formatter for type `{type}`");
 		}
 	}

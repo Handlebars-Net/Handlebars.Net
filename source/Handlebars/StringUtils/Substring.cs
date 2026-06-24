@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace HandlebarsDotNet.StringUtils
@@ -73,13 +74,13 @@ namespace HandlebarsDotNet.StringUtils
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Equals(string other)
+        public bool Equals(string? other)
         {
             if (Length != other?.Length) return false;
             return string.CompareOrdinal(String, Start, other, 0, Length) == 0;
         }
         
-        public override bool Equals(object obj) => obj is Substring other && Equals(other);
+        public override bool Equals(object? obj) => obj is Substring other && Equals(other);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override int GetHashCode()
@@ -160,16 +161,16 @@ namespace HandlebarsDotNet.StringUtils
         public static bool operator !=(in Substring a, in Substring b) => !a.Equals(b);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(in Substring a, string b) => a.Equals(b);
+        public static bool operator ==(in Substring a, string? b) => a.Equals(b);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator !=(in Substring a, string b) => !a.Equals(b);
+        public static bool operator !=(in Substring a, string? b) => !a.Equals(b);
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(string a, in Substring b) => b.Equals(a);
+        public static bool operator ==(string? a, in Substring b) => b.Equals(a);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator !=(string a, in Substring b) => !b.Equals(a);
+        public static bool operator !=(string? a, in Substring b) => !b.Equals(a);
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Contains(in Substring substring, in char c) 
@@ -315,9 +316,11 @@ namespace HandlebarsDotNet.StringUtils
         private static class Throw
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static void IndexOutOfRangeException(string message = null) => throw new ArgumentOutOfRangeException(message);
+            [DoesNotReturn]
+            public static void IndexOutOfRangeException(string? message = null) => throw new ArgumentOutOfRangeException(message);
             
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [DoesNotReturn]
             public static void ArgumentNullException(string argument) => throw new ArgumentNullException(argument);
         }
     }

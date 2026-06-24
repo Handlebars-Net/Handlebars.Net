@@ -55,14 +55,14 @@ namespace HandlebarsDotNet
         }
 
         public HandlebarsConfiguration UnderlingConfiguration { get; }
-        public IExpressionNameResolver ExpressionNameResolver => UnderlingConfiguration.ExpressionNameResolver;
-        public ITextEncoder TextEncoder => UnderlingConfiguration.TextEncoder;
+        public IExpressionNameResolver? ExpressionNameResolver => UnderlingConfiguration.ExpressionNameResolver;
+        public ITextEncoder? TextEncoder => UnderlingConfiguration.TextEncoder;
         public IFormatProvider FormatProvider => UnderlingConfiguration.FormatProvider;
-        public ViewEngineFileSystem FileSystem => UnderlingConfiguration.FileSystem;
+        public ViewEngineFileSystem? FileSystem => UnderlingConfiguration.FileSystem;
         public ObservableList<IFormatterProvider> FormatterProviders { get; }
         public bool ThrowOnUnresolvedBindingExpression => UnderlingConfiguration.ThrowOnUnresolvedBindingExpression;
         public IPartialTemplateResolver PartialTemplateResolver => UnderlingConfiguration.PartialTemplateResolver;
-        public IMissingPartialTemplateHandler MissingPartialTemplateHandler => UnderlingConfiguration.MissingPartialTemplateHandler;
+        public IMissingPartialTemplateHandler? MissingPartialTemplateHandler => UnderlingConfiguration.MissingPartialTemplateHandler;
         public short PartialRecursionDepthLimit => UnderlingConfiguration.PartialRecursionDepthLimit;
         public Compatibility Compatibility => UnderlingConfiguration.Compatibility;
 
@@ -71,7 +71,7 @@ namespace HandlebarsDotNet
         public ObservableList<IObjectDescriptorProvider> ObjectDescriptorProviders { get; }
         public IAppendOnlyList<IExpressionMiddleware> ExpressionMiddlewares { get; }
         public IAppendOnlyList<IMemberAliasProvider> AliasProviders { get; }
-        public IExpressionCompiler ExpressionCompiler { get; set; }
+        public IExpressionCompiler ExpressionCompiler { get; set; } = null!;
         public IReadOnlyList<IFeature> Features { get; }
         
         public IIndexed<PathInfoLight, Ref<IHelperDescriptor<HelperOptions>>> Helpers { get; }
@@ -96,7 +96,7 @@ namespace HandlebarsDotNet
             
             var target = new ObservableIndex<PathInfoLight, Ref<TDescriptor>, PathInfoLight.PathInfoLightEqualityComparer>(equalityComparer, existingHelpers);
 
-            var observer = ObserverBuilder<ObservableEvent<TDescriptor>>.Create(target)
+            var observer = ObserverBuilder<IObservableEvent<TDescriptor?>>.Create(target)
                 .OnEvent<DictionaryAddedObservableEvent<string, TDescriptor>>(
                     (@event, state) =>
                     {

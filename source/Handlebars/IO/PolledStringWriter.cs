@@ -9,9 +9,9 @@ namespace HandlebarsDotNet
     {
         private static readonly InternalObjectPool<ReusableStringWriter, Policy> Pool = new InternalObjectPool<ReusableStringWriter, Policy>(new Policy(16));
         
-        private IFormatProvider _formatProvider;
+        private IFormatProvider _formatProvider = null!;
 
-        public static ReusableStringWriter Get(IFormatProvider formatProvider = null)
+        public static ReusableStringWriter Get(IFormatProvider? formatProvider = null)
         {
             var writer = Pool.Get();
             writer._formatProvider = formatProvider ?? CultureInfo.CurrentCulture;
@@ -26,7 +26,7 @@ namespace HandlebarsDotNet
 
         protected override void Dispose(bool disposing)
         {
-            _formatProvider = null;
+            _formatProvider = null!;
             Pool.Return(this);
         }
 

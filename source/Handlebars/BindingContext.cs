@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.Compiler;
@@ -24,8 +25,8 @@ namespace HandlebarsDotNet
             BlockHelpers = new CascadeIndex<string, IHelperDescriptor<BlockHelperOptions>, StringEqualityComparer>(new StringEqualityComparer());
             
             Bag = new CascadeIndex<string, object, StringEqualityComparer>(new StringEqualityComparer(StringComparison.OrdinalIgnoreCase));
-            ContextDataObject = new FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer>(16, 7, ChainSegment.EqualityComparer);
-            BlockParamsObject = new FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer>(16, 7, ChainSegment.EqualityComparer);
+            ContextDataObject = new FixedSizeDictionary<ChainSegment, object?, ChainSegment.ChainSegmentEqualityComparer>(16, 7, ChainSegment.EqualityComparer);
+            BlockParamsObject = new FixedSizeDictionary<ChainSegment, object?, ChainSegment.ChainSegmentEqualityComparer>(16, 7, ChainSegment.EqualityComparer);
             
             Descriptor = new DeferredValue<BindingContext, ObjectDescriptor>(this, context =>
             {
@@ -34,10 +35,10 @@ namespace HandlebarsDotNet
         }
         
         internal CascadeIndex<string, object, StringEqualityComparer> Bag { get; }
-        internal FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer> ContextDataObject { get; }
-        internal FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer> BlockParamsObject { get; }
+        internal FixedSizeDictionary<ChainSegment, object?, ChainSegment.ChainSegmentEqualityComparer> ContextDataObject { get; }
+        internal FixedSizeDictionary<ChainSegment, object?, ChainSegment.ChainSegmentEqualityComparer> BlockParamsObject { get; }
 
-        internal void SetDataObject(object data)
+        internal void SetDataObject(object? data)
         {
             if(data == null) return;
             
@@ -107,7 +108,7 @@ namespace HandlebarsDotNet
             PopulateHash(dictionary, ParentContext.Value);
         }
 
-        internal ICompiledHandlebarsConfiguration Configuration { get; private set; }
+        internal ICompiledHandlebarsConfiguration Configuration { get; private set; } = null!;
         
         internal CascadeIndex<string, Action<EncodedTextWriter, BindingContext>, StringEqualityComparer> InlinePartialTemplates { get; }
         
@@ -115,11 +116,11 @@ namespace HandlebarsDotNet
         
         internal CascadeIndex<string, IHelperDescriptor<BlockHelperOptions>, StringEqualityComparer> BlockHelpers { get; }
 
-        internal TemplateDelegate PartialBlockTemplate { get; set; }
+        internal TemplateDelegate? PartialBlockTemplate { get; set; }
         
         internal short PartialDepth { get; set; }
-        
-        public object Value { get; set; }
+
+        public object? Value { get; set; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BlockParamsValues BlockParams(ChainSegment[] blockParamsVariables) => new BlockParamsValues(this, blockParamsVariables);
@@ -131,24 +132,24 @@ namespace HandlebarsDotNet
         /// </summary>
         public IIndexed<string, object> Extensions => Bag;
 
-        internal BindingContext ParentContext { get; private set; }
+        internal BindingContext? ParentContext { get; private set; }
 
-        internal BindingContext Root { get; private set; }
+        internal BindingContext Root { get; private set; } = null!;
 
-        internal bool TryGetVariable(ChainSegment segment, out object value)
+        internal bool TryGetVariable(ChainSegment segment, [MaybeNullWhen(false)] out object value)
         {
             if (segment.WellKnownVariable != WellKnownVariable.None)
             {
                 var wellKnownVariable = WellKnownVariables[(int) segment.WellKnownVariable];
                 return BlockParamsObject.TryGetValue(wellKnownVariable, out value) 
-                       || (Descriptor.Value.MemberAccessor?.TryGetValue(Value, segment, out value) ?? false);
+                       || (Descriptor.Value.MemberAccessor?.TryGetValue(Value!, segment, out value) ?? false);
             }
             
             return BlockParamsObject.TryGetValue(segment, out value) 
-                   || (Descriptor.Value.MemberAccessor?.TryGetValue(Value, segment, out value) ?? false);
+                   || (Descriptor.Value.MemberAccessor?.TryGetValue(Value!, segment, out value) ?? false);
         }
         
-        internal bool TryGetContextVariable(ChainSegment segment, out object value)
+        internal bool TryGetContextVariable(ChainSegment segment, [MaybeNullWhen(false)] out object value)
         {
             if (segment.WellKnownVariable != WellKnownVariable.None)
             {
@@ -174,13 +175,13 @@ namespace HandlebarsDotNet
                    || ContextDataObject.TryGetValue(segment, out value);
         }
 
-        internal BindingContext CreateChildContext(object value, TemplateDelegate partialBlockTemplate = null)
+        internal BindingContext CreateChildContext(object value, TemplateDelegate? partialBlockTemplate = null)
         {
             return Create(Configuration, value, this, partialBlockTemplate ?? PartialBlockTemplate);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BindingContext CreateFrame(object value = null)
+        public BindingContext CreateFrame(object? value = null)
         {
             return Create(Configuration, value, this, PartialBlockTemplate);
         }

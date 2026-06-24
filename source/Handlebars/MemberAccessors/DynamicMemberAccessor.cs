@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using HandlebarsDotNet.PathStructure;
 
@@ -6,7 +7,7 @@ namespace HandlebarsDotNet.MemberAccessors
 {
     public sealed class DynamicMemberAccessor : IMemberAccessor
     {
-        public bool TryGetValue(object instance, ChainSegment memberName, out object value)
+        public bool TryGetValue(object instance, ChainSegment memberName, [MaybeNullWhen(false)] out object value)
         {
             value = null;
             //crude handling for dynamic objects that don't have metadata
@@ -15,7 +16,7 @@ namespace HandlebarsDotNet.MemberAccessors
             try
             {
                 value = GetProperty(metaObjectProvider, memberName.TrimmedValue);
-                return value != null;
+                return value != null!;
             }
             catch
             {

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Compiler;
 
@@ -5,13 +6,13 @@ namespace HandlebarsDotNet.PathStructure
 {
     public static class PathResolver
     {
-        public static object ResolvePath(BindingContext context, PathInfo pathInfo)
+        public static object? ResolvePath(BindingContext context, PathInfo pathInfo)
         {
             if (!pathInfo.HasValue) return null;
             if (pathInfo.IsPureThis) return context.Value;
             
             var instance = context.Value;
-            var throwOnUnresolvedBindingExpression = context!.Configuration.ThrowOnUnresolvedBindingExpression;
+            var throwOnUnresolvedBindingExpression = context.Configuration.ThrowOnUnresolvedBindingExpression;
 
             var segments = pathInfo.Segments;
             for (var segmentIndex = 0; segmentIndex < segments.Length; segmentIndex++)
@@ -20,8 +21,8 @@ namespace HandlebarsDotNet.PathStructure
                 if (segment.IsThis) continue;
                 if (segment.IsParent)
                 {
-                    context = context!.ParentContext;
-                    if (context == null)
+                    context = context.ParentContext!;
+                    if (context == null!)
                     {
                         instance = UndefinedBindingResult.Create("..");
                         goto undefined;
@@ -33,7 +34,7 @@ namespace HandlebarsDotNet.PathStructure
                 }
 
                 var pathChain = segment.PathChain;
-                if (!TryResolveValue(pathInfo.IsVariable, context, pathChain[0], instance, out instance))
+                if (!TryResolveValue(pathInfo.IsVariable, context, pathChain[0], instance!, out instance))
                 {
                     instance = UndefinedBindingResult.Create(pathChain[0]);
                     goto undefined;
@@ -59,7 +60,7 @@ namespace HandlebarsDotNet.PathStructure
             return instance;
         }
 
-        private static bool TryResolveValue(bool isVariable, BindingContext context, ChainSegment chainSegment, object instance, out object value)
+        private static bool TryResolveValue(bool isVariable, BindingContext context, ChainSegment chainSegment, object instance, out object? value)
         {
             if (isVariable)
             {
@@ -82,7 +83,7 @@ namespace HandlebarsDotNet.PathStructure
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryAccessMember(BindingContext context, object instance, ChainSegment chainSegment, out object value)
+        public static bool TryAccessMember(BindingContext context, object? instance, ChainSegment chainSegment, [MaybeNullWhen(false)] out object value)
         {
             if (instance == null)
             {
@@ -107,6 +108,7 @@ namespace HandlebarsDotNet.PathStructure
         private static class Throw
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [DoesNotReturn]
             public static void Undefined(PathInfo pathInfo, UndefinedBindingResult undefinedBindingResult) => throw new HandlebarsUndefinedBindingException(pathInfo, undefinedBindingResult);
         }
     }

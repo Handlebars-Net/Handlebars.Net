@@ -10,7 +10,7 @@ namespace HandlebarsDotNet.PathStructure
         {
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public bool Equals(ChainSegment x, ChainSegment y)
+            public bool Equals(ChainSegment? x, ChainSegment? y)
             {
                 if (ReferenceEquals(x, y)) return true;
                 if (ReferenceEquals(x, null)) return false;

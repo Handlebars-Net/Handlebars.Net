@@ -212,11 +212,11 @@ namespace HandlebarsDotNet.Test
 
             Handlebars.RegisterHelper("_", (output, context, arguments) =>
             {
-                output.Write(arguments[0].ToString());
+                output.Write(arguments[0]!.ToString());
 
                 if (arguments.Length > 1)
                 {
-                    var hash = arguments[1] as Dictionary<string, object>;
+                    var hash = (Dictionary<string, object>) arguments[1]!;
                     output.Write(hash["arg1"]);
                 }
             });
@@ -280,7 +280,7 @@ namespace HandlebarsDotNet.Test
 
             Handlebars.RegisterHelper("concat", (writer, context, args) =>
             {
-                var hash = args[2] as Dictionary<string, object>;
+                var hash = (Dictionary<string, object>) args[2]!;
                 writer.WriteSafeString(string.Concat(args[0], args[1], hash["item1"], hash["item2"]));
             });
 

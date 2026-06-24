@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Collections;
@@ -26,19 +27,31 @@ namespace HandlebarsDotNet.PathStructure
     public sealed partial class PathInfo : IEquatable<PathInfo>
     {
         internal readonly bool IsValidHelperLiteral;
-        internal readonly bool HasValue;
-        internal readonly bool IsThis;
-        internal readonly bool IsPureThis;
-        internal readonly bool IsInversion;
-        internal readonly bool IsBlockHelper;
-        internal readonly bool IsBlockClose;
+
+        [MemberNotNullWhen(true, nameof(Segments), nameof(TrimmedPath))]
+        internal bool HasValue { get; }
+
+        [MemberNotNullWhen(true, nameof(Segments), nameof(TrimmedPath))]
+        internal bool IsThis { get; }
+
+        [MemberNotNullWhen(true, nameof(Segments), nameof(TrimmedPath))]
+        internal bool IsPureThis { get; }
+
+        [MemberNotNullWhen(true, nameof(Segments), nameof(TrimmedPath))]
+        internal bool IsInversion { get; }
+
+        [MemberNotNullWhen(true, nameof(Segments), nameof(TrimmedPath))]
+        internal bool IsBlockHelper { get; }
+
+        [MemberNotNullWhen(true, nameof(Segments), nameof(TrimmedPath))]
+        internal bool IsBlockClose { get; }
 
         private readonly int _hashCode;
         private readonly int _trimmedHashCode;
         private readonly int _trimmedInvariantHashCode;
 
         public static readonly PathInfo Empty = new PathInfo(PathType.Empty, "null", false, ArrayEx.Empty<PathSegment>());
-        
+
         private PathInfo(
             PathType pathType,
             string path,
@@ -90,13 +103,14 @@ namespace HandlebarsDotNet.PathStructure
         /// <summary>
         /// Indicates whether <see cref="PathInfo"/> is part of <c>@</c> variable
         /// </summary>
+        // [MemberNotNullWhen(true, nameof(Segments), nameof(TrimmedPath))]
         public readonly bool IsVariable;
-        public readonly PathSegment[] Segments;
+        public readonly PathSegment[]? Segments;
         public readonly string Path;
-        public readonly string TrimmedPath;
+        public readonly string? TrimmedPath;
 
         /// <inheritdoc />
-        public bool Equals(PathInfo other)
+        public bool Equals(PathInfo? other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -104,7 +118,7 @@ namespace HandlebarsDotNet.PathStructure
         }
 
         /// <inheritdoc />
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;

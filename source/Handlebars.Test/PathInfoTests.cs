@@ -17,7 +17,7 @@ namespace HandlebarsDotNet.Test
             Assert.Equal(input, pathInfo.Path);
             Assert.Equal(input.Trim('[', ']'), pathInfo.TrimmedPath);
             Assert.False(pathInfo.IsVariable);
-            var chainSegment = Assert.Single(pathInfo.Segments.SelectMany(o => o.PathChain));
+            var chainSegment = Assert.Single(pathInfo.Segments!.SelectMany(o => o.PathChain));
             Assert.NotNull(chainSegment);
             Assert.Equal(input, chainSegment.ToString());
         }
@@ -32,7 +32,7 @@ namespace HandlebarsDotNet.Test
             Assert.Equal(input, pathInfo.Path);
 
             var parts = input.Split('.');
-            var pathChain = pathInfo.Segments.SelectMany(o => o.PathChain).ToArray();
+            var pathChain = pathInfo.Segments!.SelectMany(o => o.PathChain).ToArray();
             for (var index = 0; index < pathChain.Length; index++)
             {
                 Assert.Equal(parts[index], pathChain[index]);
@@ -59,7 +59,7 @@ namespace HandlebarsDotNet.Test
             
             Assert.Equal(input, pathInfo.Path);
             
-            for (var index = 0; index < pathInfo.Segments.Length; index++)
+            for (var index = 0; index < pathInfo.Segments!.Length; index++)
             {
                 Assert.Equal(expected[index], pathInfo.Segments[index].ToString());
             }

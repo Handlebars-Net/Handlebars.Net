@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -33,7 +34,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
             _objectDescriptorProvider = objectDescriptorProvider;
         }
         
-        public bool TryGetDescriptor(Type type, out ObjectDescriptor value)
+        public bool TryGetDescriptor(Type type, [MaybeNullWhen(false)] out ObjectDescriptor value)
         {
             if (!Type.IsAssignableFrom(type))
             {

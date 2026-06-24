@@ -2,16 +2,16 @@
 {
     internal class StaticToken : Token
     {
-        public IReaderContext Context { get; }
+        public IReaderContext? Context { get; }
 
-        private StaticToken(string value, string original, IReaderContext context = null)
+        private StaticToken(string value, string original, IReaderContext? context = null)
         {
             Value = value;
             Original = original;
             Context = context;
         }
 
-        internal StaticToken(string value, IReaderContext context = null)
+        internal StaticToken(string value, IReaderContext? context = null)
             : this(value, value)
         {
             Context = context;

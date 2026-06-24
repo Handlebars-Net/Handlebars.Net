@@ -77,7 +77,7 @@ namespace HandlebarsDotNet.Compiler
             if (!pathInfo.IsValidHelperLiteral && !_configuration.Compatibility.RelaxedHelperNaming) return false;
 #pragma warning restore CS0618
             if (pathInfo.IsBlockHelper || pathInfo.IsInversion || pathInfo.IsBlockClose || pathInfo.IsThis) return false;
-            name = pathInfo.TrimmedPath;
+            name = pathInfo.TrimmedPath!;
             
             return _configuration.Helpers.ContainsKey(pathInfo) || _configuration.Decorators.ContainsKey(pathInfo) || BuiltInHelpers.Contains(name);
         }
@@ -92,7 +92,7 @@ namespace HandlebarsDotNet.Compiler
             if (pathInfo.IsBlockClose) return false;
             if (pathInfo.IsThis) return false;
 
-            name = pathInfo.TrimmedPath;
+            name = pathInfo.TrimmedPath!;
             
             return _configuration.BlockHelpers.ContainsKey(pathInfo) || _configuration.BlockDecorators.ContainsKey(pathInfo) || BuiltInHelpers.Contains(name);
         }

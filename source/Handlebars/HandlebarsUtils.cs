@@ -1,6 +1,7 @@
 ﻿using System;
 using HandlebarsDotNet.Compiler;
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 
 namespace HandlebarsDotNet
 {
@@ -12,7 +13,7 @@ namespace HandlebarsDotNet
         /// <param name="value"></param>
         /// <param name="includeZero">Determined whether the numerical <c>0</c> is considered to be truthy. Default <c>false</c></param>
         /// <returns></returns>
-        public static bool IsTruthy(object value, bool includeZero = false)
+        public static bool IsTruthy([NotNullWhen(true)] object? value, bool includeZero = false)
         {
             return !IsFalsy(value, includeZero);
         }
@@ -23,7 +24,7 @@ namespace HandlebarsDotNet
         /// <param name="value">The value whose falsy-ness is to be determined</param>
         /// <param name="includeZero">Determined whether the numerical <c>0</c> is considered to be truthy</param>
         /// <returns></returns>
-        public static bool IsFalsy(object value, bool includeZero)
+        public static bool IsFalsy([NotNullWhen(false)] object? value, bool includeZero)
         {
             switch (value)
             {
@@ -45,12 +46,12 @@ namespace HandlebarsDotNet
             return false;
         }
         
-        public static bool IsTruthyOrNonEmpty(object value, bool includeZero = false)
+        public static bool IsTruthyOrNonEmpty([NotNullWhen(true)] object? value, bool includeZero = false)
         {
             return !IsFalsyOrEmpty(value, includeZero);
         }
         
-        public static bool IsFalsyOrEmpty(object value, bool includeZero = false)
+        public static bool IsFalsyOrEmpty([NotNullWhen(false)] object? value, bool includeZero = false)
         {
             if(IsFalsy(value, includeZero))
             {
@@ -60,7 +61,7 @@ namespace HandlebarsDotNet
             return value is IEnumerable enumerable && !enumerable.Any();
         }
 
-        private static bool IsNumber(object value)
+        private static bool IsNumber([NotNullWhen(true)] object? value)
         {
             return value is sbyte
                 || value is byte

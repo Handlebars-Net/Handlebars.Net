@@ -7,7 +7,7 @@ namespace HandlebarsDotNet.ValueProviders
     public readonly ref struct DataValues
     {
         private readonly EntryIndex<ChainSegment>[] _wellKnownVariables;
-        private readonly FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer> _data;
+        private readonly FixedSizeDictionary<ChainSegment, object?, ChainSegment.ChainSegmentEqualityComparer> _data;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public DataValues(BindingContext context)
@@ -16,9 +16,9 @@ namespace HandlebarsDotNet.ValueProviders
             _wellKnownVariables = context.WellKnownVariables;
         }
 
-        public T Value<T>(ChainSegment segment) => (T) this[segment];
+        public T? Value<T>(ChainSegment segment) => (T?) this[segment];
 
-        public object this[ChainSegment segment]
+        public object? this[ChainSegment segment]
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
@@ -46,7 +46,7 @@ namespace HandlebarsDotNet.ValueProviders
             }
         }
 
-        public object this[in EntryIndex<ChainSegment> entryIndex]
+        public object? this[in EntryIndex<ChainSegment> entryIndex]
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _data[entryIndex];
@@ -68,7 +68,7 @@ namespace HandlebarsDotNet.ValueProviders
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void CreateProperty(ChainSegment variable, object defaultValue, out EntryIndex<ChainSegment> index)
+        public void CreateProperty(ChainSegment variable, object? defaultValue, out EntryIndex<ChainSegment> index)
         {
             _data.AddOrReplace(variable, defaultValue, out index);
             
