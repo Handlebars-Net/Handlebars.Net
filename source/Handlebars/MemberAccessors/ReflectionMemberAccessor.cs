@@ -29,6 +29,34 @@ namespace HandlebarsDotNet.MemberAccessors
             var instanceType = instance.GetType();
             if (TryGetValueImpl(instance, instanceType, memberName, out value)) return true;
 
+            return TryGetValueByAlias(instance, instanceType, memberName, out value);
+        }
+
+        /// <summary>
+        /// Creates an accessor pre-bound to <paramref name="type"/> so that per-access
+        /// type-descriptor lookup is skipped when the instance type matches.
+        /// </summary>
+        internal IMemberAccessor CreateBoundAccessor(Type type) => new BoundMemberAccessor(this, type, GetTypeDescriptor(type));
+
+        private RawObjectTypeDescriptor GetTypeDescriptor(Type instanceType)
+        {
+            if (!_descriptors.TryGetValue(instanceType, out var deferredValue))
+            {
+                deferredValue = _descriptors.GetOrAdd(instanceType, DescriptorsValueFactory);
+            }
+
+            return deferredValue.Value;
+        }
+
+        private bool TryGetValueImpl(object instance, Type instanceType, ChainSegment memberName, out object value)
+        {
+            var accessor = GetTypeDescriptor(instanceType).GetOrCreateAccessor(memberName);
+            value = accessor?.Invoke(instance);
+            return accessor != null;
+        }
+
+        private bool TryGetValueByAlias(object instance, Type instanceType, ChainSegment memberName, out object value)
+        {
             for (var index = 0; index < _aliasProviders.Count; index++)
             {
                 if (_aliasProviders[index].TryGetMemberByAlias(instance, instanceType, memberName, out value))
@@ -39,16 +67,35 @@ namespace HandlebarsDotNet.MemberAccessors
             return false;
         }
 
-        private bool TryGetValueImpl(object instance, Type instanceType, ChainSegment memberName, out object value)
+        private sealed class BoundMemberAccessor : IMemberAccessor
         {
-            if (!_descriptors.TryGetValue(instanceType, out var deferredValue))
+            private readonly ReflectionMemberAccessor _owner;
+            private readonly Type _type;
+            private readonly RawObjectTypeDescriptor _typeDescriptor;
+
+            public BoundMemberAccessor(ReflectionMemberAccessor owner, Type type, RawObjectTypeDescriptor typeDescriptor)
             {
-                deferredValue = _descriptors.GetOrAdd(instanceType, DescriptorsValueFactory);
+                _owner = owner;
+                _type = type;
+                _typeDescriptor = typeDescriptor;
             }
 
-            var accessor = deferredValue.Value.GetOrCreateAccessor(memberName);
-            value = accessor?.Invoke(instance);
-            return accessor != null;
+            public bool TryGetValue(object instance, ChainSegment memberName, out object value)
+            {
+                if (!ReferenceEquals(instance.GetType(), _type))
+                {
+                    return _owner.TryGetValue(instance, memberName, out value);
+                }
+
+                var accessor = _typeDescriptor.GetOrCreateAccessor(memberName);
+                if (accessor != null)
+                {
+                    value = accessor.Invoke(instance);
+                    return true;
+                }
+
+                return _owner.TryGetValueByAlias(instance, _type, memberName, out value);
+            }
         }
 
         private sealed class RawObjectTypeDescriptor
