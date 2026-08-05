@@ -14,7 +14,7 @@ namespace HandlebarsDotNet.Helpers.BlockHelpers
         
         public PathInfo Name { get; }
 
-        public object Invoke(in BlockHelperOptions options, in Context context, in Arguments arguments)
+        public object? Invoke(in BlockHelperOptions options, in Context context, in Arguments arguments)
         {
             return _helper(options, context, arguments);
         }

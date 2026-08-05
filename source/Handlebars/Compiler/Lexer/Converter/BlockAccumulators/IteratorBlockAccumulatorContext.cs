@@ -2,13 +2,14 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace HandlebarsDotNet.Compiler
 {
     internal class IteratorBlockAccumulatorContext : BlockAccumulatorContext
     {
         private readonly HelperExpression _startingNode;
-        private Expression _accumulatedExpression;
+        private Expression? _accumulatedExpression;
         private List<Expression> _body = new List<Expression>();
 
         public IteratorBlockAccumulatorContext(Expression startingNode)
@@ -21,6 +22,7 @@ namespace HandlebarsDotNet.Compiler
         public sealed override string BlockName
         {
             get => _startingNode.HelperName;
+            [DoesNotReturn]
             protected set => throw new NotSupportedException();
         }
 
@@ -55,10 +57,7 @@ namespace HandlebarsDotNet.Compiler
             return true;
         }
 
-        public override Expression GetAccumulatedBlock()
-        {
-            return _accumulatedExpression;
-        }
+        public override Expression? AccumulatedBlock => _accumulatedExpression;
 
         private static bool IsClosingNode(Expression item)
         {

@@ -48,14 +48,14 @@ namespace HandlebarsDotNet
             
             OriginalTemplate(encodedTextWriter, Frame);
 
-            return encodedTextWriter.ToString();
+            return writer.ToString();
         }
 
         /// <summary>
         /// BlockHelper body
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Template(in EncodedTextWriter writer, object context)
+        public void Template(in EncodedTextWriter writer, object? context)
         {
             if (context is BindingContext bindingContext)
             {
@@ -90,14 +90,14 @@ namespace HandlebarsDotNet
             
             OriginalInverse(encodedTextWriter, Frame);
 
-            return encodedTextWriter.ToString();
+            return writer.ToString();
         }
         
         /// <summary>
         /// BlockHelper body
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Inverse(in EncodedTextWriter writer, object context)
+        public void Inverse(in EncodedTextWriter writer, object? context)
         {
             if (context is BindingContext bindingContext)
             {
@@ -122,7 +122,7 @@ namespace HandlebarsDotNet
         public void Inverse(in EncodedTextWriter writer, BindingContext context) => OriginalInverse(writer, context);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BindingContext CreateFrame(object value = null) => Frame.CreateFrame(value);
+        public BindingContext CreateFrame(object? value = null) => Frame.CreateFrame(value);
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BindingContext CreateFrame(Context value) => Frame.CreateFrame(value.Value);

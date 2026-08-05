@@ -16,7 +16,7 @@ namespace HandlebarsDotNet
 		private readonly LookupSlim<string, DeferredValue<string, UndefinedBindingResult>, StringEqualityComparer> _cache 
 			= new LookupSlim<string, DeferredValue<string, UndefinedBindingResult>, StringEqualityComparer>(new StringEqualityComparer(StringComparison.Ordinal));
 
-		public static UndefinedBindingResultCache Current => AmbientContext.Current?.UndefinedBindingResultCache;
+		public static UndefinedBindingResultCache? Current => AmbientContext.Current?.UndefinedBindingResultCache;
 
 		internal UndefinedBindingResultCache()
 		{
@@ -37,9 +37,9 @@ namespace HandlebarsDotNet
 
 	    public override string ToString() => Value;
 
-	    public bool Equals(UndefinedBindingResult other) => Value == other?.Value;
+	    public bool Equals(UndefinedBindingResult? other) => Value == other?.Value;
 
-	    public override bool Equals(object obj) => obj is UndefinedBindingResult other && Equals(other);
+	    public override bool Equals(object? obj) => obj is UndefinedBindingResult other && Equals(other);
 
 	    public override int GetHashCode() => Value != null ? Value.GetHashCode() : 0;
     }

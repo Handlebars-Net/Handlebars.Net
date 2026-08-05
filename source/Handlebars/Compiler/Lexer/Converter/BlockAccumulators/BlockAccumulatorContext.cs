@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using HandlebarsDotNet.PathStructure;
 using HandlebarsDotNet.StringUtils;
@@ -11,9 +12,9 @@ namespace HandlebarsDotNet.Compiler
         private static readonly HashSet<string> ConditionHelpers = new HashSet<string>(StringComparer.OrdinalIgnoreCase){ "#if", "#unless", "^if", "^unless" };
         private static readonly HashSet<string> IteratorHelpers = new HashSet<string>(StringComparer.OrdinalIgnoreCase){ "#each", "^each" };
 
-        public static BlockAccumulatorContext Create(Expression item, Expression parentItem, ICompiledHandlebarsConfiguration configuration)
+        public static BlockAccumulatorContext? Create(Expression item, Expression? parentItem, ICompiledHandlebarsConfiguration configuration)
         {
-            BlockAccumulatorContext context = null;
+            BlockAccumulatorContext? context = null;
             if (IsConditionalBlock(item))
             {
                 context = new ConditionalBlockAccumulatorContext(item);
@@ -77,7 +78,7 @@ namespace HandlebarsDotNet.Compiler
             };
         }
 
-        private static bool IsDetachedClosingElement(Expression item, Expression parentItem, out string closingElement)
+        private static bool IsDetachedClosingElement(Expression item, Expression? parentItem, [MaybeNullWhen(false)] out string closingElement)
         {
             closingElement = null;
 
@@ -109,7 +110,7 @@ namespace HandlebarsDotNet.Compiler
             return new Substring(openElement, 1) != new Substring(closingElement, 1);
         }
 
-        private static string GetItemElement(Expression item)
+        private static string? GetItemElement(Expression? item)
         {
             item = UnwrapStatement(item);
             return item switch
@@ -120,7 +121,8 @@ namespace HandlebarsDotNet.Compiler
             };
         }
 
-        protected static Expression UnwrapStatement(Expression item)
+        [return: NotNullIfNotNull(nameof(item))]
+        protected static Expression? UnwrapStatement(Expression? item)
         {
             if (item is StatementExpression expression)
             {
@@ -136,9 +138,10 @@ namespace HandlebarsDotNet.Compiler
 
         public abstract void HandleElement(Expression item);
 
+        [MemberNotNullWhen(true, nameof(AccumulatedBlock))]
         public abstract bool IsClosingElement(Expression item);
 
-        public abstract Expression GetAccumulatedBlock();
+        public abstract Expression? AccumulatedBlock { get; }
     }
 }
 

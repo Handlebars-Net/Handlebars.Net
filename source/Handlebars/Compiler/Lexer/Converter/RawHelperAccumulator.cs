@@ -81,7 +81,7 @@ namespace HandlebarsDotNet.Compiler
             using (var container = StringBuilderPool.Shared.Use())
             {
                 var buffer = container.Value;
-                object precedingItem = null;
+                object? precedingItem = null;
 
                 while (enumerator.MoveNext())
                 {
@@ -120,7 +120,7 @@ namespace HandlebarsDotNet.Compiler
                 && word.Value == ("/" + helperName);
         }
 
-        private static string Stringify(object item, object precedingItem)
+        private static string Stringify(object item, object? precedingItem)
         {
             if (item is Token token)
             {
@@ -132,10 +132,10 @@ namespace HandlebarsDotNet.Compiler
                 return helperExpression.HelperName;
             }
 
-            return item.ToString();
+            return item.ToString()!;
         }
 
-        private static string PrependWhitespaceWhereNeeded(string value, Token currToken, object precedingItem)
+        private static string PrependWhitespaceWhereNeeded(string value, Token currToken, object? precedingItem)
         {
             if (precedingItem == null)
             {

@@ -2,7 +2,7 @@
 {
     internal class StartExpressionToken : ExpressionScopeToken
     {
-        public StartExpressionToken(bool isEscaped, bool trimWhitespace, bool isRaw, IReaderContext context)
+        public StartExpressionToken(bool isEscaped, bool trimWhitespace, bool isRaw, IReaderContext? context)
         {
             Context = context;
             IsEscaped = isEscaped;
@@ -10,7 +10,7 @@
             IsRaw = isRaw;
         }
 
-        public IReaderContext Context { get; }
+        public IReaderContext? Context { get; }
         
         public bool IsEscaped { get; }
 

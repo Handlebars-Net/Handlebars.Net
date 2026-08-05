@@ -21,17 +21,20 @@ namespace HandlebarsDotNet.Compiler
             if (!(sex.Body is PathExpression pex)) return Visit(sex.Body);
 
             var configuration = CompilationContext.Configuration;
-            var pathInfo = PathInfoStore.Current.GetOrAdd(pex.Path);
+            var pathInfo = PathInfoStore.Current!.GetOrAdd(pex.Path);
 
             if (pex.Context != PathExpression.ResolutionContext.Parameter
                 && !pathInfo.IsVariable
                 && !pathInfo.IsThis
-                && (pathInfo.IsValidHelperLiteral || configuration.Compatibility.RelaxedHelperNaming))
+                && (pathInfo.IsValidHelperLiteral
+#pragma warning disable CS0618 // Type or member is obsolete
+                    || configuration.Compatibility.RelaxedHelperNaming
+#pragma warning restore CS0618 // Type or member is obsolete
+                ))
             {
                 var pathInfoLight = new PathInfoLight(pathInfo);
-                Ref<IHelperDescriptor<HelperOptions>> helper;
 
-                if (!configuration.Helpers.TryGetValue(pathInfoLight, out helper))
+                if (!configuration.Helpers.TryGetValue(pathInfoLight, out var helper))
                 {
                     var lateBindHelperDescriptor = new LateBindHelperDescriptor(pathInfo);
                     helper = new Ref<IHelperDescriptor<HelperOptions>>(lateBindHelperDescriptor);
@@ -47,7 +50,9 @@ namespace HandlebarsDotNet.Compiler
                     var lateBindHelperDescriptor = new LateBindHelperDescriptor(pathInfo);
                     helper = new Ref<IHelperDescriptor<HelperOptions>>(lateBindHelperDescriptor);
                 }
+#pragma warning disable CS0618 // Type or member is obsolete
                 else if (configuration.Compatibility.RelaxedHelperNaming)
+#pragma warning restore CS0618 // Type or member is obsolete
                 {
                     pathInfoLight = pathInfoLight.TagComparer();
                     if (!configuration.Helpers.ContainsKey(pathInfoLight))
@@ -75,7 +80,7 @@ namespace HandlebarsDotNet.Compiler
         {
             var bindingContext = CompilationContext.Args.BindingContext;
             var configuration = CompilationContext.Configuration;
-            var pathInfo = PathInfoStore.Current.GetOrAdd(pex.Path);
+            var pathInfo = PathInfoStore.Current!.GetOrAdd(pex.Path);
 
             var resolvePath = Call(() => PathResolver.ResolvePath(bindingContext, pathInfo));
             

@@ -1,19 +1,22 @@
-﻿namespace HandlebarsDotNet.Compiler.Lexer
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace HandlebarsDotNet.Compiler.Lexer
 {
     internal class LiteralExpressionToken : ExpressionToken
     {
-        public LiteralExpressionToken(string value, string delimiter = null, IReaderContext context = null)
+        public LiteralExpressionToken(string value, string? delimiter = null, IReaderContext? context = null)
         {
             Context = context;
             Value = value;
             Delimiter = delimiter;
         }
 
-        public IReaderContext Context { get; }
+        public IReaderContext? Context { get; }
         
+        [MemberNotNullWhen(true, nameof(Delimiter))]
         public bool IsDelimitedLiteral => Delimiter != null;
 
-        public string Delimiter { get; }
+        public string? Delimiter { get; }
 
         public override TokenType Type => TokenType.Literal;
 

@@ -32,7 +32,7 @@ namespace HandlebarsDotNet.Compiler
             return new HelperExpression(helperName, isBlock, arguments, isRaw);
         }
 
-        public static HelperExpression Helper(string helperName, bool isBlock, bool isRaw = false, IReaderContext context = null)
+        public static HelperExpression Helper(string helperName, bool isBlock, bool isRaw = false, IReaderContext? context = null)
         {
             return new HelperExpression(helperName, isBlock, isRaw, context);
         }
@@ -92,17 +92,17 @@ namespace HandlebarsDotNet.Compiler
             return Partial(partialName, null);
         }
 
-        public static PartialExpression Partial(Expression partialName, Expression argument)
+        public static PartialExpression Partial(Expression partialName, Expression? argument)
         {
             return new PartialExpression(partialName, argument, null, false);
         }
 
-        public static PartialExpression Partial(Expression partialName, Expression argument, Expression fallback)
+        public static PartialExpression Partial(Expression partialName, Expression? argument, Expression fallback)
         {
             return new PartialExpression(partialName, argument, fallback, true);
         }
 
-        public static PartialExpression Partial(Expression partialName, Expression argument, Expression fallback, bool isBlock, string indent)
+        public static PartialExpression Partial(Expression partialName, Expression? argument, Expression? fallback, bool isBlock, string? indent)
         {
             return new PartialExpression(partialName, argument, fallback, isBlock, indent);
         }
@@ -127,7 +127,7 @@ namespace HandlebarsDotNet.Compiler
             return new HashParametersExpression(parameters);
         }
 
-        public static CommentExpression Comment(string value)
+        public static CommentExpression Comment(string? value)
         {
             return new CommentExpression(value);
         }

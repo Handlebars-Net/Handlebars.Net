@@ -354,7 +354,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
 
             public override IEnumerable<string> GetDynamicMemberNames() => _properties.Keys;
             public override bool TryGetMember(GetMemberBinder binder, out object result) =>
-                _properties.TryGetValue(binder.Name, out result);
+                _properties.TryGetValue(binder.Name, out result!);
         }
 
         //We have a fake file system. Difference frameworks and apps will use
@@ -367,7 +367,7 @@ namespace HandlebarsDotNet.Test.ViewEngine
                 files[Sanitise(fileName)] = fileContent;
             }
 
-            public override string GetFileContent(string filename)
+            public override string? GetFileContent(string filename)
             {
                 if (!files.ContainsKey(Sanitise(filename))) return null;
                 return files[Sanitise(filename)];

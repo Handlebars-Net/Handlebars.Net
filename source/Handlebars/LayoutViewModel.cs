@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using HandlebarsDotNet.Compiler;
 using HandlebarsDotNet.Iterators;
@@ -14,10 +15,10 @@ namespace HandlebarsDotNet
         private static readonly ChainSegment BodyChainSegment = ChainSegment.Create("body");
 
         private readonly string _body;
-        private readonly object _value;
+        private readonly object? _value;
         private readonly ObjectDescriptor _valueDescriptor;
 
-        public LayoutViewModel(string body, object value)
+        public LayoutViewModel(string body, object? value)
         {
             _body = body;
             _value = value;
@@ -39,7 +40,7 @@ namespace HandlebarsDotNet
                     (_, o) =>
                     {
                         var vm = (LayoutViewModel) o;
-                        IEnumerable valueProperties = vm._valueDescriptor.GetProperties(vm._valueDescriptor, vm._value);
+                        var valueProperties = vm._valueDescriptor.GetProperties(vm._valueDescriptor, vm._value!);
 
                         return BodyProperties
                            .Concat(valueProperties.Cast<object>());
@@ -48,7 +49,7 @@ namespace HandlebarsDotNet
                 );
             }
 
-            public bool TryGetDescriptor(Type type, out ObjectDescriptor value)
+            public bool TryGetDescriptor(Type type, [MaybeNullWhen(false)] out ObjectDescriptor value)
             {
                 if (type != Type)
                 {
@@ -63,7 +64,7 @@ namespace HandlebarsDotNet
 
         private class MemberAccessor: IMemberAccessor
         {
-            public bool TryGetValue(object instance, ChainSegment memberName, out object value)
+            public bool TryGetValue(object instance, ChainSegment memberName, out object? value)
             {
                 var vm = (LayoutViewModel) instance;
 
@@ -75,8 +76,8 @@ namespace HandlebarsDotNet
 
                 var memberAccessor = vm._valueDescriptor.MemberAccessor;
 
-                if (memberAccessor != null)
-                    return memberAccessor.TryGetValue(vm._value, memberName, out value);
+                if (memberAccessor != null!)
+                    return memberAccessor.TryGetValue(vm._value!, memberName, out value);
 
                 value = default;
                 return false;
@@ -89,7 +90,7 @@ namespace HandlebarsDotNet
             {
                 var vm = (LayoutViewModel) input;
                 var iterator = vm._valueDescriptor.Iterator;
-                iterator?.Iterate(writer, context, blockParamsVariables, vm._value, template, ifEmpty);
+                iterator?.Iterate(writer, context, blockParamsVariables, vm._value!, template, ifEmpty);
             }
         }
     }

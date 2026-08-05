@@ -42,10 +42,10 @@ namespace HandlebarsDotNet
 
         public bool IsSharedEnvironment { get; }
         public HandlebarsConfiguration Configuration { get; }
-        internal ICompiledHandlebarsConfiguration CompiledConfiguration { get; }
-        ICompiledHandlebarsConfiguration ICompiledHandlebars.CompiledConfiguration => CompiledConfiguration;
+        internal ICompiledHandlebarsConfiguration? CompiledConfiguration { get; }
+        ICompiledHandlebarsConfiguration? ICompiledHandlebars.CompiledConfiguration => CompiledConfiguration;
 
-        public HandlebarsTemplate<TextWriter, object, object> CompileView(string templatePath, ViewReaderFactory readerFactoryFactory)
+        public HandlebarsTemplate<TextWriter, object, object> CompileView(string templatePath, ViewReaderFactory? readerFactoryFactory)
         {
             readerFactoryFactory ??= ViewReaderFactory;
             return CompileViewInternal(templatePath, readerFactoryFactory);
@@ -56,7 +56,7 @@ namespace HandlebarsDotNet
             var view = CompileViewInternal(templatePath, ViewReaderFactory);
             return (vm, data) =>
             {
-                var formatProvider = Configuration?.FormatProvider ?? CompiledConfiguration.FormatProvider;
+                var formatProvider = Configuration?.FormatProvider ?? CompiledConfiguration!.FormatProvider;
                 using var writer = ReusableStringWriter.Get(formatProvider);
                 view(writer, vm, data);
                 return writer.ToString();
@@ -197,8 +197,8 @@ namespace HandlebarsDotNet
 
         public void RegisterTemplate(string templateName, HandlebarsTemplate<TextWriter, object, object> template)
         {
-            var registrations = Configuration ?? (IHandlebarsTemplateRegistrations) CompiledConfiguration;
-            registrations.RegisteredTemplates[templateName] = template;
+            var registrations = Configuration ?? (IHandlebarsTemplateRegistrations) CompiledConfiguration!;
+            registrations!.RegisteredTemplates[templateName] = template;
         }
 
         public void RegisterTemplate(string templateName, string template)

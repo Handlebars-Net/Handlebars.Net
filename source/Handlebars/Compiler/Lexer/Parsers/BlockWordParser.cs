@@ -10,7 +10,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
             '#', '^', '/'
         };
 
-        public override Token Parse(ExtendedStringReader reader)
+        public override Token? Parse(ExtendedStringReader reader)
         {
             if (!IsBlockWord(reader)) return null;
 

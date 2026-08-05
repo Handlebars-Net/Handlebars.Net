@@ -34,7 +34,7 @@ namespace HandlebarsDotNet.Compiler
                             helper.IsBlock,
                             helperArguments,
                             helper.IsRaw);
-                        yield return enumerator.Current;
+                        yield return enumerator.Current!;
                         break;
                     }
                     case PathExpression path:
@@ -46,20 +46,20 @@ namespace HandlebarsDotNet.Compiler
                                 path.Path,
                                 false,
                                 helperArguments,
-                                ((EndExpressionToken) enumerator.Current)?.IsRaw ?? false);
-                            yield return enumerator.Current;
+                                ((EndExpressionToken?) enumerator.Current)?.IsRaw ?? false);
+                            yield return enumerator.Current!;
                         }
                         else
                         {
                             yield return path;
-                            yield return enumerator.Current;
+                            yield return enumerator.Current!;
                         }
 
                         break;
                     }
                     
                     default:
-                        yield return item;
+                        yield return item!;
                         break;
                 }
             }

@@ -18,7 +18,7 @@ namespace HandlebarsDotNet.Collections
         
         private readonly IEnumerator _enumerator;
 
-        private T _next;
+        private T? _next;
         private int _index;
         private bool _hasNext;
 
@@ -50,7 +50,7 @@ namespace HandlebarsDotNet.Collections
             if (!_enumerator.MoveNext())
             {
                 Current = _hasNext
-                    ? new EnumeratorValue<T>(_next, _index++, true)
+                    ? new EnumeratorValue<T>(_next!, _index++, true)
                     : new EnumeratorValue<T>();
 
                 _hasNext = false;
@@ -65,7 +65,7 @@ namespace HandlebarsDotNet.Collections
                 return;
             }
 
-            Current = new EnumeratorValue<T>(_next, _index++, false);
+            Current = new EnumeratorValue<T>(_next!, _index++, false);
             _next = (T) _enumerator.Current;
         }
     }
@@ -75,7 +75,7 @@ namespace HandlebarsDotNet.Collections
     {
         private TEnumerator _enumerator; // NOSONAR S2933 — cannot be readonly: struct TEnumerator mutates on MoveNext() and readonly would cause a defensive copy
 
-        private T _next;
+        private T? _next;
         private int _index;
         private bool _hasNext;
 
@@ -107,7 +107,7 @@ namespace HandlebarsDotNet.Collections
             if (!_enumerator.MoveNext())
             {
                 Current = _hasNext
-                    ? new EnumeratorValue<T>(_next, _index++, true)
+                    ? new EnumeratorValue<T>(_next!, _index++, true)
                     : new EnumeratorValue<T>();
 
                 _hasNext = false;
@@ -122,7 +122,7 @@ namespace HandlebarsDotNet.Collections
                 return;
             }
 
-            Current = new EnumeratorValue<T>(_next, _index++, false);
+            Current = new EnumeratorValue<T>(_next!, _index++, false);
             _next = _enumerator.Current;
         }
     }

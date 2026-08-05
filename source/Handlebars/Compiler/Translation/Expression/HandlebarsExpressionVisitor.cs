@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -7,7 +8,8 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class HandlebarsExpressionVisitor : ExpressionVisitor
     {
-        public override Expression Visit(Expression node)
+        [return: NotNullIfNotNull(nameof(node))]
+        public override Expression? Visit(Expression? node)
         {
             if (node == null)
             {
@@ -99,7 +101,7 @@ namespace HandlebarsDotNet.Compiler
         protected virtual Expression VisitPartialExpression(PartialExpression pex)
         {
             Expression partialName = Visit(pex.PartialName);
-            Expression argument = Visit(pex.Argument);
+            Expression? argument = Visit(pex.Argument);
             // Don't visit Fallback - it will be compiled separately
 
             if (partialName != pex.PartialName
@@ -151,12 +153,13 @@ namespace HandlebarsDotNet.Compiler
             return hpex;
         }
 
-        private IEnumerable<Expression> VisitExpressionList(IEnumerable<Expression> original)
+        [return: NotNullIfNotNull(nameof(original))]
+        private IEnumerable<Expression>? VisitExpressionList(IEnumerable<Expression>? original)
         {
             if (original == null) return Array.Empty<Expression>();
 
             var originalAsList = original as IReadOnlyList<Expression> ?? original.ToArray();
-            List<Expression> list = null;
+            List<Expression>? list = null;
             for (int index = 0; index < originalAsList.Count; index++)
             {
                 var p = Visit(originalAsList[index]);

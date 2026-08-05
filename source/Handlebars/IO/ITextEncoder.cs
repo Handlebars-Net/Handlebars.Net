@@ -9,10 +9,10 @@ namespace HandlebarsDotNet
     /// </summary>
     public interface ITextEncoder
     {
-        void Encode(StringBuilder text, TextWriter target);
+        void Encode(StringBuilder? text, TextWriter target);
 
-        void Encode(string text, TextWriter target);
+        void Encode(string? text, TextWriter target);
         
-        void Encode<T>(T text, TextWriter target) where T: IEnumerator<char>;
+        void Encode<T>(T? text, TextWriter target) where T: IEnumerator<char>;
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.EqualityComparers;
 using HandlebarsDotNet.IO.Formatters.DefaultFormatters;
@@ -26,7 +27,7 @@ namespace HandlebarsDotNet.IO
 
         private static readonly DefaultObjectFormatter DefaultObjectFormatter = new DefaultObjectFormatter();
         
-        public bool TryCreateFormatter(Type type, out IFormatter formatter)
+        public bool TryCreateFormatter(Type type, [MaybeNullWhen(false)] out IFormatter formatter)
         {
             if (!Formatters.TryGetValue(type, out formatter))
             {

@@ -11,8 +11,8 @@ namespace HandlebarsNet.Benchmark
     [MemoryDiagnoser]
     public class RenderSimple
     {
-        private HandlebarsTemplate<TextWriter, object, object> _template;
-        private object _data;
+        private HandlebarsTemplate<TextWriter, object, object> _template = null!; // -> Setup()
+        private object _data = null!; // -> Setup()
 
         private const string Source =
             "Dear {{user.firstName}} {{user.lastName}},\n\n" +
@@ -23,7 +23,7 @@ namespace HandlebarsNet.Benchmark
             "— The {{store.name}} Team";
 
         [Params("object", "dictionary", "expando")]
-        public string DataType { get; set; }
+        public string DataType { get; set; } = null!;
 
         [GlobalSetup]
         public void Setup()

@@ -16,7 +16,7 @@ namespace HandlebarsDotNet
         {
         }
         
-        internal HandlebarsCompilerException(string message, IReaderContext context = null)
+        internal HandlebarsCompilerException(string message, IReaderContext? context = null)
             : this(message, null, context)
         {
         }
@@ -26,7 +26,7 @@ namespace HandlebarsDotNet
         {
         }
         
-        internal HandlebarsCompilerException(string message, Exception innerException, IReaderContext context = null)
+        internal HandlebarsCompilerException(string message, Exception? innerException, IReaderContext? context = null)
             : base(message, innerException, context)
         {
         }

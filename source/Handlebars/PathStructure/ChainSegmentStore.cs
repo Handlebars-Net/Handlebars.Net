@@ -13,7 +13,7 @@ namespace HandlebarsDotNet.PathStructure
             return new DeferredValue<CreationProperties, ChainSegment>(new CreationProperties(s, v), properties => new ChainSegment(properties.String, properties.KnownVariable));
         };
 
-        public static ChainSegmentStore Current => AmbientContext.Current?.ChainSegmentStore;
+        public static ChainSegmentStore? Current => AmbientContext.Current?.ChainSegmentStore;
         
         private readonly LookupSlim<string, DeferredValue<CreationProperties, ChainSegment>, StringEqualityComparer> _lookup = new LookupSlim<string, DeferredValue<CreationProperties, ChainSegment>, StringEqualityComparer>(new StringEqualityComparer(StringComparison.Ordinal));
 
@@ -29,7 +29,7 @@ namespace HandlebarsDotNet.PathStructure
         public ChainSegment Create(object value)
         {
             if (value is ChainSegment segment) return segment;
-            return _lookup.GetOrAdd(value as string ?? value.ToString(), ValueFactory, WellKnownVariable.None).Value;
+            return _lookup.GetOrAdd(value as string ?? value.ToString()!, ValueFactory, WellKnownVariable.None).Value;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

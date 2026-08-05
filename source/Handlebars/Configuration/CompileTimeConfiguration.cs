@@ -21,6 +21,6 @@ namespace HandlebarsDotNet
         /// <summary>
         /// The compiler used to compile <see cref="System.Linq.Expressions.Expression"/> 
         /// </summary>
-        public IExpressionCompiler ExpressionCompiler { get; set; }
+        public IExpressionCompiler? ExpressionCompiler { get; set; }
     }
 }

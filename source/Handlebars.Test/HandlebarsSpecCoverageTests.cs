@@ -318,7 +318,7 @@ namespace HandlebarsDotNet.Test
         public void Unless_NullIsFalsy(IHandlebars hbs)
         {
             var template = hbs.Compile("{{#unless val}}missing{{else}}found{{/unless}}");
-            Assert.Equal("missing", template(new { val = (string)null }));
+            Assert.Equal("missing", template(new { val = (string?)null }));
         }
 
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
@@ -372,7 +372,7 @@ namespace HandlebarsDotNet.Test
         public void Each_NullCollectionGoesToElse(IHandlebars hbs)
         {
             var template = hbs.Compile("{{#each items}}{{this}}{{else}}nothing{{/each}}");
-            Assert.Equal("nothing", template(new { items = (string[])null }));
+            Assert.Equal("nothing", template(new { items = (string[]?)null }));
         }
 
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
@@ -432,7 +432,7 @@ namespace HandlebarsDotNet.Test
         public void With_NullGoesToElse(IHandlebars hbs)
         {
             var template = hbs.Compile("{{#with val}}yes{{else}}no{{/with}}");
-            Assert.Equal("no", template(new { val = (string)null }));
+            Assert.Equal("no", template(new { val = (string?)null }));
         }
 
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
@@ -650,14 +650,14 @@ namespace HandlebarsDotNet.Test
         public void Path_NullIntermediateRendersEmpty(IHandlebars hbs)
         {
             var template = hbs.Compile("{{a.b.c}}");
-            Assert.Equal("", template(new { a = (object)null }));
+            Assert.Equal("", template(new { a = (object?)null }));
         }
 
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
         public void Path_DeepNullIntermediateRendersEmpty(IHandlebars hbs)
         {
             var template = hbs.Compile("{{person.name}}");
-            Assert.Equal("", template(new { person = (object)null }));
+            Assert.Equal("", template(new { person = (object?)null }));
         }
 
         // [SPEC GAP] Boolean false renders as "False" (capital F) instead of "false" (lowercase).
@@ -689,7 +689,7 @@ namespace HandlebarsDotNet.Test
         public void Path_NullRendersAsEmpty(IHandlebars hbs)
         {
             var template = hbs.Compile("{{val}}");
-            Assert.Equal("", template(new { val = (string)null }));
+            Assert.Equal("", template(new { val = (string?)null }));
         }
 
         // ─────────────────────────────────────────────────────────────
@@ -1015,7 +1015,7 @@ namespace HandlebarsDotNet.Test
         public void Truthiness_NullIsFalsy(IHandlebars hbs)
         {
             var t = hbs.Compile("{{#if v}}T{{else}}F{{/if}}");
-            Assert.Equal("F", t(new { v = (object)null }));
+            Assert.Equal("F", t(new { v = (object?)null }));
         }
 
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]

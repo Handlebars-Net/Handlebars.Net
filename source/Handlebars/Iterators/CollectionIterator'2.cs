@@ -7,7 +7,7 @@ using HandlebarsDotNet.ValueProviders;
 namespace HandlebarsDotNet.Iterators
 {
     public sealed class CollectionIterator<T, TValue> : IIterator
-        where T: ICollection<TValue>
+        where T : ICollection<TValue>
     {
         public void Iterate(
             in EncodedTextWriter writer,
@@ -36,7 +36,7 @@ namespace HandlebarsDotNet.Iterators
             using var enumerator = target.GetEnumerator();
             while (enumerator.MoveNext())
             {
-                var value = (object) enumerator.Current;
+                var value = (object?) enumerator.Current;
                 var objectIndex = BoxedValues.Int(index);
 
                 if (index == 1) iterator.First = BoxedValues.False;
