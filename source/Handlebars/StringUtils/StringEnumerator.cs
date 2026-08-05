@@ -18,6 +18,14 @@ namespace HandlebarsDotNet.StringUtils
             _length = _text.Length;
             _index = -1;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public StringEnumerator(string text, int start)
+        {
+            _text = text;
+            _length = _text.Length;
+            _index = start - 1;
+        }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext() => ++_index < _length;
