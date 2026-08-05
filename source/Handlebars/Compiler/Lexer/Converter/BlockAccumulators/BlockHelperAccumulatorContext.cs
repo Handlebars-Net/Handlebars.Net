@@ -34,6 +34,11 @@ namespace HandlebarsDotNet.Compiler
             protected set => throw new NotSupportedException();
         }
 
+        protected override string OwnClosingName => _startingNode.HelperName
+            .Replace("#", string.Empty)
+            .Replace("^", string.Empty)
+            .Replace("*", string.Empty);
+
         public override void HandleElement(Expression item)
         {
             if (IsInversionBlock(item))
@@ -61,11 +66,7 @@ namespace HandlebarsDotNet.Compiler
 
         private bool IsClosingNode(Expression item)
         {
-            var helperName = _startingNode.HelperName
-                .Replace("#", string.Empty)
-                .Replace("^", string.Empty)
-                .Replace("*", string.Empty);
-            return item is PathExpression expression && expression.Path == "/" + helperName;
+            return item is PathExpression expression && expression.Path == "/" + ResolvedClosingName;
         }
 
         public override Expression AccumulatedBlock

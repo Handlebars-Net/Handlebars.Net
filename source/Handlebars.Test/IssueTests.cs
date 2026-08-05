@@ -1137,5 +1137,102 @@ namespace HandlebarsDotNet.Test
             var result = template(new { Name = "World" });
             Assert.Equal(@"\*.World", result);
         }
+
+        // Issue https://github.com/Handlebars-Net/Handlebars.Net/issues/263
+        [Fact]
+        public void ElseIfChainsForIfHelper()
+        {
+            var handlebars = Handlebars.Create();
+            var template = handlebars.Compile("{{#if isDog}}is a dog{{else if isCat}}is a cat{{else}}is something else{{/if}}");
+
+            Assert.Equal("is a dog", template(new { isDog = true, isCat = false }));
+            Assert.Equal("is a cat", template(new { isDog = false, isCat = true }));
+            Assert.Equal("is something else", template(new { isDog = false, isCat = false }));
+        }
+
+        // Issue https://github.com/Handlebars-Net/Handlebars.Net/issues/263
+        [Fact]
+        public void ElseWithCustomBlockHelperInvocationChainsToNestedHelper()
+        {
+            var handlebars = Handlebars.Create();
+            RegisterStringEqualityBlockHelper(handlebars);
+
+            var template = handlebars.Compile(
+                "{{#StringEqualityBlockHelper value 'dog'}}is a dog{{else StringEqualityBlockHelper value 'cat'}}is a cat{{else}}is something else{{/StringEqualityBlockHelper}}");
+
+            Assert.Equal("is a dog", template(new { value = "dog" }));
+            Assert.Equal("is a cat", template(new { value = "cat" }));
+            Assert.Equal("is something else", template(new { value = "fish" }));
+        }
+
+        // Issue https://github.com/Handlebars-Net/Handlebars.Net/issues/263
+        [Fact]
+        public void ElseIfSupportsMultipleChainedClauses()
+        {
+            var handlebars = Handlebars.Create();
+            var template = handlebars.Compile("{{#if a}}A{{else if b}}B{{else if c}}C{{else}}D{{/if}}");
+
+            Assert.Equal("A", template(new { a = true, b = false, c = false }));
+            Assert.Equal("B", template(new { a = false, b = true, c = false }));
+            Assert.Equal("C", template(new { a = false, b = false, c = true }));
+            Assert.Equal("D", template(new { a = false, b = false, c = false }));
+        }
+
+        // Issue https://github.com/Handlebars-Net/Handlebars.Net/issues/263
+        [Fact]
+        public void PlainElseStillWorksWithoutChainedHelperInvocation()
+        {
+            var handlebars = Handlebars.Create();
+            var template = handlebars.Compile("{{#if isDog}}is a dog{{else}}is not a dog{{/if}}");
+
+            Assert.Equal("is a dog", template(new { isDog = true }));
+            Assert.Equal("is not a dog", template(new { isDog = false }));
+        }
+
+        // Issue https://github.com/Handlebars-Net/Handlebars.Net/issues/263
+        [Fact]
+        public void ElseIfCanChainUnderNonConditionalBlockHelper()
+        {
+            var handlebars = Handlebars.Create();
+            RegisterStringEqualityBlockHelper(handlebars);
+
+            var template = handlebars.Compile(
+                "{{#StringEqualityBlockHelper value 'dog'}}A{{else if isCat}}B{{else}}C{{/StringEqualityBlockHelper}}");
+
+            Assert.Equal("A", template(new { value = "dog", isCat = false }));
+            Assert.Equal("B", template(new { value = "fish", isCat = true }));
+            Assert.Equal("C", template(new { value = "fish", isCat = false }));
+        }
+
+        // Issue https://github.com/Handlebars-Net/Handlebars.Net/issues/263
+        [Fact]
+        public void ElseWithCustomBlockHelperInvocationChainsThreeDeep()
+        {
+            var handlebars = Handlebars.Create();
+            RegisterStringEqualityBlockHelper(handlebars);
+
+            var template = handlebars.Compile(
+                "{{#StringEqualityBlockHelper value 'a'}}A{{else StringEqualityBlockHelper value 'b'}}B{{else StringEqualityBlockHelper value 'c'}}C{{else}}D{{/StringEqualityBlockHelper}}");
+
+            Assert.Equal("A", template(new { value = "a" }));
+            Assert.Equal("B", template(new { value = "b" }));
+            Assert.Equal("C", template(new { value = "c" }));
+            Assert.Equal("D", template(new { value = "z" }));
+        }
+
+        private static void RegisterStringEqualityBlockHelper(IHandlebars handlebars)
+        {
+            handlebars.RegisterHelper("StringEqualityBlockHelper", (output, options, context, arguments) =>
+            {
+                if (arguments.At<string>(0) == arguments.At<string>(1))
+                {
+                    options.Template(output, context);
+                }
+                else
+                {
+                    options.Inverse(output, context);
+                }
+            });
+        }
     }
 }
