@@ -65,6 +65,44 @@ var result = template(data);
 */
 ```
 
+### Multi-dimensional Arrays
+
+Handlebars.Net supports indexing and iterating true multi-dimensional (rank > 1) .NET arrays, such as `int[,]` or `int[,,]`, in addition to jagged arrays (`int[][]`) and other list/enumerable types.
+
+A multi-dimensional array is indexed and iterated one dimension at a time, so a 2D array is treated as an array of rows and a 3D array as an array of 2D "slabs", and so on:
+
+```c#
+string source = "{{#each grid}}[{{#each this}}{{this}}{{/each}}]{{/each}}";
+
+var template = Handlebars.Compile(source);
+
+var data = new {
+    grid = new int[,] { { 1, 2, 3 }, { 4, 5, 6 } }
+};
+
+var result = template(data);
+
+/* Would render:
+[123][456]
+*/
+```
+
+Individual elements can also be reached directly by chaining index segments, one per dimension:
+
+```c#
+string source = "{{ grid.[1].[2] }}"; // grid[1, 2]
+
+var template = Handlebars.Compile(source);
+
+var data = new {
+    grid = new int[,] { { 1, 2, 3 }, { 4, 5, 6 } }
+};
+
+var result = template(data); // "6"
+```
+
+This is a C#-specific capability, since JavaScript/Handlebars.js has no equivalent to true multi-dimensional arrays.
+
 ### Registering Partials
 
 ```c#
