@@ -97,15 +97,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Check for benchmark-relevant changes
+        uses: dorny/paths-filter@7b450fff21473bca461d4b92ce414b9d0420d706 # v4.0.2
+        id: filter
+        with:
+          filters: |
+            relevant:
+              - 'source/Handlebars/**'
+              - 'source/Handlebars.Benchmark/**'
+              - 'source/Directory.Build.props'
+              - 'source/Handlebars.sln'
+
       - uses: actions/setup-dotnet@v4
+        if: steps.filter.outputs.relevant == 'true'
         with:
           dotnet-version: |
               6.0.x
               10.0.x
       - name: Run benchmark
+        if: steps.filter.outputs.relevant == 'true'
         working-directory: ./source/Handlebars.Benchmark
         run: dotnet run -c Release -f net10.0 --exporters json --filter '*' --join
       - name: Get benchmark file name
+        if: steps.filter.outputs.relevant == 'true'
         working-directory: ./source/Handlebars.Benchmark/BenchmarkDotNet.Artifacts/results
         id: benchmarkfilename
         run: |
@@ -113,6 +128,7 @@ jobs:
           echo $filePath
           echo "file=$filePath" >> $GITHUB_OUTPUT
       - name: Store benchmark result
+        if: steps.filter.outputs.relevant == 'true'
         uses: Happypig375/github-action-benchmark@e7cb068f90622402c0ae5b54e2c781052fcd9343 # v1.8.2
         with:
           name: Benchmark.Net Benchmark
@@ -125,7 +141,12 @@ jobs:
           fail-on-alert: false
           alert-comment-cc-users: '@zjklee'
       - name: Upload Artifacts
+        if: steps.filter.outputs.relevant == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: Benchmark
           path: source/Handlebars.Benchmark/BenchmarkDotNet.Artifacts/results/
+
+      - name: Skipped
+        if: steps.filter.outputs.relevant != 'true'
+        run: echo "No changes under source/Handlebars or source/Handlebars.Benchmark — skipping benchmark run."
