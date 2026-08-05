@@ -12,7 +12,7 @@ namespace HandlebarsDotNet
         {
         }
         
-        internal HandlebarsException(string message, IReaderContext context = null)
+        internal HandlebarsException(string message, IReaderContext? context = null)
             : this(message, null, context)
         {
         }
@@ -22,12 +22,12 @@ namespace HandlebarsDotNet
         {
         }
         
-        internal HandlebarsException(string message, Exception innerException, IReaderContext context = null)
+        internal HandlebarsException(string message, Exception? innerException, IReaderContext? context = null)
             : base(FormatMessage(message, context), innerException)
         {
         }
         
-        private static string FormatMessage(string message, IReaderContext context)
+        private static string FormatMessage(string message, IReaderContext? context)
         {
             if (context == null) return message;
 

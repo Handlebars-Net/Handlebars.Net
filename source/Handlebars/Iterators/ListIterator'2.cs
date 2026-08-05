@@ -35,7 +35,7 @@ namespace HandlebarsDotNet.Iterators
             var lastIndex = count - 1;
             for (; index < count; index++)
             {
-                var value = (object) target[index];
+                var value = (object?) target[index];
                 var objectIndex = BoxedValues.Int(index);
                 
                 if (index == 1) iterator.First = BoxedValues.False;

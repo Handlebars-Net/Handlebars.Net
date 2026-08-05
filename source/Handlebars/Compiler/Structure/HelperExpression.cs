@@ -7,7 +7,7 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class HelperExpression : HandlebarsExpression
     {
-        public HelperExpression(string helperName, bool isBlock, IEnumerable<Expression> arguments, bool isRaw = false, IReaderContext context = null)
+        public HelperExpression(string helperName, bool isBlock, IEnumerable<Expression> arguments, bool isRaw = false, IReaderContext? context = null)
             : this(helperName, isBlock, isRaw)
         {
             Arguments = arguments;
@@ -15,7 +15,7 @@ namespace HandlebarsDotNet.Compiler
             IsBlock = isBlock;
         }
 
-        public HelperExpression(string helperName, bool isBlock, bool isRaw = false, IReaderContext context = null)
+        public HelperExpression(string helperName, bool isBlock, bool isRaw = false, IReaderContext? context = null)
         {
             HelperName = helperName;
             IsRaw = isRaw;
@@ -35,7 +35,7 @@ namespace HandlebarsDotNet.Compiler
         public bool IsBlock { get; set; }
 
         public IEnumerable<Expression> Arguments { get; }
-        public IReaderContext Context { get; }
+        public IReaderContext? Context { get; }
     }
 }
 

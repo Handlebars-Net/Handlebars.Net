@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using HandlebarsDotNet.PathStructure;
 
 namespace HandlebarsDotNet.Helpers
@@ -15,7 +16,7 @@ namespace HandlebarsDotNet.Helpers
         /// <param name="targetType"></param>
         /// <param name="helper"></param>
         /// <returns></returns>
-        bool TryResolveHelper(PathInfo name, Type targetType, out IHelperDescriptor<HelperOptions> helper);
+        bool TryResolveHelper(PathInfo name, Type? targetType, [MaybeNullWhen(false)] out IHelperDescriptor<HelperOptions> helper);
 
         /// <summary>
         /// Resolves <see cref="HandlebarsBlockHelper"/>
@@ -23,6 +24,6 @@ namespace HandlebarsDotNet.Helpers
         /// <param name="name"></param>
         /// <param name="helper"></param>
         /// <returns></returns>
-        bool TryResolveBlockHelper(PathInfo name, out IHelperDescriptor<BlockHelperOptions> helper);
+        bool TryResolveBlockHelper(PathInfo name, [MaybeNullWhen(false)] out IHelperDescriptor<BlockHelperOptions> helper);
     }
 }

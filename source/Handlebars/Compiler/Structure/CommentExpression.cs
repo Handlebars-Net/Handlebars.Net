@@ -4,12 +4,12 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class CommentExpression : HandlebarsExpression
     {
-        public CommentExpression(string value)
+        public CommentExpression(string? value)
         {
             Value = value;
         }
         
-        public string Value { get; }
+        public string? Value { get; }
 
         public override ExpressionType NodeType => (ExpressionType) HandlebarsExpressionType.CommentExpression;
     }

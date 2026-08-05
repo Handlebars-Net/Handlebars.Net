@@ -43,12 +43,12 @@ namespace HandlebarsDotNet
             return _comparerTag == other._comparerTag && Equals(PathInfo, other.PathInfo);
         }
         
-        public bool Equals(PathInfo other)
+        public bool Equals(PathInfo? other)
         {
             return Equals(PathInfo, other);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is PathInfoLight other && Equals(other);
         }

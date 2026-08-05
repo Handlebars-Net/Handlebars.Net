@@ -4,7 +4,7 @@ namespace HandlebarsDotNet
 {
     public class FileSystemPartialTemplateResolver : IPartialTemplateResolver
     {
-        public bool TryRegisterPartial(IHandlebars env, string partialName, string templatePath)
+        public bool TryRegisterPartial(IHandlebars env, string? partialName, string? templatePath)
         {
             if (env == null)
             {

@@ -2,6 +2,7 @@ using Xunit;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Linq;
 using System.Reflection;
@@ -22,7 +23,7 @@ namespace HandlebarsDotNet.Test
         private static string HtmlEncodeStringHelper(IHandlebars handlebars, string inputString)
         {
             using var stringWriter = new System.IO.StringWriter();
-            handlebars.Configuration.TextEncoder.Encode(inputString, stringWriter);
+            handlebars.Configuration.TextEncoder!.Encode(inputString, stringWriter);
             return stringWriter.ToString();
         }
 
@@ -208,7 +209,7 @@ namespace HandlebarsDotNet.Test
 
             var data = new
             {
-                foo = (object)null
+                foo = (object?)null
             };
             var ex = Assert.Throws<HandlebarsUndefinedBindingException>(() => template(data));
 
@@ -230,7 +231,7 @@ false
 
             var data = new
             {
-                foo = (string)null
+                foo = (string?)null
             };
             var result = template(data);
             Assert.Contains("false", result);
@@ -1280,7 +1281,7 @@ false
 
             var data = new
             {
-                person = (object)null
+                person = (object?)null
             };
 
             var result = template(data);
@@ -1384,7 +1385,7 @@ false
 
             var data = new
             {
-                name = (object)null
+                name = (object?)null
             };
 
             var result = template(data);
@@ -1416,7 +1417,7 @@ false
 
             var data = new
             {
-                falsy = (object)null
+                falsy = (object?)null
             };
 
             var result = template(data);
@@ -1978,10 +1979,10 @@ false
         {
             handlebars.RegisterHelper($"getData", (context, arguments) =>
             {
-                var data = new Dictionary<string, string>
+                var data = new Dictionary<string, string?>
                 {
-                    {"Nils", arguments[0].ToString()},
-                    {"Yehuda", arguments[1].ToString()}
+                    {"Nils", arguments[0]!.ToString()},
+                    {"Yehuda", arguments[1]!.ToString()}
                 };
 
                 return data;
@@ -2209,7 +2210,7 @@ false
 
         private class StringHelperResolver : IHelperResolver
         {
-            public bool TryResolveHelper(PathInfo name, Type targetType, out IHelperDescriptor<HelperOptions> helper)
+            public bool TryResolveHelper(PathInfo name, Type? targetType, out IHelperDescriptor<HelperOptions> helper)
             {
                 if (targetType == typeof(string))
                 {
@@ -2218,7 +2219,7 @@ false
 
                     if (method == null)
                     {
-                        helper = null;
+                        helper = null!;
                         return false;
                     }
 
@@ -2226,13 +2227,13 @@ false
                     return true;
                 }
 
-                helper = null;
+                helper = null!;
                 return false;
             }
 
             public bool TryResolveBlockHelper(PathInfo name, out IHelperDescriptor<BlockHelperOptions> helper)
             {
-                helper = null;
+                helper = null!;
                 return false;
             }
 
@@ -2249,7 +2250,7 @@ false
                 public PathInfo Name { get; }
                 public object Invoke(in HelperOptions options, in Context context, in Arguments arguments)
                 {
-                    return _methodInfo.Invoke(arguments[0], arguments.AsEnumerable().Skip(1).ToArray());
+                    return _methodInfo.Invoke(arguments[0], arguments.AsEnumerable().Skip(1).ToArray())!;
                 }
 
                 public void Invoke(in EncodedTextWriter output, in HelperOptions options, in Context context, in Arguments arguments)
@@ -2270,7 +2271,7 @@ false
             {
                 if (type != typeof(UndefinedBindingResult))
                 {
-                    formatter = null;
+                    formatter = null!;
                     return false;
                 }
 
@@ -2297,7 +2298,7 @@ false
             {
                 if (type != typeof(DateTime))
                 {
-                    formatter = null;
+                    formatter = null!;
                     return false;
                 }
 
@@ -2458,7 +2459,7 @@ false
 
             public bool TryGetValue(string key, out object value)
             {
-                return ((IDictionary<string, object>)data).TryGetValue(key, out value);
+                return ((IDictionary<string, object>)data).TryGetValue(key, out value!);
             }
 
             System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()

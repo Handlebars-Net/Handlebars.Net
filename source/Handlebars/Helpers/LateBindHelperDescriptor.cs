@@ -9,7 +9,7 @@ namespace HandlebarsDotNet.Helpers
 
         public PathInfo Name { get; }
 
-        public object Invoke(in HelperOptions options, in Context context, in Arguments arguments)
+        public object? Invoke(in HelperOptions options, in Context context, in Arguments arguments)
         {
             var bindingContext = options.Frame;
 
@@ -21,9 +21,9 @@ namespace HandlebarsDotNet.Helpers
             // TODO: add cache
             var configuration = options.Frame.Configuration;
             var helperResolvers = (ObservableList<IHelperResolver>) configuration.HelperResolvers;
-            if(helperResolvers.Count != 0)
+            if (helperResolvers.Count != 0)
             {
-                var targetType = arguments.Length > 0 ? arguments[0].GetType() : null;
+                var targetType = arguments.Length > 0 ? arguments[0]!.GetType() : null;
                 for (var index = 0; index < helperResolvers.Count; index++)
                 {
                     var resolver = helperResolvers[index];
@@ -36,7 +36,7 @@ namespace HandlebarsDotNet.Helpers
             var value = PathResolver.ResolvePath(bindingContext, Name);
             if (!(value is UndefinedBindingResult)) return value;
             
-            return configuration.Helpers["helperMissing"].Value.Invoke(options, context, arguments);
+            return configuration.Helpers["helperMissing"]!.Value.Invoke(options, context, arguments);
         }
 
         public void Invoke(in EncodedTextWriter output, in HelperOptions options, in Context context, in Arguments arguments)

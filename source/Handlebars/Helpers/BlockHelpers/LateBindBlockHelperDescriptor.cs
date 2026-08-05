@@ -36,7 +36,7 @@ namespace HandlebarsDotNet.Helpers.BlockHelpers
                 }
             }
 
-            configuration.BlockHelpers["blockHelperMissing"].Value
+            configuration.BlockHelpers["blockHelperMissing"]!.Value
                 .Invoke(output, options, context, arguments);
         }
     }

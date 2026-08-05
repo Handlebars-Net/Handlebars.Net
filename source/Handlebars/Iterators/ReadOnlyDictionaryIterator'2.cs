@@ -8,6 +8,7 @@ namespace HandlebarsDotNet.Iterators
 {
     public sealed class ReadOnlyDictionaryIterator<TDictionary, TKey, TValue> : IIterator
         where TDictionary : class, IReadOnlyDictionary<TKey, TValue>
+        where TKey : notnull
     {
         public void Iterate(
             in EncodedTextWriter writer,
@@ -36,7 +37,7 @@ namespace HandlebarsDotNet.Iterators
             while (enumerator.MoveNext())
             {
                 var key = (object) enumerator.Current.Key;
-                var value = (object) enumerator.Current.Value;
+                var value = (object?) enumerator.Current.Value;
                 
                 iterator.Key = key;
                 

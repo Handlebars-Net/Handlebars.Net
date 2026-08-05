@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace HandlebarsDotNet.Collections
 {
@@ -12,7 +13,7 @@ namespace HandlebarsDotNet.Collections
         : IReadOnlyCollection<KeyValuePair<TKey, TValue>>
     {
         bool ContainsKey(in TKey key);
-        bool TryGetValue(in TKey key, out TValue value);
-        TValue this[in TKey key] { get; }
+        bool TryGetValue(in TKey key, [MaybeNullWhen(false)] out TValue value);
+        TValue? this[in TKey key] { get; }
     }
 }

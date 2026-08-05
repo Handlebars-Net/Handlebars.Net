@@ -47,12 +47,12 @@ namespace HandlebarsDotNet.PathStructure
             return true;
         }
 
-        public bool Equals(string other)
+        public bool Equals(string? other)
         {
             return string.Equals(other, ToString(), StringComparison.OrdinalIgnoreCase);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is PathSegment other && Equals(other);
         }

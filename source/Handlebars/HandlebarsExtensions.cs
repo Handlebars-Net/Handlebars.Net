@@ -10,7 +10,7 @@ namespace HandlebarsDotNet
         /// </summary>
         /// <param name="writer"></param>
         /// <param name="value"></param>
-        public static void WriteSafeString(this in EncodedTextWriter writer, string value)
+        public static void WriteSafeString(this in EncodedTextWriter writer, string? value)
         {
             writer.Write(value, false);
         }
@@ -20,7 +20,7 @@ namespace HandlebarsDotNet
         /// </summary>
         /// <param name="writer"></param>
         /// <param name="value"></param>
-        public static void WriteSafeString(this in EncodedTextWriter writer, object value)
+        public static void WriteSafeString(this in EncodedTextWriter writer, object? value)
         {
             if (value is string str)
             {

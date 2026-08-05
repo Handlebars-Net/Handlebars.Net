@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace HandlebarsDotNet.Collections
 {
     /// <summary>
@@ -9,6 +11,7 @@ namespace HandlebarsDotNet.Collections
     public interface IIndexed<TKey, TValue> : IReadOnlyIndexed<TKey, TValue>
     {
         void AddOrReplace(in TKey key, in TValue value);
+        [MaybeNull]
         new TValue this[in TKey key] { get; set; }
         void Clear();
     }

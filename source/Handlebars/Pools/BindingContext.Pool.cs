@@ -7,13 +7,13 @@ namespace HandlebarsDotNet
     {
         private static readonly BindingContextPool Pool = new BindingContextPool();
 
-        internal static BindingContext Create(ICompiledHandlebarsConfiguration configuration, object value)
+        internal static BindingContext Create(ICompiledHandlebarsConfiguration configuration, object? value)
         {
             return Pool.CreateContext(configuration, value, null, null);
         }
 
-        internal static BindingContext Create(ICompiledHandlebarsConfiguration configuration, object value, BindingContext parent,
-            TemplateDelegate partialBlockTemplate)
+        internal static BindingContext Create(ICompiledHandlebarsConfiguration configuration, object? value, BindingContext parent,
+            TemplateDelegate? partialBlockTemplate)
         {
             return Pool.CreateContext(configuration, value, parent, partialBlockTemplate);
         }
@@ -26,7 +26,7 @@ namespace HandlebarsDotNet
             {
             }
             
-            public BindingContext CreateContext(ICompiledHandlebarsConfiguration configuration, object value, BindingContext parent, TemplateDelegate partialBlockTemplate)
+            public BindingContext CreateContext(ICompiledHandlebarsConfiguration configuration, object? value, BindingContext? parent, TemplateDelegate? partialBlockTemplate)
             {
                 var context = Get();
                 context.Configuration = configuration;
@@ -46,10 +46,10 @@ namespace HandlebarsDotNet
 
                 public bool Return(BindingContext item)
                 {
-                    item.Configuration = null;
+                    item.Configuration = null!;
 
-                    item.Root = null;
-                    item.Value = null;
+                    item.Root = null!;
+                    item.Value = null!;
                     item.ParentContext = null;
                     item.PartialBlockTemplate = null;
                     item.InlinePartialTemplates.Clear();

@@ -8,8 +8,7 @@ namespace HandlebarsDotNet.Runtime
         private readonly TState _state;
         private readonly Func<TState, T> _factory;
         
-        private WeakReference<T> _value;
-        private bool _isValueCreated;
+        private WeakReference<T>? _value;
 
         public GcDeferredValue(TState state, Func<TState, T> factory)
         {
@@ -17,9 +16,9 @@ namespace HandlebarsDotNet.Runtime
             _factory = factory;
         }
 
-        public override string ToString()
+        public override string? ToString()
         {
-            if (!_isValueCreated) return "Not yet created";
+            if (_value == null) return "Not yet created";
             if (!_value.TryGetTarget(out var value)) return "GC collected";
             
             return value.ToString();
@@ -30,9 +29,9 @@ namespace HandlebarsDotNet.Runtime
             get
             {
                 T value;
-                if (_isValueCreated)
+                if (_value != null)
                 {
-                    if(_value.TryGetTarget(out value)) return value;
+                    if(_value.TryGetTarget(out value!)) return value;
 
                     value = _factory(_state);
                     _value.SetTarget(value);
@@ -41,7 +40,6 @@ namespace HandlebarsDotNet.Runtime
                 {
                     value = _factory(_state);
                     _value = new WeakReference<T>(value);
-                    _isValueCreated = true;
                 }
                 
                 return value;

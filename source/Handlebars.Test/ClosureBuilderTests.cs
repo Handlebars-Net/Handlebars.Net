@@ -25,19 +25,19 @@ namespace HandlebarsDotNet.Test
             
             Assert.Equal(paths[0], closure.PI0);
             Assert.Equal(paths[3], closure.PI3);
-            Assert.Equal(paths[5], closure.PIA[1]);
+            Assert.Equal(paths[5], closure.PIA![1]);
             
             Assert.Equal(helpers[0], closure.HD0);
             Assert.Equal(helpers[3], closure.HD3);
-            Assert.Equal(helpers[5], closure.HDA[1]);
+            Assert.Equal(helpers[5], closure.HDA![1]);
             
             Assert.Equal(blockHelpers[0], closure.BHD0);
             Assert.Equal(blockHelpers[3], closure.BHD3);
-            Assert.Equal(blockHelpers[5], closure.BHDA[1]);
+            Assert.Equal(blockHelpers[5], closure.BHDA![1]);
             
             Assert.Equal(decoratorDelegates[0], closure.DDD0);
             Assert.Equal(decoratorDelegates[3], closure.DDD3);
-            Assert.Equal(decoratorDelegates[5], closure.DDDA[1]);
+            Assert.Equal(decoratorDelegates[5], closure.DDDA![1]);
             
             Assert.Equal(others[0], closure.A[0]);
             Assert.Equal(others[3], closure.A[3]);
@@ -97,7 +97,7 @@ namespace HandlebarsDotNet.Test
             var blockHelpers = new List<Ref<IHelperDescriptor<BlockHelperOptions>>>();
             for (int i = 0; i < count; i++)
             {
-                var blockHelper = new Ref<IHelperDescriptor<BlockHelperOptions>>();
+                var blockHelper = new Ref<IHelperDescriptor<BlockHelperOptions>>(null!);
                 builder.Add(Const(blockHelper));
                 blockHelpers.Add(blockHelper);
             }
@@ -110,7 +110,7 @@ namespace HandlebarsDotNet.Test
             var helpers = new List<Ref<IHelperDescriptor<HelperOptions>>>();
             for (int i = 0; i < count; i++)
             {
-                var helper = new Ref<IHelperDescriptor<HelperOptions>>();
+                var helper = new Ref<IHelperDescriptor<HelperOptions>>(null!);
                 builder.Add(Const(helper));
                 helpers.Add(helper);
             }

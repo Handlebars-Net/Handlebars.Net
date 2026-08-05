@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using HandlebarsDotNet.Compiler.Lexer;
 
 namespace HandlebarsDotNet.Compiler
@@ -46,10 +47,10 @@ namespace HandlebarsDotNet.Compiler
             var pathExpression = result[result.Count - 1] as PathExpression;
             VerifyBlockParamsSyntax(blockParameterToken, pathExpression);
 
-            result[result.Count - 1] = HandlebarsExpression.BlockParams(pathExpression!.Path, blockParameterToken.Value);
+            result[result.Count - 1] = HandlebarsExpression.BlockParams(pathExpression.Path, blockParameterToken.Value);
         }
 
-        private static void VerifyBlockParamsSyntax(BlockParameterToken blockParameterToken, PathExpression pathExpression)
+        private static void VerifyBlockParamsSyntax(BlockParameterToken blockParameterToken, [NotNull] PathExpression? pathExpression)
         {
             if (pathExpression == null) throw new HandlebarsCompilerException("blockParams definition has incorrect syntax", blockParameterToken.Context);
             if (!string.Equals("as", pathExpression.Path, StringComparison.OrdinalIgnoreCase)) throw new HandlebarsCompilerException("blockParams definition has incorrect syntax", blockParameterToken.Context);

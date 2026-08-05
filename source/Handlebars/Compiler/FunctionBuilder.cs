@@ -62,7 +62,7 @@ namespace HandlebarsDotNet.Compiler
                 var expression = CreateExpression(expressions, compilationContext, out decorators);
                 if (expression.Expression is ConstantExpression constantExpression)
                 {
-                    return (TemplateDelegate) constantExpression.Value;
+                    return (TemplateDelegate) constantExpression.Value!;
                 }
 
                 var lambda = (Expression<TemplateDelegate>) expression.Expression;

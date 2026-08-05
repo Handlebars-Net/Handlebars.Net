@@ -1,11 +1,12 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.EqualityComparers;
 using HandlebarsDotNet.Runtime;
 
 namespace HandlebarsDotNet.ObjectDescriptors
 {
-    public class ObjectDescriptorFactory : IObjectDescriptorProvider, IObserver<ObservableEvent<IObjectDescriptorProvider>>
+    public class ObjectDescriptorFactory : IObjectDescriptorProvider, IObserver<IObservableEvent<IObjectDescriptorProvider>>
     {
         private readonly ObservableList<IObjectDescriptorProvider> _providers;
         private readonly LookupSlim<Type, DeferredValue<Type, ObjectDescriptor>, ReferenceEqualityComparer<Type>> _descriptorsCache = new LookupSlim<Type, DeferredValue<Type, ObjectDescriptor>, ReferenceEqualityComparer<Type>>(new ReferenceEqualityComparer<Type>());
@@ -19,20 +20,20 @@ namespace HandlebarsDotNet.ObjectDescriptors
                 return descriptor;
             }
 
-            return ObjectDescriptor.Empty;
+            return ObjectDescriptor.Empty!;
         });
 
-        private readonly IObserver<ObservableEvent<IObjectDescriptorProvider>> _observer;
+        private readonly IObserver<IObservableEvent<IObjectDescriptorProvider>> _observer;
 
-        public static ObjectDescriptorFactory Current => AmbientContext.Current?.ObjectDescriptorFactory;
+        public static ObjectDescriptorFactory? Current => AmbientContext.Current?.ObjectDescriptorFactory;
         
-        public ObjectDescriptorFactory(ObservableList<IObjectDescriptorProvider> providers = null)
+        public ObjectDescriptorFactory(ObservableList<IObjectDescriptorProvider>? providers = null)
         {
             _providers = new ObservableList<IObjectDescriptorProvider>();
              
             if (providers != null) Append(providers);
             
-            _observer = ObserverBuilder<ObservableEvent<IObjectDescriptorProvider>>.Create(_descriptorsCache)
+            _observer = ObserverBuilder<IObservableEvent<IObjectDescriptorProvider>>.Create(_descriptorsCache)
                 .OnEvent<AddedObservableEvent<IObjectDescriptorProvider>>((@event, state) => state.Clear())
                 .Build();
             
@@ -65,6 +66,6 @@ namespace HandlebarsDotNet.ObjectDescriptors
 
         public void OnError(Exception error) => _observer.OnError(error);
 
-        public void OnNext(ObservableEvent<IObjectDescriptorProvider> value) => _observer.OnNext(value);
+        public void OnNext(IObservableEvent<IObjectDescriptorProvider> value) => _observer.OnNext(value);
     }
 }

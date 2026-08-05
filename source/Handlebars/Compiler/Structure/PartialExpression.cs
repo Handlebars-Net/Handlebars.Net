@@ -4,11 +4,12 @@ namespace HandlebarsDotNet.Compiler
 {
     internal class PartialExpression : HandlebarsExpression
     {
-        public PartialExpression(Expression partialName, Expression argument, Expression fallback, string indent = null)
+        public PartialExpression(Expression partialName, Expression? argument, Expression? fallback, bool isBlock = false, string? indent = null)
         {
             PartialName = partialName;
             Argument = argument;
             Fallback = fallback;
+            IsBlock = isBlock;
             Indent = indent;
         }
 
@@ -16,16 +17,18 @@ namespace HandlebarsDotNet.Compiler
 
         public Expression PartialName { get; }
 
-        public Expression Argument { get; }
+        public Expression? Argument { get; }
 
-        public Expression Fallback { get; }
+        public Expression? Fallback { get; }
+
+        public bool IsBlock { get; }
 
         /// <summary>
         /// The whitespace that preceded the partial tag on its line.
         /// When non-null/non-empty, this indentation is prepended to every line of the rendered partial output,
         /// matching Handlebars.js standalone partial indentation behavior.
         /// </summary>
-        public string Indent { get; }
+        public string? Indent { get; }
     }
 }
 

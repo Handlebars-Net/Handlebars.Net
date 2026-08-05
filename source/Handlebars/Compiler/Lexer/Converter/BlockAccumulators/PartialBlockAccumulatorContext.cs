@@ -9,7 +9,7 @@ namespace HandlebarsDotNet.Compiler
         private readonly PartialExpression _startingNode;
         private readonly List<Expression> _body = new List<Expression>();
 
-        public sealed override string BlockName { get; protected set; }
+        public sealed override string BlockName { get; protected set; } = null!;
         
         public PartialBlockAccumulatorContext(Expression startingNode)
             : base(startingNode)
@@ -22,10 +22,18 @@ namespace HandlebarsDotNet.Compiler
             _body.Add(item);
         }
 
-        public override Expression GetAccumulatedBlock()
+        public override Expression AccumulatedBlock
         {
-            var fallback = _body.Count == 0 ? null : _body.Count == 1 ? _body.First() : Expression.Block(_body);
-            return HandlebarsExpression.Partial(_startingNode.PartialName, _startingNode.Argument, fallback);
+            get
+            {
+                var fallback = _body.Count switch
+                {
+                    0 => Expression.Empty(),
+                    1 => _body[0],
+                    _ => Expression.Block(_body)
+                };
+                return HandlebarsExpression.Partial(_startingNode.PartialName, _startingNode.Argument, fallback);
+            }
         }
 
         public override bool IsClosingElement(Expression item)

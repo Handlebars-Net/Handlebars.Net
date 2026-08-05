@@ -2,7 +2,7 @@
 {
     internal class EndExpressionToken : ExpressionScopeToken
     {
-        public EndExpressionToken(bool isEscaped, bool trimWhitespace, bool isRaw, IReaderContext context)
+        public EndExpressionToken(bool isEscaped, bool trimWhitespace, bool isRaw, IReaderContext? context)
         {
             IsEscaped = isEscaped;
             TrimTrailingWhitespace = trimWhitespace;
@@ -15,7 +15,7 @@
         public bool TrimTrailingWhitespace { get; }
 
         public bool IsRaw { get; }
-        public IReaderContext Context { get; }
+        public IReaderContext? Context { get; }
 
         public override string Value
         {

@@ -33,7 +33,7 @@ namespace HandlebarsDotNet.Compiler.Lexer
             }
         }
 
-        public override Token Parse(ExtendedStringReader reader)
+        public override Token? Parse(ExtendedStringReader reader)
         {
             var context = reader.GetContext();
             if (!IsWord(reader)) return null;

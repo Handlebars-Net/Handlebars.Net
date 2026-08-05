@@ -6,7 +6,7 @@ namespace HandlebarsDotNet.Collections
 {
     public class WeakCollection<T> : IEnumerable<T> where T : class
     {
-        private readonly List<WeakReference<T>> _store = new List<WeakReference<T>>();
+        private readonly List<WeakReference<T>?> _store = new List<WeakReference<T>?>();
         private int _firstAvailableIndex = 0;
 
         public int Size => _store.Count;
@@ -22,10 +22,10 @@ namespace HandlebarsDotNet.Collections
                     return;
                 }
 
-                if (!_store[index].TryGetTarget(out _))
+                if (!_store[index]!.TryGetTarget(out _))
                 {
                     _firstAvailableIndex = index + 1;
-                    _store[index].SetTarget(value);
+                    _store[index]!.SetTarget(value);
                     return;
                 }
             }
@@ -48,7 +48,7 @@ namespace HandlebarsDotNet.Collections
                     continue;
                 }
 
-                if (!_store[index].TryGetTarget(out var target))
+                if (!_store[index]!.TryGetTarget(out var target))
                 {
                     _firstAvailableIndex = Math.Min(_firstAvailableIndex, index);
                     continue;

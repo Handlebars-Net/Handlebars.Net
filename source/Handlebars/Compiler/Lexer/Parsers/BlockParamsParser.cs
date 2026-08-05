@@ -4,16 +4,16 @@ namespace HandlebarsDotNet.Compiler.Lexer
 {
     internal class BlockParamsParser : Parser
     {
-        public override Token Parse(ExtendedStringReader reader)
+        public override Token? Parse(ExtendedStringReader reader)
         {
             var context = reader.GetContext();
             var buffer = AccumulateWord(reader);
-            return !string.IsNullOrEmpty(buffer) 
+            return buffer is {Length: > 0}
                 ? Token.BlockParams(buffer, context) 
                 : null;
         }
         
-        private static string AccumulateWord(ExtendedStringReader reader)
+        private static string? AccumulateWord(ExtendedStringReader reader)
         {
             using(var container = StringBuilderPool.Shared.Use())
             {

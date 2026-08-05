@@ -7,10 +7,10 @@ namespace HandlebarsDotNet.ValueProviders
     public readonly ref struct BlockParamsValues
     {
         private readonly ChainSegment[] _variables;
-        private readonly FixedSizeDictionary<ChainSegment, object, ChainSegment.ChainSegmentEqualityComparer> _values;
+        private readonly FixedSizeDictionary<ChainSegment, object?, ChainSegment.ChainSegmentEqualityComparer>? _values;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BlockParamsValues(BindingContext context, ChainSegment[] variables)
+        public BlockParamsValues(BindingContext? context, ChainSegment[] variables)
         {
             _variables = variables;
             _values = context?.BlockParamsObject;
@@ -27,10 +27,10 @@ namespace HandlebarsDotNet.ValueProviders
             }
             var value = UndefinedBindingResult.Create(variable);
             
-            _values.AddOrReplace(variable, value, out index);
+            _values!.AddOrReplace(variable, value, out index);
         }
         
-        public object this[in EntryIndex<ChainSegment> index]
+        public object? this[in EntryIndex<ChainSegment> index]
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
@@ -40,7 +40,7 @@ namespace HandlebarsDotNet.ValueProviders
             }
         }
         
-        public object this[int variableIndex]
+        public object? this[int variableIndex]
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
@@ -52,7 +52,7 @@ namespace HandlebarsDotNet.ValueProviders
             }
         }
 
-        private ChainSegment GetVariable(int index)
+        private ChainSegment? GetVariable(int index)
         {
             if (_variables == null || _variables.Length == 0 || index >= _variables.Length) return null;
             return _variables[index];

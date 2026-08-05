@@ -31,13 +31,10 @@ namespace HandlebarsDotNet.Iterators
             iterator.First = BoxedValues.True;
             iterator.Last = BoxedValues.False;
 
-            var enumerator = target.GetEnumerator();
-
             var index = 0;
             var lastIndex = count - 1;
-            while (enumerator.MoveNext())
+            foreach (var value in target)
             {
-                var value = enumerator.Current;
                 var objectIndex = BoxedValues.Int(index);
 
                 if (index == 1) iterator.First = BoxedValues.False;

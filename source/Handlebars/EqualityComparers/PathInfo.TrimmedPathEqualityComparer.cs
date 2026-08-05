@@ -18,13 +18,13 @@ namespace HandlebarsDotNet.PathStructure
                 _stringComparison = ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
             }
             
-            public bool Equals(PathInfo x, PathInfo y)
+            public bool Equals(PathInfo? x, PathInfo? y)
             {
                 if (ReferenceEquals(x, y)) return true;
                 if (ReferenceEquals(x, null)) return false;
                 if (ReferenceEquals(y, null)) return false;
                 
-                return (!_countParts || x.Segments.Length == y.Segments.Length) 
+                return (!_countParts || x.Segments!.Length == y.Segments!.Length) 
                        && string.Equals(x.TrimmedPath, y.TrimmedPath, _stringComparison);
             }
 

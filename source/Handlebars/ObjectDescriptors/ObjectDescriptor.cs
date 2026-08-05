@@ -1,5 +1,7 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using HandlebarsDotNet.Iterators;
 using HandlebarsDotNet.MemberAccessors;
@@ -14,27 +16,27 @@ namespace HandlebarsDotNet.ObjectDescriptors
         public static readonly ObjectDescriptor Empty = new ObjectDescriptor();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ObjectDescriptor Create(object from)
+        public static ObjectDescriptor Create(object? from)
         {
             return Create(from?.GetType());
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ObjectDescriptor Create(Type from)
+        public static ObjectDescriptor Create(Type? from)
         {
-            if (from == null) return Empty;
-            if (!ObjectDescriptorFactory.Current.TryGetDescriptor(@from, out var descriptor)) return Empty;
+            if (from == null) return Empty!;
+            if (!ObjectDescriptorFactory.Current!.TryGetDescriptor(@from, out var descriptor)) return Empty!;
             return descriptor;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryCreate(object from, out ObjectDescriptor descriptor)
+        public static bool TryCreate(object? from, out ObjectDescriptor descriptor)
         {
             return TryCreate(from?.GetType(), out descriptor);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryCreate(Type @from, out ObjectDescriptor descriptor)
+        public static bool TryCreate(Type? @from, out ObjectDescriptor descriptor)
         {
             if (from == null)
             {
@@ -42,7 +44,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
                 return false;
             }
             
-            return ObjectDescriptorFactory.Current.TryGetDescriptor(from, out descriptor);
+            return ObjectDescriptorFactory.Current!.TryGetDescriptor(from, out descriptor);
         }
 
         /// <summary>
@@ -68,12 +70,19 @@ namespace HandlebarsDotNet.ObjectDescriptors
             Iterator = iterator(this);
         }
         
-        private ObjectDescriptor(){ }
+        private ObjectDescriptor()
+        {
+            DescribedType = null!;
+            GetProperties = null!;
+            MemberAccessor = null!;
+            Dependencies = null!;
+            Iterator = null!;
+        }
 
         /// <summary>
         /// Iterator implementation for <see cref="DescribedType"/>
         /// </summary>
-        public readonly IIterator Iterator;
+        public readonly IIterator? Iterator;
         
         /// <summary>
         /// Contains dependencies for <see cref="GetProperties"/> delegate
