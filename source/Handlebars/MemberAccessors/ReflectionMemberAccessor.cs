@@ -159,6 +159,15 @@ namespace HandlebarsDotNet.MemberAccessors
                 {
                     // Value types must be passed by reference
                     var @delegate = (ValueTypeGetterDelegate<T, TValue>)property.GetMethod.CreateDelegate(typeof(ValueTypeGetterDelegate<T, TValue>));
+                    if (@delegate is ValueTypeGetterDelegate<T, bool> boolValueTypeGetter)
+                    {
+                        return o =>
+                        {
+                            var to = (T)o;
+                            return boolValueTypeGetter(ref to) ? BoxedValues.True : BoxedValues.False;
+                        };
+                    }
+
                     return o =>
                     {
                         var to = (T)o;
@@ -168,6 +177,11 @@ namespace HandlebarsDotNet.MemberAccessors
                 else
                 {
                     var @delegate = (Func<T, TValue>) property.GetMethod.CreateDelegate(typeof(Func<T, TValue>));
+                    if (@delegate is Func<T, bool> boolGetter)
+                    {
+                        return o => boolGetter((T) o) ? BoxedValues.True : BoxedValues.False;
+                    }
+
                     return o => (object) @delegate((T) o);
                 }
             }
