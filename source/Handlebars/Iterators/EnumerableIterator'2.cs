@@ -38,7 +38,7 @@ namespace HandlebarsDotNet.Iterators
             {
                 var current = enumerator.Current;
                 
-                var value = (object) current.Value;
+                var value = (object?) current.Value;
                 var indexObject = BoxedValues.Int(index);
                 
                 if (index == 1) iterator.First = BoxedValues.False;

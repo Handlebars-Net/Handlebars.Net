@@ -374,7 +374,7 @@ namespace HandlebarsDotNet.Test
             {
                 var undefinedBindingResult = arguments.At<UndefinedBindingResult>(0);
                 var separator = arguments.At<string>(1);
-                var values = Substring.TrimStart(undefinedBindingResult.Value, '[');
+                var values = Substring.TrimStart(undefinedBindingResult!.Value, '[');
                 values = Substring.TrimEnd(values, ']');
                 var substrings = Substring.Split(values, ',');
                 var extendedEnumerator = ExtendedEnumerator<Substring>.Create(substrings);
@@ -478,8 +478,8 @@ namespace HandlebarsDotNet.Test
 
             public void Invoke(in EncodedTextWriter output, in BlockHelperOptions options, in Context context, in Arguments arguments)
             {
-                if (!(bool) options.Data["__switchBlock"]) throw new InvalidOperationException();
-                if((bool) options.Data["__switchCaseMatched"]) return;
+                if (!(bool) options.Data["__switchBlock"]!) throw new InvalidOperationException();
+                if((bool) options.Data["__switchCaseMatched"]!) return;
                 
                 var value = options.Data["switchValue"];
                 if(!Equals(value, arguments[0])) return;
@@ -501,8 +501,8 @@ namespace HandlebarsDotNet.Test
 
             public void Invoke(in EncodedTextWriter output, in BlockHelperOptions options, in Context context, in Arguments arguments)
             {
-                if (!(bool) options.Data["__switchBlock"]) throw new InvalidOperationException();
-                if((bool) options.Data["__switchCaseMatched"]) return;
+                if (!(bool) options.Data["__switchBlock"]!) throw new InvalidOperationException();
+                if((bool) options.Data["__switchCaseMatched"]!) return;
                 
                 options.Template(output, options.Frame);  // execute `default` in switch context
             }
@@ -660,12 +660,12 @@ namespace HandlebarsDotNet.Test
         
         private class ClassWithAList
         {
-            public IEnumerable<string> TheList { get; set; }
+            public IEnumerable<string> TheList { get; set; } = null!;
         }
 
         private class ClassWithAListAndOtherMembers
         {
-            public IEnumerable<string> TheList { get; set; }
+            public IEnumerable<string> TheList { get; set; } = null!;
             public bool SomeBool { get; set; }
             public string SomeString { get; set; } = "I shouldn't show up!";
         }
@@ -1049,15 +1049,22 @@ namespace HandlebarsDotNet.Test
         {
             var handlebars = Handlebars.Create();
             handlebars.RegisterTemplate("myPartial",
-                @"Conditional:{{#if @partial-block}} {{> @partial-block}}{{/if}}
-Plain: {{> @partial-block}}
-Block:{{#> @partial-block }}{{/@partial-block}}");
+                """
+                Conditional: {{#if @partial-block}}{{> @partial-block}}{{/if}}
+                Plain: {{> @partial-block}}
+                Block with empty fallback: {{#> @partial-block }}{{/@partial-block}}
+                Block with non-empty fallback: {{#> @partial-block }}...{{/@partial-block}}
+                """);
 
             var render = handlebars.Compile("{{#> myPartial}}Block content{{/myPartial}}");
             var actual = render(new { });
-            Assert.Contains("Conditional: Block content", actual);
-            Assert.Contains("Plain: Block content", actual);
-            Assert.Contains("Block:Block content", actual);
+            Assert.Equal("""
+                         Conditional: Block content
+                         Plain: Block content
+                         Block with empty fallback: Block content
+                         Block with non-empty fallback: Block content
+                         """.ReplaceLineEndings("\n"),
+                actual);
         }
       
         // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/458

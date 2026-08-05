@@ -1,23 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.EqualityComparers;
 using HandlebarsDotNet.Runtime;
-using LookupSlim = HandlebarsDotNet.Collections.LookupSlim<System.Type, HandlebarsDotNet.Runtime.DeferredValue<System.Collections.Generic.KeyValuePair<System.Type, HandlebarsDotNet.Collections.ObservableList<HandlebarsDotNet.IO.IFormatterProvider>>, HandlebarsDotNet.IO.IFormatter>, HandlebarsDotNet.EqualityComparers.ReferenceEqualityComparer<System.Type>>;
+using LookupSlim = HandlebarsDotNet.Collections.LookupSlim<System.Type, HandlebarsDotNet.Runtime.DeferredValue<System.Collections.Generic.KeyValuePair<System.Type, HandlebarsDotNet.Collections.ObservableList<HandlebarsDotNet.IO.IFormatterProvider>>, HandlebarsDotNet.IO.IFormatter?>, HandlebarsDotNet.EqualityComparers.ReferenceEqualityComparer<System.Type>>;
 
 namespace HandlebarsDotNet.IO
 {
     public class FormatterProvider : IFormatterProvider
     {
-        private static readonly Func<Type, ObservableList<IFormatterProvider>, DeferredValue<KeyValuePair<Type, ObservableList<IFormatterProvider>>, IFormatter>> ValueFactory = (t, providers) =>
-        {
-            return new DeferredValue<KeyValuePair<Type, ObservableList<IFormatterProvider>>, IFormatter>(
-                new KeyValuePair<Type, ObservableList<IFormatterProvider>>(t, providers), 
-                DeferredValueFactory
-            );
-        };
-
-        private static readonly Func<KeyValuePair<Type, ObservableList<IFormatterProvider>>, IFormatter> DeferredValueFactory = deps =>
+        private static readonly Func<KeyValuePair<Type, ObservableList<IFormatterProvider>>, IFormatter?> DeferredValueFactory = deps =>
         {
             var formatterProviders = deps.Value;
             for (var index = formatterProviders.Count - 1; index >= 0; index--)
@@ -29,20 +22,28 @@ namespace HandlebarsDotNet.IO
             return null;
         };
 
-        public static FormatterProvider Current => AmbientContext.Current?.FormatterProvider;
+        private static readonly Func<Type, ObservableList<IFormatterProvider>, DeferredValue<KeyValuePair<Type, ObservableList<IFormatterProvider>>, IFormatter?>> ValueFactory = (t, providers) =>
+        {
+            return new DeferredValue<KeyValuePair<Type, ObservableList<IFormatterProvider>>, IFormatter?>(
+                new KeyValuePair<Type, ObservableList<IFormatterProvider>>(t, providers), 
+                DeferredValueFactory
+            );
+        };
+
+        public static FormatterProvider? Current => AmbientContext.Current?.FormatterProvider;
         
         private readonly LookupSlim _formatters = new LookupSlim(new ReferenceEqualityComparer<Type>());
 
         private readonly ObservableList<IFormatterProvider> _formatterProviders;
         private readonly List<object> _observers = new List<object>();
 
-        public FormatterProvider(ObservableList<IFormatterProvider> providers = null)
+        public FormatterProvider(ObservableList<IFormatterProvider>? providers = null)
         {
             _formatterProviders = new ObservableList<IFormatterProvider>();
             
             if (providers != null) Append(providers);
             
-            var observer = ObserverBuilder<ObservableEvent<IFormatterProvider>>.Create(_formatters)
+            var observer = ObserverBuilder<IObservableEvent<IFormatterProvider>>.Create(_formatters)
                 .OnEvent<AddedObservableEvent<IFormatterProvider>>((@event, state) => state.Clear())
                 .Build();
 
@@ -67,7 +68,7 @@ namespace HandlebarsDotNet.IO
             return this;
         }
         
-        public bool TryCreateFormatter(Type type, out IFormatter formatter)
+        public bool TryCreateFormatter(Type type, [MaybeNullWhen(false)] out IFormatter formatter)
         {
             formatter = _formatters.GetOrAdd(type, ValueFactory, _formatterProviders).Value;
             return formatter != null;

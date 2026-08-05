@@ -10,7 +10,7 @@ namespace HandlebarsDotNet.Helpers
     public interface IHelperDescriptor<TOptions> : IHelperDescriptor, IDescriptor<TOptions>
         where TOptions: struct, IHelperOptions
     {
-        object Invoke(in TOptions options, in Context context, in Arguments arguments);
+        object? Invoke(in TOptions options, in Context context, in Arguments arguments);
         void Invoke(in EncodedTextWriter output, in TOptions options, in Context context, in Arguments arguments);
     }
 }

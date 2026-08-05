@@ -19,7 +19,7 @@ namespace HandlebarsDotNet
         /// </summary>
         /// <param name="configuration"></param>
         /// <returns></returns>
-        public static IHandlebars Create(HandlebarsConfiguration configuration = null)
+        public static IHandlebars Create(HandlebarsConfiguration? configuration = null)
         {
             configuration = configuration ?? new HandlebarsConfiguration();
             return new HandlebarsEnvironment(configuration);
@@ -31,7 +31,7 @@ namespace HandlebarsDotNet
         /// </summary>
         /// <param name="configuration"></param>
         /// <returns></returns>
-        public static IHandlebars CreateSharedEnvironment(HandlebarsConfiguration configuration = null)
+        public static IHandlebars CreateSharedEnvironment(HandlebarsConfiguration? configuration = null)
         {
             configuration ??= new HandlebarsConfiguration();
             return new HandlebarsEnvironment(new HandlebarsConfigurationAdapter(configuration));

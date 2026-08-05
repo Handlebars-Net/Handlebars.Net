@@ -28,7 +28,7 @@ namespace HandlebarsDotNet
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Write(StringBuilder value, bool encode) => UnderlyingWriter.Write(value, encode);
         
-        public override void Write(string value) => UnderlyingWriter.Write(value);
+        public override void Write(string? value) => UnderlyingWriter.Write(value);
 
         public override void Write(char value) => UnderlyingWriter.Write(value);
 		
@@ -48,7 +48,7 @@ namespace HandlebarsDotNet
 		
         public override void Write(uint value) => UnderlyingWriter.Write(value);
 
-        public override void Write(object value)
+        public override void Write(object? value)
         {
             if (value is StringBuilder builder)
             {

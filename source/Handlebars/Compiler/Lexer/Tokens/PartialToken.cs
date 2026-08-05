@@ -2,12 +2,12 @@
 {
     internal class PartialToken : Token
     {
-        public PartialToken(IReaderContext context = null)
+        public PartialToken(IReaderContext? context = null)
         {
             Context = context;
         }
 
-        public IReaderContext Context { get; }
+        public IReaderContext? Context { get; }
         
         public override TokenType Type => TokenType.Partial;
 

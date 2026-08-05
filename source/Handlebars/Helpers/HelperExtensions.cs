@@ -23,7 +23,7 @@ namespace HandlebarsDotNet.Helpers
             // Return a SafeString so the captured output — which already has the correct
             // encoding applied by the EncodedTextWriter — is not encoded a second time
             // when it is passed as an argument to an outer helper.
-            return new SafeString(output.ToString());
+            return new SafeString(writer.ToString());
         }
     }
 }

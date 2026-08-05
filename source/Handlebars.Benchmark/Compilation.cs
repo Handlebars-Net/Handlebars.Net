@@ -6,7 +6,7 @@ namespace HandlebarsNet.Benchmark
 {
     public class Compilation
     {
-        private IHandlebars _handlebars;
+        private IHandlebars _handlebars = null!;
         
         [GlobalSetup]
         public void Setup()
@@ -14,9 +14,9 @@ namespace HandlebarsNet.Benchmark
             _handlebars = Handlebars.Create();
             using(_handlebars.Configure())
             {
-                _handlebars.RegisterHelper("pow1",  (output, context, arguments) => output.WriteSafeString(((int)arguments[0] * (int) arguments[0]).ToString()));
-                _handlebars.RegisterHelper("pow2", (output, context, arguments) => output.WriteSafeString(((int)arguments[0] * (int) arguments[0]).ToString()));
-                _handlebars.RegisterHelper("pow5", (output, options, context, arguments) => output.WriteSafeString(((int)arguments[0] * (int) arguments[0]).ToString()));
+                _handlebars.RegisterHelper("pow1",  (output, context, arguments) => output.WriteSafeString(((int)arguments[0]! * (int) arguments[0]!).ToString()));
+                _handlebars.RegisterHelper("pow2", (output, context, arguments) => output.WriteSafeString(((int)arguments[0]! * (int) arguments[0]!).ToString()));
+                _handlebars.RegisterHelper("pow5", (output, options, context, arguments) => output.WriteSafeString(((int)arguments[0]! * (int) arguments[0]!).ToString()));
             }
         }
 

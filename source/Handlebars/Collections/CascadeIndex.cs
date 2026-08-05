@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
@@ -16,17 +17,18 @@ namespace HandlebarsDotNet.Collections
     [DebuggerDisplay("Count = {Count}")]
     public class CascadeIndex<TKey, TValue, TComparer> : IIndexed<TKey, TValue> 
         where TComparer : IEqualityComparer<TKey>
+        where TKey : notnull
     {
         private readonly TComparer _comparer;
-        public IReadOnlyIndexed<TKey, TValue> Outer { get; set; }
-        private DictionarySlim<TKey, TValue, TComparer> _inner;
+        public IReadOnlyIndexed<TKey, TValue>? Outer { get; set; }
+        private DictionarySlim<TKey, TValue, TComparer>? _inner;
 
         public CascadeIndex(TComparer comparer)
             : this(null, comparer)
         {
         }
         
-        public CascadeIndex(IReadOnlyIndexed<TKey, TValue> outer, TComparer comparer)
+        public CascadeIndex(IReadOnlyIndexed<TKey, TValue>? outer, TComparer comparer)
         {
             _comparer = comparer;
             Outer = outer;
@@ -53,7 +55,7 @@ namespace HandlebarsDotNet.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryGetValue(in TKey key, out TValue value)
+        public bool TryGetValue(in TKey key, [MaybeNullWhen(false)] out TValue value)
         {
             value = default;
             return (_inner?.TryGetValue(key, out value) ?? false) 
@@ -97,7 +99,7 @@ namespace HandlebarsDotNet.Collections
             using var outerEnumerator = Outer.GetEnumerator();
             while (outerEnumerator.MoveNext())
             {
-                if (_inner.ContainsKey(outerEnumerator.Current.Key)) continue;
+                if (_inner != null && _inner.ContainsKey(outerEnumerator.Current.Key)) continue;
                 yield return outerEnumerator.Current;
             }
         }
@@ -106,7 +108,8 @@ namespace HandlebarsDotNet.Collections
         
         private static class Throw
         {
-            public static void KeyNotFoundException(string message, Exception exception = null) => throw new KeyNotFoundException(message, exception);
+            [DoesNotReturn]
+            public static void KeyNotFoundException(string message, Exception? exception = null) => throw new KeyNotFoundException(message, exception);
         }
     }
 }

@@ -35,7 +35,7 @@ namespace HandlebarsDotNet.Compiler
             var options = Arg<HelperOptions>(helperCall.Arguments[1]);
             var context = Arg<Context>(helperCall.Arguments[2]);
             var arguments = Arg<Arguments>(helperCall.Arguments[3]);
-            var helper = Arg<IHelperDescriptor<HelperOptions>>(helperCall.Object);
+            var helper = Arg<IHelperDescriptor<HelperOptions>>(helperCall.Object!);
 
             return helper.Call(o => o.Invoke(options, context, arguments));
         }

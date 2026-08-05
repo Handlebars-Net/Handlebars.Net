@@ -34,7 +34,7 @@ namespace HandlebarsDotNet.Compiler
 
         protected override Expression VisitBlockHelperExpression(BlockHelperExpression bhex)
         {
-            var pathInfo = PathInfoStore.Current.GetOrAdd(bhex.HelperName);
+            var pathInfo = PathInfoStore.Current!.GetOrAdd(bhex.HelperName);
             var bindingContext = CompilationContext.Args.BindingContext;
 
             var direction = bhex.IsRaw || pathInfo.IsBlockHelper ? BlockHelperDirection.Direct : BlockHelperDirection.Inverse;
@@ -172,7 +172,7 @@ namespace HandlebarsDotNet.Compiler
 
         private IEnumerable<DecoratorDefinition> VisitDecoratorBlockExpression(BlockHelperExpression bhex)
         {
-            var pathInfo = PathInfoStore.Current.GetOrAdd(bhex.HelperName);
+            var pathInfo = PathInfoStore.Current!.GetOrAdd(bhex.HelperName);
             var bindingContext = CompilationContext.Args.BindingContext;
 
             var direction = bhex.IsRaw || pathInfo.IsBlockHelper ? BlockHelperDirection.Direct : BlockHelperDirection.Inverse;

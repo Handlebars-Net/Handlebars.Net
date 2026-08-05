@@ -10,14 +10,14 @@ namespace HandlebarsNet.Benchmark
 {
     public class EndToEnd
     {
-        private object _data;
-        private HandlebarsTemplate<TextWriter, object, object> _default;
+        private object? _data;
+        private HandlebarsTemplate<TextWriter, object, object> _default = null!; // -> Setup()
 
         [Params(5)]
         public int N { get; set; }
-        
+
         [Params("object", "dictionary")]
-        public string DataType { get; set; }
+        public string DataType { get; set; } = null!;
         
         [GlobalSetup]
         public void Setup()
@@ -181,12 +181,12 @@ namespace HandlebarsNet.Benchmark
 
             public object Invoke(in HelperOptions options, in Context context, in Arguments arguments)
             {
-                return ((int)arguments[0] * (int)arguments[0]).ToString();
+                return ((int)arguments[0]! * (int)arguments[0]!).ToString();
             }
 
             public void Invoke(in EncodedTextWriter output, in HelperOptions options, in Context context, in Arguments arguments)
             {
-                output.WriteSafeString(((int)arguments[0] * (int)arguments[0]).ToString());
+                output.WriteSafeString(((int)arguments[0]! * (int)arguments[0]!).ToString());
             }
         }
         
@@ -198,12 +198,12 @@ namespace HandlebarsNet.Benchmark
 
             public object Invoke(in BlockHelperOptions options, in Context context, in Arguments arguments)
             {
-                return ((int)arguments[0] * (int)arguments[0]).ToString();
+                return ((int)arguments[0]! * (int)arguments[0]!).ToString();
             }
 
             public void Invoke(in EncodedTextWriter output, in BlockHelperOptions options, in Context context, in Arguments arguments)
             {
-                output.WriteSafeString(((int)arguments[0] * (int)arguments[0]).ToString());
+                output.WriteSafeString(((int)arguments[0]! * (int)arguments[0]!).ToString());
             }
         }
         

@@ -10,19 +10,19 @@ namespace HandlebarsDotNet.Collections
     [DebuggerDisplay("Count = {Count}")]
     public class ObservableList<T> : 
         IAppendOnlyList<T>, 
-        IObservable<ObservableEvent<T>>, 
-        IObserver<ObservableEvent<T>>
+        IObservable<IObservableEvent<T>>, 
+        IObserver<IObservableEvent<T>>
     {
         private readonly ReaderWriterLockSlim _observersLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
         private readonly ReaderWriterLockSlim _itemsLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
         
-        private readonly WeakCollection<IObserver<ObservableEvent<T>>> _observers = new WeakCollection<IObserver<ObservableEvent<T>>>();
+        private readonly WeakCollection<IObserver<IObservableEvent<T>>> _observers = new WeakCollection<IObserver<IObservableEvent<T>>>();
         private readonly List<T> _inner;
 
-        public ObservableList(IEnumerable<T> list = null)
+        public ObservableList(IEnumerable<T>? list = null)
         {
             _inner = list != null ? new List<T>(list) : new List<T>();
-            if (list is IObservable<ObservableEvent<T>> observableList)
+            if (list is IObservable<IObservableEvent<T>> observableList)
             {
                 observableList.Subscribe(this);
             }
@@ -76,14 +76,14 @@ namespace HandlebarsDotNet.Collections
             }
         }
 
-        public IDisposable Subscribe(IObserver<ObservableEvent<T>> observer)
+        public IDisposable Subscribe(IObserver<IObservableEvent<T>> observer)
         {
             using (_observersLock.WriteLock())
             {
                 _observers.Add(observer);
             }
     
-            var disposableContainer = new DisposableContainer<WeakCollection<IObserver<ObservableEvent<T>>>, ReaderWriterLockSlim>(
+            var disposableContainer = new DisposableContainer<WeakCollection<IObserver<IObservableEvent<T>>>, ReaderWriterLockSlim>(
                 _observers, _observersLock, (observers, @lock) =>
                 {
                     using (@lock.WriteLock())
@@ -106,7 +106,7 @@ namespace HandlebarsDotNet.Collections
             // nothing to do here
         }
 
-        public void OnNext(ObservableEvent<T> value)
+        public void OnNext(IObservableEvent<T> value)
         {
             switch (value)
             {
@@ -119,7 +119,7 @@ namespace HandlebarsDotNet.Collections
             }
         }
         
-        private void Publish(ObservableEvent<T> @event)
+        private void Publish(IObservableEvent<T> @event)
         {
             using (_observersLock.ReadLock())
             {

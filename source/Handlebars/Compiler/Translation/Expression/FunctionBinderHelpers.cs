@@ -27,7 +27,7 @@ namespace HandlebarsDotNet.Compiler
                     argumentTypes[index] = objectType;
                 }
 
-                return typeof(Arguments).GetConstructor(argumentTypes);
+                return typeof(Arguments).GetConstructor(argumentTypes)!;
             });
         };
 

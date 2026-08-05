@@ -25,7 +25,7 @@ namespace HandlebarsDotNet.Helpers.BlockHelpers
             RenderSection(value, bindingContext, output, options.OriginalTemplate, options.OriginalInverse);
         }
 
-        private static void RenderSection(object value,
+        private static void RenderSection(object? value,
             BindingContext context,
             EncodedTextWriter writer,
             TemplateDelegate body,

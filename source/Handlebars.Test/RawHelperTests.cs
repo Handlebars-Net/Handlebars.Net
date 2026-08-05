@@ -13,7 +13,7 @@ namespace HandlebarsDotNet.Test
             var source = "{{{{rawBlockHelper}}}} {{foo}} {{{foo}}}{{{{otherRawBlockHelper}}}} {{ bar }}{{{bar}}}{{{{/otherRawBlockHelper}}}}{{{{/rawBlockHelper}}}}";
 
             inst.RegisterHelper("rawBlockHelper", (writer, options, context, arguments) => {
-                options.Template(writer, null);
+                options.Template(writer, null!);
             });
 
             var data = new
@@ -39,8 +39,8 @@ namespace HandlebarsDotNet.Test
 
             inst.RegisterHelper("rawBlockHelper", (writer, options, context, arguments) => {
                 writer.Write(arguments[0]);
-                options.Template(writer, null);
-                writer.Write((arguments[1] as IDictionary<string, object>)["bar"]);
+                options.Template(writer, null!);
+                writer.Write(((IDictionary<string, object>) arguments[1]!)["bar"]);
             });
 
             var data = new
@@ -67,7 +67,7 @@ namespace HandlebarsDotNet.Test
 
             inst.RegisterHelper("rawBlockHelper", (writer, options, context, arguments) => {
                 writer.Write(arguments[0]);
-                options.Template(writer, null);
+                options.Template(writer, null!);
             });
 
             var data = new
@@ -88,8 +88,8 @@ namespace HandlebarsDotNet.Test
 
             inst.RegisterHelper("rawBlockHelper", (writer, options, context, arguments) => {
                 writer.Write(arguments[0]);
-                options.Template(writer, null);
-                writer.Write((arguments[1] as IDictionary<string, object>)["foo"]);
+                options.Template(writer, null!);
+                writer.Write(((IDictionary<string, object>) arguments[1]!)["foo"]);
             });
 
             var data = new
@@ -109,7 +109,7 @@ namespace HandlebarsDotNet.Test
             var source = "{{{{rawBlockHelper}}}}{{someHelper fooArg fooHashArg='foo' fooHashArgDoubleQuote=\"foo!\" barHashArg=unquotedValue bazHashArg=@root.baz.nested}}{{{{/rawBlockHelper}}}}";
 
             inst.RegisterHelper("rawBlockHelper", (writer, options, context, arguments) => {
-                options.Template(writer, null);
+                options.Template(writer, null!);
             });
 
             var template = inst.Compile(source);
@@ -125,7 +125,7 @@ namespace HandlebarsDotNet.Test
             var source = "{{{{rawBlockHelper}}}}{{someHelper fooArg fooHashArg='foo' fooHashArgDoubleQuote=\"foo!\" barHashArg=unquotedValue bazHashArg=@root.baz.nested}}{{{{/rawBlockHelper}}}}";
 
             inst.RegisterHelper("rawBlockHelper", (writer, options, context, arguments) => {
-                options.Template(writer, null);
+                options.Template(writer, null!);
             });
 
             inst.RegisterHelper("someHelper", (writer, context, parameters) =>
@@ -146,8 +146,8 @@ namespace HandlebarsDotNet.Test
 
             inst.RegisterHelper("rawBlockHelper", (writer, options, context, arguments) => {
                 writer.Write(arguments[0]);
-                options.Template(writer, null);
-                writer.Write((arguments[1] as IDictionary<string, object>)["bar"]);
+                options.Template(writer, null!);
+                writer.Write(((IDictionary<string, object>) arguments[1]!)["bar"]);
             });
 
             Assert.Throws<HandlebarsCompilerException>(() =>

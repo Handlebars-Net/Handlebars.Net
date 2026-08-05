@@ -11,7 +11,7 @@ namespace HandlebarsDotNet
     {
         private readonly DeferredValue<BindingContext, ObjectDescriptor> _descriptor;
         
-        public readonly object Value;
+        public readonly object? Value;
 
         public Context(BindingContext context)
         {
@@ -19,7 +19,7 @@ namespace HandlebarsDotNet
             _descriptor = context.Descriptor;
         }
         
-        public Context(BindingContext context, object value)
+        public Context(BindingContext context, object? value)
         {
             Value = value;
             _descriptor = context.Descriptor;
@@ -27,22 +27,23 @@ namespace HandlebarsDotNet
 
         public IEnumerable<ChainSegment> Properties => 
             _descriptor.Value
-                .GetProperties(_descriptor.Value, Value)
+                .GetProperties(_descriptor.Value, Value!)
                 .OfType<object>()
                 .Select(o => ChainSegment.Create(o));
 
-        public object this[ChainSegment segment] =>
-            _descriptor.Value.MemberAccessor.TryGetValue(Value, segment, out var value) 
+        public object? this[ChainSegment segment] =>
+            _descriptor.Value.MemberAccessor.TryGetValue(Value!, segment, out var value) 
                 ? value 
                 : null;
 
-        public T GetValue<T>(ChainSegment segment)
+        public T? GetValue<T>(ChainSegment segment)
         {
-            if (!_descriptor.Value.MemberAccessor.TryGetValue(Value, segment, out var obj)) return default;
+            if (!_descriptor.Value.MemberAccessor.TryGetValue(Value!, segment, out var obj)) return default;
+            if (obj == null) return (T?)obj;
             if (obj is T value) return value;
 
             var converter = TypeDescriptor.GetConverter(obj.GetType());
-            return (T) converter.ConvertTo(obj, typeof(T));
+            return (T?) converter.ConvertTo(obj, typeof(T));
         }
     }
 }

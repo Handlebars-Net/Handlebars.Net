@@ -9,8 +9,8 @@ namespace HandlebarsNet.Benchmark
 {
     public class LargeArray
     {
-        private object _data;
-        private HandlebarsTemplate<TextWriter, object, object> _default;
+        private object _data = null!; // -> Setup()
+        private HandlebarsTemplate<TextWriter, object, object> _default = null!; // -> Setup()
 
         [Params(20000, 40000, 80000)]
         public int N { get; set; }

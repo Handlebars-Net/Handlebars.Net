@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using HandlebarsDotNet.Pools;
@@ -11,12 +12,12 @@ namespace HandlebarsDotNet
         private static readonly InternalObjectPool<TextEncoderWrapper, Policy> Pool 
             = new InternalObjectPool<TextEncoderWrapper, Policy>(new Policy());
 
-        private ITextEncoder _underlyingEncoder;
+        private ITextEncoder? _underlyingEncoder;
         private bool _enabled;
 
         public static TextEncoderWrapper Null { get; } = new TextEncoderWrapper();
 			
-        public static TextEncoderWrapper Create(ITextEncoder encoder)
+        public static TextEncoderWrapper Create(ITextEncoder? encoder)
         {
             var wrapper = Pool.Get();
             wrapper._underlyingEncoder = encoder;
@@ -25,6 +26,7 @@ namespace HandlebarsDotNet
             return wrapper;
         }
 
+        [MemberNotNullWhen(true, nameof(_underlyingEncoder))]
         public bool Enabled
         {
             get => _enabled && _underlyingEncoder != null;
@@ -35,21 +37,21 @@ namespace HandlebarsDotNet
         {
         }
 
-        public void Encode(StringBuilder text, TextWriter target)
+        public void Encode(StringBuilder? text, TextWriter target)
         {
             if (!Enabled) return;
 
             _underlyingEncoder.Encode(text, target);
         }
 
-        public void Encode(string text, TextWriter target)
+        public void Encode(string? text, TextWriter target)
         {
             if (!Enabled) return;
 
             _underlyingEncoder.Encode(text, target);
         }
 
-        public void Encode<T>(T text, TextWriter target) where T: IEnumerator<char>
+        public void Encode<T>(T? text, TextWriter target) where T: IEnumerator<char>
         {
             if (!Enabled) return;
 

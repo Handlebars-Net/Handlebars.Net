@@ -67,19 +67,19 @@ namespace HandlebarsDotNet.Test
 
         private class JsonEncoder : ITextEncoder
         {
-            public void Encode(StringBuilder text, TextWriter target)
+            public void Encode(StringBuilder? text, TextWriter target)
             {
-                target.Write(JsonConvert.ToString(text.ToString(), '"').Trim('"'));
+                target.Write(JsonConvert.ToString(text?.ToString(), '"').Trim('"'));
             }
 
-            public void Encode(string text, TextWriter target)
+            public void Encode(string? text, TextWriter target)
             {
                 target.Write(JsonConvert.ToString(text, '"').Trim('"'));
             }
 
-            public void Encode<T>(T text, TextWriter target) where T : IEnumerator<char>
+            public void Encode<T>(T? text, TextWriter target) where T : IEnumerator<char>
             {
-                Encode(new string(new Adapter<T, char>(text).ToArray()), target);
+                Encode(new string(new Adapter<T, char>(text!).ToArray()), target);
             }
 
             public IFormatProvider FormatProvider { get; } = CultureInfo.InvariantCulture;

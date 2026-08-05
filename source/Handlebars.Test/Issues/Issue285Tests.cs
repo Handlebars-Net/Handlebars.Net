@@ -59,7 +59,7 @@ namespace HandlebarsDotNet.Test.Issues
         {
             var source = "{{#if value includeZero=true}}yes{{else}}no{{/if}}";
             var template = Handlebars.Compile(source);
-            var result = template(new { value = (object)null });
+            var result = template(new { value = (object?)null });
             Assert.Equal("no", result);
         }
 

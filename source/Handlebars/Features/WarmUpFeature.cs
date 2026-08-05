@@ -29,7 +29,7 @@ namespace HandlebarsDotNet.Features
 
         public void OnCompiling(ICompiledHandlebarsConfiguration configuration)
         {
-            var descriptorProvider = ObjectDescriptorFactory.Current;
+            var descriptorProvider = ObjectDescriptorFactory.Current!;
             foreach (var type in _types)
             {
                 descriptorProvider.TryGetDescriptor(type, out _);

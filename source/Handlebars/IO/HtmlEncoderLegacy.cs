@@ -18,16 +18,16 @@ namespace HandlebarsDotNet
     public class HtmlEncoderLegacy : ITextEncoder
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Encode(StringBuilder text, TextWriter target)
+        public void Encode(StringBuilder? text, TextWriter target)
         {
             if (text == null || text.Length == 0) return;
 
             EncodeImpl(new StringBuilderEnumerator(text), target);
         }
 
-        public void Encode(string text, TextWriter target)
+        public void Encode(string? text, TextWriter target)
         {
-            if (string.IsNullOrEmpty(text)) return;
+            if (text is not {Length: > 0}) return;
 
             var length = text.Length;
             var index = 0;
@@ -46,7 +46,7 @@ namespace HandlebarsDotNet
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Encode<T>(T text, TextWriter target) where T : IEnumerator<char>
+        public void Encode<T>(T? text, TextWriter target) where T : IEnumerator<char>
         {
             if (text is null) return;
 

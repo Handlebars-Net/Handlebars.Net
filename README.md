@@ -101,6 +101,21 @@ var result = template(data);
 */
 ```
 
+Partials, including inline partials declared with `{{#*inline}}`, accept hash arguments at the call site. The hash values are merged into the partial's context alongside any properties inherited from the calling context:
+
+```c#
+string source =
+@"{{#*inline ""user""}}<strong>{{name}}</strong>{{/inline}}{{> user name=""Karen""}}";
+
+var template = Handlebars.Compile(source);
+
+var result = template(null);
+
+/* Would render:
+<strong>Karen</strong>
+*/
+```
+
 ### Registering Helpers
 
 ```c#

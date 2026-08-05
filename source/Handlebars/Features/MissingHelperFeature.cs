@@ -18,8 +18,8 @@ namespace HandlebarsDotNet.Features
         /// <returns></returns>
         public static HandlebarsConfiguration RegisterMissingHelperHook(
             this HandlebarsConfiguration configuration,
-            IHelperDescriptor<HelperOptions> helperMissing = null,
-            IHelperDescriptor<BlockHelperOptions> blockHelperMissing = null
+            IHelperDescriptor<HelperOptions>? helperMissing = null,
+            IHelperDescriptor<BlockHelperOptions>? blockHelperMissing = null
         )
         {
             var feature = new MissingHelperFeatureFactory(helperMissing, blockHelperMissing);
@@ -43,8 +43,8 @@ namespace HandlebarsDotNet.Features
         /// <returns></returns>
         public static HandlebarsConfiguration RegisterMissingHelperHook(
             this HandlebarsConfiguration configuration,
-            HandlebarsReturnWithOptionsHelper helperMissing = null,
-            HandlebarsBlockHelper blockHelperMissing = null
+            HandlebarsReturnWithOptionsHelper? helperMissing = null,
+            HandlebarsBlockHelper? blockHelperMissing = null
         )
         {
             return configuration.RegisterMissingHelperHook(
@@ -56,12 +56,12 @@ namespace HandlebarsDotNet.Features
 
     internal class MissingHelperFeatureFactory : IFeatureFactory
     {
-        private readonly IHelperDescriptor<HelperOptions> _returnHelper;
-        private readonly IHelperDescriptor<BlockHelperOptions> _blockHelper;
+        private readonly IHelperDescriptor<HelperOptions>? _returnHelper;
+        private readonly IHelperDescriptor<BlockHelperOptions>? _blockHelper;
 
         public MissingHelperFeatureFactory(
-            IHelperDescriptor<HelperOptions> returnHelper = null,
-            IHelperDescriptor<BlockHelperOptions> blockHelper = null
+            IHelperDescriptor<HelperOptions>? returnHelper = null,
+            IHelperDescriptor<BlockHelperOptions>? blockHelper = null
         )
         {
             _returnHelper = returnHelper;
@@ -77,12 +77,12 @@ namespace HandlebarsDotNet.Features
         private const string HelperMissingKey = "helperMissing";
         private const string BlockHelperMissingKey = "blockHelperMissing";
         
-        private readonly IHelperDescriptor<HelperOptions> _helper;
-        private readonly IHelperDescriptor<BlockHelperOptions> _blockHelper;
+        private readonly IHelperDescriptor<HelperOptions>? _helper;
+        private readonly IHelperDescriptor<BlockHelperOptions>? _blockHelper;
 
         public MissingHelperFeature(
-            IHelperDescriptor<HelperOptions> helper,
-            IHelperDescriptor<BlockHelperOptions> blockHelper
+            IHelperDescriptor<HelperOptions>? helper,
+            IHelperDescriptor<BlockHelperOptions>? blockHelper
         )
         {
             _helper = helper;
@@ -91,7 +91,7 @@ namespace HandlebarsDotNet.Features
 
         public void OnCompiling(ICompiledHandlebarsConfiguration configuration)
         {
-            var helperMissingPathInfo = PathInfoStore.Current.GetOrAdd(HelperMissingKey);
+            var helperMissingPathInfo = PathInfoStore.Current!.GetOrAdd(HelperMissingKey);
             if(!configuration.Helpers.ContainsKey(helperMissingPathInfo))
             {
                 var helper = _helper ?? new MissingHelperDescriptor();

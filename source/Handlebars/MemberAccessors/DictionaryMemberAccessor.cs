@@ -5,7 +5,7 @@ namespace HandlebarsDotNet.MemberAccessors
 {
     public sealed class DictionaryMemberAccessor : IMemberAccessor
     {
-        public bool TryGetValue(object instance, ChainSegment memberName, out object value)
+        public bool TryGetValue(object instance, ChainSegment memberName, out object? value)
         {
             value = null;
             // Check if the instance is IDictionary (ie, System.Collections.Hashtable)
