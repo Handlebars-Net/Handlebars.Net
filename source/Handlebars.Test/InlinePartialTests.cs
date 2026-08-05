@@ -244,6 +244,29 @@ namespace HandlebarsDotNet.Test
         }
 
         [Fact]
+        public void InlinePartialDefinitionWithExtraArgumentDoesNotThrow()
+        {
+            // Regression test for https://github.com/Handlebars-Net/Handlebars.Net/issues/560
+            string source = "{{#*inline \"my_partial\" arg}}{{arg}}{{/inline}}{{>my_partial}}";
+
+            var template = Handlebars.Compile(source);
+            var result = template(null);
+
+            Assert.Equal(string.Empty, result);
+        }
+
+        [Fact]
+        public void InlinePartialDefinitionWithHashArgumentDoesNotThrow()
+        {
+            string source = "{{#*inline \"my_partial\" arg=5}}{{arg}}{{/inline}}{{>my_partial}}";
+
+            var template = Handlebars.Compile(source);
+            var result = template(null);
+
+            Assert.Equal(string.Empty, result);
+        }
+
+        [Fact]
         public void BasicBlockInlinePartial()
         {
             string source = "Hello, {{#>personInline}}friend{{/personInline}}!";

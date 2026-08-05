@@ -7,9 +7,9 @@ namespace HandlebarsDotNet.Decorators
     {
         public TemplateDelegate Invoke(in TemplateDelegate function, in BlockDecoratorOptions options, in Context context, in Arguments arguments)
         {
-            if (arguments.Length != 1)
+            if (arguments.Length == 0)
             {
-                throw new HandlebarsRuntimeException("{{*inline}} helper must have exactly one argument");
+                throw new HandlebarsRuntimeException("{{*inline}} helper must have at least one argument");
             }
 
             var bindingContext = options.Frame;
