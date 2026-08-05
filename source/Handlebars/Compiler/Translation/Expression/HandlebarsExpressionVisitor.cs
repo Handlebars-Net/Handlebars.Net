@@ -105,7 +105,7 @@ namespace HandlebarsDotNet.Compiler
             if (partialName != pex.PartialName
                 || argument != pex.Argument)
             {
-                return HandlebarsExpression.Partial(partialName, argument, pex.Fallback);
+                return HandlebarsExpression.Partial(partialName, argument, pex.Fallback, pex.IsBlock, pex.Indent);
             }
             return pex;
         }

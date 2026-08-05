@@ -1049,15 +1049,22 @@ namespace HandlebarsDotNet.Test
         {
             var handlebars = Handlebars.Create();
             handlebars.RegisterTemplate("myPartial",
-                @"Conditional:{{#if @partial-block}} {{> @partial-block}}{{/if}}
-Plain: {{> @partial-block}}
-Block:{{#> @partial-block }}{{/@partial-block}}");
+                """
+                Conditional: {{#if @partial-block}}{{> @partial-block}}{{/if}}
+                Plain: {{> @partial-block}}
+                Block with empty fallback: {{#> @partial-block }}{{/@partial-block}}
+                Block with non-empty fallback: {{#> @partial-block }}...{{/@partial-block}}
+                """);
 
             var render = handlebars.Compile("{{#> myPartial}}Block content{{/myPartial}}");
             var actual = render(new { });
-            Assert.Contains("Conditional: Block content", actual);
-            Assert.Contains("Plain: Block content", actual);
-            Assert.Contains("Block:Block content", actual);
+            Assert.Equal("""
+                         Conditional: Block content
+                         Plain: Block content
+                         Block with empty fallback: Block content
+                         Block with non-empty fallback: Block content
+                         """.ReplaceLineEndings("\n"),
+                actual);
         }
       
         // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/458

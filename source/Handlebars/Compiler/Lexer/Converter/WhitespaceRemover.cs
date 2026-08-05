@@ -71,6 +71,7 @@ namespace HandlebarsDotNet.Compiler
                         partialExpr.PartialName,
                         partialExpr.Argument,
                         partialExpr.Fallback,
+                        partialExpr.IsBlock,
                         indent);
                     list[index] = HandlebarsExpression.Statement(
                         indentedPartial,
