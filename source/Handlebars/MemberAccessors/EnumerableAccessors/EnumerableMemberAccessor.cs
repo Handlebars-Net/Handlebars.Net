@@ -9,6 +9,11 @@ namespace HandlebarsDotNet.MemberAccessors.EnumerableAccessors
     {
         public static EnumerableMemberAccessor Create(Type type)
         {
+            if (type.IsArray && type.GetArrayRank() > 1)
+            {
+                return new MultiDimensionalArrayMemberAccessor();
+            }
+
             if (type.IsAssignableToGenericType(typeof(IList<>), out var genericType))
             {
                 var typeArgument = genericType.GenericTypeArguments[0];

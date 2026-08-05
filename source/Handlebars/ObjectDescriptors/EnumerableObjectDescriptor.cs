@@ -88,17 +88,25 @@ namespace HandlebarsDotNet.ObjectDescriptors
 
         private static bool TryCreateArrayDescriptor(Type type, object[] parameters, [MaybeNullWhen(false)] out ObjectDescriptor value)
         {
-            if (type.IsArray)
+            if (!type.IsArray)
             {
-                value = (ObjectDescriptor) ArrayObjectDescriptorFactoryMethodInfo
-                    .MakeGenericMethod(type.GetElementType()!)
-                    .Invoke(null, parameters)!;
+                value = ObjectDescriptor.Empty;
+                return false;
+            }
 
+            if (type.GetArrayRank() > 1)
+            {
+                var accessor = (IMemberAccessor) parameters[0];
+                var descriptor = (ObjectDescriptor) parameters[1];
+                value = new ObjectDescriptor(type, accessor, descriptor.GetProperties, self => new MultidimensionalArrayIterator(), descriptor.Dependencies);
                 return true;
             }
 
-            value = ObjectDescriptor.Empty;
-            return false;
+            value = (ObjectDescriptor) ArrayObjectDescriptorFactoryMethodInfo
+                .MakeGenericMethod(type.GetElementType()!)
+                .Invoke(null, parameters)!;
+
+            return true;
         }
 
         private static bool TryCreateDescriptorFromOpenGeneric(Type type, Type openGenericType, object[] parameters, MethodInfo method, [MaybeNullWhen(false)] out ObjectDescriptor descriptor)
