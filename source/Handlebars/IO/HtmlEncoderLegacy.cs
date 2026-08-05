@@ -30,27 +30,19 @@ namespace HandlebarsDotNet
             if (string.IsNullOrEmpty(text)) return;
 
             var length = text.Length;
-            var start = 0;
-            var anyEscaped = false;
-            for (var index = 0; index < length; index++)
-            {
-                var value = text[index];
-                if (!RequiresEscaping(value)) continue;
+            var index = 0;
+            while (index < length && !RequiresEscaping(text[index])) index++;
 
-                anyEscaped = true;
-                if (index != start) WriteRun(text, start, index - start, target);
-                WriteEscaped(value, target);
-                start = index + 1;
-            }
-
-            if (!anyEscaped)
+            if (index == length)
             {
                 // Fast path: nothing to escape, write the whole string at once
                 target.Write(text);
                 return;
             }
 
-            if (start < length) WriteRun(text, start, length - start, target);
+            // Bulk-write the clean prefix, then fall back to per-character encoding.
+            if (index != 0) WriteRun(text, 0, index, target);
+            EncodeImpl(new StringEnumerator(text, index), target);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -73,30 +65,6 @@ namespace HandlebarsDotNet
                     return true;
                 default:
                     return value > 159;
-            }
-        }
-
-        private static void WriteEscaped(char value, TextWriter target)
-        {
-            switch (value)
-            {
-                case '"':
-                    target.Write("&quot;");
-                    break;
-                case '&':
-                    target.Write("&amp;");
-                    break;
-                case '<':
-                    target.Write("&lt;");
-                    break;
-                case '>':
-                    target.Write("&gt;");
-                    break;
-                default:
-                    target.Write("&#");
-                    target.Write((int)value);
-                    target.Write(";");
-                    break;
             }
         }
 

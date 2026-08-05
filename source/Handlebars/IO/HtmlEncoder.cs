@@ -41,18 +41,11 @@ namespace HandlebarsDotNet
                 return;
             }
 
-            var start = 0;
-            do
-            {
-                var runLength = index - start;
-                if (runLength != 0) WriteRun(text, start, runLength, target);
-                target.Write(GetEscapeSequence(text[index]));
-
-                start = index + 1;
-                index = start < text.Length ? IndexOfEscapeChar(text, start) : -1;
-            } while (index != -1);
-
-            if (start < text.Length) WriteRun(text, start, text.Length - start, target);
+            // Bulk-write the clean prefix, then fall back to per-character encoding.
+            // Escape-dense content makes per-segment bulk writes counter-productive:
+            // the fixed cost of a span write outweighs a few Write(char) calls.
+            if (index != 0) WriteRun(text, 0, index, target);
+            EncodeImpl(new StringEnumerator(text, index), target);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -108,21 +101,6 @@ namespace HandlebarsDotNet
             for (var i = start; i < end; i++)
             {
                 target.Write(text[i]);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static string GetEscapeSequence(char value)
-        {
-            switch (value)
-            {
-                case '&': return "&amp;";
-                case '<': return "&lt;";
-                case '>': return "&gt;";
-                case '"': return "&quot;";
-                case '\'': return "&#x27;";
-                case '`': return "&#x60;";
-                default: return "&#x3D;"; // '='
             }
         }
 
