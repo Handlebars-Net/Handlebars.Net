@@ -25,7 +25,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
         {
             value = new ObjectDescriptor(
                 type,
-                _reflectionMemberAccessor,
+                _reflectionMemberAccessor.CreateBoundAccessor(type),
                 GetProperties,
                 self => new ObjectIterator(self),
                 dependencies: _membersCache
