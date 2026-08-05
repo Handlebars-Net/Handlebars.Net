@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Linq.Expressions;
 using HandlebarsDotNet.PathStructure;
 using HandlebarsDotNet.StringUtils;
@@ -40,6 +41,52 @@ namespace HandlebarsDotNet.Compiler
         }
 
         public abstract string BlockName { get; protected set; }
+
+        /// <summary>
+        /// True when this context resolves its own "{{else name ...}}" chaining internally
+        /// (e.g. the if/unless flattened else-if chain) instead of relying on the generic
+        /// nested-block desugaring performed by <see cref="BlockAccumulator"/>.
+        /// </summary>
+        internal virtual bool HandlesChainedElseInternally => false;
+
+        private string? _closingNameOverride;
+
+        /// <summary>
+        /// Used when this context represents the implicit nested block produced by desugaring
+        /// "{{else name ...}}" - it has no closing tag of its own, so it must be closed by
+        /// whichever closing tag actually closes the outermost block in the else-chain.
+        /// </summary>
+        internal void SetClosingNameOverride(string closingName)
+        {
+            _closingNameOverride = closingName;
+        }
+
+        internal string ResolvedClosingName => _closingNameOverride ?? OwnClosingName;
+
+        protected virtual string OwnClosingName => BlockName;
+
+        /// <summary>
+        /// Recognizes "{{else name arg1 arg2 hash=val}}" and, if found, builds the synthetic
+        /// "{{#name arg1 arg2 hash=val}}" opening node it desugars to.
+        /// </summary>
+        internal static bool TryGetChainedElseInvocation(Expression item, [NotNullWhen(true)] out HelperExpression? invocation)
+        {
+            item = UnwrapStatement(item);
+            if (item is HelperExpression { HelperName: "else" } helperExpression
+                && helperExpression.Arguments.FirstOrDefault() is PathExpression nameExpression)
+            {
+                invocation = new HelperExpression(
+                    "#" + nameExpression.Path,
+                    isBlock: true,
+                    arguments: helperExpression.Arguments.Skip(1),
+                    isRaw: helperExpression.IsRaw,
+                    context: helperExpression.Context);
+                return true;
+            }
+
+            invocation = null;
+            return false;
+        }
 
         private static bool IsConditionalBlock(Expression item)
         {

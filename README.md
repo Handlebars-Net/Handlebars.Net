@@ -182,6 +182,24 @@ The animal, Chewy, is not a dog.
 */
 ```
 
+Block helpers can be chained with `{{else}}` clauses that themselves invoke another helper, similar to `{{else if}}`. This lets you avoid nesting an extra block and its extra closing tag - the chained helper shares the outer block's closing tag:
+
+```c#
+var template = "{{#StringEqualityBlockHelper value 'dog'}}is a dog{{else StringEqualityBlockHelper value 'cat'}}is a cat{{else}}is something else{{/StringEqualityBlockHelper}}";
+```
+
+This works the same way `{{#if}}`/`{{else if}}` chaining does, and can be chained as many times as needed:
+
+```handlebars
+{{#if isDog}}
+  is a dog
+{{else if isCat}}
+  is a cat
+{{else}}
+  is something else
+{{/if}}
+```
+
 ### Registering Decorators
 
 ```c#
