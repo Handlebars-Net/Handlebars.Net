@@ -40,7 +40,7 @@ jobs:
         uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
         id: login
         with:
-          user: Handlebars-Net
+          user: rexm
 
       - name: Publish to NuGet
         working-directory: ./source
