@@ -8,6 +8,9 @@ jobs:
   publish:
     name: Publish
     runs-on: windows-latest
+    environment: release
+    permissions:
+      id-token: write
     steps:
       - uses: actions/checkout@v4
 
@@ -33,8 +36,12 @@ jobs:
         working-directory: ./source
         run: dotnet pack -c Release /p:version=${{ github.event.release.tag_name }} /p:ContinuousIntegrationBuild=true /p:AssemblyOriginatorKeyFile=${{ steps.obtain_snk.outputs.filePath }} /p:ShouldSignAssembly=true
 
+      - name: NuGet login (OIDC → temp API key)
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+        id: login
+        with:
+          user: Handlebars-Net
+
       - name: Publish to NuGet
         working-directory: ./source
-        env:
-          NUGET_KEY: ${{ secrets.NUGET_ORG_PUSH_KEY }}
-        run: dotnet nuget push **/*.nupkg -k $env:NUGET_KEY -s https://api.nuget.org/v3/index.json
+        run: dotnet nuget push **/*.nupkg -k ${{ steps.login.outputs.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
