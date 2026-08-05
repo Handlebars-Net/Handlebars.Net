@@ -17,6 +17,10 @@ namespace HandlebarsDotNet.Compiler
 
         public sealed override string BlockName { get; protected set; }
 
+        // "else if"/"else unless" is already resolved into a flat chain of conditions below;
+        // it must not also be desugared into a nested block by BlockAccumulator.
+        internal override bool HandlesChainedElseInternally => true;
+
         public ConditionalBlockAccumulatorContext(Expression startingNode)
             : base(startingNode)
         {
@@ -127,7 +131,7 @@ namespace HandlebarsDotNet.Compiler
         private bool IsClosingNode(Expression item)
         {
             item = UnwrapStatement(item);
-            return item is PathExpression expression && expression.Path == "/" + BlockName;
+            return item is PathExpression expression && expression.Path == "/" + ResolvedClosingName;
         }
 
         private static Expression SinglifyExpressions(IEnumerable<Expression> expressions)
