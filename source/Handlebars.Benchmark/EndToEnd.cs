@@ -8,6 +8,7 @@ using HandlebarsDotNet.PathStructure;
 
 namespace HandlebarsNet.Benchmark
 {
+    [MemoryDiagnoser]
     public class EndToEnd
     {
         private object? _data;
