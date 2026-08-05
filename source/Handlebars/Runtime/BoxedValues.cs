@@ -11,7 +11,10 @@ namespace HandlebarsDotNet.Runtime
     /// </summary>
     public static class BoxedValues
     {
-        private const int BoxedIntegersCount = 20;
+        // Covers iterator indexes for effectively all template loops. The cache is
+        // ~32KB of process-lifetime statics (1024 boxes + the array), traded against
+        // a 24-byte allocation per iteration index >= the cache size on every render.
+        private const int BoxedIntegersCount = 1024;
         private static readonly object[] BoxedIntegers = new object[BoxedIntegersCount];
 
         static BoxedValues()

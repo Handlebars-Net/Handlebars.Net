@@ -7,6 +7,7 @@ using HandlebarsDotNet;
 
 namespace HandlebarsNet.Benchmark
 {
+    [MemoryDiagnoser]
     public class LargeArray
     {
         private object _data = null!; // -> Setup()
