@@ -350,6 +350,49 @@ false
         }
 
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicPathJaggedArray(IHandlebars handlebars)
+        {
+            var source = "{{ grid.[1].[2] }}";
+            var template = handlebars.Compile(source);
+            var data = new
+            {
+                grid = new[] { new[] { 1, 2, 3 }, new[] { 4, 5, 6 } }
+            };
+            var result = template(data);
+            Assert.Equal("6", result);
+        }
+
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicPathTwoDimensionalArray(IHandlebars handlebars)
+        {
+            var source = "{{ grid.[1].[2] }}";
+            var template = handlebars.Compile(source);
+            var data = new
+            {
+                grid = new int[,] { { 1, 2, 3 }, { 4, 5, 6 } }
+            };
+            var result = template(data);
+            Assert.Equal("6", result);
+        }
+
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BasicPathThreeDimensionalArray(IHandlebars handlebars)
+        {
+            var source = "{{ cube.[1].[0].[1] }}";
+            var template = handlebars.Compile(source);
+            var data = new
+            {
+                cube = new int[,,]
+                {
+                    { { 1, 2 }, { 3, 4 } },
+                    { { 5, 6 }, { 7, 8 } }
+                }
+            };
+            var result = template(data);
+            Assert.Equal("6", result);
+        }
+
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
         public void BasicPathEnumerableNoSquareBracketsChildPath(IHandlebars handlebars)
         {
             var source = "Hello, {{ names.1.name }}!";

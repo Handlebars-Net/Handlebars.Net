@@ -415,6 +415,62 @@ namespace HandlebarsDotNet.Test
             var result = template(data);
             Assert.Equal("0123", result);
         }
+
+        [Fact]
+        public void JaggedArrayIterator()
+        {
+            var source = "{{#each data}}[{{#each this}}{{this}}{{/each}}]{{/each}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                data = new[] { new[] { 1, 2 }, new[] { 3, 4, 5 } }
+            };
+            var result = template(data);
+            Assert.Equal("[12][345]", result);
+        }
+
+        [Fact]
+        public void TwoDimensionalArrayIteratorIteratesByRow()
+        {
+            var source = "{{#each data}}[{{#each this}}{{this}}{{/each}}]{{/each}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                data = new int[,] { { 1, 2, 3 }, { 4, 5, 6 } }
+            };
+            var result = template(data);
+            Assert.Equal("[123][456]", result);
+        }
+
+        [Fact]
+        public void TwoDimensionalArrayIteratorWithIndex()
+        {
+            var source = "{{#each data}}{{@index}}:{{#each this}}{{@index}}={{this}} {{/each}}\n{{/each}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                data = new int[,] { { 1, 2 }, { 3, 4 } }
+            };
+            var result = template(data);
+            Assert.Equal("0:0=1 1=2 \n1:0=3 1=4 \n", result);
+        }
+
+        [Fact]
+        public void ThreeDimensionalArrayIterator()
+        {
+            var source = "{{#each data}}{{#each this}}[{{#each this}}{{this}}{{/each}}]{{/each}}\n{{/each}}";
+            var template = Handlebars.Compile(source);
+            var data = new
+            {
+                data = new int[,,]
+                {
+                    { { 1, 2 }, { 3, 4 } },
+                    { { 5, 6 }, { 7, 8 } }
+                }
+            };
+            var result = template(data);
+            Assert.Equal("[12][34]\n[56][78]\n", result);
+        }
     }
 }
 
