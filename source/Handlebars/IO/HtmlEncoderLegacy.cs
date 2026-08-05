@@ -1,4 +1,5 @@
-﻿using HandlebarsDotNet.StringUtils;
+using HandlebarsDotNet.StringUtils;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -24,12 +25,24 @@ namespace HandlebarsDotNet
             EncodeImpl(new StringBuilderEnumerator(text), target);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Encode(string? text, TextWriter target)
         {
             if (text is not {Length: > 0}) return;
 
-            EncodeImpl(new StringEnumerator(text), target);
+            var length = text.Length;
+            var index = 0;
+            while (index < length && !RequiresEscaping(text[index])) index++;
+
+            if (index == length)
+            {
+                // Fast path: nothing to escape, write the whole string at once
+                target.Write(text);
+                return;
+            }
+
+            // Bulk-write the clean prefix, then fall back to per-character encoding.
+            if (index != 0) WriteRun(text, 0, index, target);
+            EncodeImpl(new StringEnumerator(text, index), target);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -38,6 +51,41 @@ namespace HandlebarsDotNet
             if (text is null) return;
 
             EncodeImpl(text, target);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool RequiresEscaping(char value)
+        {
+            switch (value)
+            {
+                case '"':
+                case '&':
+                case '<':
+                case '>':
+                    return true;
+                default:
+                    return value > 159;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void WriteRun(string text, int start, int length, TextWriter target)
+        {
+#if !NETSTANDARD2_0
+            // StringWriter and StreamWriter override Write(ReadOnlySpan<char>) with efficient
+            // implementations; for other writers TextWriter's base implementation rents and
+            // copies through ArrayPool, so they keep the original per-character writes.
+            if (target is StringWriter || target is StreamWriter)
+            {
+                target.Write(text.AsSpan(start, length));
+                return;
+            }
+#endif
+            var end = start + length;
+            for (var i = start; i < end; i++)
+            {
+                target.Write(text[i]);
+            }
         }
 
         private static void EncodeImpl<T>(T text, TextWriter target) where T : IEnumerator<char>
