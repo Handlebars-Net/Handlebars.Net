@@ -17,7 +17,9 @@ namespace HandlebarsDotNet
          * Escape set based on: https://github.com/handlebars-lang/handlebars.js/blob/master/lib/handlebars/utils.js
          * As of 2021-12-20 / commit https://github.com/handlebars-lang/handlebars.js/commit/3fb331ef40ee1a8308dd83b8e5adbcd798d0adc9
          */
-        private static readonly char[] EscapeChars = { '&', '<', '>', '"', '\'', '`', '=' };
+#if NET8_0_OR_GREATER
+        private static readonly System.Buffers.SearchValues<char> EscapeChars = System.Buffers.SearchValues.Create("&<>\"'`=");
+#endif
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Encode(StringBuilder text, TextWriter target)
@@ -31,7 +33,7 @@ namespace HandlebarsDotNet
         {
             if(string.IsNullOrEmpty(text)) return;
 
-            var index = text.IndexOfAny(EscapeChars);
+            var index = IndexOfEscapeChar(text, 0);
             if (index == -1)
             {
                 // Fast path: nothing to escape, write the whole string at once
@@ -47,10 +49,38 @@ namespace HandlebarsDotNet
                 target.Write(GetEscapeSequence(text[index]));
 
                 start = index + 1;
-                index = start < text.Length ? text.IndexOfAny(EscapeChars, start) : -1;
+                index = start < text.Length ? IndexOfEscapeChar(text, start) : -1;
             } while (index != -1);
 
             if (start < text.Length) WriteRun(text, start, text.Length - start, target);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static int IndexOfEscapeChar(string text, int start)
+        {
+#if NET8_0_OR_GREATER
+            // SearchValues pre-computes the lookup structure once; string.IndexOfAny(char[])
+            // with more than 5 needles would rebuild a probabilistic map on every call.
+            var index = text.AsSpan(start).IndexOfAny(EscapeChars);
+            return index < 0 ? -1 : index + start;
+#else
+            for (var i = start; i < text.Length; i++)
+            {
+                switch (text[i])
+                {
+                    case '&':
+                    case '<':
+                    case '>':
+                    case '"':
+                    case '\'':
+                    case '`':
+                    case '=':
+                        return i;
+                }
+            }
+
+            return -1;
+#endif
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
