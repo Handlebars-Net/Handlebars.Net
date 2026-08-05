@@ -64,15 +64,21 @@ namespace HandlebarsDotNet
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void WriteRun(string text, int start, int length, TextWriter target)
         {
-#if NETSTANDARD2_0
+#if !NETSTANDARD2_0
+            // StringWriter and StreamWriter override Write(ReadOnlySpan<char>) with efficient
+            // implementations; for other writers TextWriter's base implementation rents and
+            // copies through ArrayPool, so they keep the original per-character writes.
+            if (target is StringWriter || target is StreamWriter)
+            {
+                target.Write(text.AsSpan(start, length));
+                return;
+            }
+#endif
             var end = start + length;
             for (var i = start; i < end; i++)
             {
                 target.Write(text[i]);
             }
-#else
-            target.Write(text.AsSpan(start, length));
-#endif
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
