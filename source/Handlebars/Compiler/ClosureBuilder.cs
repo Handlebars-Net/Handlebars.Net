@@ -160,7 +160,7 @@ namespace HandlebarsDotNet.Compiler
         public readonly ChainSegment[]? BP0;
         public readonly ChainSegment[][]? BPA;
 
-        public readonly object?[] A;
+        public readonly object?[] A; // NOSONAR: public since 2020; reflection-based codegen in this file needs public GetField lookup
 
         internal Closure(
             List<KeyValuePair<ConstantExpression, PathInfo>> pathInfos,
