@@ -6,7 +6,7 @@ namespace HandlebarsDotNet
 {
     internal static class TypeExtensions
     {
-        public static bool IsAssignableToGenericType(this Type givenType, Type genericType, [MaybeNullWhen(false)] out Type resolvedType)
+        public static bool IsAssignableToGenericType(this Type givenType, Type genericType, [NotNullWhen(true)] out Type? resolvedType)
         {
             while (true)
             {

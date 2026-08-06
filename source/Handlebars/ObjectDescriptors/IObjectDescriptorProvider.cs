@@ -13,6 +13,6 @@ namespace HandlebarsDotNet.ObjectDescriptors
         /// </summary>
         /// <param name="type"></param>
         /// <param name="value"></param>
-        bool TryGetDescriptor(Type type, [MaybeNullWhen(false)] out ObjectDescriptor value);
+        bool TryGetDescriptor(Type type, [NotNullWhen(true)] out ObjectDescriptor? value);
     }
 }

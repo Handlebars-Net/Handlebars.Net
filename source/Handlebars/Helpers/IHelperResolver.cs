@@ -16,7 +16,7 @@ namespace HandlebarsDotNet.Helpers
         /// <param name="targetType"></param>
         /// <param name="helper"></param>
         /// <returns></returns>
-        bool TryResolveHelper(PathInfo name, Type? targetType, [MaybeNullWhen(false)] out IHelperDescriptor<HelperOptions> helper);
+        bool TryResolveHelper(PathInfo name, Type? targetType, [NotNullWhen(true)] out IHelperDescriptor<HelperOptions>? helper);
 
         /// <summary>
         /// Resolves <see cref="HandlebarsBlockHelper"/>
@@ -24,6 +24,6 @@ namespace HandlebarsDotNet.Helpers
         /// <param name="name"></param>
         /// <param name="helper"></param>
         /// <returns></returns>
-        bool TryResolveBlockHelper(PathInfo name, [MaybeNullWhen(false)] out IHelperDescriptor<BlockHelperOptions> helper);
+        bool TryResolveBlockHelper(PathInfo name, [NotNullWhen(true)] out IHelperDescriptor<BlockHelperOptions>? helper);
     }
 }

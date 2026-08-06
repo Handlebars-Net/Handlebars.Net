@@ -68,7 +68,7 @@ namespace HandlebarsDotNet.IO
             return this;
         }
         
-        public bool TryCreateFormatter(Type type, [MaybeNullWhen(false)] out IFormatter formatter)
+        public bool TryCreateFormatter(Type type, [NotNullWhen(true)] out IFormatter? formatter)
         {
             formatter = _formatters.GetOrAdd(type, ValueFactory, _formatterProviders).Value;
             return formatter != null;

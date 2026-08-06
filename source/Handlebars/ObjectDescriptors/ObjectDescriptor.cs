@@ -30,20 +30,20 @@ namespace HandlebarsDotNet.ObjectDescriptors
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryCreate(object? from, out ObjectDescriptor descriptor)
+        public static bool TryCreate(object? from, [NotNullWhen(true)] out ObjectDescriptor? descriptor)
         {
             return TryCreate(from?.GetType(), out descriptor);
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryCreate(Type? @from, out ObjectDescriptor descriptor)
+        public static bool TryCreate(Type? @from, [NotNullWhen(true)] out ObjectDescriptor? descriptor)
         {
             if (from == null)
             {
                 descriptor = Empty;
                 return false;
             }
-            
+
             return ObjectDescriptorFactory.Current!.TryGetDescriptor(from, out descriptor);
         }
 

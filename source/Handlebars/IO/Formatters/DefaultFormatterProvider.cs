@@ -27,7 +27,7 @@ namespace HandlebarsDotNet.IO
 
         private static readonly DefaultObjectFormatter DefaultObjectFormatter = new DefaultObjectFormatter();
         
-        public bool TryCreateFormatter(Type type, [MaybeNullWhen(false)] out IFormatter formatter)
+        public bool TryCreateFormatter(Type type, [NotNullWhen(true)] out IFormatter? formatter)
         {
             if (!Formatters.TryGetValue(type, out formatter))
             {
