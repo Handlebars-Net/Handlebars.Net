@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using HandlebarsDotNet.Collections;
@@ -21,7 +22,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
             _reflectionMemberAccessor = new ReflectionMemberAccessor(aliasProviders);
         }
         
-        public bool TryGetDescriptor(Type type, out ObjectDescriptor value)
+        public bool TryGetDescriptor(Type type, [NotNullWhen(true)] out ObjectDescriptor? value)
         {
             value = new ObjectDescriptor(
                 type,

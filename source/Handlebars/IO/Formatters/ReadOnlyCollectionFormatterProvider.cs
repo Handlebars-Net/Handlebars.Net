@@ -11,7 +11,7 @@ namespace HandlebarsDotNet.IO
         private static readonly Type CollectionFormatterType = typeof(ReadOnlyCollectionFormatter<,>);
         private static readonly Type CollectionType = typeof(IReadOnlyCollection<>);
 
-        public bool TryCreateFormatter(Type type, [MaybeNullWhen(false)] out IFormatter formatter)
+        public bool TryCreateFormatter(Type type, [NotNullWhen(true)] out IFormatter? formatter)
         {
             if (!type.GetTypeInfo().IsClass || !type.IsAssignableToGenericType(CollectionType, out var genericType))
             {

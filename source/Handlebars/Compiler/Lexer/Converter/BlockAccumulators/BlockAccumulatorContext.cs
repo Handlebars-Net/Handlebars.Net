@@ -125,7 +125,7 @@ namespace HandlebarsDotNet.Compiler
             };
         }
 
-        private static bool IsDetachedClosingElement(Expression item, Expression? parentItem, [MaybeNullWhen(false)] out string closingElement)
+        private static bool IsDetachedClosingElement(Expression item, Expression? parentItem, [NotNullWhen(true)] out string? closingElement)
         {
             closingElement = null;
 

@@ -5,6 +5,6 @@ namespace HandlebarsDotNet.IO
 {
     public interface IFormatterProvider
     {
-        bool TryCreateFormatter(Type type, [MaybeNullWhen(false)] out IFormatter formatter);
+        bool TryCreateFormatter(Type type, [NotNullWhen(true)] out IFormatter? formatter);
     }
 }

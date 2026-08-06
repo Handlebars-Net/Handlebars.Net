@@ -19,7 +19,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
         
         private static readonly Func<ObjectDescriptor, object, IEnumerable> GetProperties = (descriptor, arg) => ((IDictionary) arg).Keys;
 
-        public bool TryGetDescriptor(Type type, [MaybeNullWhen(false)] out ObjectDescriptor value)
+        public bool TryGetDescriptor(Type type, [NotNullWhen(true)] out ObjectDescriptor? value)
         {
             if (!Type.IsAssignableFrom(type))
             {
