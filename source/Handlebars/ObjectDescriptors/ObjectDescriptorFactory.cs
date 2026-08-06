@@ -56,7 +56,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
             return this;
         }
         
-        public bool TryGetDescriptor(Type type, out ObjectDescriptor value)
+        public bool TryGetDescriptor(Type type, [NotNullWhen(true)] out ObjectDescriptor? value)
         {
             value = _descriptorsCache.GetOrAdd(type, ValueFactory, _providers).Value;
             return !ReferenceEquals(value, ObjectDescriptor.Empty);

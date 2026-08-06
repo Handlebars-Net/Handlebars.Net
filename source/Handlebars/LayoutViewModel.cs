@@ -49,7 +49,7 @@ namespace HandlebarsDotNet
                 );
             }
 
-            public bool TryGetDescriptor(Type type, [MaybeNullWhen(false)] out ObjectDescriptor value)
+            public bool TryGetDescriptor(Type type, [NotNullWhen(true)] out ObjectDescriptor? value)
             {
                 if (type != Type)
                 {

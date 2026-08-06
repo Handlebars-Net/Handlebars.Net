@@ -26,14 +26,15 @@ namespace HandlebarsDotNet
         public ObjectAccessor(object? data)
         {
             _data = data;
-            if (data == null || !ObjectDescriptorFactory.Current!.TryGetDescriptor(data.GetType(), out _descriptor))
+            if (data == null || !ObjectDescriptorFactory.Current!.TryGetDescriptor(data.GetType(), out var descriptor))
             {
-                _descriptor = ObjectDescriptor.Empty!;
+                _descriptor = ObjectDescriptor.Empty;
                 _memberAccessor = null;
             }
             else
             {
-                _memberAccessor = _descriptor.MemberAccessor;   
+                _descriptor = descriptor;
+                _memberAccessor = _descriptor.MemberAccessor;
             }
         }
 

@@ -21,7 +21,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
 
         private readonly LookupSlim<Type, DeferredValue<Type, Type?>, ReferenceEqualityComparer<Type>> _typeCache = new LookupSlim<Type, DeferredValue<Type, Type?>, ReferenceEqualityComparer<Type>>(new ReferenceEqualityComparer<Type>());
 
-        public bool TryGetDescriptor(Type type, [MaybeNullWhen(false)] out ObjectDescriptor value)
+        public bool TryGetDescriptor(Type type, [NotNullWhen(true)] out ObjectDescriptor? value)
         {
             var interfaceType = _typeCache.GetOrAdd(type, InterfaceTypeValueFactory).Value;
             if (interfaceType == null)
