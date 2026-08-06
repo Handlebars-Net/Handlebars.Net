@@ -42,12 +42,20 @@ namespace HandlebarsDotNet.ObjectDescriptors
                 {
                     var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
                         .Where(o => o.CanRead && o.GetIndexParameters().Length == 0);
-                    
+
+                    // Properties implemented purely as C# 8+ default interface members (no override on the
+                    // concrete class) don't appear via reflection on the class itself, only on the interface.
+                    var interfaceProperties = type.GetInterfaces()
+                        .SelectMany(o => o.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+                        .Where(o => o.CanRead && o.GetIndexParameters().Length == 0);
+
                     var fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
                     return properties
+                        .Concat(interfaceProperties)
                         .Cast<MemberInfo>()
                         .Concat(fields)
                         .Select(o => o.Name)
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
                         .Select(o => ChainSegment.Create(o))
                         .ToArray();
                 });

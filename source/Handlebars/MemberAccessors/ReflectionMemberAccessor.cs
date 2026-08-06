@@ -135,6 +135,15 @@ namespace HandlebarsDotNet.MemberAccessors
                         string.Equals(o.Name, name.LowerInvariant, StringComparison.OrdinalIgnoreCase)
                 );
 
+                // Properties implemented purely as C# 8+ default interface members (no override on the
+                // concrete class) don't appear via reflection on the class itself, only on the interface.
+                property ??= type.GetInterfaces()
+                    .SelectMany(o => o.GetProperties(BindingFlags.Instance | BindingFlags.Public))
+                    .FirstOrDefault(o =>
+                        o.GetIndexParameters().Length == 0 &&
+                        string.Equals(o.Name, name.LowerInvariant, StringComparison.OrdinalIgnoreCase)
+                    );
+
                 if (property != null)
                 {
                     return (Func<object, object>) CreateGetDelegateMethodInfo
