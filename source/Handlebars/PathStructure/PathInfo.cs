@@ -105,7 +105,7 @@ namespace HandlebarsDotNet.PathStructure
         /// </summary>
         // [MemberNotNullWhen(true, nameof(Segments), nameof(TrimmedPath))]
         public readonly bool IsVariable;
-        public readonly PathSegment[]? Segments;
+        public readonly PathSegment[]? Segments; // NOSONAR: public since v1.0 (2020); staying public avoids a breaking API change
         public readonly string Path;
         public readonly string? TrimmedPath;
 

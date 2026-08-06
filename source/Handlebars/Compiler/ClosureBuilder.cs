@@ -81,7 +81,7 @@ namespace HandlebarsDotNet.Compiler
             BuildKnownValuesExpressions(closureExpression, mapping, _blockDecorators, "BDD", 4);
             BuildKnownValuesExpressions(closureExpression, mapping, _decoratorDelegates, "DDD", 4);
             
-            var arrayField = closureType.GetField("A");
+            var arrayField = closureType.GetField("A", BindingFlags.NonPublic | BindingFlags.Instance);
             var array = Expression.Field(closureExpression, arrayField!);
             for (int index = 0; index < _other.Count; index++)
             {
@@ -160,7 +160,7 @@ namespace HandlebarsDotNet.Compiler
         public readonly ChainSegment[]? BP0;
         public readonly ChainSegment[][]? BPA;
 
-        public readonly object?[] A;
+        internal readonly object?[] A;
 
         internal Closure(
             List<KeyValuePair<ConstantExpression, PathInfo>> pathInfos,
