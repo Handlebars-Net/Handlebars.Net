@@ -2,6 +2,7 @@
 using HandlebarsDotNet.Compiler;
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 
 namespace HandlebarsDotNet
 {
@@ -37,6 +38,8 @@ namespace HandlebarsDotNet
                     return s == string.Empty;
                 case SafeString safe:
                     return safe.Value == string.Empty;
+                case JsonElement element:
+                    return IsFalsyJsonElement(element, includeZero);
             }
 
             if (IsNumber(value) && !includeZero)
@@ -45,17 +48,42 @@ namespace HandlebarsDotNet
             }
             return false;
         }
-        
+
+        private static bool IsFalsyJsonElement(JsonElement element, bool includeZero)
+        {
+            switch (element.ValueKind)
+            {
+                case JsonValueKind.Null:
+                case JsonValueKind.Undefined:
+                case JsonValueKind.False:
+                    return true;
+                case JsonValueKind.True:
+                    return false;
+                case JsonValueKind.String:
+                    return element.GetString() == string.Empty;
+                case JsonValueKind.Number:
+                    return !includeZero && element.GetDouble() == 0;
+                default:
+                    return false;
+            }
+        }
+
         public static bool IsTruthyOrNonEmpty([NotNullWhen(true)] object? value, bool includeZero = false)
         {
             return !IsFalsyOrEmpty(value, includeZero);
         }
-        
+
         public static bool IsFalsyOrEmpty([NotNullWhen(false)] object? value, bool includeZero = false)
         {
             if(IsFalsy(value, includeZero))
             {
                 return true;
+            }
+
+            if (value is JsonElement element)
+            {
+                return (element.ValueKind == JsonValueKind.Object && !element.EnumerateObject().Any())
+                    || (element.ValueKind == JsonValueKind.Array && element.GetArrayLength() == 0);
             }
 
             return value is IEnumerable enumerable && !enumerable.Any();

@@ -819,6 +819,181 @@ namespace HandlebarsDotNet.Test
                 ex = Assert.IsType<HandlebarsRuntimeException>(ex.InnerException);
             Assert.Equal("Runtime error while rendering partial 'list', exceeded recursion depth limit of 100", ex.Message);
         }
+
+        [Fact]
+        public void NamedArgsInPartialInsideNestedEach()
+        {
+            var h = Handlebars.Create();
+            h.RegisterTemplate("myPartial", "{{arg1}}-{{arg2}} ");
+            var template = h.Compile(
+                "{{#each items}}{{#each nested}}{{> myPartial arg1=value1 arg2=value2}}{{/each}}{{/each}}");
+            var data = new
+            {
+                items = new[] { new { nested = new[] { new { value1 = "A", value2 = "B" }, new { value1 = "C", value2 = "D" } } } }
+            };
+            var result = template(data);
+            Assert.Contains("A-B", result);
+            Assert.Contains("C-D", result);
+        }
+
+        [Fact]
+        public void ConditionalInPartialSeesPassedContext()
+        {
+            var h = Handlebars.Create();
+            h.RegisterTemplate("LinkToCompany",
+                "{{#if ClientCode}}IT EXISTS{{else}}IT IS NOT HERE{{/if}}");
+            var template = h.Compile("{{> LinkToCompany Entity}}");
+            var data = new { Entity = new { ClientCode = "TEST" } };
+            Assert.Equal("IT EXISTS", template(data));
+        }
+
+        // Partial indentation: when {{> partial}} is indented with spaces/tabs on its own line,
+        // every line of the rendered partial should be prefixed with that same indentation,
+        // matching Handlebars.js behavior (spec section 20.12).
+        [Fact]
+        public void InlinePartialSpecExample()
+        {
+            var handlebars = Handlebars.Create();
+            var source = "  {{> p}}";
+            var partialSource = "line1\nline2";
+
+            using (var reader = new StringReader(partialSource))
+            {
+                handlebars.RegisterTemplate("p", handlebars.Compile(reader));
+            }
+
+            var result = handlebars.Compile(source)(new { });
+
+            Assert.Equal("  line1\n  line2", result);
+        }
+
+        [Fact]
+        public void PartialIndentationWithMultiLinePartial()
+        {
+            var handlebars = Handlebars.Create();
+            var source = "Start\n  {{> content}}\nEnd";
+            var partialSource = "line1\nline2\nline3";
+
+            using (var reader = new StringReader(partialSource))
+            {
+                handlebars.RegisterTemplate("content", handlebars.Compile(reader));
+            }
+
+            var result = handlebars.Compile(source)(new { });
+
+            // TrimAfter strips the \n between the partial tag and "End", so the output is:
+            //   "Start\n" + "  line1\n  line2\n  line3" + "End"
+            Assert.Equal("Start\n  line1\n  line2\n  line3End", result);
+        }
+
+        [Fact]
+        public void PartialIndentationWithTabCharacter()
+        {
+            var handlebars = Handlebars.Create();
+            var source = "Start\n\t{{> content}}\nEnd";
+            var partialSource = "line1\nline2";
+
+            using (var reader = new StringReader(partialSource))
+            {
+                handlebars.RegisterTemplate("content", handlebars.Compile(reader));
+            }
+
+            var result = handlebars.Compile(source)(new { });
+
+            Assert.Equal("Start\n\tline1\n\tline2End", result);
+        }
+
+        [Fact]
+        public void PartialWithNoIndentationUnchanged()
+        {
+            var handlebars = Handlebars.Create();
+            var source = "Hello\n{{> greeting}}\nBye";
+            var partialSource = "World";
+
+            using (var reader = new StringReader(partialSource))
+            {
+                handlebars.RegisterTemplate("greeting", handlebars.Compile(reader));
+            }
+
+            var result = handlebars.Compile(source)(new { });
+
+            // Standalone with no indent: TrimAfter strips \nBye → Bye, no indent added.
+            Assert.Equal("Hello\nWorldBye", result);
+        }
+
+        [Fact]
+        public void PartialIndentationIsAppliedInsideBlock()
+        {
+            var handlebars = Handlebars.Create();
+            var source = "<h2>Names</h2>\n{{#names}}\n  {{> user}}\n{{/names}}";
+            var partialSource = "<strong>{{name}}</strong>";
+
+            using (var reader = new StringReader(partialSource))
+            {
+                handlebars.RegisterTemplate("user", handlebars.Compile(reader));
+            }
+
+            var template = handlebars.Compile(source);
+            var data = new
+            {
+                names = new[]
+                {
+                    new { name = "Karen" },
+                    new { name = "Jon" }
+                }
+            };
+
+            var result = template(data);
+
+            // The standalone \n after {{> user}} is stripped; iterations are concatenated directly.
+            Assert.Equal("<h2>Names</h2>\n  <strong>Karen</strong>  <strong>Jon</strong>", result);
+        }
+
+        [Fact]
+        public void PartialWithCrLfLineEndingsNormalisedToLf()
+        {
+            var handlebars = Handlebars.Create();
+            var source = "  {{> p}}";
+            var partialSource = "line1\r\nline2\r\nline3";  // Windows-style \r\n
+
+            using (var reader = new StringReader(partialSource))
+            {
+                handlebars.RegisterTemplate("p", handlebars.Compile(reader));
+            }
+
+            var result = handlebars.Compile(source)(new { });
+
+            // \r\n in the partial source is normalised to \n; every line gets the indent.
+            Assert.Equal("  line1\n  line2\n  line3", result);
+        }
+
+        [Fact]
+        public void MultiLinePartialIndentationInsideBlock()
+        {
+            var handlebars = Handlebars.Create();
+            var source = "{{#items}}\n  {{> row}}\n{{/items}}";
+            var partialSource = "- {{name}}\n  ({{desc}})";
+
+            using (var reader = new StringReader(partialSource))
+            {
+                handlebars.RegisterTemplate("row", handlebars.Compile(reader));
+            }
+
+            var template = handlebars.Compile(source);
+            var data = new
+            {
+                items = new[]
+                {
+                    new { name = "A", desc = "alpha" },
+                    new { name = "B", desc = "beta" }
+                }
+            };
+
+            var result = template(data);
+
+            // Each 2-line partial gets "  " prepended to both lines.
+            Assert.Equal("  - A\n    (alpha)  - B\n    (beta)", result);
+        }
     }
 }
 

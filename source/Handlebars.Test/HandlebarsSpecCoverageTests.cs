@@ -289,6 +289,76 @@ namespace HandlebarsDotNet.Test
         }
 
         // ─────────────────────────────────────────────────────────────
+        // 5b. #if includeZero=true hash argument
+        // https://handlebarsjs.com/guide/builtin-helpers.html#if
+        // ─────────────────────────────────────────────────────────────
+
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void If_IncludeZeroTrue_ZeroInt_RendersBlock(IHandlebars hbs)
+        {
+            var template = hbs.Compile("{{#if value includeZero=true}}yes{{else}}no{{/if}}");
+            Assert.Equal("yes", template(new { value = 0 }));
+        }
+
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void If_IncludeZeroTrue_ZeroDouble_RendersBlock(IHandlebars hbs)
+        {
+            var template = hbs.Compile("{{#if value includeZero=true}}yes{{else}}no{{/if}}");
+            Assert.Equal("yes", template(new { value = 0.0 }));
+        }
+
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void If_IncludeZeroTrue_NonZeroInt_RendersBlock(IHandlebars hbs)
+        {
+            var template = hbs.Compile("{{#if value includeZero=true}}yes{{else}}no{{/if}}");
+            Assert.Equal("yes", template(new { value = 1 }));
+        }
+
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void If_IncludeZeroFalse_ZeroInt_DoesNotRenderBlock(IHandlebars hbs)
+        {
+            var template = hbs.Compile("{{#if value includeZero=false}}yes{{else}}no{{/if}}");
+            Assert.Equal("no", template(new { value = 0 }));
+        }
+
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void If_IncludeZeroTrue_NullValue_StillTreatedAsFalsy(IHandlebars hbs)
+        {
+            var template = hbs.Compile("{{#if value includeZero=true}}yes{{else}}no{{/if}}");
+            Assert.Equal("no", template(new { value = (object?)null }));
+        }
+
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void If_IncludeZeroTrue_EmptyString_StillTreatedAsFalsy(IHandlebars hbs)
+        {
+            var template = hbs.Compile("{{#if value includeZero=true}}yes{{else}}no{{/if}}");
+            Assert.Equal("no", template(new { value = string.Empty }));
+        }
+
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void If_IncludeZeroTrue_FalseBool_StillTreatedAsFalsy(IHandlebars hbs)
+        {
+            var template = hbs.Compile("{{#if value includeZero=true}}yes{{else}}no{{/if}}");
+            Assert.Equal("no", template(new { value = false }));
+        }
+
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void If_IncludeZeroTrue_TrueBool_RendersBlock(IHandlebars hbs)
+        {
+            var template = hbs.Compile("{{#if value includeZero=true}}yes{{else}}no{{/if}}");
+            Assert.Equal("yes", template(new { value = true }));
+        }
+
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void If_WithHashArgument_DoesNotCrash(IHandlebars hbs)
+        {
+            // Regression: passing any hash arg to #if previously threw
+            // InvalidOperationException: "Sequence contains more than one element".
+            var template = hbs.Compile("{{#if value includeZero=true}}yes{{/if}}");
+            Assert.Equal("yes", template(new { value = 42 }));
+        }
+
+        // ─────────────────────────────────────────────────────────────
         // 6. #unless
         // ─────────────────────────────────────────────────────────────
 
