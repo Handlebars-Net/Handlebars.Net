@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using HandlebarsDotNet.Compiler;
@@ -2230,6 +2231,65 @@ false
             var actual = compiledTemplate(value);
 
             Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void BasicCompileAndRenderWithoutByRefDelegate()
+        {
+            // Validates the scenario that fails on Mono when byref delegates are used
+            var h = Handlebars.Create();
+            var render = h.Compile("{{input}}");
+            var result = render(new { input = 42 });
+            Assert.Equal("42", result);
+        }
+
+        [Fact]
+        public void BlockHelperCompileAndRenderWithoutByRefDelegate()
+        {
+            // Block helpers also exercise TemplateDelegate compilation
+            var h = Handlebars.Create();
+            h.RegisterHelper("loud", (writer, options, context, arguments) =>
+            {
+                options.Template(writer, context);
+            });
+            var render = h.Compile("{{#loud}}hello{{/loud}}");
+            var result = render(new { });
+            Assert.Equal("hello", result);
+        }
+
+        [Fact]
+        public void CompileWithTextReaderProducesOutput()
+        {
+            var h = Handlebars.Create();
+            using var reader = new StringReader("Hello {{name}}!");
+            var template = h.Compile(reader);
+            using var writer = new StringWriter();
+            template(writer, new { name = "World" }, null);
+            Assert.Equal("Hello World!", writer.ToString());
+        }
+
+        [Fact]
+        public void SharedEnvironmentCompileAndRenderNeverSilentlyFails()
+        {
+            // Regression: broad exception swallowing in observable collection publish paths
+            // could prevent helper/template registrations from propagating in restricted
+            // runtime environments (e.g. .NET 8 Windows Service), causing silent empty output.
+            var h = Handlebars.Create();
+            var shared = h.CreateSharedEnvironment();
+
+            var template = shared.Compile("Hello {{name}}!");
+            var result = template(new { name = "World" });
+            Assert.Equal("Hello World!", result);
+        }
+
+        [Fact]
+        public void EmptyTemplateProducesEmptyStringNotNull()
+        {
+            var h = Handlebars.Create();
+            var template = h.Compile("");
+            var result = template(new { });
+            Assert.NotNull(result);
+            Assert.Equal("", result);
         }
 
         [Fact]

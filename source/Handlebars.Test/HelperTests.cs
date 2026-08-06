@@ -966,6 +966,194 @@ namespace HandlebarsDotNet.Test
         }
         
         [Fact]
+        public void SubexpressionWriteSafeStringNotDoubleEncoded()
+        {
+            var h = Handlebars.Create();
+            h.RegisterHelper("func2", (writer, ctx, args) => writer.WriteSafeString("<b>bold</b>"));
+            h.RegisterHelper("func1", (writer, ctx, args) => writer.WriteSafeString($"<span>{args[0]}</span>"));
+            var result = h.Compile("{{func1 (func2)}}")(new { });
+            Assert.Equal("<span><b>bold</b></span>", result);
+        }
+
+        [Fact]
+        public void StandaloneWriteSafeStringNotEncoded()
+        {
+            var h = Handlebars.Create();
+            h.RegisterHelper("func2", (writer, ctx, args) => writer.WriteSafeString("<b>bold</b>"));
+            var result = h.Compile("{{func2}}")(new { });
+            Assert.Equal("<b>bold</b>", result);
+        }
+
+        [Fact]
+        public void WriteSafeStringConsistentRegardlessOfRegistrationOrder()
+        {
+            HandlebarsHelper link_to = (writer, context, parameters) =>
+                writer.WriteSafeString($"<a href='{context["url"]}'>{context["text"]}</a>");
+
+            string source = "Click here: {{link_to}}";
+            var data = new { url = "https://example.com", text = "Click" };
+
+            // Register BEFORE compile
+            var h1 = Handlebars.Create();
+            h1.RegisterHelper("link_to", link_to);
+            var t1 = h1.Compile(source);
+            var result1 = t1(data);
+
+            // Register AFTER compile
+            var h2 = Handlebars.Create();
+            var t2 = h2.Compile(source);
+            h2.RegisterHelper("link_to", link_to);
+            var result2 = t2(data);
+
+            // Both should produce identical, unescaped HTML
+            Assert.Equal(result1, result2);
+            Assert.Contains("<a href=", result1);
+        }
+
+        [Fact]
+        public void BlockParamFromWithIsPassableToHelperInInnerEach()
+        {
+            var handlebars = Handlebars.Create();
+            var receivedArgs = new List<object?>();
+
+            handlebars.RegisterHelper("Getattributes", (context, arguments) =>
+            {
+                receivedArgs.Add(arguments[0]);
+                return new[] { "attr1", "attr2" };
+            });
+
+            var template = handlebars.Compile(
+                "{{#each Fields}}" +
+                "{{#with this as |field|}}" +
+                "{{#each (Getattributes field)}}" +
+                "{{this}} " +
+                "{{/each}}" +
+                "{{/with}}" +
+                "{{/each}}"
+            );
+
+            var data = new
+            {
+                Fields = new[] { "field1", "field2" }
+            };
+
+            // Should not throw NotSupportedException: TypeConverter cannot convert UndefinedBindingResult
+            var result = template(data);
+
+            Assert.Equal("attr1 attr2 attr1 attr2 ", result);
+
+            // Verify that the helper received the actual field values, not UndefinedBindingResult
+            Assert.Equal(2, receivedArgs.Count);
+            Assert.Equal("field1", receivedArgs[0]);
+            Assert.Equal("field2", receivedArgs[1]);
+        }
+
+        [Fact]
+        public void BlockParamTypedAccessDoesNotThrowWhenPassedToHelper()
+        {
+            // Reproduces: System.NotSupportedException: TypeConverter cannot convert UndefinedBindingResult to string
+            // The bug manifests when the block param resolves to UndefinedBindingResult and the helper
+            // uses arguments.At<T>() (typed access) which calls TypeConverter.ConvertTo.
+            var handlebars = Handlebars.Create();
+            var receivedArgs = new List<string?>();
+
+            handlebars.RegisterHelper("Getattributes", (context, arguments) =>
+            {
+                var fieldValue = arguments.At<string>(0);
+                receivedArgs.Add(fieldValue);
+                return new[] { "attr1", "attr2" };
+            });
+
+            var template = handlebars.Compile(
+                "{{#each Fields}}" +
+                "{{#with this as |field|}}" +
+                "{{#each (Getattributes field)}}" +
+                "{{this}} " +
+                "{{/each}}" +
+                "{{/with}}" +
+                "{{/each}}"
+            );
+
+            var data = new
+            {
+                Fields = new[] { "field1", "field2" }
+            };
+
+            var result = template(data);
+
+            Assert.Equal("attr1 attr2 attr1 attr2 ", result);
+            Assert.Equal(2, receivedArgs.Count);
+            Assert.Equal("field1", receivedArgs[0]);
+            Assert.Equal("field2", receivedArgs[1]);
+        }
+
+        [Fact]
+        public void BlockParamFromWithIsPassableToHelperInInnerEachAcrossPoolReuse()
+        {
+            // Uses more iterations to increase the chance of BindingContext pool reuse,
+            // which is what triggers the stale-data bug this guards against.
+            var handlebars = Handlebars.Create();
+            var receivedArgs = new List<string?>();
+
+            handlebars.RegisterHelper("Getattributes", (context, arguments) =>
+            {
+                var fieldValue = arguments.At<string>(0);
+                receivedArgs.Add(fieldValue);
+                return new[] { "x", "y" };
+            });
+
+            var template = handlebars.Compile(
+                "{{#each Fields}}" +
+                "{{#with this as |field|}}" +
+                "{{#each (Getattributes field)}}" +
+                "{{this}}" +
+                "{{/each}}" +
+                "{{/with}}" +
+                "{{/each}}"
+            );
+
+            var data = new
+            {
+                Fields = new[] { "a", "b", "c", "d", "e" }
+            };
+
+            var result = template(data);
+
+            Assert.Equal("xyxyxyxyxy", result);
+            Assert.Equal(5, receivedArgs.Count);
+            Assert.Equal(new[] { "a", "b", "c", "d", "e" }, receivedArgs);
+        }
+
+        [Fact]
+        public void BlockParamsInEachStressTestDoesNotThrow()
+        {
+            // 1000-iteration stress test to exercise BindingContext pool reuse. If the block param
+            // `field` ever resolves to UndefinedBindingResult due to pool reuse corruption, the helper
+            // would receive a wrong value (or throw NotSupportedException when typed access is used).
+            var h = Handlebars.Create();
+            h.RegisterHelper("Getattributes", (context, args) => new[] { "attr1", "attr2" });
+
+            var template = h.Compile(
+                "{{#each Fields}}" +
+                "{{#with this as |field|}}" +
+                "{{#each (Getattributes field)}}" +
+                "{{this}} " +
+                "{{/each}}" +
+                "{{/with}}" +
+                "{{/each}}");
+
+            var data = new { Fields = new object[] { new { Name = "f1" }, new { Name = "f2" } } };
+
+            // Run many times to stress pool reuse
+            for (int i = 0; i < 1000; i++)
+            {
+                var result = template(data);
+                Assert.Contains("attr1", result);
+                Assert.Contains("attr2", result);
+            }
+        }
+
+        [Fact]
         public void BlockHelperThis()
         {
             var handlebars = Handlebars.Create();

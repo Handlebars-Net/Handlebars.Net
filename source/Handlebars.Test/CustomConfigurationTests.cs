@@ -61,6 +61,83 @@ namespace HandlebarsDotNet.Test
             Assert.Equal(ExpectedOutput, output);
         }
 
+        [Fact]
+        public void UpperCamelCaseResolverDoesNotBreakEachIteration()
+        {
+            var template = HandlebarsInstance.Compile("{{#each items}}{{name}} {{/each}}");
+            var data = new { items = new[] { new { name = "Alice" }, new { name = "Bob" } } };
+            Assert.Equal("Alice Bob ", template(data));
+        }
+
+        [Fact]
+        public void UpperCamelCaseResolverDoesNotBreakEachWithList()
+        {
+            var template = HandlebarsInstance.Compile("{{#each items}}{{name}} {{/each}}");
+            var data = new
+            {
+                items = new List<object>
+                {
+                    new { name = "Alice" },
+                    new { name = "Bob" }
+                }
+            };
+            Assert.Equal("Alice Bob ", template(data));
+        }
+
+        [Fact]
+        public void UpperCamelCaseResolverDoesNotBreakEachWithAtIndex()
+        {
+            var template = HandlebarsInstance.Compile("{{#each items}}{{@index}}:{{name}} {{/each}}");
+            var data = new { items = new[] { new { name = "Alice" }, new { name = "Bob" } } };
+            Assert.Equal("0:Alice 1:Bob ", template(data));
+        }
+
+        [Fact]
+        public void UpperCamelCaseResolverDoesNotBreakEachWithAtFirst()
+        {
+            var template = HandlebarsInstance.Compile("{{#each items}}{{#if @first}}first:{{/if}}{{name}} {{/each}}");
+            var data = new { items = new[] { new { name = "Alice" }, new { name = "Bob" } } };
+            Assert.Equal("first:Alice Bob ", template(data));
+        }
+
+        [Fact]
+        public void UpperCamelCaseResolverWorksWithNestedPropertyAccess()
+        {
+            var template = HandlebarsInstance.Compile("{{#each items}}{{address.city}} {{/each}}");
+            var data = new
+            {
+                items = new[]
+                {
+                    new { address = new { city = "New York" } },
+                    new { address = new { city = "London" } }
+                }
+            };
+            Assert.Equal("New York London ", template(data));
+        }
+
+        [Fact]
+        public void UpperCamelCaseResolverWorksWithStringArray()
+        {
+            var template = HandlebarsInstance.Compile("{{#each items}}{{this}} {{/each}}");
+            var data = new { items = new[] { "Alice", "Bob" } };
+            Assert.Equal("Alice Bob ", template(data));
+        }
+
+        [Fact]
+        public void UpperCamelCaseResolverWorksWithNestedEach()
+        {
+            var template = HandlebarsInstance.Compile("{{#each groups}}{{#each members}}{{name}} {{/each}}{{/each}}");
+            var data = new
+            {
+                groups = new[]
+                {
+                    new { members = new[] { new { name = "Alice" }, new { name = "Bob" } } },
+                    new { members = new[] { new { name = "Carol" } } }
+                }
+            };
+            Assert.Equal("Alice Bob Carol ", template(data));
+        }
+
         #endregion
 
         #region Custom IOutputEncoding

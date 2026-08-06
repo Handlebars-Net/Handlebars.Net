@@ -5,6 +5,7 @@ using System.Dynamic;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Text.Json;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -50,6 +51,18 @@ namespace HandlebarsDotNet.Test
             var output = template(model);
 
             Assert.Equal("foo: 1\nbar: hello world\n", output);
+        }
+
+        [Fact]
+        public void DynamicObjectCaseSensitiveLookupWithSameSpellingVariables()
+        {
+            var h = Handlebars.Create();
+            var template = h.Compile("{{TEST}} {{test}}");
+            dynamic data = new ExpandoObject();
+            data.TEST = "Upper";
+            data.test = "Lower";
+            var result = template(data);
+            Assert.Equal("Upper Lower", result);
         }
 
 		[Fact]
@@ -286,6 +299,116 @@ namespace HandlebarsDotNet.Test
             Func<string, string> makeFlat = text => text.Replace( " ", "" ).Replace( "\n", "" ).Replace( "\r", "" );
 
             Assert.Equal( makeFlat( expected ), makeFlat( result ) );
+        }
+
+        // System.Text.Json's JsonElement (the result of System.Text.Json.JsonSerializer.Deserialize<object>) has no
+        // built-in support for member access/iteration in .NET, unlike Newtonsoft's JObject/JToken
+        // above. These tests mirror the JObject coverage to ensure feature parity between the two.
+        [Fact]
+        public void JsonElementResolvesNestedProperty()
+        {
+            var json = "{\"A\": {\"B\": \"b\"}}";
+            object data = System.Text.Json.JsonSerializer.Deserialize<object>(json)!;
+
+            var template = Handlebars.Create().Compile("{{A.B}}");
+
+            Assert.Equal("b", template(data));
+        }
+
+        [Fact]
+        public void JsonElementRendersScalarPropertyValues()
+        {
+            var json = "{\"str\": \"hello\", \"num\": 42, \"nothing\": null}";
+            object data = System.Text.Json.JsonSerializer.Deserialize<object>(json)!;
+
+            var template = Handlebars.Create().Compile("{{str}}|{{num}}|{{nothing}}");
+
+            Assert.Equal("hello|42|", template(data));
+        }
+
+        [Fact]
+        public void JsonElementIteratesArray()
+        {
+            var json = "{\"items\": [1, 2, 3]}";
+            object data = System.Text.Json.JsonSerializer.Deserialize<object>(json)!;
+
+            var template = Handlebars.Create().Compile("{{#each items}}{{this}},{{/each}}");
+
+            Assert.Equal("1,2,3,", template(data));
+        }
+
+        [Fact]
+        public void JsonElementIteratesArrayOfObjects()
+        {
+            var json = "{\"items\": [{\"Name\": \"a\"}, {\"Name\": \"b\"}]}";
+            object data = System.Text.Json.JsonSerializer.Deserialize<object>(json)!;
+
+            var template = Handlebars.Create().Compile("{{#each items}}{{Name}},{{/each}}");
+
+            Assert.Equal("a,b,", template(data));
+        }
+
+        [Fact]
+        public void JsonElementIteratesObjectProperties()
+        {
+            var json = "{\"A\": \"1\", \"B\": \"2\"}";
+            object data = System.Text.Json.JsonSerializer.Deserialize<object>(json)!;
+
+            var template = Handlebars.Create().Compile("{{#each this}}{{@key}}={{this}} {{/each}}");
+
+            Assert.Equal("A=1 B=2 ", template(data));
+        }
+
+        [Theory]
+        [InlineData("{\"flag\": true}", "yes")]
+        [InlineData("{\"flag\": false}", "no")]
+        public void JsonElementBooleanRespectsTruthiness(string json, string expected)
+        {
+            object data = System.Text.Json.JsonSerializer.Deserialize<object>(json)!;
+
+            var template = Handlebars.Create().Compile("{{#if flag}}yes{{else}}no{{/if}}");
+
+            Assert.Equal(expected, template(data));
+        }
+
+        [Fact]
+        public void JsonElementTreatsEmptyStringNullAndZeroAsFalsy()
+        {
+            var json = "{\"empty\": \"\", \"nothing\": null, \"zero\": 0}";
+            object data = System.Text.Json.JsonSerializer.Deserialize<object>(json)!;
+
+            var template = Handlebars.Create().Compile(
+                "{{#if empty}}T{{else}}F{{/if}}" +
+                "{{#if nothing}}T{{else}}F{{/if}}" +
+                "{{#if zero}}T{{else}}F{{/if}}"
+            );
+
+            Assert.Equal("FFF", template(data));
+        }
+
+        [Fact]
+        public void JsonElementTreatsEmptyArrayAndObjectAsFalsy()
+        {
+            var json = "{\"emptyArr\": [], \"emptyObj\": {}}";
+            object data = System.Text.Json.JsonSerializer.Deserialize<object>(json)!;
+
+            var template = Handlebars.Create().Compile(
+                "{{#if emptyArr}}T{{else}}F{{/if}}" +
+                "{{#if emptyObj}}T{{else}}F{{/if}}"
+            );
+
+            Assert.Equal("FF", template(data));
+        }
+
+        [Fact]
+        public void JsonElementReturnsEmptyForMissingProperty()
+        {
+            var json = "{\"A\": \"a\"}";
+            object data = System.Text.Json.JsonSerializer.Deserialize<object>(json)!;
+
+            var template = Handlebars.Create().Compile("{{Missing.Nested}}");
+
+            Assert.Equal("", template(data));
         }
 
 #if NET452 || NET46 || NET461 || NET472
