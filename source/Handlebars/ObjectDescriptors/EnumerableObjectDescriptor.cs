@@ -57,7 +57,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
             _descriptorProvider = descriptorProvider;
         }
         
-        public bool TryGetDescriptor(Type type, [MaybeNullWhen(false)] out ObjectDescriptor value)
+        public bool TryGetDescriptor(Type type, [NotNullWhen(true)] out ObjectDescriptor? value)
         {
             if (!(type != StringType && Type.IsAssignableFrom(type)))
             {
@@ -86,7 +86,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
                    || TryCreateDescriptor(type, typeof(IEnumerable), parameters, NonGenericEnumerableObjectDescriptorFactoryMethodInfo, out value);
         }
 
-        private static bool TryCreateArrayDescriptor(Type type, object[] parameters, [MaybeNullWhen(false)] out ObjectDescriptor value)
+        private static bool TryCreateArrayDescriptor(Type type, object[] parameters, [NotNullWhen(true)] out ObjectDescriptor? value)
         {
             if (!type.IsArray)
             {
@@ -109,7 +109,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
             return true;
         }
 
-        private static bool TryCreateDescriptorFromOpenGeneric(Type type, Type openGenericType, object[] parameters, MethodInfo method, [MaybeNullWhen(false)] out ObjectDescriptor descriptor)
+        private static bool TryCreateDescriptorFromOpenGeneric(Type type, Type openGenericType, object[] parameters, MethodInfo method, [NotNullWhen(true)] out ObjectDescriptor? descriptor)
         {
             if (type.IsAssignableToGenericType(openGenericType, out var genericType))
             {
@@ -124,7 +124,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
             return false;
         }
         
-        private static bool TryCreateDescriptor(Type type, Type targetType, object[] parameters, MethodInfo method, [MaybeNullWhen(false)] out ObjectDescriptor descriptor)
+        private static bool TryCreateDescriptor(Type type, Type targetType, object[] parameters, MethodInfo method, [NotNullWhen(true)] out ObjectDescriptor? descriptor)
         {
             if (targetType.IsAssignableFrom(type))
             {

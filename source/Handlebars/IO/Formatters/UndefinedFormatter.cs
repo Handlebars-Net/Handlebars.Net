@@ -9,7 +9,7 @@ namespace HandlebarsDotNet.IO
 
         public string? FormatString { get; set; }
         
-        public bool TryCreateFormatter(Type type, [MaybeNullWhen(false)] out IFormatter formatter)
+        public bool TryCreateFormatter(Type type, [NotNullWhen(true)] out IFormatter? formatter)
         {
             if (type != typeof(UndefinedBindingResult))
             {

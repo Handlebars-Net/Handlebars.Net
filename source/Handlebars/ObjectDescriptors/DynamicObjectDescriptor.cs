@@ -34,7 +34,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
             _objectDescriptorProvider = objectDescriptorProvider;
         }
         
-        public bool TryGetDescriptor(Type type, [MaybeNullWhen(false)] out ObjectDescriptor value)
+        public bool TryGetDescriptor(Type type, [NotNullWhen(true)] out ObjectDescriptor? value)
         {
             if (!Type.IsAssignableFrom(type))
             {
