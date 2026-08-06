@@ -1220,6 +1220,56 @@ namespace HandlebarsDotNet.Test
             Assert.Equal("D", template(new { value = "z" }));
         }
 
+        public interface Issue601_IBaseData
+        {
+            DateTime DateTimeUtc { get; }
+        }
+
+        public interface Issue601_IData : Issue601_IBaseData
+        {
+            string DateTimeStr => DateTimeUtc.ToString("O");
+        }
+
+        public class Issue601_Data : Issue601_IData
+        {
+            public DateTime DateTimeUtc { get; set; }
+            public string OtherStr => DateTimeUtc.ToString("D");
+        }
+
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/601
+        // A property whose only implementation is a C# 8+ default interface member (declared and
+        // bodied on the interface, not overridden by the concrete class) must still be resolvable
+        // by name, even though it's invisible to Type.GetProperties() on the concrete class.
+        [Fact]
+        public void Issue601_DefaultInterfaceMemberPropertyIsResolved()
+        {
+            var handlebars = Handlebars.Create();
+            var template = handlebars.Compile("{{DateTimeStr}}|{{OtherStr}}");
+
+            var data = new Issue601_Data { DateTimeUtc = new DateTime(2024, 1, 2, 0, 0, 0, DateTimeKind.Utc) };
+            Issue601_IData dataAsInterface = data;
+            var result = template(data);
+
+            Assert.Equal($"{dataAsInterface.DateTimeStr}|{data.OtherStr}", result);
+        }
+
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/601
+        // Enumerating a POCO's members (e.g. via {{#each this}}) must also surface
+        // default-interface-member-backed properties, not just class-declared ones.
+        [Fact]
+        public void Issue601_DefaultInterfaceMemberPropertyIsEnumerated()
+        {
+            var handlebars = Handlebars.Create();
+            var template = handlebars.Compile("{{#each this}}{{@key}}={{this}};{{/each}}");
+
+            var data = new Issue601_Data { DateTimeUtc = new DateTime(2024, 1, 2, 0, 0, 0, DateTimeKind.Utc) };
+            Issue601_IData dataAsInterface = data;
+            var result = template(data);
+
+            Assert.Contains($"DateTimeStr={dataAsInterface.DateTimeStr};", result);
+            Assert.Contains($"OtherStr={data.OtherStr};", result);
+        }
+
         private static void RegisterStringEqualityBlockHelper(IHandlebars handlebars)
         {
             handlebars.RegisterHelper("StringEqualityBlockHelper", (output, options, context, arguments) =>
