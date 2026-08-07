@@ -28,12 +28,6 @@ namespace HandlebarsDotNet
                 return;
             }
 
-            if (value is SafeString safe)
-            {
-                writer.WriteSafeString(safe.Value);
-                return;
-            }
-
             var current = writer.SuppressEncoding;
             try
             {

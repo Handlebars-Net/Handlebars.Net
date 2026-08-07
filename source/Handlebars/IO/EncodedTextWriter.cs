@@ -125,10 +125,9 @@ namespace HandlebarsDotNet
 				case Substring substring when substring.Length == 0:
 					return;
 
-				case string v: Write(v, true); return;
+				case string v: Write(v, !SafeStrings.IsSafe(v)); return;
 				case StringBuilder v: Write(v, true); return;
 				case Substring v: Write(v, true); return;
-				case SafeString safe: Write(safe.Value, false); return;
 
 				default:
 					WriteFormatted(value);
