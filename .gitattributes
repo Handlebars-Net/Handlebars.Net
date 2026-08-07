@@ -1,0 +1,8 @@
+# Force LF line endings for all text files, regardless of the checking-out platform's git
+# config (e.g. Windows runners/clients that default core.autocrlf=true). Several tests embed
+# multi-line template literals (verbatim/raw C# strings) and compare rendered output against
+# an explicit \n-based expectation; without this, those literals check out as \r\n on Windows
+# and the comparison fails, since Handlebars.Net no longer rewrites line endings at render time
+# (see issue #661) — line endings in template source are the caller's content now, not something
+# the library silently normalizes.
+* text=auto eol=lf
