@@ -950,7 +950,7 @@ namespace HandlebarsDotNet.Test
         }
 
         [Fact]
-        public void PartialWithCrLfLineEndingsNormalisedToLf()
+        public void PartialWithCrLfLineEndingsPreservedVerbatim()
         {
             var handlebars = Handlebars.Create();
             var source = "  {{> p}}";
@@ -963,8 +963,8 @@ namespace HandlebarsDotNet.Test
 
             var result = handlebars.Compile(source)(new { });
 
-            // \r\n in the partial source is normalised to \n; every line gets the indent.
-            Assert.Equal("  line1\n  line2\n  line3", result);
+            // \r\n in the partial source is preserved verbatim; every line gets the indent (issue #661).
+            Assert.Equal("  line1\r\n  line2\r\n  line3", result);
         }
 
         [Fact]

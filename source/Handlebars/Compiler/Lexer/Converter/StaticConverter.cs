@@ -30,11 +30,7 @@ namespace HandlebarsDotNet.Compiler
 
                 if (staticToken.Value != string.Empty)
                 {
-                    // Normalize to \n so output is platform-independent regardless of source file line endings.
-                    var value = staticToken.Value.IndexOf('\r') >= 0
-                        ? staticToken.Value.Replace("\r\n", "\n").Replace("\r", "\n")
-                        : staticToken.Value;
-                    yield return HandlebarsExpression.Static(value);
+                    yield return HandlebarsExpression.Static(staticToken.Value);
                 }
             }
         }
