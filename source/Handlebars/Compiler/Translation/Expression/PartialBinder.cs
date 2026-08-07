@@ -139,8 +139,8 @@ namespace HandlebarsDotNet.Compiler
         /// to every non-empty line.  All lines including the first receive the indent because the
         /// WhitespaceRemover already stripped the leading whitespace from the static token that preceded
         /// the partial tag.  An empty trailing segment after the last newline does not receive an indent.
-        /// Newlines are normalised to <c>\n</c> so that output is consistent across platforms regardless
-        /// of whether the partial source was checked out with <c>\r\n</c> line endings.
+        /// Line endings are preserved verbatim — a <c>\r</c> immediately before a split point rides along
+        /// as part of the preceding segment, so <c>\r\n</c> content stays <c>\r\n</c>.
         /// </summary>
         private static void WriteWithIndent(EncodedTextWriter writer, string? content, string? indent)
         {
@@ -149,24 +149,21 @@ namespace HandlebarsDotNet.Compiler
                 return;
             }
 
-            // Normalise line endings to \n so Windows \r\n does not produce \r artifacts.
-            var normalised = content.Replace("\r\n", "\n").Replace("\r", "\n");
-
             var pos = 0;
-            while (pos < normalised.Length)
+            while (pos < content.Length)
             {
-                var newlinePos = normalised.IndexOf('\n', pos);
+                var newlinePos = content.IndexOf('\n', pos);
                 if (newlinePos < 0)
                 {
                     // No more newlines — write indent + rest and stop
                     writer.Write(indent, false);
-                    writer.Write(normalised.Substring(pos), false);
+                    writer.Write(content.Substring(pos), false);
                     break;
                 }
 
                 // Write indent + the segment up to and including the \n
                 writer.Write(indent, false);
-                writer.Write(normalised.Substring(pos, newlinePos - pos + 1), false);
+                writer.Write(content.Substring(pos, newlinePos - pos + 1), false);
                 pos = newlinePos + 1;
             }
         }

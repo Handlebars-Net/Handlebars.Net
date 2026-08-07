@@ -225,7 +225,9 @@ namespace HandlebarsDotNet.Test
 
             var transformed = navTemplate(context).Trim();
 
-            Assert.Equal("<div>\n    <div>Menu Item: Getting Started</div>\n</div>", transformed);
+            Assert.Equal(@"<div>
+    <div>Menu Item: Getting Started</div>
+</div>", transformed);
         }
 
         // issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/394
@@ -1268,6 +1270,72 @@ namespace HandlebarsDotNet.Test
 
             Assert.Contains($"DateTimeStr={dataAsInterface.DateTimeStr};", result);
             Assert.Contains($"OtherStr={data.OtherStr};", result);
+        }
+
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/661
+        // Static template text must round-trip verbatim: the compiler must not rewrite
+        // line endings the caller put in the template string.
+        //
+        // This mirrors the reporter's exact repro shape: #each over a helper subexpression
+        // (String.Split isn't in this repo, so a local "Split" helper stands in for it) and
+        // the @Key/@Index casing they used — confirmed case-insensitive via ChainSegment's
+        // OrdinalIgnoreCase lookup, so this is equivalent to @key/@index, not a looser stand-in.
+        [Fact]
+        public void Issue661_ExplicitCrLfInTemplateIsPreservedVerbatim()
+        {
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterHelper("Split", (context, arguments) =>
+                ((string) arguments[0]).Split(((string) arguments[1])[0]));
+
+            var template = handlebars.Compile("{{#each (Split \"a;b;c\" ';')}}\r\n{{@Key}}:{{@Index}}:{{this}}\r\n{{/each}}");
+
+            var result = template(new { });
+
+            Assert.Equal("0:0:a\r\n1:1:b\r\n2:2:c\r\n", result);
+        }
+
+        // A bare \n in the template must not be turned into \r\n either — the fix must not
+        // trade under-preservation for over-preservation.
+        [Fact]
+        public void Issue661_ExplicitLfInTemplateIsPreservedVerbatim()
+        {
+            var handlebars = Handlebars.Create();
+            var template = handlebars.Compile("{{#each this}}\n{{@key}}:{{@index}}:{{this}}\n{{/each}}");
+
+            var result = template(new[] { "a", "b", "c" });
+
+            Assert.Equal("0:0:a\n1:1:b\n2:2:c\n", result);
+        }
+
+        // Whatever the platform's native newline is, it must pass through unchanged. On the
+        // CI matrix (macOS/Ubuntu/Windows) this exercises \n and \r\n as separate runs without
+        // any OS-conditional test code.
+        [Fact]
+        public void Issue661_PlatformNewlineInTemplateIsPreservedVerbatim()
+        {
+            var handlebars = Handlebars.Create();
+            var template = handlebars.Compile("line one" + Environment.NewLine + "{{value}}" + Environment.NewLine + "line three");
+
+            var result = template(new { value = "middle" });
+
+            Assert.Equal("line one" + Environment.NewLine + "middle" + Environment.NewLine + "line three", result);
+        }
+
+        // Indented partials must preserve \r\n in the partial's own content too — WriteWithIndent
+        // used to normalise to \n while everything else passed content through verbatim.
+        [Fact]
+        public void Issue661_IndentedPartialPreservesCrLf()
+        {
+            var handlebars = Handlebars.Create();
+            using (var reader = new StringReader("one\r\ntwo\r\nthree"))
+            {
+                handlebars.RegisterTemplate("myPartial", handlebars.Compile(reader));
+            }
+            var template = handlebars.Compile("  {{> myPartial}}");
+
+            var result = template(new { });
+
+            Assert.Equal("  one\r\n  two\r\n  three", result);
         }
 
         private static void RegisterStringEqualityBlockHelper(IHandlebars handlebars)
