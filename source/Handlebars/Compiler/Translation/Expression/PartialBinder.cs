@@ -15,12 +15,6 @@ namespace HandlebarsDotNet.Compiler
     {
         private static string SpecialPartialBlockName = "@partial-block";
 
-        private static string ToPartialName(object value)
-        {
-            if (value is SafeString safe) return safe.Value;
-            return (string) value;
-        }
-
         private CompilationContext CompilationContext { get; }
         
         public PartialBinder(CompilationContext compilationContext)
@@ -55,8 +49,7 @@ namespace HandlebarsDotNet.Compiler
                     bindingContext = bindingContext.Call(o => o.CreateChildContext(value, partialTemplate));
                 }
 
-                var partialNameObj = Arg<object>(pex.PartialName);
-                var partialName = Call(() => ToPartialName(partialNameObj));
+                var partialName = Cast<string>(pex.PartialName);
                 var configuration = Arg(CompilationContext.Configuration);
                 var isBlock = Arg(pex.IsBlock);
                 var indent = Arg(pex.Indent);
@@ -90,8 +83,7 @@ namespace HandlebarsDotNet.Compiler
                     bindingContext = bindingContext.Call(o => o.CreateChildContext(value, partialTemplate));
                 }
 
-                var partialNameObj = Arg<object>(pex.PartialName);
-                var partialName = Call(() => ToPartialName(partialNameObj));
+                var partialName = Cast<string>(pex.PartialName);
                 var configuration = Arg(CompilationContext.Configuration);
                 var isBlock = Arg(pex.IsBlock);
                 var indent = Arg(pex.Indent);

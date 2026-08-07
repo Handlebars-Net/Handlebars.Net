@@ -20,10 +20,11 @@ namespace HandlebarsDotNet.Helpers
 
             descriptor.Invoke(output, options, context, arguments);
 
-            // Return a SafeString so the captured output — which already has the correct
-            // encoding applied by the EncodedTextWriter — is not encoded a second time
-            // when it is passed as an argument to an outer helper.
-            return new SafeString(writer.ToString());
+            // Mark the captured output — which already has the correct encoding applied by the
+            // EncodedTextWriter — so it is not encoded a second time when written elsewhere, without
+            // wrapping it in a type that would leak into helper argument binding as something other
+            // than a plain string.
+            return SafeStrings.Mark(writer.ToString());
         }
     }
 }

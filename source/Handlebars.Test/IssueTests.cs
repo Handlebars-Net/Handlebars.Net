@@ -1338,6 +1338,49 @@ namespace HandlebarsDotNet.Test
             Assert.Equal("  one\r\n  two\r\n  three", result);
         }
 
+        // Issue: https://github.com/Handlebars-Net/Handlebars.Net/issues/660
+        // A writer-based helper used as a subexpression must hand its captured output to the
+        // outer helper as a plain System.String, not an opaque internal wrapper type — otherwise
+        // reflection-based/typed argument binders (including third-party ones this library can't
+        // patch) can't consume it at all.
+        [Fact]
+        public void Issue660_SubexpressionResultIsPlainString()
+        {
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterHelper("inner", (writer, context, arguments) => writer.WriteSafeString("ab"));
+
+            object? captured = null;
+            handlebars.RegisterHelper("outer", (writer, context, arguments) =>
+            {
+                captured = arguments[0];
+                writer.Write(captured);
+            });
+
+            handlebars.Compile("{{outer (inner)}}")(new { });
+
+            Assert.IsType<string>(captured);
+            Assert.Equal("ab", captured);
+        }
+
+        // Mirrors the reporter's Append(string value, string append) helper: a naive binder that
+        // direct-casts an argument to string must not throw just because that argument came from
+        // a subexpression instead of template data.
+        [Fact]
+        public void Issue660_SubexpressionResultIsCastableToTypedStringParameter()
+        {
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterHelper("inner", (writer, context, arguments) => writer.WriteSafeString("a"));
+            handlebars.RegisterHelper("outer", (writer, context, arguments) =>
+            {
+                string value = (string) arguments[0]!;
+                writer.Write(value + "b");
+            });
+
+            var result = handlebars.Compile("{{outer (inner)}}")(new { });
+
+            Assert.Equal("ab", result);
+        }
+
         private static void RegisterStringEqualityBlockHelper(IHandlebars handlebars)
         {
             handlebars.RegisterHelper("StringEqualityBlockHelper", (output, options, context, arguments) =>

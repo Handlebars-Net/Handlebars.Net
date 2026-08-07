@@ -36,8 +36,6 @@ namespace HandlebarsDotNet
                     return !b;
                 case string s:
                     return s == string.Empty;
-                case SafeString safe:
-                    return safe.Value == string.Empty;
                 case JsonElement element:
                     return IsFalsyJsonElement(element, includeZero);
             }
