@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786285501242,
+  "lastUpdate": 1786291258587,
   "repoUrl": "https://github.com/Handlebars-Net/Handlebars.Net",
   "entries": {
     "Benchmark.Net Benchmark": [
@@ -19722,6 +19722,222 @@ window.BENCHMARK_DATA = {
             "value": 122.06112636052646,
             "unit": "ns",
             "range": "± 0.09284639841374737"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rex@rexmorgan.net",
+            "name": "Rex Morgan",
+            "username": "rexm"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c9a20a29529a6ab06db7b2d0a732ab8454d8c452",
+          "message": "Merge pull request #668 from Handlebars-Net/perf/compile-experiments\n\nperf: 83-88% faster template compilation via NoInlining JIT entry points",
+          "timestamp": "2026-08-09T11:49:16-04:00",
+          "tree_id": "cbfe0caaefc7a8695bd1d7a1792386e85d76372d",
+          "url": "https://github.com/Handlebars-Net/Handlebars.Net/commit/c9a20a29529a6ab06db7b2d0a732ab8454d8c452"
+        },
+        "date": 1786291257360,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "HandlebarsNet.Benchmark.Compilation.Template",
+            "value": 4300663.298958333,
+            "unit": "ns",
+            "range": "± 28679.01301975276"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithoutParameters",
+            "value": 85.59538225944226,
+            "unit": "ns",
+            "range": "± 0.17481864811989145"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.EndToEnd.Default(N: 5, DataType: \"dictionary\")",
+            "value": 44061.954946664664,
+            "unit": "ns",
+            "range": "± 38.73100989634936"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.EndToEnd.Default(N: 5, DataType: \"object\")",
+            "value": 44652.09485371908,
+            "unit": "ns",
+            "range": "± 52.017093241488176"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.RenderNested.Render(RowsPerSection: 5, DataType: \"dictionary\")",
+            "value": 6142.435722351074,
+            "unit": "ns",
+            "range": "± 3.046414316476165"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.RenderNested.Render(RowsPerSection: 5, DataType: \"object\")",
+            "value": 7199.873854500906,
+            "unit": "ns",
+            "range": "± 11.331492113656395"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.RenderNested.Render(RowsPerSection: 20, DataType: \"dictionary\")",
+            "value": 18547.670236440805,
+            "unit": "ns",
+            "range": "± 14.436582101228765"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.RenderNested.Render(RowsPerSection: 20, DataType: \"object\")",
+            "value": 19757.900407057543,
+            "unit": "ns",
+            "range": "± 11.807434004086138"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.RenderList.Render(N: 10, DataType: \"dictionary\")",
+            "value": 2384.3874059823843,
+            "unit": "ns",
+            "range": "± 0.8975462368107984"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.RenderList.Render(N: 10, DataType: \"object\")",
+            "value": 2529.330865419828,
+            "unit": "ns",
+            "range": "± 1.7212796551619494"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.RenderList.Render(N: 100, DataType: \"dictionary\")",
+            "value": 21638.470277913413,
+            "unit": "ns",
+            "range": "± 73.79133386900295"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.RenderList.Render(N: 100, DataType: \"object\")",
+            "value": 23769.42491367885,
+            "unit": "ns",
+            "range": "± 83.80551914270913"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.RenderList.Render(N: 1000, DataType: \"dictionary\")",
+            "value": 210847.53816731772,
+            "unit": "ns",
+            "range": "± 213.7332702452052"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.RenderList.Render(N: 1000, DataType: \"object\")",
+            "value": 233264.62967623197,
+            "unit": "ns",
+            "range": "± 158.64071667199454"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.CompileMany.Compile(N: 10)",
+            "value": 16804196.666666668,
+            "unit": "ns",
+            "range": "± 1409413.558481666"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.CompileMany.Compile(N: 100)",
+            "value": 182522032.76666668,
+            "unit": "ns",
+            "range": "± 16263785.295534514"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.LargeArray.Default(N: 20000)",
+            "value": 743276.1161733774,
+            "unit": "ns",
+            "range": "± 1963.4891894380075"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.LargeArray.Default(N: 40000)",
+            "value": 1493071.8042689732,
+            "unit": "ns",
+            "range": "± 5035.134850226763"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.LargeArray.Default(N: 80000)",
+            "value": 3163007.042518029,
+            "unit": "ns",
+            "range": "± 7890.5365698154565"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.RenderToString.Render(Content: \"clean\")",
+            "value": 13236.707629394532,
+            "unit": "ns",
+            "range": "± 56.30517174772792"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.RenderToString.Render(Content: \"html\")",
+            "value": 20214.38938031878,
+            "unit": "ns",
+            "range": "± 128.17352606063025"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.RenderSimple.Render(DataType: \"dictionary\")",
+            "value": 722.6565815852239,
+            "unit": "ns",
+            "range": "± 0.894832224632479"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.RenderSimple.Render(DataType: \"expando\")",
+            "value": 630.580917431758,
+            "unit": "ns",
+            "range": "± 0.3336937951357797"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.RenderSimple.Render(DataType: \"object\")",
+            "value": 782.5630667759822,
+            "unit": "ns",
+            "range": "± 1.377425168018757"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithOneParameter",
+            "value": 91.49741359857413,
+            "unit": "ns",
+            "range": "± 0.05342509308155618"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallHelperWithTwoParameter",
+            "value": 89.77751169602077,
+            "unit": "ns",
+            "range": "± 0.02063196939474973"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithoutParameters",
+            "value": 87.43391573429108,
+            "unit": "ns",
+            "range": "± 0.0736556594346636"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithOneParameter",
+            "value": 89.3583959698677,
+            "unit": "ns",
+            "range": "± 0.19626229029636166"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.LateCallHelperWithTwoParameter",
+            "value": 90.03969072302182,
+            "unit": "ns",
+            "range": "± 0.06172413783518505"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithoutParameters",
+            "value": 91.26138749718666,
+            "unit": "ns",
+            "range": "± 0.05644457019847743"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithOneParameter",
+            "value": 94.10620646079381,
+            "unit": "ns",
+            "range": "± 0.03849591720953763"
+          },
+          {
+            "name": "HandlebarsNet.Benchmark.Execution.CallBlockHelperWithTwoParameter",
+            "value": 97.88045063844093,
+            "unit": "ns",
+            "range": "± 0.08564579325633541"
           }
         ]
       }
