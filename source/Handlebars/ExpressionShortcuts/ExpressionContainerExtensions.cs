@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 
@@ -17,7 +18,9 @@ namespace HandlebarsDotNet.ExpressionShortcuts
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ExpressionContainer<TV> Property<T, TV>(this ExpressionContainer<T> instance, Expression<Func<T, TV>> propertyAccessor)
         {
-            return Property(instance.Expression, propertyAccessor);
+            var visitor = new ReplaceParameterVisitor(propertyAccessor.Parameters[0], instance);
+            var combinedExpression = visitor.Visit(propertyAccessor.Body);
+            return new ExpressionContainer<TV>(combinedExpression);
         }
 
         /// <summary>
@@ -30,7 +33,9 @@ namespace HandlebarsDotNet.ExpressionShortcuts
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ExpressionContainer Call<T>(this ExpressionContainer<T> instance, Expression<Action<T>> invocationExpression)
         {
-            return new ExpressionContainer(ExpressionUtils.ProcessCallLambda(invocationExpression, instance));
+            var visitor = new ReplaceParameterVisitor(invocationExpression.Parameters[0], instance);
+            var combinedExpression = visitor.Visit(invocationExpression.Body);
+            return new ExpressionContainer(combinedExpression);
         }
         
         /// <summary>
@@ -43,7 +48,9 @@ namespace HandlebarsDotNet.ExpressionShortcuts
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ExpressionContainer<TV> Call<T, TV>(this ExpressionContainer<T> instance, Expression<Func<T, TV>> invocationExpression)
         {
-            return ExpressionShortcuts.Arg<TV>(ExpressionUtils.ProcessCallLambda(invocationExpression, instance));
+            var visitor = new ReplaceParameterVisitor(invocationExpression.Parameters[0], instance);
+            var combinedExpression = visitor.Visit(invocationExpression.Body);
+            return new ExpressionContainer<TV>(combinedExpression);
         }
 
         /// <summary>
@@ -51,9 +58,9 @@ namespace HandlebarsDotNet.ExpressionShortcuts
         /// Parameters are resolved based on actual passed parameters.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ExpressionContainer Assign<T>(this ExpressionContainer<T> target, ExpressionContainer<T> value)
+        public static ExpressionContainer<T> Assign<T>(this ExpressionContainer<T> target, ExpressionContainer<T> value)
         {
-            return new ExpressionContainer(Expression.Assign(target, value));
+            return new ExpressionContainer<T>(Expression.Assign(target, value));
         }
         
         /// <summary>
@@ -61,9 +68,9 @@ namespace HandlebarsDotNet.ExpressionShortcuts
         /// Parameters are resolved based on actual passed parameters.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ExpressionContainer Assign<T>(this ExpressionContainer<T> target, T value)
+        public static ExpressionContainer<T> Assign<T>(this ExpressionContainer<T> target, T value)
         {
-            return new ExpressionContainer(Expression.Assign(target, Expression.Constant(value, typeof(T))));
+            return new ExpressionContainer<T>(Expression.Assign(target, Expression.Constant(value, typeof(T))));
         }
     }
 }

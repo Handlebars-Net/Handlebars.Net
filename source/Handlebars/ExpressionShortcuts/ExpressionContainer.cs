@@ -8,7 +8,7 @@ namespace HandlebarsDotNet.ExpressionShortcuts
     internal class ExpressionContainer
     {
         /// <summary>
-        /// 
+        /// This can be used to wrap a <see cref="Void"/>-Type expression or implement a derived type
         /// </summary>
         /// <param name="expression"></param>
         public ExpressionContainer(Expression expression) => Expression = expression;
@@ -19,18 +19,11 @@ namespace HandlebarsDotNet.ExpressionShortcuts
         public virtual Expression Expression { get; }
 
         /// <summary>
-        /// 
+        /// Convenience for unwrapping ExpressionContainer
         /// </summary>
         /// <param name="expressionContainer"></param>
         /// <returns></returns>
         public static implicit operator Expression(ExpressionContainer expressionContainer) => expressionContainer.Expression;
-        
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="expression"></param>
-        /// <returns></returns>
-        public static implicit operator ExpressionContainer(Expression expression) => new ExpressionContainer(expression);
     }
     
     /// <summary>
@@ -41,12 +34,12 @@ namespace HandlebarsDotNet.ExpressionShortcuts
     internal class ExpressionContainer<T> : ExpressionContainer
     {
         /// <summary>
-        /// Used to trick C# compiler
+        /// Used to trick C# compiler - calls need to be removed through <see cref="UnpackExpressionContainerVisitor"/>
         /// </summary>
         public static implicit operator T(ExpressionContainer<T> _0) => default(T)!;
 
         /// <summary>
-        /// 
+        /// Wrap an expression of Type <typeparamref name="T"/>
         /// </summary>
         /// <param name="expression"></param>
         public ExpressionContainer(Expression expression) : base(expression)

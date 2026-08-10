@@ -13,42 +13,38 @@ namespace HandlebarsDotNet.ExpressionShortcuts
         /// <summary>
         /// Creates strongly typed representation of the <paramref name="expression"/>
         /// </summary>
-        /// <remarks>If <paramref name="expression"/> is <c>null</c> returns  result of <see cref="Null{T}"/></remarks>
         /// <param name="expression"><see cref="Expression"/> to wrap</param>
         /// <typeparam name="T">Expected type of resulting <see cref="Expression"/></typeparam>
         /// <returns><see cref="ExpressionContainer{T}"/></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ExpressionContainer<T> Arg<T>(Expression? expression) => expression == null ? Null<T>() : new ExpressionContainer<T>(expression);
+        public static ExpressionContainer<T> Arg<T>(Expression expression) => new ExpressionContainer<T>(expression);
         
         /// <summary>
         /// Creates strongly typed representation of the <see cref="ExpressionContainer.Expression"/>
         /// </summary>
-        /// <remarks>If <paramref name="value"/> is <c>null</c> returns  result of <see cref="Null{T}"/></remarks>
         /// <param name="value"><paramref name="value"/> to wrap</param>
         /// <typeparam name="T">Expected type of resulting <see cref="Expression"/></typeparam>
         /// <returns><see cref="ExpressionContainer{T}"/></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ExpressionContainer<T> Arg<T>(T? value) => value == null ? Null<T>() : new ExpressionContainer<T>(Expression.Constant(value, typeof(T)));
+        public static ExpressionContainer<T> Arg<T>(T value) => new ExpressionContainer<T>(Expression.Constant(value, typeof(T)));
 
         /// <summary>
         /// Creates strongly typed representation of the <paramref name="expression"/>.
         /// </summary>
-        /// <remarks>If <paramref name="expression"/> is <c>null</c> returns  result of <see cref="Null{T}"/></remarks>
         /// <param name="expression"><see cref="Expression"/> to wrap</param>
         /// <typeparam name="T">Expected type of resulting <see cref="Expression"/></typeparam>
         /// <returns><see cref="ExpressionContainer{T}"/></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ExpressionContainer<T> Arg<T>(Expression<T>? expression) => expression == null ? Null<T>() : new ExpressionContainer<T>(expression);
+        public static ExpressionContainer<T> Arg<T>(Expression<T> expression) => new ExpressionContainer<T>(expression);
 
         /// <summary>
         /// Creates strongly typed representation of the <paramref name="expression"/> and performs <see cref="Expression.Convert(System.Linq.Expressions.Expression,System.Type)"/> on it.
         /// </summary>
-        /// <remarks>If <paramref name="expression"/> is <c>null</c> returns  result of <see cref="Null{T}"/></remarks>
         /// <param name="expression"><see cref="Expression"/> to wrap</param>
         /// <typeparam name="T">Expected type of resulting <see cref="Expression"/></typeparam>
         /// <returns><see cref="ExpressionContainer{T}"/></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ExpressionContainer<T> Cast<T>(Expression? expression) => expression == null ? Null<T>() : new ExpressionContainer<T>(Expression.Convert(expression, typeof(T)));
+        public static ExpressionContainer<T> Cast<T>(Expression expression) => new ExpressionContainer<T>(Expression.Convert(expression, typeof(T)));
 
         /// <summary>
         /// Creates strongly typed representation of the <see cref="Expression.Parameter(System.Type, System.String)"/>
@@ -60,20 +56,6 @@ namespace HandlebarsDotNet.ExpressionShortcuts
         public static ExpressionContainer<T> Parameter<T>(string? name = null)
         {
             return new ExpressionContainer<T>(Expression.Parameter(typeof(T), name ?? typeof(T).Name));
-        }
-
-        /// <summary>
-        /// Creates strongly typed representation of the <see cref="Expression.Property(System.Linq.Expressions.Expression,System.String)"/>
-        /// </summary>
-        /// <param name="instance">Variable name. Corresponds to type name if omitted.</param>
-        /// <param name="propertyLambda">Property accessor expression</param>
-        /// <typeparam name="T">Expected type of resulting target <see cref="Expression"/></typeparam>
-        /// <typeparam name="TV">Expected type of resulting <see cref="MemberExpression"/></typeparam>
-        /// <returns><see cref="ExpressionContainer{T}"/></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static ExpressionContainer<TV> Property<T, TV>(Expression instance, Expression<Func<T, TV>> propertyLambda)
-        {
-            return Arg<TV>(ExpressionUtils.ProcessPropertyLambda(instance, propertyLambda));
         }
 
         /// <summary>
@@ -97,7 +79,7 @@ namespace HandlebarsDotNet.ExpressionShortcuts
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ExpressionContainer Call(Expression<Action> invocationExpression)
         {
-            return new ExpressionContainer(ExpressionUtils.ProcessCallLambda(invocationExpression));
+            return new ExpressionContainer(UnpackExpressionContainerVisitor.Instance.Visit(invocationExpression.Body));
         }
 
         /// <summary>
@@ -109,7 +91,7 @@ namespace HandlebarsDotNet.ExpressionShortcuts
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ExpressionContainer<T> Call<T>(Expression<Func<T>> invocationExpression)
         {
-            return Arg<T>(ExpressionUtils.ProcessCallLambda(invocationExpression));
+            return new ExpressionContainer<T>(UnpackExpressionContainerVisitor.Instance.Visit(invocationExpression.Body));
         }
 
         /// <summary>
@@ -120,7 +102,7 @@ namespace HandlebarsDotNet.ExpressionShortcuts
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ExpressionContainer<T> New<T>(Expression<Func<T>> invocationExpression)
         {
-            return Arg<T>(ExpressionUtils.ProcessCallLambda(invocationExpression));
+            return new ExpressionContainer<T>(UnpackExpressionContainerVisitor.Instance.Visit(invocationExpression.Body));
         }
 
         /// <summary>
@@ -140,17 +122,7 @@ namespace HandlebarsDotNet.ExpressionShortcuts
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static ExpressionContainer<T> Null<T>()
         {
-            return Arg<T>(Null(typeof(T)));
-        }
-        
-        /// <summary>
-        /// Creates strongly typed representation of <c>null</c>.
-        /// </summary>
-        /// <returns><see cref="ExpressionContainer{T}"/></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static ExpressionContainer Null(Type type)
-        {
-            return new ExpressionContainer(Expression.Convert(Expression.Constant(null), type));
+            return Arg<T>(Expression.Constant(null, typeof(T)));
         }
     }
 }
