@@ -1285,7 +1285,7 @@ namespace HandlebarsDotNet.Test
         {
             var handlebars = Handlebars.Create();
             handlebars.RegisterHelper("Split", (context, arguments) =>
-                ((string) arguments[0]).Split(((string) arguments[1])[0]));
+                ((string) arguments[0]!).Split(((string) arguments[1]!)[0]));
 
             var template = handlebars.Compile("{{#each (Split \"a;b;c\" ';')}}\r\n{{@Key}}:{{@Index}}:{{this}}\r\n{{/each}}");
 
