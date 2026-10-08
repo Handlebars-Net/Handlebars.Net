@@ -103,6 +103,62 @@ var result = template(data); // "6"
 
 This is a C#-specific capability, since JavaScript/Handlebars.js has no equivalent to true multi-dimensional arrays.
 
+### System.Text.Json
+
+`System.Text.Json` values can be passed to a template directly, with no conversion to POCOs or dictionaries.
+
+**`JsonElement`**: deserializing JSON as `object` with `JsonSerializer.Deserialize<object>(json)` gives you a `JsonElement`. You can pass that in, or any other `JsonElement` such as `JsonDocument.RootElement`.
+
+**`JsonNode`**: `JsonObject`, `JsonArray` and `JsonValue` work too, whether they come from `JsonNode.Parse` or are built in code. A node tree is read when the template renders, so changes made to it between renders show up in the output.
+
+```c#
+var template = Handlebars.Compile("{{title}}: {{#each tags}}{{@index}}={{this}} {{/each}}{{#if draft}}(draft){{/if}}");
+
+var json = @"{ ""title"": ""My post"", ""tags"": [""a"", ""b""], ""draft"": false }";
+
+template(JsonSerializer.Deserialize<object>(json)); // "My post: 0=a 1=b "
+template(JsonNode.Parse(json));                     // "My post: 0=a 1=b "
+
+var data = new JsonObject
+{
+    ["title"] = "My post",
+    ["tags"] = new JsonArray("a", "b"),
+    ["draft"] = true
+};
+
+template(data); // "My post: 0=a 1=b (draft)"
+```
+
+For both types:
+- Properties are matched by exact name first, then by the lowercase name, so `{{Title}}` finds a `"title"` property.
+- Arrays support index access (`{{tags.[0]}}`), `{{tags.Count}}`, and `#each` with `@index`, `@first` and `@last`. Objects support `#each` with `@key`.
+- As with other collections, `{{tags.length}}` works once `handlebars.Configuration.UseCollectionMemberAliasProvider()` is enabled.
+- `#if`, `#unless` and `#each` treat `false`, `null`, `0`, `""`, `[]` and `{}` as falsy. Pass `includeZero=true` to `#if` to treat `0` as truthy.
+
+#### Values wrapping .NET objects
+
+A `JsonValue` created from a .NET collection or object, such as `JsonValue.Create(new List<string> { "a", "b" })`, behaves like the wrapped value would if you passed it in directly. You can iterate it and access its members. Members are resolved with .NET property names, so JSON attributes like `[JsonPropertyName]` and serializer naming policies don't apply:
+
+```c#
+class Author
+{
+    [JsonPropertyName("full_name")]
+    public string Name { get; set; }
+}
+
+var data = new JsonObject
+{
+    ["author"] = JsonValue.Create(new Author { Name = "Ada" }),
+    ["tags"] = JsonValue.Create(new List<string> { "a", "b" })
+};
+
+Handlebars.Compile("{{author.Name}}")(data);      // "Ada"
+Handlebars.Compile("{{author.full_name}}")(data); // "" - the [JsonPropertyName] name is not used
+Handlebars.Compile("{{tags.[1]}}")(data);         // "b"
+```
+
+To use the JSON names instead, serialize the value into a node tree first with `JsonSerializer.SerializeToNode(value)`.
+
 ### Registering Partials
 
 ```c#

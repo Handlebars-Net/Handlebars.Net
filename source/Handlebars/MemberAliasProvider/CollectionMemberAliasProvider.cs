@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Linq;
+using System.Text.Json;
 using HandlebarsDotNet.ObjectDescriptors;
 using HandlebarsDotNet.PathStructure;
 
@@ -21,6 +22,10 @@ namespace HandlebarsDotNet.MemberAliasProvider
 
                 case ICollection array when memberAlias.Equals(Length):
                     value = array.Count;
+                    return true;
+
+                case JsonElement { ValueKind: JsonValueKind.Array } element when memberAlias.Equals(Length):
+                    value = element.GetArrayLength();
                     return true;
 
                 case IEnumerable enumerable when ObjectDescriptorFactory.Current!.TryGetDescriptor(targetType, out var descriptor) && descriptor.GetProperties != null:

@@ -3,6 +3,7 @@ using HandlebarsDotNet.Compiler;
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace HandlebarsDotNet
 {
@@ -38,6 +39,8 @@ namespace HandlebarsDotNet
                     return s == string.Empty;
                 case JsonElement element:
                     return IsFalsyJsonElement(element, includeZero);
+                case JsonNode node:
+                    return IsFalsyJsonNode(node, includeZero);
             }
 
             if (includeZero) return false;
@@ -80,6 +83,12 @@ namespace HandlebarsDotNet
             }
         }
 
+        private static bool IsFalsyJsonNode(JsonNode node, bool includeZero)
+        {
+            // Parsed values wrap JsonElement; programmatically created values retain their CLR type.
+            return node is JsonValue scalar && IsFalsy(scalar.GetValue<object>(), includeZero);
+        }
+
         public static bool IsTruthyOrNonEmpty([NotNullWhen(true)] object? value, bool includeZero = false)
         {
             return !IsFalsyOrEmpty(value, includeZero);
@@ -96,6 +105,17 @@ namespace HandlebarsDotNet
             {
                 return (element.ValueKind == JsonValueKind.Object && !element.EnumerateObject().Any())
                     || (element.ValueKind == JsonValueKind.Array && element.GetArrayLength() == 0);
+            }
+
+            if (value is JsonNode node)
+            {
+                return node switch
+                {
+                    JsonObject obj   => obj.Count == 0,
+                    JsonArray array  => array.Count == 0,
+                    JsonValue scalar => IsFalsyOrEmpty(scalar.GetValue<object>(), includeZero),
+                    _                => false
+                };
             }
 
             // O(1) emptiness checks that avoid allocating an enumerator for the common
