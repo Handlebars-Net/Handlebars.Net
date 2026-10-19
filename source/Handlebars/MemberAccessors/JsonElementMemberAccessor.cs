@@ -42,7 +42,7 @@ namespace HandlebarsDotNet.MemberAccessors
                 return true;
             }
 
-            // Matches the Count property that List<T> and JsonArray expose through reflection;
+            // Matches the Count property exposed by List<T> and JsonArray;
             // Length is added by the collection alias provider, as for other collections.
             if (memberName.LowerInvariant == "count")
             {

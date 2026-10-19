@@ -20,7 +20,8 @@ namespace HandlebarsDotNet.MemberAccessors
 
         public bool TryGetValue(object instance, ChainSegment memberName, out object? value)
         {
-            if (instance is JsonObject obj && TryGetPropertyValue(obj, memberName, out value))
+            if ((instance is JsonObject obj && TryGetPropertyValue(obj, memberName, out value)) ||
+                (instance is JsonArray array && TryGetArrayMember(array, memberName, out value)))
             {
                 return true;
             }
@@ -32,6 +33,24 @@ namespace HandlebarsDotNet.MemberAccessors
                 {
                     return true;
                 }
+            }
+
+            value = null;
+            return false;
+        }
+
+        private static bool TryGetArrayMember(JsonArray array, ChainSegment memberName, out object? value)
+        {
+            if (int.TryParse(memberName.LowerInvariant, out var index) && index >= 0 && index < array.Count)
+            {
+                value = array[index];
+                return true;
+            }
+
+            if (memberName.LowerInvariant == "count")
+            {
+                value = array.Count;
+                return true;
             }
 
             value = null;

@@ -10,7 +10,7 @@ using HandlebarsDotNet.MemberAccessors;
 namespace HandlebarsDotNet.ObjectDescriptors
 {
     /// <summary>
-    /// Provides support for <see cref="JsonObject"/> and <see cref="JsonValue"/> in templates.
+    /// Provides support for <see cref="JsonNode"/> in templates.
     /// </summary>
     public sealed class JsonNodeObjectDescriptorProvider : IObjectDescriptorProvider
     {
@@ -18,7 +18,10 @@ namespace HandlebarsDotNet.ObjectDescriptors
 
         private readonly JsonNodeMemberAccessor _memberAccessor;
 
-        private static readonly Func<ObjectDescriptor, IIterator> IteratorFactory = _ => new JsonNodeIterator();
+        private static readonly Func<ObjectDescriptor, IIterator> IteratorFactory = descriptor =>
+            descriptor.DescribedType == typeof(JsonArray)
+                ? new ListIterator<JsonArray, JsonNode?>()
+                : new JsonNodeIterator();
 
         private static readonly Func<ObjectDescriptor, object, IEnumerable> GetProperties = (descriptor, arg) =>
             arg is JsonObject obj
@@ -37,7 +40,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
 
         public bool TryGetDescriptor(Type type, [NotNullWhen(true)] out ObjectDescriptor? value)
         {
-            if (!Type.IsAssignableFrom(type) || type == typeof(JsonArray))
+            if (!Type.IsAssignableFrom(type))
             {
                 value = ObjectDescriptor.Empty;
                 return false;

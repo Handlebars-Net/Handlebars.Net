@@ -219,6 +219,42 @@ namespace HandlebarsDotNet.Test
         }
 
         [Theory]
+        [InlineData("Parent", false)]
+        [InlineData("parent", false)]
+        [InlineData("PARENT", false)]
+        [InlineData("Root", false)]
+        [InlineData("root", false)]
+        [InlineData("ROOT", false)]
+        [InlineData("Parent", true)]
+        [InlineData("parent", true)]
+        [InlineData("PARENT", true)]
+        [InlineData("Root", true)]
+        [InlineData("root", true)]
+        [InlineData("ROOT", true)]
+        public void ArrayMembersDoNotExposeNodeParents(string member, bool useAliases)
+        {
+            var handlebars = Handlebars.Create();
+            if (useAliases)
+            {
+                handlebars.Configuration.UseCollectionMemberAliasProvider();
+            }
+
+            var template = handlebars.Compile("{{holder.items." + member + "}}|{{holder.items." + member + ".secret}}|{{lookup holder.items '" + member + "'}}|{{lookup (lookup holder.items '" + member + "') 'secret'}}");
+            var data = Parse("{\"secret\": \"root\", \"holder\": {\"secret\": \"parent\", \"items\": [1]}}");
+
+            Assert.Equal("|||", template(data));
+        }
+
+        [Fact]
+        public void ArrayElementsKeepJsonPropertiesNamedLikeNodeMetadata()
+        {
+            var template = Handlebars.Create().Compile("{{items.[0].Parent}}|{{items.[0].Root}}|{{items.[0].Options}}|{{#each items}}{{this.Parent}}/{{this.Root}}/{{this.Options}}/{{lookup this 'Parent'}}/{{lookup this 'Root'}}/{{lookup this 'Options'}};{{/each}}");
+            var data = Parse("{\"items\": [{\"Parent\": \"p\", \"Root\": \"r\", \"Options\": \"o\"}]}");
+
+            Assert.Equal("p|r|o|p/r/o/p/r/o;", template(data));
+        }
+
+        [Theory]
         [InlineData(false, "2|2||")]
         [InlineData(true, "2|2|2|2")]
         public void ArrayMembersUseConfiguredCollectionAliases(bool useAliases, string expected)
@@ -426,11 +462,33 @@ namespace HandlebarsDotNet.Test
             Assert.Equal("2", template(Parse("{\"arrayVal\": [\"a\", \"b\"]}")));
         }
 
+        [Theory]
+        [InlineData("Options", false)]
+        [InlineData("options", false)]
+        [InlineData("OPTIONS", false)]
+        [InlineData("Options", true)]
+        [InlineData("options", true)]
+        [InlineData("OPTIONS", true)]
+        public void ArrayMembersDoNotExposeNodeOptions(string member, bool useAliases)
+        {
+            var handlebars = Handlebars.Create();
+            if (useAliases)
+            {
+                handlebars.Configuration.UseCollectionMemberAliasProvider();
+            }
+
+            var data = JsonNode.Parse("{\"items\": [1]}", new JsonNodeOptions { PropertyNameCaseInsensitive = true })!;
+            var template = handlebars.Compile("{{items." + member + "}}|{{items." + member + ".PropertyNameCaseInsensitive}}|{{lookup items '" + member + "'}}|{{#with (lookup items '" + member + "')}}{{PropertyNameCaseInsensitive}}{{/with}}");
+
+            Assert.Equal(true, data["items"]!.Options?.PropertyNameCaseInsensitive);
+            Assert.Equal("|||", template(data));
+        }
+
         [Fact]
-        public void DescriptorSupportsConcreteObjectAndValueTypes()
+        public void DescriptorSupportsConcreteNodeTypes()
         {
             var provider = new JsonNodeObjectDescriptorProvider();
-            var nodes = new JsonNode[] { new JsonObject { ["stringVal"] = "a" }, JsonValue.Create(false)!, JsonValue.Create(new CyclicValue())! };
+            var nodes = new JsonNode[] { new JsonObject { ["stringVal"] = "a" }, new JsonArray(1), JsonValue.Create(false)!, JsonValue.Create(new CyclicValue())! };
 
             foreach (var node in nodes)
             {
@@ -439,8 +497,6 @@ namespace HandlebarsDotNet.Test
                 var properties = descriptor.GetProperties(descriptor, node).Cast<object>().Select(property => property.ToString());
                 Assert.Equal(node is JsonObject ? new[] { "stringVal" } : Array.Empty<string>(), properties);
             }
-
-            Assert.False(provider.TryGetDescriptor(typeof(JsonArray), out _));
         }
 
         private class CyclicValue
