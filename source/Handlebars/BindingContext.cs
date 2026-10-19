@@ -147,9 +147,14 @@ namespace HandlebarsDotNet
 
         internal bool TryGetVariable(ChainSegment segment, [MaybeNullWhen(false)] out object value)
         {
-            // Block params are looked up by segment even for well-known names (e.g. `as |item index|`):
-            // WellKnownVariables holds entry indexes into ContextDataObject, not BlockParamsObject.
-            return BlockParamsObject.TryGetValue(segment, out value)
+            if (segment.WellKnownVariable != WellKnownVariable.None)
+            {
+                var wellKnownVariable = WellKnownVariables[(int) segment.WellKnownVariable];
+                return BlockParamsObject.TryGetValue(wellKnownVariable, out value) 
+                       || (Descriptor.Value.MemberAccessor?.TryGetValue(Value!, segment, out value) ?? false);
+            }
+            
+            return BlockParamsObject.TryGetValue(segment, out value) 
                    || (Descriptor.Value.MemberAccessor?.TryGetValue(Value!, segment, out value) ?? false);
         }
         
