@@ -1,30 +1,41 @@
-using System.Text.Json;
+using System;
+using System.Collections.Generic;
 using System.Text.Json.Nodes;
-using HandlebarsDotNet.ObjectDescriptors;
 using HandlebarsDotNet.PathStructure;
 
 namespace HandlebarsDotNet.MemberAccessors
 {
     public sealed class JsonNodeMemberAccessor : IMemberAccessor
     {
+        private readonly IReadOnlyList<IMemberAliasProvider> _aliasProviders;
+
+        public JsonNodeMemberAccessor() : this(Array.Empty<IMemberAliasProvider>())
+        {
+        }
+
+        public JsonNodeMemberAccessor(IReadOnlyList<IMemberAliasProvider> aliasProviders)
+        {
+            _aliasProviders = aliasProviders;
+        }
+
         public bool TryGetValue(object instance, ChainSegment memberName, out object? value)
         {
-            value = null;
-
-            switch (instance)
+            if (instance is JsonObject obj && TryGetPropertyValue(obj, memberName, out value))
             {
-                case JsonObject obj:
-                    return TryGetPropertyValue(obj, memberName, out value);
-                // A JsonValue wrapping a CLR collection or object (e.g. JsonValue.Create(new List<string>())):
-                // resolve members on the underlying value with its own accessor, matching JsonNodeIterator.
-                // GetValueKind() serializes the wrapped value; System.Text.Json 9+ caches the result per node, 8.x does not.
-                case JsonValue wrapped when wrapped.GetValueKind() is JsonValueKind.Array or JsonValueKind.Object:
-                    var underlying = wrapped.GetValue<object>();
-                    return ObjectDescriptor.TryCreate(underlying, out var descriptor)
-                        && descriptor.MemberAccessor.TryGetValue(underlying, memberName, out value);
-                default:
-                    return false;
+                return true;
             }
+
+            var type = instance.GetType();
+            for (var index = 0; index < _aliasProviders.Count; index++)
+            {
+                if (_aliasProviders[index].TryGetMemberByAlias(instance, type, memberName, out value))
+                {
+                    return true;
+                }
+            }
+
+            value = null;
+            return false;
         }
 
         private static bool TryGetPropertyValue(JsonObject obj, ChainSegment memberName, out object? value)

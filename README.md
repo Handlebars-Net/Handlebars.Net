@@ -135,29 +135,9 @@ For both types:
 - As with other collections, `{{tags.length}}` works once `handlebars.Configuration.UseCollectionMemberAliasProvider()` is enabled.
 - `#if`, `#unless` and `#each` treat `false`, `null`, `0`, `""`, `[]` and `{}` as falsy. Pass `includeZero=true` to `#if` to treat `0` as truthy.
 
-#### Values wrapping .NET objects
+When interpolated directly, booleans render as `True`/`False` for `JsonElement` and `true`/`false` for `JsonNode`.
 
-A `JsonValue` created from a .NET collection or object, such as `JsonValue.Create(new List<string> { "a", "b" })`, behaves like the wrapped value would if you passed it in directly. You can iterate it and access its members. Members are resolved with .NET property names, so JSON attributes like `[JsonPropertyName]` and serializer naming policies don't apply:
-
-```c#
-class Author
-{
-    [JsonPropertyName("full_name")]
-    public string Name { get; set; }
-}
-
-var data = new JsonObject
-{
-    ["author"] = JsonValue.Create(new Author { Name = "Ada" }),
-    ["tags"] = JsonValue.Create(new List<string> { "a", "b" })
-};
-
-Handlebars.Compile("{{author.Name}}")(data);      // "Ada"
-Handlebars.Compile("{{author.full_name}}")(data); // "" - the [JsonPropertyName] name is not used
-Handlebars.Compile("{{tags.[1]}}")(data);         // "b"
-```
-
-To use the JSON names instead, serialize the value into a node tree first with `JsonSerializer.SerializeToNode(value)`.
+Compatibility: `JsonNode` values `false`, `0`, and `""` now follow falsy semantics; `JsonObject` lookups now include the lowercase fallback described above; custom member alias providers are now consulted for unresolved `JsonElement` and `JsonObject` members.
 
 ### Registering Partials
 

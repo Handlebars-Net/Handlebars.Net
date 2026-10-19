@@ -113,7 +113,6 @@ namespace HandlebarsDotNet
                 {
                     JsonObject obj   => obj.Count == 0,
                     JsonArray array  => array.Count == 0,
-                    JsonValue scalar => IsFalsyOrEmpty(scalar.GetValue<object>(), includeZero),
                     _                => false
                 };
             }

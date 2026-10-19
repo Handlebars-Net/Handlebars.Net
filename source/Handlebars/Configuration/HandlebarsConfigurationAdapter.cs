@@ -133,7 +133,7 @@ namespace HandlebarsDotNet
                     new ReadOnlyStringDictionaryObjectDescriptorProvider(),
                     new StringDictionaryObjectDescriptorProvider(),
                     new JsonElementObjectDescriptorProvider(AliasProviders),
-                    new JsonNodeObjectDescriptorProvider(enumerableObjectDescriptor),
+                    new JsonNodeObjectDescriptorProvider(AliasProviders),
                     new LayoutViewModel.DescriptorProvider(),
                 }
                 .AddMany(descriptorProviders);

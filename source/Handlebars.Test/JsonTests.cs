@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
 using HandlebarsDotNet.Features;
 using HandlebarsDotNet.ObjectDescriptors;
 using Xunit;
@@ -156,7 +155,7 @@ namespace HandlebarsDotNet.Test
         [Fact]
         public void PreservesArrayIterationMetadataAndBlockParameters()
         {
-            var template = Handlebars.Create().Compile("{{#each items as |item index|}}{{@index}}:{{@key}}:{{@first}}:{{@last}}:{{index}}:{{item}}:{{@value}};{{/each}}");
+            var template = Handlebars.Create().Compile("{{#each items as |item itemIndex|}}{{@index}}:{{@key}}:{{@first}}:{{@last}}:{{itemIndex}}:{{item}}:{{@value}};{{/each}}");
 
             Assert.Equal("0:0:True:False:0:a:a;1:1:False:True:1:b:b;", template(Parse("{\"items\": [\"a\", \"b\"]}")));
         }
@@ -164,7 +163,7 @@ namespace HandlebarsDotNet.Test
         [Fact]
         public void PreservesObjectIterationMetadataAndBlockParameters()
         {
-            var template = Handlebars.Create().Compile("{{#each this as |value key|}}{{@index}}:{{@key}}:{{@first}}:{{@last}}:{{key}}:{{value}}:{{@value}};{{/each}}");
+            var template = Handlebars.Create().Compile("{{#each this as |item propertyKey|}}{{@index}}:{{@key}}:{{@first}}:{{@last}}:{{propertyKey}}:{{item}}:{{@value}};{{/each}}");
 
             Assert.Equal("0:A:True:False:A:a:a;1:B:False:True:B:b:b;", template(Parse("{\"A\": \"a\", \"B\": \"b\"}")));
         }
@@ -172,7 +171,7 @@ namespace HandlebarsDotNet.Test
         [Fact]
         public void PreservesParentAndRootContextInNestedLoops()
         {
-            var template = Handlebars.Create().Compile("{{#each groups as |group|}}{{#each items as |item index|}}{{@../index}}.{{index}}={{../stringVal}}/{{group.stringVal}}/{{item.stringVal}}/{{@root.stringVal}};{{/each}}{{/each}}");
+            var template = Handlebars.Create().Compile("{{#each groups as |group|}}{{#each items as |item itemIndex|}}{{@../index}}.{{itemIndex}}={{../stringVal}}/{{group.stringVal}}/{{item.stringVal}}/{{@root.stringVal}};{{/each}}{{/each}}");
             var data = Parse("{\"stringVal\": \"root\", \"groups\": [{\"stringVal\": \"a\", \"items\": [{\"stringVal\": \"x\"}, {\"stringVal\": \"y\"}]}, {\"stringVal\": \"b\", \"items\": [{\"stringVal\": \"z\"}]}]}");
 
             Assert.Equal("0.0=a/a/x/root;0.1=a/a/y/root;1.0=b/b/z/root;", template(data));
@@ -246,11 +245,48 @@ namespace HandlebarsDotNet.Test
 
             Assert.Equal("7|8|||||", template(Parse("{\"objectVal\": {\"Count\": 7, \"Length\": 8}, \"emptyObj\": {}, \"stringVal\": \"abc\"}")));
         }
+
+        [Fact]
+        public void ObjectMembersUseCustomAliases()
+        {
+            var data = Parse("{}");
+            var handlebars = Handlebars.Create();
+            handlebars.Configuration.AliasProviders.Add(new DelegatedMemberAliasProvider().AddAlias<object>("genericAlias", _ => "generic"));
+            handlebars.Configuration.AliasProviders.Add(new DelegatedMemberAliasProvider().AddAlias<JsonNode>("baseAlias", _ => "base").AddAlias<ValueType>("baseAlias", _ => "base"));
+            handlebars.Configuration.AliasProviders.Add(new DelegatedMemberAliasProvider().AddAlias<JsonObject>("typedAlias", _ => "typed").AddAlias<JsonElement>("typedAlias", _ => "typed"));
+            handlebars.Configuration.AliasProviders.Add(new DelegatedMemberAliasProvider().AddAlias(data.GetType(), "runtimeAlias", _ => "runtime"));
+            var template = handlebars.Compile("{{genericAlias}}|{{baseAlias}}|{{typedAlias}}|{{runtimeAlias}}");
+
+            Assert.Equal("generic|base|typed|runtime", template(data));
+        }
+
+        [Fact]
+        public void JsonPropertiesTakePrecedenceOverCustomAliases()
+        {
+            var data = Parse("{\"Name\": \"exact\", \"lower\": \"fallback\", \"nothing\": null}");
+            var aliases = new DelegatedMemberAliasProvider()
+                .AddAlias(data.GetType(), "Name", _ => "alias")
+                .AddAlias(data.GetType(), "LOWER", _ => "alias")
+                .AddAlias(data.GetType(), "nothing", _ => "alias");
+            var handlebars = Handlebars.Create();
+            handlebars.Configuration.AliasProviders.Add(aliases);
+            var template = handlebars.Compile("{{Name}}|{{LOWER}}|{{nothing}}");
+
+            Assert.Equal("exact|fallback|", template(data));
+        }
     }
 
     public class JsonElementTests : JsonTestBase
     {
         protected override object Parse(string json) => JsonSerializer.Deserialize<object>(json)!;
+
+        [Fact]
+        public void BooleanTextKeepsExistingFormatting()
+        {
+            var template = Handlebars.Create().Compile("{{falseVal}}|{{trueVal}}");
+
+            Assert.Equal("False|True", template(Parse("{\"falseVal\": false, \"trueVal\": true}")));
+        }
 
         [Fact]
         public void ArrayMembersUseCustomAliases()
@@ -266,6 +302,14 @@ namespace HandlebarsDotNet.Test
     public class JsonNodeTests : JsonTestBase
     {
         protected override object Parse(string json) => JsonNode.Parse(json)!;
+
+        [Fact]
+        public void BooleanTextKeepsExistingFormatting()
+        {
+            var template = Handlebars.Create().Compile("{{falseVal}}|{{trueVal}}");
+
+            Assert.Equal("false|true", template(Parse("{\"falseVal\": false, \"trueVal\": true}")));
+        }
 
         [Fact]
         public void CreatedNumericValuesRespectTruthiness()
@@ -316,48 +360,49 @@ namespace HandlebarsDotNet.Test
         }
 
         [Fact]
-        public void EachIteratesValuesWrappingClrContainers()
+        public void CreatedBooleanValuesRespectTruthiness()
         {
-            // These report JsonValueKind.Array/Object but are JsonValue, not JsonArray/JsonObject.
-            var handlebars = Handlebars.Create();
-            var nested = handlebars.Compile("{{#each items as |value key|}}{{key}}:{{value}},{{else}}empty{{/each}}");
-            var root = handlebars.Compile("{{#each this as |value key|}}{{key}}:{{value}},{{else}}empty{{/each}}");
-            var cases = new (JsonNode Value, string Expected)[]
-            {
-                (JsonValue.Create(new[] { 1, 2 })!, "0:1,1:2,"),
-                (JsonValue.Create(new List<string> { "a", "b" })!, "0:a,1:b,"),
-                (JsonValue.Create(new Dictionary<string, int> { ["a"] = 1, ["b"] = 2 })!, "a:1,b:2,"),
-                (JsonValue.Create(new WrappedItem())!, "Name:n,"),
-                (JsonValue.Create(new AnnotatedItem())!, "Name:n,"),
-                (JsonValue.Create(Array.Empty<int>())!, "empty"),
-                (JsonValue.Create(new List<string>())!, "empty"),
-                (JsonValue.Create(new Dictionary<string, int>())!, "empty")
-            };
+            var template = Handlebars.Create().Compile("{{#if this}}T{{else}}F{{/if}}");
 
-            foreach (var (value, expected) in cases)
-            {
-                Assert.Equal(expected, nested(new JsonObject { ["items"] = value }));
-                Assert.Equal(expected, root(value));
-            }
+            Assert.Equal("F", template(JsonValue.Create(false)));
+            Assert.Equal("T", template(JsonValue.Create(true)));
+        }
+
+        [Theory]
+        [InlineData("false", "F|F")]
+        [InlineData("true", "T|T")]
+        [InlineData("0", "F|T")]
+        [InlineData("0.0", "F|T")]
+        [InlineData("1", "T|T")]
+        [InlineData("\"\"", "F|F")]
+        [InlineData("\"false\"", "T|T")]
+        public void CreatedJsonElementValuesRespectTruthiness(string json, string expected)
+        {
+            using var document = JsonDocument.Parse(json);
+            var value = JsonValue.Create(document.RootElement);
+            var template = Handlebars.Create().Compile("{{#if value}}T{{else}}F{{/if}}|{{#if value includeZero=true}}T{{else}}F{{/if}}");
+
+            Assert.Equal(expected, template(new JsonObject { ["value"] = value }));
         }
 
         [Fact]
-        public void MembersResolveOnValuesWrappingClrContainers()
+        public void WrappedClrValuesRemainOpaqueWithoutSerialization()
         {
-            // Members resolve against the wrapped CLR value, so CLR names apply rather than JSON property annotations.
             var handlebars = Handlebars.Create();
-            var cases = new (JsonNode Value, string Source, string Expected)[]
+            var nested = handlebars.Compile("{{items.Name}}|{{items.Self}}|{{items.Count}}|{{items.[0]}}|{{lookup items 'Name'}}|{{#each items}}item{{else}}empty{{/each}}|{{#if items}}T{{else}}F{{/if}}");
+            var root = handlebars.Compile("{{Name}}|{{Self}}|{{Count}}|{{this.[0]}}|{{lookup this 'Name'}}|{{#each this}}item{{else}}empty{{/each}}|{{#if this}}T{{else}}F{{/if}}");
+            var values = new object[]
             {
-                (JsonValue.Create(new WrappedItem())!, "{{items.Name}}|{{#with items}}{{Name}}{{/with}}|{{lookup items 'Name'}}|{{items.Missing}}", "n|n|n|"),
-                (JsonValue.Create(new List<string> { "a", "b" })!, "{{items.[0]}}|{{items.[1]}}|{{items.Count}}|{{lookup items 1}}|{{items.[2]}}", "a|b|2|b|"),
-                (JsonValue.Create(new[] { 1, 2 })!, "{{items.[1]}}|{{items.Length}}", "2|2"),
-                (JsonValue.Create(new Dictionary<string, int> { ["a"] = 1 })!, "{{items.a}}|{{lookup items 'a'}}", "1|1"),
-                (JsonValue.Create(new AnnotatedItem())!, "{{items.Name}}|{{items.full_name}}", "n|")
+                new[] { 1, 2 }, new List<string> { "a", "b" }, new Dictionary<string, int> { ["Name"] = 1 },
+                Array.Empty<int>(), new List<string>(), new Dictionary<string, int>(),
+                new CyclicValue(), new ThrowingGetterValue(), typeof(string)
             };
 
-            foreach (var (value, source, expected) in cases)
+            foreach (var value in values)
             {
-                Assert.Equal(expected, handlebars.Compile(source)(new JsonObject { ["items"] = value }));
+                var node = JsonValue.Create(value)!;
+                Assert.Equal("|||||empty|T", nested(new JsonObject { ["items"] = node }));
+                Assert.Equal("|||||empty|T", root(node));
             }
         }
 
@@ -372,17 +417,6 @@ namespace HandlebarsDotNet.Test
         }
 
         [Fact]
-        public void PartialHashMergesPropertiesOfValuesWrappingClrContainers()
-        {
-            var handlebars = Handlebars.Create();
-            handlebars.RegisterTemplate("partial", "{{Name}}{{a}}/{{extra}}");
-            var template = handlebars.Compile("{{#with items}}{{> partial extra='x'}}{{/with}}");
-
-            Assert.Equal("n/x", template(new JsonObject { ["items"] = JsonValue.Create(new WrappedItem()) }));
-            Assert.Equal("1/x", template(new JsonObject { ["items"] = JsonValue.Create(new Dictionary<string, int> { ["a"] = 1 }) }));
-        }
-
-        [Fact]
         public void ArrayMembersUseCustomAliases()
         {
             var handlebars = Handlebars.Create();
@@ -393,36 +427,30 @@ namespace HandlebarsDotNet.Test
         }
 
         [Fact]
-        public void DescriptorSupportsConcreteNodeTypesAndContainerProperties()
+        public void DescriptorSupportsConcreteObjectAndValueTypes()
         {
-            var provider = new JsonNodeObjectDescriptorProvider(new EnumerableObjectDescriptor(new ObjectDescriptorProvider(Array.Empty<IMemberAliasProvider>())));
-            var nodes = new JsonNode[] { new JsonObject { ["stringVal"] = "a" }, new JsonArray(1), JsonValue.Create(false)! };
+            var provider = new JsonNodeObjectDescriptorProvider();
+            var nodes = new JsonNode[] { new JsonObject { ["stringVal"] = "a" }, JsonValue.Create(false)!, JsonValue.Create(new CyclicValue())! };
 
             foreach (var node in nodes)
             {
                 Assert.True(provider.TryGetDescriptor(node.GetType(), out var descriptor));
                 Assert.Equal(node.GetType(), descriptor!.DescribedType);
                 var properties = descriptor.GetProperties(descriptor, node).Cast<object>().Select(property => property.ToString());
-                if (node is JsonArray)
-                {
-                    Assert.Contains("Count", properties);
-                }
-                else
-                {
-                    Assert.Equal(node is JsonObject ? new[] { "stringVal" } : Array.Empty<string>(), properties);
-                }
+                Assert.Equal(node is JsonObject ? new[] { "stringVal" } : Array.Empty<string>(), properties);
             }
+
+            Assert.False(provider.TryGetDescriptor(typeof(JsonArray), out _));
         }
 
-        private class WrappedItem
+        private class CyclicValue
         {
-            public string Name { get; set; } = "n";
+            public CyclicValue Self => this;
         }
 
-        private class AnnotatedItem
+        private class ThrowingGetterValue
         {
-            [JsonPropertyName("full_name")]
-            public string Name { get; set; } = "n";
+            public string Name => throw new InvalidOperationException("The wrapped value must not be inspected or serialized.");
         }
     }
 }
