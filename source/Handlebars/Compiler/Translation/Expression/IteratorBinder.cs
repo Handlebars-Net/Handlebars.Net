@@ -1,9 +1,9 @@
 using System.Linq.Expressions;
-using Expressions.Shortcuts;
+using HandlebarsDotNet.ExpressionShortcuts;
 using HandlebarsDotNet.ObjectDescriptors;
 using HandlebarsDotNet.PathStructure;
 using HandlebarsDotNet.Polyfills;
-using static Expressions.Shortcuts.ExpressionShortcuts;
+using static HandlebarsDotNet.ExpressionShortcuts.ExpressionShortcuts;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -127,7 +127,7 @@ namespace HandlebarsDotNet.Compiler
 
             if (!ObjectDescriptor.TryCreate(target, out var descriptor))
             {
-                throw new HandlebarsRuntimeException($"Cannot create ObjectDescriptor for type {descriptor.DescribedType}");
+                throw new HandlebarsRuntimeException($"Cannot create ObjectDescriptor for type {target.GetType()}");
             }
 
             if (descriptor.Iterator == null) throw new HandlebarsRuntimeException($"Type {descriptor.DescribedType} does not support iteration");

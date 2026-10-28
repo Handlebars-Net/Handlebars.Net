@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using Expressions.Shortcuts;
+using HandlebarsDotNet.ExpressionShortcuts;
 using HandlebarsDotNet.Polyfills;
-using static Expressions.Shortcuts.ExpressionShortcuts;
+using static HandlebarsDotNet.ExpressionShortcuts.ExpressionShortcuts;
 
 namespace HandlebarsDotNet.Compiler
 {

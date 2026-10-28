@@ -1,13 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq.Expressions;
-using System.Text;
-using Expressions.Shortcuts;
 using HandlebarsDotNet.IO;
 using HandlebarsDotNet.PathStructure;
 using HandlebarsDotNet.Polyfills;
-using static Expressions.Shortcuts.ExpressionShortcuts;
+using static HandlebarsDotNet.ExpressionShortcuts.ExpressionShortcuts;
 
 namespace HandlebarsDotNet.Compiler
 {
@@ -33,26 +30,27 @@ namespace HandlebarsDotNet.Compiler
                 ? FunctionBuilder.Compile(new[] { pex.Fallback }, CompilationContext, out decorators)
                 : null;
 
+            var bindingContext = CompilationContext.Args.BindingContext;
+            var writer = CompilationContext.Args.EncodedWriter;
+
+            var parentContext = bindingContext;
+            if (pex.Argument != null || partialBlockTemplate != null)
+            {
+                var value = pex.Argument != null
+                    ? Arg<object?>(FunctionBuilder.Reduce(pex.Argument, CompilationContext, out _))
+                    : bindingContext.Property(o => o.Value);
+
+                var partialTemplate = Arg(partialBlockTemplate);
+                bindingContext = bindingContext.Call(o => o.CreateChildContext(value, partialTemplate));
+            }
+
+            var partialName = Cast<string>(pex.PartialName);
+            var configuration = Arg(CompilationContext.Configuration);
+            var isBlock = Arg(pex.IsBlock);
+            var indent = Arg(pex.Indent);
+
             if (decorators.Count > 0)
             {
-                var bindingContext = CompilationContext.Args.BindingContext;
-                var writer = CompilationContext.Args.EncodedWriter;
-
-                var parentContext = bindingContext;
-                if (pex.Argument != null || partialBlockTemplate != null)
-                {
-                    var value = pex.Argument != null
-                        ? Arg<object?>(FunctionBuilder.Reduce(pex.Argument, CompilationContext, out _))
-                        : bindingContext.Property(o => o.Value);
-
-                    var partialTemplate = Arg(partialBlockTemplate);
-                    bindingContext = bindingContext.Call(o => o.CreateChildContext(value, partialTemplate));
-                }
-
-                var partialName = Cast<string>(pex.PartialName);
-                var configuration = Arg(CompilationContext.Configuration);
-                var isBlock = Arg(pex.IsBlock);
-                var indent = Arg(pex.Indent);
                 var templateDelegate = FunctionBuilder.Compile(
                     new []
                     {
@@ -70,24 +68,6 @@ namespace HandlebarsDotNet.Compiler
             }
             else
             {
-                var bindingContext = CompilationContext.Args.BindingContext;
-                var writer = CompilationContext.Args.EncodedWriter;
-
-                if (pex.Argument != null || partialBlockTemplate != null)
-                {
-                    var value = pex.Argument != null
-                        ? Arg<object?>(FunctionBuilder.Reduce(pex.Argument, CompilationContext, out _))
-                        : bindingContext.Property(o => o.Value);
-
-                    var partialTemplate = Arg(partialBlockTemplate);
-                    bindingContext = bindingContext.Call(o => o.CreateChildContext(value, partialTemplate));
-                }
-
-                var partialName = Cast<string>(pex.PartialName);
-                var configuration = Arg(CompilationContext.Configuration);
-                var isBlock = Arg(pex.IsBlock);
-                var indent = Arg(pex.Indent);
-
                 return Call(() =>
                     InvokePartialWithFallback(partialName, bindingContext, writer, (ICompiledHandlebarsConfiguration) configuration, isBlock, indent)
                 );
@@ -142,7 +122,7 @@ namespace HandlebarsDotNet.Compiler
             }
 
             var pos = 0;
-            while (pos < content.Length)
+            while (pos < content!.Length)
             {
                 var newlinePos = content.IndexOf('\n', pos);
                 if (newlinePos < 0)
