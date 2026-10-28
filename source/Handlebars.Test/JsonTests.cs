@@ -335,6 +335,13 @@ namespace HandlebarsDotNet.Test
         }
     }
 
+    // JsonSerializer builds nodes through its converters rather than JsonNode.Parse,
+    // which can produce different JsonValue implementations.
+    public class JsonSerializerNodeTests : JsonTestBase
+    {
+        protected override object Parse(string json) => JsonSerializer.Deserialize<JsonNode>(json)!;
+    }
+
     public class JsonNodeTests : JsonTestBase
     {
         protected override object Parse(string json) => JsonNode.Parse(json)!;

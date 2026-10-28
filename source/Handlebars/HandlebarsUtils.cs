@@ -85,8 +85,13 @@ namespace HandlebarsDotNet
 
         private static bool IsFalsyJsonNode(JsonNode node, bool includeZero)
         {
+            if (node is not JsonValue scalar) return false;
+
             // Parsed values wrap JsonElement; programmatically created values retain their CLR type.
-            return node is JsonValue scalar && IsFalsy(scalar.GetValue<object>(), includeZero);
+            if (scalar.TryGetValue<object>(out var value)) return IsFalsy(value, includeZero);
+
+            // Scalars read by JsonSerializer (e.g. Deserialize<JsonNode>("false")) refuse object but convert to JsonElement.
+            return scalar.TryGetValue<JsonElement>(out var element) && IsFalsyJsonElement(element, includeZero);
         }
 
         public static bool IsTruthyOrNonEmpty([NotNullWhen(true)] object? value, bool includeZero = false)
