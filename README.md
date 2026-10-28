@@ -103,6 +103,42 @@ var result = template(data); // "6"
 
 This is a C#-specific capability, since JavaScript/Handlebars.js has no equivalent to true multi-dimensional arrays.
 
+### System.Text.Json
+
+`System.Text.Json` values can be passed to a template directly, with no conversion to POCOs or dictionaries.
+
+**`JsonElement`**: deserializing JSON as `object` with `JsonSerializer.Deserialize<object>(json)` gives you a `JsonElement`. You can pass that in, or any other `JsonElement` such as `JsonDocument.RootElement`.
+
+**`JsonNode`**: `JsonObject`, `JsonArray` and `JsonValue` work too, whether they come from `JsonNode.Parse` or are built in code. A node tree is read when the template renders, so changes made to it between renders show up in the output.
+
+```c#
+var template = Handlebars.Compile("{{title}}: {{#each tags}}{{@index}}={{this}} {{/each}}{{#if draft}}(draft){{/if}}");
+
+var json = @"{ ""title"": ""My post"", ""tags"": [""a"", ""b""], ""draft"": false }";
+
+template(JsonSerializer.Deserialize<object>(json)); // "My post: 0=a 1=b "
+template(JsonNode.Parse(json));                     // "My post: 0=a 1=b "
+
+var data = new JsonObject
+{
+    ["title"] = "My post",
+    ["tags"] = new JsonArray("a", "b"),
+    ["draft"] = true
+};
+
+template(data); // "My post: 0=a 1=b (draft)"
+```
+
+For both types:
+- Properties are matched by exact name first, then by the lowercase name, so `{{Title}}` finds a `"title"` property.
+- Arrays support index access (`{{tags.[0]}}`), `{{tags.Count}}`, and `#each` with `@index`, `@first` and `@last`. Objects support `#each` with `@key`.
+- As with other collections, `{{tags.length}}` works once `handlebars.Configuration.UseCollectionMemberAliasProvider()` is enabled.
+- `#if`, `#unless` and `#each` treat `false`, `null`, `0`, `""`, `[]` and `{}` as falsy. Pass `includeZero=true` to `#if` to treat `0` as truthy.
+
+When interpolated directly, booleans render as `True`/`False` for `JsonElement` and `true`/`false` for `JsonNode`.
+
+Compatibility: `JsonNode` values `false`, `0`, and `""` now follow falsy semantics; `JsonObject` lookups now include the lowercase fallback described above; custom member alias providers are now consulted for unresolved `JsonElement` and `JsonObject` members.
+
 ### Registering Partials
 
 ```c#

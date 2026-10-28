@@ -17,8 +17,6 @@ namespace HandlebarsDotNet.ObjectDescriptors
     {
         private static readonly Type Type = typeof(JsonElement);
 
-        private static readonly JsonElementMemberAccessor MemberAccessor = new JsonElementMemberAccessor();
-
         private static readonly Func<ObjectDescriptor, IIterator> IteratorFactory = _ => new JsonElementIterator();
 
         private static readonly Func<ObjectDescriptor, object, IEnumerable> GetProperties = (descriptor, arg) =>
@@ -29,7 +27,17 @@ namespace HandlebarsDotNet.ObjectDescriptors
                 : Enumerable.Empty<string>();
         };
 
-        private static readonly ObjectDescriptor Descriptor = new ObjectDescriptor(Type, MemberAccessor, GetProperties, IteratorFactory);
+        private readonly ObjectDescriptor _descriptor;
+
+        public JsonElementObjectDescriptorProvider() : this(Array.Empty<IMemberAliasProvider>())
+        {
+        }
+
+        /// <param name="aliasProviders">Consulted for members a <see cref="JsonElement"/> does not resolve itself, e.g. <c>length</c> on arrays.</param>
+        public JsonElementObjectDescriptorProvider(IReadOnlyList<IMemberAliasProvider> aliasProviders)
+        {
+            _descriptor = new ObjectDescriptor(Type, new JsonElementMemberAccessor(aliasProviders), GetProperties, IteratorFactory);
+        }
 
         public bool TryGetDescriptor(Type type, [NotNullWhen(true)] out ObjectDescriptor? value)
         {
@@ -39,7 +47,7 @@ namespace HandlebarsDotNet.ObjectDescriptors
                 return false;
             }
 
-            value = Descriptor;
+            value = _descriptor;
             return true;
         }
     }
