@@ -121,17 +121,19 @@ namespace HandlebarsDotNet
         private ObservableList<IObjectDescriptorProvider> CreateObjectDescriptorProvider(ObservableList<IObjectDescriptorProvider> descriptorProviders)
         {
             var objectDescriptorProvider = new ObjectDescriptorProvider(AliasProviders);
+            var enumerableObjectDescriptor = new EnumerableObjectDescriptor(objectDescriptorProvider);
             var objectDescriptorProviders = new ObservableList<IObjectDescriptorProvider>
                 {
                     objectDescriptorProvider,
                     new DynamicObjectDescriptor(objectDescriptorProvider),
-                    new EnumerableObjectDescriptor(objectDescriptorProvider),
+                    enumerableObjectDescriptor,
                     new DictionaryObjectDescriptor(),
                     new ReadOnlyGenericDictionaryObjectDescriptorProvider(),
                     new GenericDictionaryObjectDescriptorProvider(),
                     new ReadOnlyStringDictionaryObjectDescriptorProvider(),
                     new StringDictionaryObjectDescriptorProvider(),
-                    new JsonElementObjectDescriptorProvider(),
+                    new JsonElementObjectDescriptorProvider(AliasProviders),
+                    new JsonNodeObjectDescriptorProvider(AliasProviders),
                     new LayoutViewModel.DescriptorProvider(),
                 }
                 .AddMany(descriptorProviders);

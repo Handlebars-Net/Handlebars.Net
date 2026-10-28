@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using HandlebarsDotNet.ObjectDescriptors;
 using HandlebarsDotNet.PathStructure;
 
@@ -20,6 +22,14 @@ namespace HandlebarsDotNet.MemberAliasProvider
                     return true;
 
                 case ICollection array when memberAlias.Equals(Length):
+                    value = array.Count;
+                    return true;
+
+                case JsonElement { ValueKind: JsonValueKind.Array } element when memberAlias.Equals(Length):
+                    value = element.GetArrayLength();
+                    return true;
+
+                case JsonArray array when memberAlias.Equals(Length):
                     value = array.Count;
                     return true;
 
