@@ -105,6 +105,7 @@ namespace HandlebarsDotNet.Compiler
 #pragma warning restore CS0618
             
             if (!isRaw && !(pathInfo.IsBlockHelper || pathInfo.IsInversion)) return false;
+            if (pathInfo.IsBlockClose) return false;
             name = name.Substring(1);
             if (name.StartsWith("*"))
             {
