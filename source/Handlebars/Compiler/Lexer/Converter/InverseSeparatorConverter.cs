@@ -13,8 +13,9 @@ namespace HandlebarsDotNet.Compiler
     {
         private static readonly InverseSeparatorConverter Converter = new InverseSeparatorConverter();
 
-        public static IEnumerable<object> Convert(IEnumerable<object> sequence)
+        public static IEnumerable<object> Convert(IEnumerable<object> sequence, ICompiledHandlebarsConfiguration configuration)
         {
+            if (configuration.Compatibility.LegacyStandaloneCaretBehavior) return sequence;
             return Converter.ConvertTokens(sequence).ToList();
         }
 

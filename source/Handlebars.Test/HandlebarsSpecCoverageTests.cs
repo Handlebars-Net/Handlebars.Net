@@ -999,6 +999,32 @@ namespace HandlebarsDotNet.Test
         }
 
         [Fact]
+        public void InvertedSection_InlineCaretSyntaxLegacyBehaviorCanBeRestored()
+        {
+            var hbs = Handlebars.Create();
+            hbs.Configuration.Compatibility.LegacyStandaloneCaretBehavior = true;
+
+            var ifTemplate = hbs.Compile("{{#if condition}}yes{{^}}no{{/if}}");
+            Assert.Equal("yes{ condition = True }no", ifTemplate(new { condition = true }).Replace("&#x3D;", "="));
+            Assert.Equal("", ifTemplate(new { condition = false }));
+
+            var eachTemplate = hbs.Compile("{{#each people}}{{name}}{{^}}No one{{/each}}");
+            Assert.Equal("", eachTemplate(new { people = Array.Empty<object>() }));
+
+            var sectionTemplate = hbs.Compile("{{#val}}yes{{^}}no{{/val}}");
+            Assert.Equal("", sectionTemplate(new { val = false }));
+
+            // {{else}} is unaffected by the flag
+            Assert.Equal("no", hbs.Compile("{{#if condition}}yes{{else}}no{{/if}}")(new { condition = false }));
+        }
+
+        [Fact]
+        public void InvertedSection_InlineCaretSyntaxIsDefaultBehavior()
+        {
+            Assert.False(new HandlebarsConfiguration().Compatibility.LegacyStandaloneCaretBehavior);
+        }
+
+        [Fact]
         public void InvertedSection_InlineCaretSyntaxIsLiteralInsideRawBlock()
         {
             var hbs = Handlebars.Create();
