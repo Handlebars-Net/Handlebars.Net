@@ -34,7 +34,7 @@ namespace HandlebarsDotNet.Compiler
                 throw new HandlebarsCompilerException($"Tried to convert {BlockName} expression to conditional block", helperExpression.Context);
             }
 
-            var (value, hashParameters) = UnwrapBoolishHelperArguments(helperExpression.Arguments, helperExpression.Context);
+            var (value, hashParameters) = UnwrapBoolishHelperArguments(BlockName, helperExpression.Arguments, helperExpression.Context);
             var argument = HandlebarsExpression.Boolish(value, hashParameters);
 
             _currentCondition = BlockName switch
@@ -124,7 +124,8 @@ namespace HandlebarsDotNet.Compiler
         {
             item = UnwrapStatement(item);
             var helperExpression = (HelperExpression)item;
-            var (value, hashParameters) = UnwrapBoolishHelperArguments(helperExpression.Arguments.Skip(1), helperExpression.Context);
+            var elseBlockName = helperExpression.Arguments.First() is PathExpression elsePath ? elsePath.Path : BlockName;
+            var (value, hashParameters) = UnwrapBoolishHelperArguments(elseBlockName, helperExpression.Arguments.Skip(1), helperExpression.Context);
             return HandlebarsExpression.Boolish(value, hashParameters);
         }
 
@@ -144,9 +145,10 @@ namespace HandlebarsDotNet.Compiler
             return expressions.SingleOrDefault() ?? Expression.Empty();
         }
 
-        private static (Expression Value, HashParametersExpression HashParameters) UnwrapBoolishHelperArguments(IEnumerable<Expression> arguments, IReaderContext? context)
+        private static (Expression Value, HashParametersExpression HashParameters) UnwrapBoolishHelperArguments(string blockName, IEnumerable<Expression> arguments, IReaderContext? context)
         {
-            var value = arguments.First();
+            var value = arguments.FirstOrDefault()
+                ?? throw new HandlebarsCompilerException($"#{blockName} requires exactly one argument", context);
             if (arguments.Count() == 1)
             {
                 var blankHashParameters = HandlebarsExpression.HashParametersExpression(new Dictionary<string, Expression>());
@@ -158,7 +160,7 @@ namespace HandlebarsDotNet.Compiler
                 return (value, hashParameters);
             }
 
-            throw new HandlebarsCompilerException("Invalid argument list for conditional block.", context);
+            throw new HandlebarsCompilerException($"#{blockName} requires exactly one argument", context);
 
         }
     }

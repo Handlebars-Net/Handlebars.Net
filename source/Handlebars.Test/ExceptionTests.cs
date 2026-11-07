@@ -58,6 +58,31 @@ namespace HandlebarsDotNet.Test
             });
         }
 
+        // https://github.com/Handlebars-Net/Handlebars.Net/issues/674
+        [Theory]
+        [InlineData("{{#if}}yes{{/if}}", "#if")]
+        [InlineData("{{#unless}}yes{{/unless}}", "#unless")]
+        [InlineData("{{^if}}yes{{/if}}", "#if")]
+        [InlineData("{{#if a b}}yes{{/if}}", "#if")]
+        [InlineData("{{#unless a b}}yes{{/unless}}", "#unless")]
+        public void TestConditionalBlockWithWrongArgumentCountException(string source, string helper)
+        {
+            var exception = Assert.Throws<HandlebarsCompilerException>(() =>
+            {
+                Handlebars.Compile(source);
+            });
+
+            Assert.Contains($"{helper} requires exactly one argument", exception.Message);
+        }
+
+        [Theory]
+        [InlineData("{{#if a includeZero=true}}yes{{else}}no{{/if}}", "yes")]
+        [InlineData("{{#unless a includeZero=true}}yes{{else}}no{{/unless}}", "no")]
+        public void TestConditionalBlockWithHashArgumentStillCompiles(string source, string expected)
+        {
+            Assert.Equal(expected, Handlebars.Compile(source)(new { a = 0 }));
+        }
+
         [Fact]
         public void TestNonClosingIgnoreBlockException()
         {
