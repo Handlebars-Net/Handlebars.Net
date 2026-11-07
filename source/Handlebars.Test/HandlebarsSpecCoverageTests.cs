@@ -927,34 +927,92 @@ namespace HandlebarsDotNet.Test
             Assert.Equal("", template(new { val = true }));
         }
 
-        // [SPEC GAP] {{^}} (standalone caret with no name) inside a block body is not an else separator.
-        // SPEC:    {{#val}}truthy{{^}}falsy{{/val}} is equivalent to {{#val}}truthy{{else}}falsy{{/val}};
-        //          when val is truthy only "truthy" renders; when falsy only "falsy" renders.
-        // CURRENT: {{^}} is resolved as a path expression for the current context rather than as
-        //          an else marker. For val=true this produces "yes" + context.ToString() + "no"
-        //          because the caret resolves to the anonymous object `new { val = true }` and
-        //          no inverse block is registered, so "no" is literal text in the body.
-        //          For val=false the entire body is skipped (falsy) and the inverse is empty → "".
-        //          WORKAROUND: use {{#val}}truthy{{else}}falsy{{/val}} — {{else}} works correctly.
-        // SOURCE:  The block section accumulator does not recognize empty {{^}} as an inverse
-        //          separator for non-each blocks; the caret falls through to path resolution.
-        // COMPAT:  LOW — {{else}} is the canonical and documented form; {{^}} with no name is
-        //          a rarely-used edge case and changing its behavior would be a narrow breakage.
-
+        // SPEC: {{#val}}truthy{{^}}falsy{{/val}} is equivalent to {{#val}}truthy{{else}}falsy{{/val}}.
+        // https://github.com/Handlebars-Net/Handlebars.Net/issues/672
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
         public void InvertedSection_InlineCaretSyntax(IHandlebars hbs)
         {
             var template = hbs.Compile("{{#val}}yes{{^}}no{{/val}}");
-            // SPEC: val=true → "yes", val=false → "no"
-            // CURRENT: {{^}} resolves to context.ToString() (html-encoded per active encoder),
-            //          then "no" appears as plain text after it — neither branch is separated.
-            //          val=true:  output is "yes" + encoded(context.ToString()) + "no"
-            //          val=false: output is "" — falsy skips the body; no inverse block is registered
-            var resultTrue = template(new { val = true });
-            Assert.StartsWith("yes", resultTrue);   // truthy branch text IS output...
-            Assert.EndsWith("no", resultTrue);      // ...but so is the "false" branch text
-            Assert.NotEqual("yes", resultTrue);     // it would be just "yes" if {{^}} worked as else
-            Assert.Equal("", template(new { val = false }));
+            Assert.Equal("yes", template(new { val = true }));
+            Assert.Equal("no", template(new { val = false }));
+        }
+
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void InvertedSection_InlineCaretSyntaxInListSection(IHandlebars hbs)
+        {
+            var template = hbs.Compile("{{#people}}{{name}}{{^}}No one{{/people}}");
+            Assert.Equal("Alice", template(new { people = new[] { new { name = "Alice" } } }));
+            Assert.Equal("No one", template(new { people = Array.Empty<object>() }));
+        }
+
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void InvertedSection_InlineCaretSyntaxInIf(IHandlebars hbs)
+        {
+            var template = hbs.Compile("{{#if condition}}yes{{^}}no{{/if}}");
+            Assert.Equal("yes", template(new { condition = true }));
+            Assert.Equal("no", template(new { condition = false }));
+        }
+
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void InvertedSection_InlineCaretSyntaxInUnless(IHandlebars hbs)
+        {
+            var template = hbs.Compile("{{#unless condition}}yes{{^}}no{{/unless}}");
+            Assert.Equal("no", template(new { condition = true }));
+            Assert.Equal("yes", template(new { condition = false }));
+        }
+
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void InvertedSection_InlineCaretSyntaxInEach(IHandlebars hbs)
+        {
+            var template = hbs.Compile("{{#each people}}{{name}}{{^}}No one{{/each}}");
+            Assert.Equal("Alice", template(new { people = new[] { new { name = "Alice" } } }));
+            Assert.Equal("No one", template(new { people = Array.Empty<object>() }));
+        }
+
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void InvertedSection_InlineCaretSyntaxInWith(IHandlebars hbs)
+        {
+            var template = hbs.Compile("{{#with person}}{{name}}{{^}}nobody{{/with}}");
+            Assert.Equal("Alice", template(new { person = new { name = "Alice" } }));
+            Assert.Equal("nobody", template(new { person = (object)null }));
+        }
+
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void InvertedSection_InlineCaretSyntaxInCustomBlockHelper(IHandlebars hbs)
+        {
+            hbs.RegisterHelper("choose", (writer, options, context, arguments) =>
+            {
+                if ((bool)arguments[0]) options.Template(writer, context);
+                else options.Inverse(writer, context);
+            });
+            var template = hbs.Compile("{{#choose flag}}yes{{^}}no{{/choose}}");
+            Assert.Equal("yes", template(new { flag = true }));
+            Assert.Equal("no", template(new { flag = false }));
+        }
+
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void InvertedSection_InlineCaretSyntaxWithWhitespace(IHandlebars hbs)
+        {
+            var template = hbs.Compile("{{#if condition}}yes {{~^~}} no{{/if}}|{{#if condition}}a{{^ }}b{{/if}}");
+            Assert.Equal("yes|a", template(new { condition = true }));
+            Assert.Equal("no|b", template(new { condition = false }));
+        }
+
+        [Fact]
+        public void InvertedSection_InlineCaretSyntaxIsLiteralInsideRawBlock()
+        {
+            var hbs = Handlebars.Create();
+            hbs.RegisterHelper("raw", (writer, options, context, arguments) => options.Template(writer, context));
+            var template = hbs.Compile("{{{{raw}}}}a{{^}}b{{{{/raw}}}}");
+            Assert.Equal("a{{^}}b", template(new { }));
+        }
+
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void InvertedSection_InlineCaretSyntaxStandaloneLine(IHandlebars hbs)
+        {
+            var template = hbs.Compile("{{#if condition}}\nyes\n{{^}}\nno\n{{/if}}\n");
+            Assert.Equal("yes\n", template(new { condition = true }));
+            Assert.Equal("no\n", template(new { condition = false }));
         }
 
         // ─────────────────────────────────────────────────────────────
