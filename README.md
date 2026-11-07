@@ -445,6 +445,28 @@ public void HelperWithDotSeparatedName()
 }
 ```
 
+#### `LegacyStandaloneCaretBehavior`
+By default a bare `{{^}}` inside a block is the inverse separator, equivalent to `{{else}}` (as in Handlebarsjs).
+If `true`, restores the earlier Handlebars.Net behavior where `{{^}}` is resolved as a reference to the current context and the block has no inverse branch.
+Use only as a temporary escape hatch for templates that depend on the old output.
+
+##### Areas
+- `Compile-time`
+
+##### Example
+```c#
+[Fact]
+public void LegacyStandaloneCaret()
+{
+    var handlebars = Handlebars.Create();
+    handlebars.Configuration.Compatibility.LegacyStandaloneCaretBehavior = true;
+
+    var template = handlebars.Compile("{{#if condition}}yes{{^}}no{{/if}}");
+
+    Assert.Equal("", template(new { condition = false })); // "no" with the default behavior
+}
+```
+
 #### HtmlEncoder
 Used to switch between the legacy Handlebars.Net and the canonical Handlebars rules (or a custom implementation).\
 For Handlebars.Net 2.x.x `HtmlEncoderLegacy` is the default.
