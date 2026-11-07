@@ -139,6 +139,33 @@ namespace HandlebarsDotNet.Test
             Assert.Equal("{{someHelper fooArg fooHashArg='foo' fooHashArgDoubleQuote=\"foo!\" barHashArg=unquotedValue bazHashArg=@root.baz.nested}}", output);
         }
 
+        // https://github.com/Handlebars-Net/Handlebars.Net/issues/676
+        [Theory]
+        [InlineData(false, "{{{{raw}}}}{{{{/raw}}}}", "")]
+        [InlineData(true, "{{{{raw}}}}{{{{/raw}}}}", "")]
+        [InlineData(false, "{{{{raw}}}}a{{foo}}b{{{{/raw}}}}", "a{{foo}}b")]
+        [InlineData(true, "{{{{raw}}}}a{{foo}}b{{{{/raw}}}}", "a{{foo}}b")]
+        [InlineData(false, "{{{{raw}}}}{{{{other}}}}x{{{{/other}}}}{{{{/raw}}}}", "{{{{other}}}}x{{{{/other}}}}")]
+        [InlineData(true, "{{{{raw}}}}{{{{other}}}}x{{{{/other}}}}{{{{/raw}}}}", "{{{{other}}}}x{{{{/other}}}}")]
+        [InlineData(false, "{{{{raw foo}}}}-{{bar}}-{{{{/raw}}}}", "1-{{bar}}-")]
+        [InlineData(true, "{{{{raw foo}}}}-{{bar}}-{{{{/raw}}}}", "1-{{bar}}-")]
+        public void RawBlockHelperCompilesRegardlessOfRelaxedHelperNaming(bool relaxedHelperNaming, string source, string expected)
+        {
+            var inst = Handlebars.Create();
+#pragma warning disable CS0618
+            inst.Configuration.Compatibility.RelaxedHelperNaming = relaxedHelperNaming;
+#pragma warning restore CS0618
+            inst.RegisterHelper("raw", (writer, options, context, arguments) =>
+            {
+                if (arguments.Length > 0) writer.Write(arguments[0]);
+                options.Template(writer, context);
+            });
+
+            var template = inst.Compile(source);
+
+            Assert.Equal(expected, template(new { foo = 1, bar = 2 }));
+        }
+
         [Fact]
         public void TestNonClosingRawBlockExpressionException()
         {
