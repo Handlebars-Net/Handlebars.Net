@@ -1674,39 +1674,6 @@ behavior is purely additive with zero breakage to existing working templates.
 
 ---
 
-### Gap 5: `{{^}}` (standalone caret) inside a block body is not an `else` separator
-
-**Behavioral gap:**
-Handlebars.js allows `{{^}}` (caret with no name) as an inline else equivalent inside any block:
-`{{#val}}truthy{{^}}falsy{{/val}}` is semantically identical to
-`{{#val}}truthy{{else}}falsy{{/val}}`.
-
-In Handlebars.Net, `{{^}}` inside a block body is not treated as an else separator. Instead, it
-is resolved as a path expression referencing the current context (equivalent to `{{this}}`), so:
-- `val = true` → the truthy branch runs, then `{{^}}` outputs `context.ToString()`, then the
-  "false-branch text" appears as literal body text: output is `"yes{ val = True }no"` (with
-  the `=` potentially HTML-encoded depending on the active encoder).
-- `val = false` → the block body is skipped entirely (falsy), and no inverse block is registered,
-  so output is `""` rather than `"no"`.
-
-The working alternative is `{{#val}}truthy{{else}}falsy{{/val}}` — `{{else}}` works correctly.
-
-**Technical root cause:**
-The block section accumulator does not recognize the empty `{{^}}` token (caret with no name) as
-an inverse-block separator for non-`#each` block sections. The caret falls through to path
-resolution, where it resolves to the current context object.
-
-**Backward-compatibility risk: LOW.**
-The `{{else}}` keyword is the canonical documented form and works correctly. `{{^}}` with no name
-is an edge case that is rarely used and is arguably ambiguous in documentation. Fixing it would
-only affect templates explicitly using the bare `{{^}}` syntax inside blocks, which currently
-produce incorrect output anyway.
-
-**Regression tests:** `InvertedSection_InlineCaretSyntax` (asserts that `val=true` output starts
-with `"yes"`, ends with `"no"`, and is NOT equal to `"yes"`; `val=false` output is `""`).
-
----
-
 ## Coverage Gaps (Priority Areas for New Tests)
 
 1. HTML encoding: `'`, `` ` ``, `=` characters specifically
