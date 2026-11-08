@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using HandlebarsDotNet.Compiler;
 using Xunit;
 
 namespace HandlebarsDotNet.Test
@@ -483,6 +484,110 @@ namespace HandlebarsDotNet.Test
 
             var result4 = template(data);
             Assert.Equal("Hello Pete", result4);
+        }
+
+        // https://github.com/Handlebars-Net/Handlebars.Net/issues/673
+        // handlebars.js spec/partials.js: "should define inline partials for block"
+        [Fact]
+        public void InlinePartialIsScopedToDeclaringBlock()
+        {
+            var handlebars = Handlebars.Create();
+
+            var inside = handlebars.Compile("{{#with .}}{{#*inline \"myPartial\"}}success{{/inline}}{{> myPartial}}{{/with}}");
+            Assert.Equal("success", inside(new { }));
+
+            var outside = handlebars.Compile("{{#with .}}{{#*inline \"myPartial\"}}success{{/inline}}{{/with}}{{> myPartial}}");
+            var exception = Assert.Throws<HandlebarsRuntimeException>(() => outside(new { }));
+            Assert.Contains("'myPartial' could not be resolved", exception.Message);
+        }
+
+        [Fact]
+        public void InlinePartialInBlockOverridesOuterOnlyInsideBlock()
+        {
+            var handlebars = Handlebars.Create();
+            var template = handlebars.Compile(
+                "{{#*inline \"myPartial\"}}outer{{/inline}}" +
+                "{{#with .}}{{#*inline \"myPartial\"}}inner{{/inline}}{{> myPartial}}{{/with}} " +
+                "{{> myPartial}}");
+
+            Assert.Equal("inner outer", template(new { }));
+        }
+
+        [Fact]
+        public void InlinePartialInBlockIsVisibleToNestedBlocks()
+        {
+            var handlebars = Handlebars.Create();
+            var template = handlebars.Compile(
+                "{{#with .}}{{#*inline \"myPartial\"}}success{{/inline}}" +
+                "{{#with .}}{{#if true}}{{> myPartial}}{{/if}}{{/with}}{{/with}}");
+
+            Assert.Equal("success", template(new { }));
+        }
+
+        [Fact]
+        public void InlinePartialInEachIsScopedToLoop()
+        {
+            var handlebars = Handlebars.Create();
+            var template = handlebars.Compile(
+                "{{#*inline \"item\"}}outer{{/inline}}" +
+                "{{#each items}}{{#*inline \"item\"}}[{{.}}]{{/inline}}{{> item}}{{/each}} {{> item}}");
+
+            Assert.Equal("[1][2] outer", template(new { items = new[] { 1, 2 } }));
+        }
+
+        [Fact]
+        public void LastInlinePartialDefinitionInBlockWins()
+        {
+            var handlebars = Handlebars.Create();
+            var template = handlebars.Compile(
+                "{{#with .}}{{#*inline \"p\"}}first{{/inline}}{{#*inline \"p\"}}second{{/inline}}{{> p}}{{/with}}");
+
+            Assert.Equal("second", template(new { }));
+        }
+
+        [Fact]
+        public void InlinePartialsInBlockWithCustomDecoratorAreScopedToBlock()
+        {
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterDecorator("noop",
+                (TemplateDelegate function, in DecoratorOptions options, in Context context, in Arguments arguments) => function);
+
+            var template = handlebars.Compile(
+                "{{#with .}}{{#*inline \"a\"}}A{{/inline}}{{*noop}}{{#*inline \"b\"}}B{{/inline}}{{> a}}{{> b}}{{/with}}{{> a}}");
+
+            var exception = Assert.Throws<HandlebarsRuntimeException>(() => template(new { }));
+            Assert.Contains("'a' could not be resolved", exception.Message);
+
+            var inside = handlebars.Compile(
+                "{{#with .}}{{#*inline \"a\"}}A{{/inline}}{{*noop}}{{#*inline \"b\"}}B{{/inline}}{{> a}}{{> b}}{{/with}}");
+            Assert.Equal("AB", inside(new { }));
+        }
+
+        [Fact]
+        public void InlinePartialInPartialBlockIsScopedToPartialBlock()
+        {
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterTemplate("layout", "<{{> content}}>");
+
+            var template = handlebars.Compile(
+                "{{#> layout}}{{#*inline \"content\"}}inside{{/inline}}{{/layout}}");
+            Assert.Equal("<inside>", template(new { }));
+
+            var after = handlebars.Compile(
+                "{{#> layout}}{{#*inline \"content\"}}inside{{/inline}}{{/layout}}{{> content}}");
+            var exception = Assert.Throws<HandlebarsRuntimeException>(() => after(new { }));
+            Assert.Contains("'content' could not be resolved", exception.Message);
+        }
+
+        [Fact]
+        public void InlinePartialScopeIsRestoredOnRepeatedRenders()
+        {
+            var handlebars = Handlebars.Create();
+            var template = handlebars.Compile(
+                "{{#*inline \"p\"}}outer{{/inline}}{{#with .}}{{#*inline \"p\"}}inner{{/inline}}{{> p}}{{/with}}{{> p}}");
+
+            Assert.Equal("innerouter", template(new { }));
+            Assert.Equal("innerouter", template(new { }));
         }
     }
 }

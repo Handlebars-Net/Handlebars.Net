@@ -51,7 +51,38 @@ namespace HandlebarsDotNet.Compiler
                     f(writer, bindingContext, current(writer, bindingContext, function));
             }
 
-            return decorator;
+            // Inline partials ({{#*inline}}) declared by a block's decorators are only visible
+            // while that block renders (handlebars.js semantics): open a partials scope on the
+            // frame before the decorators run and restore the previous set once the decorated
+            // function has executed.
+            var chain = decorator;
+            return (EncodedTextWriter writer, BindingContext bindingContext, TemplateDelegate function) =>
+            {
+                var partials = bindingContext.InlinePartialTemplates;
+                var snapshot = partials.BeginScope();
+                TemplateDelegate decorated;
+                try
+                {
+                    decorated = chain(writer, bindingContext, function);
+                }
+                catch
+                {
+                    partials.EndScope(snapshot);
+                    throw;
+                }
+
+                return (EncodedTextWriter w, BindingContext c) =>
+                {
+                    try
+                    {
+                        decorated(w, c);
+                    }
+                    finally
+                    {
+                        partials.EndScope(snapshot);
+                    }
+                };
+            };
         }
     }
 }

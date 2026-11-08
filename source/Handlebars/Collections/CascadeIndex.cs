@@ -48,6 +48,22 @@ namespace HandlebarsDotNet.Collections
             _inner?.Clear();
         }
 
+        /// <summary>
+        /// Makes subsequent <see cref="AddOrReplace"/> calls write to a copy of the current own entries.
+        /// Pass the returned snapshot to <see cref="EndScope"/> to discard everything added since.
+        /// </summary>
+        internal DictionarySlim<TKey, TValue, TComparer>? BeginScope()
+        {
+            var snapshot = _inner;
+            if (snapshot != null) _inner = new DictionarySlim<TKey, TValue, TComparer>(snapshot);
+            return snapshot;
+        }
+
+        internal void EndScope(DictionarySlim<TKey, TValue, TComparer>? snapshot)
+        {
+            _inner = snapshot;
+        }
+
         public bool ContainsKey(in TKey key)
         {
             return (_inner?.ContainsKey(key) ?? false) 
