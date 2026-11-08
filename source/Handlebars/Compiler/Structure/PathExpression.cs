@@ -12,12 +12,18 @@ namespace HandlebarsDotNet.Compiler
             Parameter
         }
         
-        public PathExpression(string path)
+        public PathExpression(string path, IReaderContext? readerContext = null)
         {
             Path = path;
+            ReaderContext = readerContext;
         }
 
         public new string Path { get; }
+
+        /// <summary>
+        /// Location of the path in the template source, used for error reporting.
+        /// </summary>
+        public IReaderContext? ReaderContext { get; }
         
         public ResolutionContext Context { get; set; }
         
