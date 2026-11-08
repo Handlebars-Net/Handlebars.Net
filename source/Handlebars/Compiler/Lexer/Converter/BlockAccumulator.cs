@@ -67,7 +67,9 @@ namespace HandlebarsDotNet.Compiler
                     context.HandleElement(item);
                 }
             }
-            throw new HandlebarsCompilerException($"Reached end of template before block expression '{context.BlockName}' was closed");
+            throw new HandlebarsCompilerException(
+                $"Reached end of template before block expression '{context.BlockName}' was closed",
+                BlockAccumulatorContext.GetReaderContext(parentItem));
         }
 
         /// <summary>

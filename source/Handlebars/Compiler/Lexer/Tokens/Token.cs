@@ -36,9 +36,9 @@ namespace HandlebarsDotNet.Compiler.Lexer
             return new EndExpressionToken(isEscaped, trimWhitespace, isRaw, context);
         }
 
-        public static CommentToken Comment(string comment)
+        public static CommentToken Comment(string comment, IReaderContext? context = null)
         {
-            return new CommentToken(comment);
+            return new CommentToken(comment, context);
         }
 
         public static PartialToken Partial(IReaderContext? context = null)
@@ -46,9 +46,9 @@ namespace HandlebarsDotNet.Compiler.Lexer
             return new PartialToken(context);
         }
 
-        public static LayoutToken Layout(string layout)
+        public static LayoutToken Layout(string layout, IReaderContext? context = null)
         {
-            return new LayoutToken(layout);
+            return new LayoutToken(layout, context);
         }
 
         public static StartSubExpressionToken StartSubExpression()

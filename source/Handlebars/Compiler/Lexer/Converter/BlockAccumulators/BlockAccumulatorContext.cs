@@ -34,7 +34,9 @@ namespace HandlebarsDotNet.Compiler
             }
             else if (IsDetachedClosingElement(item, parentItem, out var closingElement))
             {
-                throw new HandlebarsCompilerException($"A closing element '{closingElement}' was found without a matching open element");
+                throw new HandlebarsCompilerException(
+                    $"A closing element '{closingElement}' was found without a matching open element",
+                    GetReaderContext(item));
             }
 
             return context;
@@ -164,6 +166,19 @@ namespace HandlebarsDotNet.Compiler
             {
                 PathExpression pathExpression => pathExpression.Path,
                 HelperExpression helperExpression => helperExpression.HelperName,
+                _ => null,
+            };
+        }
+
+        /// <summary>
+        /// Location of a block's opening or closing tag in the template source, for error reporting.
+        /// </summary>
+        internal static IReaderContext? GetReaderContext(Expression? item)
+        {
+            return UnwrapStatement(item) switch
+            {
+                HelperExpression helperExpression => helperExpression.Context,
+                PathExpression pathExpression => pathExpression.ReaderContext,
                 _ => null,
             };
         }
