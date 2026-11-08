@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Expressions.Shortcuts;
 using HandlebarsDotNet.Collections;
 using HandlebarsDotNet.EqualityComparers;
+using HandlebarsDotNet.ExpressionShortcuts;
 using HandlebarsDotNet.Runtime;
-using static Expressions.Shortcuts.ExpressionShortcuts;
+using static HandlebarsDotNet.ExpressionShortcuts.ExpressionShortcuts;
 
 namespace HandlebarsDotNet.Compiler
 {

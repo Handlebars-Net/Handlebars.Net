@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq.Expressions;
-using Expressions.Shortcuts;
+using HandlebarsDotNet.ExpressionShortcuts;
 
 namespace HandlebarsDotNet.Compiler
 {

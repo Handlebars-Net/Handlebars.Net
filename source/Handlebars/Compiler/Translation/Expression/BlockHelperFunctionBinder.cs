@@ -1,15 +1,14 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using Expressions.Shortcuts;
 using HandlebarsDotNet.Decorators;
+using HandlebarsDotNet.ExpressionShortcuts;
 using HandlebarsDotNet.Helpers;
 using HandlebarsDotNet.Helpers.BlockHelpers;
 using HandlebarsDotNet.PathStructure;
 using HandlebarsDotNet.Polyfills;
 using HandlebarsDotNet.Runtime;
-using static Expressions.Shortcuts.ExpressionShortcuts;
+using static HandlebarsDotNet.ExpressionShortcuts.ExpressionShortcuts;
 
 namespace HandlebarsDotNet.Compiler
 {
