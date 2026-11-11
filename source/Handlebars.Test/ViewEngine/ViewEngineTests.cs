@@ -30,6 +30,26 @@ namespace HandlebarsDotNet.Test.ViewEngine
             //Then the correct output should be rendered
             Assert.Equal("layout start\r\nThis is the body\r\nlayout end", output);
         }
+        // https://github.com/Handlebars-Net/Handlebars.Net/issues/314
+        [Fact]
+        public void CompileErrorInViewShowsSourceLine()
+        {
+            var files = new FakeFileSystem
+            {
+                { "views\\someview.hbs", "<h1>{{title}}</h1>" + Environment.NewLine + "{{#if !visible}}x{{/if}}" }
+            };
+            var handlebars = Handlebars.Create(new HandlebarsConfiguration { FileSystem = files });
+
+            var exception = Assert.Throws<HandlebarsCompilerException>(() =>
+            {
+                handlebars.CompileView("views\\someview.hbs");
+            });
+
+            Assert.Equal(1, exception.Line);
+            Assert.Equal(6, exception.Column);
+            Assert.EndsWith("\n\n{{#if !visible}}x{{/if}}\n      ^", exception.Message);
+        }
+
         [Fact]
         public void CanLoadAWriterViewWithALayout()
         {

@@ -103,7 +103,7 @@ namespace HandlebarsDotNet.Test
 
             Assert.Contains($"Unexpected '{token}' inside an expression", exception.Message);
             Assert.Contains("'#unless'", exception.Message);
-            Assert.EndsWith($"Occured at: {location}", exception.Message);
+            AssertLocation(exception, location);
             Assert.Null(exception.InnerException);
         }
 
@@ -128,7 +128,8 @@ namespace HandlebarsDotNet.Test
             });
 
             Assert.Contains("Reached end of template before block expression '#each' was closed", exception.Message);
-            Assert.EndsWith("Occured at: 1:4", exception.Message);
+            AssertLocation(exception, "1:4");
+            Assert.EndsWith("  {{#each items}}test\n    ^", exception.Message);
         }
 
         // https://github.com/Handlebars-Net/Handlebars.Net/issues/314
@@ -144,7 +145,142 @@ namespace HandlebarsDotNet.Test
             });
 
             Assert.Contains($"A closing element '{closingElement}' was found without a matching open element", exception.Message);
-            Assert.EndsWith($"Occured at: {location}", exception.Message);
+            AssertLocation(exception, location);
+        }
+
+        // https://github.com/Handlebars-Net/Handlebars.Net/issues/314
+        [Fact]
+        public void TestErrorMessageShowsSourceLineWithCaret()
+        {
+            var exception = Assert.Throws<HandlebarsCompilerException>(() =>
+            {
+                Handlebars.Compile("<p>{{#if !File}}yes{{/if}}</p>");
+            });
+
+            Assert.Equal(0, exception.Line);
+            Assert.Equal(9, exception.Column);
+            Assert.EndsWith(
+                "Occured at: 0:9\n\n" +
+                "<p>{{#if !File}}yes{{/if}}</p>\n" +
+                "         ^",
+                exception.Message);
+            Assert.Contains("<p>{{#if !File}}yes{{/if}}</p>", exception.ToString());
+        }
+
+        // https://github.com/Handlebars-Net/Handlebars.Net/issues/314
+        [Fact]
+        public void TestErrorMessageShowsOnlyTheLineContainingTheError()
+        {
+            var nl = Environment.NewLine;
+            var source = "<ul>" + nl + "  {{#each items}}" + nl + "    <li>{{name}}</li>" + nl + "  {{/if}}" + nl + "</ul>";
+
+            var exception = Assert.Throws<HandlebarsCompilerException>(() =>
+            {
+                Handlebars.Compile(source);
+            });
+
+            Assert.Equal(3, exception.Line);
+            Assert.Equal(4, exception.Column);
+            Assert.EndsWith("\n\n  {{/if}}\n    ^", exception.Message);
+            Assert.DoesNotContain("<li>", exception.Message);
+        }
+
+        // https://github.com/Handlebars-Net/Handlebars.Net/issues/314
+        [Theory]
+        [InlineData("\n")]
+        [InlineData("\r\n")]
+        public void TestErrorMessageSourceLineIgnoresLineEndingStyle(string nl)
+        {
+            var source = "first" + nl + "{{#if !x}}{{/if}}" + nl + "last";
+
+            var exception = Assert.Throws<HandlebarsCompilerException>(() =>
+            {
+                Handlebars.Compile(source);
+            });
+
+            Assert.EndsWith("\n\n{{#if !x}}{{/if}}\n      ^", exception.Message);
+            Assert.DoesNotContain("first", exception.Message);
+            Assert.DoesNotContain("last", exception.Message);
+        }
+
+        // https://github.com/Handlebars-Net/Handlebars.Net/issues/314
+        [Fact]
+        public void TestErrorMessageCaretKeepsTabsAligned()
+        {
+            var exception = Assert.Throws<HandlebarsCompilerException>(() =>
+            {
+                Handlebars.Compile("\t\t{{#if !x}}{{/if}}");
+            });
+
+            Assert.EndsWith("\n\n\t\t{{#if !x}}{{/if}}\n\t\t      ^", exception.Message);
+        }
+
+        // https://github.com/Handlebars-Net/Handlebars.Net/issues/314
+        [Fact]
+        public void TestErrorMessageTruncatesLongSourceLines()
+        {
+            var padding = new string('a', 500);
+            var source = padding + "{{#if !x}}{{/if}}" + padding;
+
+            var exception = Assert.Throws<HandlebarsCompilerException>(() =>
+            {
+                Handlebars.Compile(source);
+            });
+
+            var hintLines = exception.Message.Substring(exception.Message.IndexOf("\n\n", exception.Message.IndexOf("Occured at", StringComparison.Ordinal), StringComparison.Ordinal) + 2).Split('\n');
+            Assert.Equal(2, hintLines.Length);
+            Assert.StartsWith("...", hintLines[0]);
+            Assert.EndsWith("...", hintLines[0]);
+            Assert.True(hintLines[0].Length < 200);
+            var caret = hintLines[1].Length - 1;
+            Assert.Equal('^', hintLines[1][caret]);
+            Assert.Equal("!x}}", hintLines[0].Substring(caret, 4));
+        }
+
+        // https://github.com/Handlebars-Net/Handlebars.Net/issues/314
+        [Fact]
+        public void TestParserErrorShowsSourceLine()
+        {
+            var exception = Assert.Throws<HandlebarsParserException>(() =>
+            {
+                Handlebars.Compile("text {{!-- unterminated comment");
+            });
+
+            Assert.NotNull(exception.Line);
+            Assert.NotNull(exception.Column);
+            Assert.Contains("\n\ntext {{!-- unterminated comment\n", exception.Message);
+            Assert.EndsWith("^", exception.Message);
+        }
+
+        [Fact]
+        public void TestErrorWithoutLocationHasNoSourceLine()
+        {
+            var exception = Assert.Throws<HandlebarsCompilerException>(() =>
+            {
+                Handlebars.Compile("before {{> }} after");
+            });
+
+            Assert.Null(exception.Line);
+            Assert.Null(exception.Column);
+            Assert.Equal("A partial must have a name", exception.Message);
+        }
+
+        [Fact]
+        public void TestExceptionsCreatedByCallersHaveNoLocation()
+        {
+            var exception = new HandlebarsCompilerException("custom");
+
+            Assert.Null(exception.Line);
+            Assert.Null(exception.Column);
+            Assert.Equal("custom", exception.Message);
+        }
+
+        private static void AssertLocation(HandlebarsException exception, string location)
+        {
+            var parts = location.Split(':');
+            Assert.Equal(int.Parse(parts[0]), exception.Line);
+            Assert.Equal(int.Parse(parts[1]), exception.Column);
+            Assert.Contains($"Occured at: {location}\n\n", exception.Message);
         }
 
         // https://github.com/Handlebars-Net/Handlebars.Net/issues/314
