@@ -36,14 +36,14 @@ namespace HandlebarsDotNet
         /// <summary>
         /// Zero-based line in the template source where the error was detected,
         /// or <c>null</c> when the location is not known.
-        /// Matches the line reported in the "Occured at" part of <see cref="Message"/>.
+        /// Matches the line reported in the "Line n, column n." part of <see cref="Message"/>.
         /// </summary>
         public int? Line { get; }
 
         /// <summary>
         /// Zero-based column in the template source where the error was detected,
         /// or <c>null</c> when the location is not known.
-        /// Matches the column reported in the "Occured at" part of <see cref="Message"/>.
+        /// Matches the column reported in the "Line n, column n." part of <see cref="Message"/>.
         /// </summary>
         public int? Column { get; }
 
@@ -65,7 +65,7 @@ namespace HandlebarsDotNet
         {
             if (context == null) return message;
 
-            return $"{message}\n\nOccured at: {context.LineNumber}:{context.CharNumber}";
+            return $"{message}\n\nLine {context.LineNumber}, column {context.CharNumber}.";
         }
     }
 }

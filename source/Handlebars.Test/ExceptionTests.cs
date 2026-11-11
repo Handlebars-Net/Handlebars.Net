@@ -160,7 +160,7 @@ namespace HandlebarsDotNet.Test
             Assert.Equal(0, exception.Line);
             Assert.Equal(9, exception.Column);
             Assert.EndsWith(
-                "Occured at: 0:9\n\n" +
+                "Line 0, column 9.\n\n" +
                 "<p>{{#if !File}}yes{{/if}}</p>\n" +
                 "         ^",
                 exception.Message);
@@ -227,7 +227,7 @@ namespace HandlebarsDotNet.Test
                 Handlebars.Compile(source);
             });
 
-            var hintLines = exception.Message.Substring(exception.Message.IndexOf("\n\n", exception.Message.IndexOf("Occured at", StringComparison.Ordinal), StringComparison.Ordinal) + 2).Split('\n');
+            var hintLines = exception.Message.Substring(exception.Message.IndexOf("\n\n", exception.Message.IndexOf("Line 0, column ", StringComparison.Ordinal), StringComparison.Ordinal) + 2).Split('\n');
             Assert.Equal(2, hintLines.Length);
             Assert.StartsWith("...", hintLines[0]);
             Assert.EndsWith("...", hintLines[0]);
@@ -280,7 +280,7 @@ namespace HandlebarsDotNet.Test
             var parts = location.Split(':');
             Assert.Equal(int.Parse(parts[0]), exception.Line);
             Assert.Equal(int.Parse(parts[1]), exception.Column);
-            Assert.Contains($"Occured at: {location}\n\n", exception.Message);
+            Assert.Contains($"Line {parts[0]}, column {parts[1]}.\n\n", exception.Message);
         }
 
         // https://github.com/Handlebars-Net/Handlebars.Net/issues/314
