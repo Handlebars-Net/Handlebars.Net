@@ -992,6 +992,21 @@ false
         }
 
         [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void BlockParamsNamedLikeContextVariables(IHandlebars handlebars)
+        {
+            // Block params sharing a name with @-variables used to be looked up by the @-variable's slot in a
+            // different dictionary, so whether they resolved depended on the process's string hash seed.
+            var data = new { items = new List<string> { "a", "b" } };
+
+            foreach (var name in new[] { "index", "key", "first", "last", "root", "parent" })
+            {
+                var template = handlebars.Compile($"{{{{#each items as |item {name}|}}}}{{{{{name}}}}}:{{{{item}}}};{{{{/each}}}}");
+
+                Assert.Equal("0:a;1:b;", template(data));
+            }
+        }
+
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
         public void DictionaryWithLastEnumerator(IHandlebars handlebars)
         {
             var source = "{{#each enumerateMe}}{{@last}} {{/each}}";
