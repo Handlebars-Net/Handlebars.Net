@@ -66,6 +66,8 @@ namespace HandlebarsDotNet.Test
         [InlineData("{{^if}}yes{{/if}}", "#if")]
         [InlineData("{{#if a b}}yes{{/if}}", "#if")]
         [InlineData("{{#unless a b}}yes{{/unless}}", "#unless")]
+        [InlineData("{{#if a}}yes{{else if b c}}no{{/if}}", "#if")]
+        [InlineData("{{#if a}}yes{{else unless b c}}no{{/if}}", "#unless")]
         public void TestConditionalBlockWithWrongArgumentCountException(string source, string helper)
         {
             var exception = Assert.Throws<HandlebarsCompilerException>(() =>
