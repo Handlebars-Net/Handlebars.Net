@@ -1222,6 +1222,71 @@ namespace HandlebarsDotNet.Test
             Assert.Equal("D", template(new { value = "z" }));
         }
 
+        // Issue https://github.com/Handlebars-Net/Handlebars.Net/issues/683
+        [Fact]
+        public void ElseWithCustomBlockHelperInvocationChainsUnderIf()
+        {
+            var handlebars = Handlebars.Create();
+            RegisterStringEqualityBlockHelper(handlebars);
+
+            var template = handlebars.Compile(
+                "{{#if a}}A{{else StringEqualityBlockHelper value 'x'}}B{{else}}C{{/if}}");
+
+            Assert.Equal("A", template(new { a = true, value = "x" }));
+            Assert.Equal("B", template(new { a = false, value = "x" }));
+            Assert.Equal("C", template(new { a = false, value = "y" }));
+        }
+
+        // Issue https://github.com/Handlebars-Net/Handlebars.Net/issues/683
+        [Fact]
+        public void ElseWithCustomBlockHelperInvocationChainsUnderUnless()
+        {
+            var handlebars = Handlebars.Create();
+            RegisterStringEqualityBlockHelper(handlebars);
+
+            var template = handlebars.Compile(
+                "{{#unless a}}A{{else StringEqualityBlockHelper value 'x'}}B{{else}}C{{/unless}}");
+
+            Assert.Equal("A", template(new { a = false, value = "x" }));
+            Assert.Equal("B", template(new { a = true, value = "x" }));
+            Assert.Equal("C", template(new { a = true, value = "y" }));
+        }
+
+        // Issue https://github.com/Handlebars-Net/Handlebars.Net/issues/683
+        [Fact]
+        public void ElseWithCustomBlockHelperInvocationUnderIfKeepsItsCondition()
+        {
+            var handlebars = Handlebars.Create();
+            RegisterStringEqualityBlockHelper(handlebars);
+
+            var template = handlebars.Compile(
+                "{{#if a}}A{{else StringEqualityBlockHelper value 'y'}}B{{/if}}");
+
+            Assert.Equal("", template(new { a = false, value = "x" }));
+            Assert.Equal("B", template(new { a = false, value = "y" }));
+        }
+
+        [Fact]
+        public void ElseUnlessChainsUnderIf()
+        {
+            var handlebars = Handlebars.Create();
+            var template = handlebars.Compile("{{#if a}}A{{else unless b}}B{{else}}C{{/if}}");
+
+            Assert.Equal("A", template(new { a = true, b = false }));
+            Assert.Equal("B", template(new { a = false, b = false }));
+            Assert.Equal("C", template(new { a = false, b = true }));
+        }
+
+        // Issue https://github.com/Handlebars-Net/Handlebars.Net/issues/683
+        [Fact]
+        public void ElseWithSingleArgumentBlockHelperUnderIfIsNotTreatedAsElseIf()
+        {
+            var handlebars = Handlebars.Create();
+            var template = handlebars.Compile("{{#if a}}A{{else with b}}{{c}}{{/if}}");
+
+            Assert.Equal("X", template(new { a = false, b = new { c = "X" }, c = "outer" }));
+        }
+
         public interface Issue601_IBaseData
         {
             DateTime DateTimeUtc { get; }

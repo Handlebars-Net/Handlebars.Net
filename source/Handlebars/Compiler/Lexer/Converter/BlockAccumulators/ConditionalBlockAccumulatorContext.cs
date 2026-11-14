@@ -18,8 +18,9 @@ namespace HandlebarsDotNet.Compiler
         public sealed override string BlockName { get; protected set; }
 
         // "else if"/"else unless" is already resolved into a flat chain of conditions below;
-        // it must not also be desugared into a nested block by BlockAccumulator.
-        internal override bool HandlesChainedElseInternally => true;
+        // it must not also be desugared into a nested block by BlockAccumulator. Any other
+        // "else name ..." is left to BlockAccumulator.
+        internal override bool HandlesChainedElse(Expression item) => IsElseIfBlock(item);
 
         public ConditionalBlockAccumulatorContext(Expression startingNode)
             : base(startingNode)
@@ -68,41 +69,31 @@ namespace HandlebarsDotNet.Compiler
             }
         }
 
-        public override bool IsClosingElement(Expression item)
-        {
-            if (IsClosingNode(item))
-            {
-                if (_currentCondition != null)
-                {
-                    _conditionalBlock.Add(Expression.IfThen(_currentCondition, SinglifyExpressions(_bodyBuffer)));
-                }
-                else
-                {
-                    var lastCondition = _conditionalBlock.Last();
-                    _conditionalBlock[_conditionalBlock.Count - 1] = Expression.IfThenElse(
-                        lastCondition.Test,
-                        lastCondition.IfTrue,
-                        SinglifyExpressions(_bodyBuffer));
-                }
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
+        public override bool IsClosingElement(Expression item) => IsClosingNode(item);
 
         public override Expression? AccumulatedBlock
         {
             get
             {
-                ConditionalExpression? singleConditional = null;
-                foreach (var condition in _conditionalBlock.AsEnumerable().Reverse())
+                // The last branch is still in the buffer here: a chained "{{else name ...}}" desugared
+                // by BlockAccumulator ends this block without passing the closing tag to IsClosingElement.
+                var conditions = new List<ConditionalExpression>(_conditionalBlock);
+                Expression? singleConditional = null;
+                if (_currentCondition != null)
+                {
+                    conditions.Add(Expression.IfThen(_currentCondition, SinglifyExpressions(_bodyBuffer)));
+                }
+                else
+                {
+                    singleConditional = SinglifyExpressions(_bodyBuffer);
+                }
+
+                foreach (var condition in conditions.AsEnumerable().Reverse())
                 {
                     singleConditional = Expression.IfThenElse(
                         condition.Test,
                         condition.IfTrue,
-                        (Expression?)singleConditional ?? condition.IfFalse);
+                        singleConditional ?? condition.IfFalse);
                 }
                 return singleConditional;
             }
@@ -117,16 +108,19 @@ namespace HandlebarsDotNet.Compiler
         private bool IsElseIfBlock(Expression item)
         {
             item = UnwrapStatement(item);
-            return IsElseBlock(item) && ((HelperExpression)item).Arguments.Count() == 2;
+            return IsElseBlock(item)
+                   && ((HelperExpression)item).Arguments.FirstOrDefault() is PathExpression elsePath
+                   && ValidHelperNames.Contains(elsePath.Path);
         }
 
         private Expression GetElseIfTestExpression(Expression item)
         {
             item = UnwrapStatement(item);
             var helperExpression = (HelperExpression)item;
-            var elseBlockName = helperExpression.Arguments.First() is PathExpression elsePath ? elsePath.Path : BlockName;
+            var elseBlockName = ((PathExpression)helperExpression.Arguments.First()).Path;
             var (value, hashParameters) = UnwrapBoolishHelperArguments(elseBlockName, helperExpression.Arguments.Skip(1), helperExpression.Context);
-            return HandlebarsExpression.Boolish(value, hashParameters);
+            var argument = HandlebarsExpression.Boolish(value, hashParameters);
+            return elseBlockName == "unless" ? Expression.Not(argument) : argument;
         }
 
         private bool IsClosingNode(Expression item)
