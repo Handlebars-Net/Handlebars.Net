@@ -467,6 +467,29 @@ public void LegacyStandaloneCaret()
 }
 ```
 
+#### `LegacyInlinePartialScoping`
+By default an inline partial (`{{#*inline}}`) declared inside a block (`{{#with}}`, `{{#each}}`, `{{#> layout}}`, a custom block helper) or inside an included partial is visible only in that block and its children, as in Handlebarsjs. After the block it can no longer be called, and an outer partial with the same name is visible again. Calling it after the block throws `Referenced partial name '…' could not be resolved` (or produces `MissingPartialTemplateHandler` output if a handler is configured).
+If `true`, restores the earlier Handlebars.Net behavior where such partials stay registered for the rest of the enclosing template, including partials declared inside an included partial (`{{> macros}}{{> button}}`).
+Use only as a temporary escape hatch; the long-term fix is to declare shared inline partials at the top level of the template, or register them with `RegisterTemplate`.
+
+##### Areas
+- `Compile-time`
+
+##### Example
+```c#
+[Fact]
+public void LegacyInlinePartialScoping()
+{
+    var handlebars = Handlebars.Create();
+    handlebars.Configuration.Compatibility.LegacyInlinePartialScoping = true;
+
+    var template = handlebars.Compile(
+        "{{#*inline \"p\"}}outer{{/inline}}{{#with .}}{{#*inline \"p\"}}inner{{/inline}}{{> p}}{{/with}} {{> p}}");
+
+    Assert.Equal("inner inner", template(new { })); // "inner outer" with the default behavior
+}
+```
+
 #### HtmlEncoder
 Used to switch between the legacy Handlebars.Net and the canonical Handlebars rules (or a custom implementation).\
 For Handlebars.Net 2.x.x `HtmlEncoderLegacy` is the default.
