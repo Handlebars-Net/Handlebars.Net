@@ -128,13 +128,39 @@ namespace HandlebarsDotNet.Test
                 handlebars.Compile("{{#if a}}A{{else}}B{{else}}C{{/if}}"));
         }
 
-        [Fact]
-        public void ElseWithOnlyANameStillRendersAsPlainElse()
+        // A bare name after "else" (including a condition-less "{{else if}}") has always rendered as
+        // a plain "{{else}}"; that is kept so existing templates keep compiling.
+        [Theory]
+        [InlineData("{{#if a}}A{{else ifNot}}B{{/if}}")]
+        [InlineData("{{#if a}}A{{else if}}B{{/if}}")]
+        [InlineData("{{#if a}}A{{else unless}}B{{/if}}")]
+        public void ElseWithOnlyANameStillRendersAsPlainElse(string source)
         {
-            var template = CreateWithHelpers().Compile("{{#if a}}A{{else ifNot}}B{{/if}}");
+            var template = CreateWithHelpers().Compile(source);
 
             Assert.Equal("A", template(new { a = true }));
             Assert.Equal("B", template(new { a = false }));
+        }
+
+        [Theory]
+        [InlineData(false, false, "A")]
+        [InlineData(true, false, "B")]
+        [InlineData(true, true, "C")]
+        public void UnlessChainsToElseUnless(bool a, bool b, string expected)
+        {
+            var template = CreateWithHelpers().Compile("{{#unless a}}A{{else unless b}}B{{else}}C{{/unless}}");
+
+            Assert.Equal(expected, template(new { a, b }));
+        }
+
+        [Theory]
+        [InlineData(false, "x", "B")]
+        [InlineData(false, "y", "C")]
+        public void ChainedCustomBlockHelperUnderIfSupportsWhitespaceControl(bool a, string b, string expected)
+        {
+            var template = CreateWithHelpers().Compile("{{#if a~}} A {{~else ifEq b \"x\"~}} B {{~else~}} C {{~/if}}");
+
+            Assert.Equal(expected, template(new { a, b }));
         }
     }
 }
