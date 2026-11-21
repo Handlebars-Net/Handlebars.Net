@@ -30,6 +30,64 @@ namespace HandlebarsDotNet.Test
             Assert.Equal("Hello,\n- Erik\n- Helen", result);
         }
 
+        // https://github.com/Handlebars-Net/Handlebars.Net/issues/685
+        [Fact]
+        public void IteratorWithItemsOfDifferentTypes()
+        {
+            var source = "{{#each items}}[{{name}}]{{/each}}";
+            var template = Handlebars.Create().Compile(source);
+            var data = new
+            {
+                items = new object[]
+                {
+                    new Dictionary<string, object> { ["name"] = "Erik" },
+                    42,
+                    new { name = "Helen" },
+                    "text",
+                    new Dictionary<string, object> { ["name"] = "Ann" }
+                }
+            };
+            var result = template(data);
+            Assert.Equal("[Erik][][Helen][][Ann]", result);
+        }
+
+        [Fact]
+        public void IteratorWithNumberBeforeDictionaryItem()
+        {
+            var source = "{{#each items}}[{{name}}]{{/each}}";
+            var template = Handlebars.Create().Compile(source);
+            var data = new
+            {
+                items = new List<object?>
+                {
+                    42,
+                    null,
+                    new Dictionary<string, object> { ["name"] = "Erik" }
+                }
+            };
+            var result = template(data);
+            Assert.Equal("[][][Erik]", result);
+        }
+
+        [Fact]
+        public void ObjectIteratorWithValuesOfDifferentTypes()
+        {
+            var source = "{{#each items}}[{{name}}]{{/each}}";
+            var template = Handlebars.Create().Compile(source);
+            var data = new
+            {
+                items = new Dictionary<string, object>
+                {
+                    ["a"] = 42,
+                    ["b"] = new Dictionary<string, object> { ["name"] = "Erik" },
+                    ["c"] = new List<object> { 1 },
+                    ["d"] = new { name = "Helen" }
+                }
+            };
+            var result = template(data);
+            Assert.Equal("[][Erik][][Helen]", result);
+        }
+
         [Fact]
         public void EmptyElementTemplate()
         {
