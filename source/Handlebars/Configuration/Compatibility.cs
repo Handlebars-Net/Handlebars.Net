@@ -31,5 +31,16 @@ namespace HandlebarsDotNet
         /// <para>Intended only as a temporary escape hatch for templates that depend on the old behavior.</para>
         /// </summary>
         public bool LegacyStandaloneCaretBehavior { get; set; } = false;
+
+        /// <summary>
+        /// If <see langword="true"/> limits an inline partial (<c>{{#*inline}}</c>) declared inside a block to that block, as in Handlebarsjs.
+        /// <para>The partial is visible in the declaring block and its children only; once the block has rendered it can no longer be
+        /// called, and an outer partial with the same name becomes visible again:
+        /// <c>{{#*inline "p"}}outer{{/inline}}{{#with .}}{{#*inline "p"}}inner{{/inline}}{{> p}}{{/with}} {{> p}}</c> renders <c>inner outer</c>.</para>
+        /// <para>By default (<see langword="false"/>) the earlier Handlebars.Net behavior is kept: inline partials declared inside a block
+        /// (or inside a partial) stay registered on the enclosing scope after it ends, so the template above renders <c>inner inner</c>.</para>
+        /// <para>Templates that call a block's inline partial after the block will throw "could not be resolved" when this is enabled.</para>
+        /// </summary>
+        public bool BlockScopedInlinePartials { get; set; } = false;
     }
 }

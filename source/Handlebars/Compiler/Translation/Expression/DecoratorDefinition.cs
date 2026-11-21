@@ -51,6 +51,8 @@ namespace HandlebarsDotNet.Compiler
                     f(writer, bindingContext, current(writer, bindingContext, function));
             }
 
+            if (!context.Configuration.Compatibility.BlockScopedInlinePartials) return decorator;
+
             // Inline partials ({{#*inline}}) declared by a block's decorators are only visible
             // while that block renders (handlebars.js semantics): open a partials scope on the
             // frame before the decorators run and restore the previous set once the decorated
