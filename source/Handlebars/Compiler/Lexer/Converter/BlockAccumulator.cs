@@ -47,8 +47,8 @@ namespace HandlebarsDotNet.Compiler
             {
                 var item = (Expression)enumerator.Current;
 
-                if (!context.HandlesChainedElseInternally
-                    && BlockAccumulatorContext.TryGetChainedElseInvocation(item, out var invocation))
+                if (BlockAccumulatorContext.TryGetChainedElseInvocation(item, out var invocation)
+                    && !context.HandlesChainedElseInternally(item))
                 {
                     return AccumulateChainedElse(item, context, invocation, enumerator);
                 }
