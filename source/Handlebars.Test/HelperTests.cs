@@ -321,7 +321,28 @@ namespace HandlebarsDotNet.Test
 
             Assert.Equal(expected, output);
         }
-        
+
+        [Theory]
+        [InlineData("{{echo \"say \\\"hi\\\"\"}}", "say \"hi\"")]   // escaped delimiter is unescaped
+        [InlineData("{{echo 'it\\'s'}}", "it's")]                  // escaped single-quote delimiter
+        [InlineData("{{echo \"a\\nb\"}}", "a\\nb")]                // non-delimiter escape keeps the backslash
+        [InlineData("{{echo 'a\"b'}}", "a\"b")]                    // other quote kind is not a delimiter
+        [InlineData("{{echo 42}}", "42")]                          // non-delimited literal ends at '}'
+        [InlineData("{{echo (echo -7)}}", "-7")]                   // non-delimited literal ends at ')'
+        [InlineData("{{echo 5 }}", "5")]                           // non-delimited literal ends at ' '
+        public void HelperLiteralArgumentsAreParsed(string source, string expected)
+        {
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterHelper("echo", (writer, context, arguments) =>
+            {
+                writer.WriteSafeString(arguments[0]?.ToString());
+            });
+
+            var output = handlebars.Compile(source)(null);
+
+            Assert.Equal(expected, output);
+        }
+
         [Theory]
         [InlineData("[$lateHelper]")]
         [InlineData("[late.Helper]")]

@@ -14,6 +14,19 @@ namespace HandlebarsDotNet.Compiler
     {
         public static TemplateDelegate Compile(ExtendedStringReader source, CompilationContext compilationContext)
         {
+            try
+            {
+                return CompileTemplate(source, compilationContext);
+            }
+            catch (HandlebarsException exception)
+            {
+                SourceHint.Attach(exception, source);
+                throw;
+            }
+        }
+
+        private static TemplateDelegate CompileTemplate(ExtendedStringReader source, CompilationContext compilationContext)
+        {
             var configuration = compilationContext.Configuration;
             var createdFeatures = configuration.Features;
             for (var index = 0; index < createdFeatures.Count; index++)
@@ -47,18 +60,27 @@ namespace HandlebarsDotNet.Compiler
         {
             var configuration = compilationContext.Configuration;
             IEnumerable<object> tokens;
-            using (var sr = readerFactoryFactory(configuration, templatePath))
+            ExtendedStringReader? reader = null;
+            TemplateDelegate compiledView;
+            IReadOnlyList<DecoratorDefinition> decorators;
+            try
             {
-                using (var reader = new ExtendedStringReader(sr))
+                using (var sr = readerFactoryFactory(configuration, templatePath))
                 {
+                    reader = new ExtendedStringReader(sr);
                     tokens = Tokenizer.Tokenize(reader).ToArray();
                 }
+
+                var expressions = ExpressionBuilder.ConvertTokensToExpressions(tokens, configuration);
+                compiledView = FunctionBuilder.Compile(expressions, compilationContext, out decorators);
+            }
+            catch (HandlebarsException exception) when (reader != null)
+            {
+                SourceHint.Attach(exception, reader);
+                throw;
             }
 
             var layoutToken = tokens.OfType<LayoutToken>().SingleOrDefault();
-            
-            var expressions = ExpressionBuilder.ConvertTokensToExpressions(tokens, configuration);
-            var compiledView = FunctionBuilder.Compile(expressions, compilationContext, out var decorators);
             if (decorators.Count > 0)
             {
                 var a1 = compiledView;

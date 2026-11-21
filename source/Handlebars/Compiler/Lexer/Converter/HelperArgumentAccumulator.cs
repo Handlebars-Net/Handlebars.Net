@@ -33,7 +33,8 @@ namespace HandlebarsDotNet.Compiler
                             helper.HelperName,
                             helper.IsBlock,
                             helperArguments,
-                            helper.IsRaw);
+                            helper.IsRaw,
+                            helper.Context);
                         yield return enumerator.Current!;
                         break;
                     }
@@ -46,7 +47,8 @@ namespace HandlebarsDotNet.Compiler
                                 path.Path,
                                 false,
                                 helperArguments,
-                                ((EndExpressionToken?) enumerator.Current)?.IsRaw ?? false);
+                                ((EndExpressionToken?) enumerator.Current)?.IsRaw ?? false,
+                                path.ReaderContext);
                             yield return enumerator.Current!;
                         }
                         else

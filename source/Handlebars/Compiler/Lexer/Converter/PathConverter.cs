@@ -25,7 +25,7 @@ namespace HandlebarsDotNet.Compiler
             {
                 if (item is WordExpressionToken wordExpressionToken)
                 {
-                    yield return HandlebarsExpression.Path(wordExpressionToken.Value);
+                    yield return HandlebarsExpression.Path(wordExpressionToken.Value, wordExpressionToken.Context);
                 }
                 else
                 {
