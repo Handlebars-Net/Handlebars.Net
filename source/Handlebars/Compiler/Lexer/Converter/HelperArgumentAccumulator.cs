@@ -29,12 +29,12 @@ namespace HandlebarsDotNet.Compiler
                     case HelperExpression helper:
                     {
                         var helperArguments = AccumulateArguments(enumerator);
-                        yield return HandlebarsExpression.Helper(
+                        yield return new HelperExpression(
                             helper.HelperName,
                             helper.IsBlock,
                             helperArguments,
                             helper.IsRaw,
-                            helper.Context);
+                            helper.Context) { IsStandaloneCaret = helper.IsStandaloneCaret };
                         yield return enumerator.Current!;
                         break;
                     }
