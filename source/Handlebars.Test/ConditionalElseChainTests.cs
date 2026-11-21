@@ -142,6 +142,16 @@ namespace HandlebarsDotNet.Test
             Assert.Equal("B", template(new { a = false }));
         }
 
+        // Case contributed in https://github.com/Handlebars-Net/Handlebars.Net/pull/684
+        [Fact]
+        public void IfChainsToBuiltInWithHelper()
+        {
+            var template = CreateWithHelpers().Compile("{{#if a}}A{{else with b}}{{c}}{{/if}}");
+
+            Assert.Equal("A", template(new { a = true, b = new { c = "X" }, c = "outer" }));
+            Assert.Equal("X", template(new { a = false, b = new { c = "X" }, c = "outer" }));
+        }
+
         [Theory]
         [InlineData(false, false, "A")]
         [InlineData(true, false, "B")]
