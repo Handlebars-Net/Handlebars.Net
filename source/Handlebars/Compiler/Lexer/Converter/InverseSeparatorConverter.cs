@@ -38,7 +38,7 @@ namespace HandlebarsDotNet.Compiler
                     && word.Value == "^"
                     && items[index + 2] is EndExpressionToken)
                 {
-                    yield return HandlebarsExpression.Helper("else", false, false, word.Context);
+                    yield return new HelperExpression("else", false, false, word.Context) { IsStandaloneCaret = true };
                     index++;
                 }
             }

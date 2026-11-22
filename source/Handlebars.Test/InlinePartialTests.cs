@@ -486,18 +486,25 @@ namespace HandlebarsDotNet.Test
             Assert.Equal("Hello Pete", result4);
         }
 
-        // Compatibility.BlockScopedInlinePartials (opt-in) — https://github.com/Handlebars-Net/Handlebars.Net/issues/673
-        private static IHandlebars CreateWithBlockScopedInlinePartials()
+        // Inline partial scoping (handlebars.js semantics by default; Compatibility.BlockScopedInlinePartials = false opts out)
+        // https://github.com/Handlebars-Net/Handlebars.Net/issues/673, https://github.com/Handlebars-Net/Handlebars.Net/issues/690
+        private static IHandlebars CreateWithLegacyInlinePartialScoping()
         {
             var handlebars = Handlebars.Create();
-            handlebars.Configuration.Compatibility.BlockScopedInlinePartials = true;
+            handlebars.Configuration.Compatibility.BlockScopedInlinePartials = false;
             return handlebars;
         }
 
         [Fact]
-        public void InlinePartialInBlockStaysRegisteredAfterBlockByDefault()
+        public void BlockScopedInlinePartialsIsDefaultBehavior()
         {
-            var handlebars = Handlebars.Create();
+            Assert.True(new HandlebarsConfiguration().Compatibility.BlockScopedInlinePartials);
+        }
+
+        [Fact]
+        public void InlinePartialInBlockStaysRegisteredAfterBlockWithLegacyScoping()
+        {
+            var handlebars = CreateWithLegacyInlinePartialScoping();
             var template = handlebars.Compile(
                 "{{#*inline \"myPartial\"}}outer{{/inline}}" +
                 "{{#with .}}{{#*inline \"myPartial\"}}inner{{/inline}}{{> myPartial}}{{/with}} " +
@@ -510,9 +517,9 @@ namespace HandlebarsDotNet.Test
         }
 
         [Fact]
-        public void InlinePartialsDeclaredInIncludedPartialRemainAvailableByDefault()
+        public void InlinePartialsDeclaredInIncludedPartialRemainAvailableWithLegacyScoping()
         {
-            var handlebars = Handlebars.Create();
+            var handlebars = CreateWithLegacyInlinePartialScoping();
             handlebars.RegisterTemplate("macros", "{{#*inline \"button\"}}<button>{{label}}</button>{{/inline}}");
 
             var template = handlebars.Compile("{{> macros}}{{> button label=\"OK\"}}");
@@ -520,11 +527,45 @@ namespace HandlebarsDotNet.Test
             Assert.Equal("<button>OK</button>", template(new { }));
         }
 
+        [Fact]
+        public void InlinePartialsDeclaredInIncludedPartialAreScopedToThatPartial()
+        {
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterTemplate("macros", "{{#*inline \"button\"}}<button>{{label}}</button>{{/inline}}");
+
+            var template = handlebars.Compile("{{> macros}}{{> button label=\"OK\"}}");
+
+            var exception = Assert.Throws<HandlebarsRuntimeException>(() => template(new { }));
+            Assert.Contains("'button' could not be resolved", exception.Message);
+        }
+
+        [Fact]
+        public void UnresolvedPartialMessageNamesBlockScopedInlinePartialsOptOut()
+        {
+            var handlebars = Handlebars.Create();
+            var template = handlebars.Compile("{{#with .}}{{#*inline \"myPartial\"}}success{{/inline}}{{/with}}{{> myPartial}}");
+
+            var exception = Assert.Throws<HandlebarsRuntimeException>(() => template(new { }));
+            Assert.Contains("{{#*inline}} inside a block or another partial", exception.Message);
+            Assert.Contains("Configuration.Compatibility.BlockScopedInlinePartials = false", exception.Message);
+        }
+
+        [Fact]
+        public void UnresolvedPartialMessageOmitsOptOutWithLegacyScoping()
+        {
+            var handlebars = CreateWithLegacyInlinePartialScoping();
+            var template = handlebars.Compile("{{> missing}}");
+
+            var exception = Assert.Throws<HandlebarsRuntimeException>(() => template(new { }));
+            Assert.Contains("'missing' could not be resolved", exception.Message);
+            Assert.DoesNotContain("BlockScopedInlinePartials", exception.Message);
+        }
+
         // handlebars.js spec/partials.js: "should define inline partials for block"
         [Fact]
         public void InlinePartialIsScopedToDeclaringBlock()
         {
-            var handlebars = CreateWithBlockScopedInlinePartials();
+            var handlebars = Handlebars.Create();
 
             var inside = handlebars.Compile("{{#with .}}{{#*inline \"myPartial\"}}success{{/inline}}{{> myPartial}}{{/with}}");
             Assert.Equal("success", inside(new { }));
@@ -537,7 +578,7 @@ namespace HandlebarsDotNet.Test
         [Fact]
         public void InlinePartialInBlockOverridesOuterOnlyInsideBlock()
         {
-            var handlebars = CreateWithBlockScopedInlinePartials();
+            var handlebars = Handlebars.Create();
             var template = handlebars.Compile(
                 "{{#*inline \"myPartial\"}}outer{{/inline}}" +
                 "{{#with .}}{{#*inline \"myPartial\"}}inner{{/inline}}{{> myPartial}}{{/with}} " +
@@ -549,7 +590,7 @@ namespace HandlebarsDotNet.Test
         [Fact]
         public void InlinePartialInBlockIsVisibleToNestedBlocks()
         {
-            var handlebars = CreateWithBlockScopedInlinePartials();
+            var handlebars = Handlebars.Create();
             var template = handlebars.Compile(
                 "{{#with .}}{{#*inline \"myPartial\"}}success{{/inline}}" +
                 "{{#with .}}{{#if true}}{{> myPartial}}{{/if}}{{/with}}{{/with}}");
@@ -560,7 +601,7 @@ namespace HandlebarsDotNet.Test
         [Fact]
         public void InlinePartialInEachIsScopedToLoop()
         {
-            var handlebars = CreateWithBlockScopedInlinePartials();
+            var handlebars = Handlebars.Create();
             var template = handlebars.Compile(
                 "{{#*inline \"item\"}}outer{{/inline}}" +
                 "{{#each items}}{{#*inline \"item\"}}[{{.}}]{{/inline}}{{> item}}{{/each}} {{> item}}");
@@ -571,7 +612,7 @@ namespace HandlebarsDotNet.Test
         [Fact]
         public void LastInlinePartialDefinitionInBlockWins()
         {
-            var handlebars = CreateWithBlockScopedInlinePartials();
+            var handlebars = Handlebars.Create();
             var template = handlebars.Compile(
                 "{{#with .}}{{#*inline \"p\"}}first{{/inline}}{{#*inline \"p\"}}second{{/inline}}{{> p}}{{/with}}");
 
@@ -581,7 +622,7 @@ namespace HandlebarsDotNet.Test
         [Fact]
         public void InlinePartialsInBlockWithCustomDecoratorAreScopedToBlock()
         {
-            var handlebars = CreateWithBlockScopedInlinePartials();
+            var handlebars = Handlebars.Create();
             handlebars.RegisterDecorator("noop",
                 (TemplateDelegate function, in DecoratorOptions options, in Context context, in Arguments arguments) => function);
 
@@ -599,7 +640,7 @@ namespace HandlebarsDotNet.Test
         [Fact]
         public void InlinePartialInPartialBlockIsScopedToPartialBlock()
         {
-            var handlebars = CreateWithBlockScopedInlinePartials();
+            var handlebars = Handlebars.Create();
             handlebars.RegisterTemplate("layout", "<{{> content}}>");
 
             var template = handlebars.Compile(
@@ -615,7 +656,7 @@ namespace HandlebarsDotNet.Test
         [Fact]
         public void InlinePartialScopeIsRestoredOnRepeatedRenders()
         {
-            var handlebars = CreateWithBlockScopedInlinePartials();
+            var handlebars = Handlebars.Create();
             var template = handlebars.Compile(
                 "{{#*inline \"p\"}}outer{{/inline}}{{#with .}}{{#*inline \"p\"}}inner{{/inline}}{{> p}}{{/with}}{{> p}}");
 

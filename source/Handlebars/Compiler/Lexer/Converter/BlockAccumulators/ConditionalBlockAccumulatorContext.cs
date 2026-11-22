@@ -71,9 +71,12 @@ namespace HandlebarsDotNet.Compiler
             {
                 if (_currentCondition == null)
                 {
-                    throw new HandlebarsCompilerException(
-                        $"'{{{{else}}}}' cannot follow another '{{{{else}}}}' in the same '{BlockName}' block",
-                        GetReaderContext(item));
+                    var message = $"'{{{{else}}}}' cannot follow another '{{{{else}}}}' in the same '{BlockName}' block";
+                    if (UnwrapStatement(item) is HelperExpression { IsStandaloneCaret: true })
+                    {
+                        message += $". A bare '{{{{^}}}}' is the inverse separator, equivalent to '{{{{else}}}}'; to restore the previous behavior, where it rendered the current context, set Configuration.Compatibility.{nameof(Compatibility.LegacyStandaloneCaretBehavior)} = true";
+                    }
+                    throw new HandlebarsCompilerException(message, GetReaderContext(item));
                 }
 
                 _conditionalBlock.Add(Expression.IfThen(_currentCondition, SinglifyExpressions(_bodyBuffer)));

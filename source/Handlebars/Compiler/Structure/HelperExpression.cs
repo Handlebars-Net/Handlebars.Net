@@ -34,6 +34,12 @@ namespace HandlebarsDotNet.Compiler
 
         public bool IsBlock { get; set; }
 
+        /// <summary>
+        /// <see langword="true"/> for an <c>else</c> marker produced from a bare <c>{{^}}</c> by <see cref="InverseSeparatorConverter"/>,
+        /// so errors about it can point at <see cref="Compatibility.LegacyStandaloneCaretBehavior"/>.
+        /// </summary>
+        public bool IsStandaloneCaret { get; set; }
+
         public IEnumerable<Expression> Arguments { get; }
         public IReaderContext? Context { get; }
     }

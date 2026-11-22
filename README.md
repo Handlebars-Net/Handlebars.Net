@@ -468,10 +468,9 @@ public void LegacyStandaloneCaret()
 ```
 
 #### `BlockScopedInlinePartials`
-If `true`, an inline partial (`{{#*inline}}`) declared inside a block (`{{#with}}`, `{{#each}}`, `{{#> layout}}`, a custom block helper) or inside an included partial is visible only in that block and its children, as in Handlebarsjs. After the block it can no longer be called, and an outer partial with the same name is visible again.
-By default (`false`) the earlier Handlebars.Net behavior is kept: such partials stay registered for the rest of the enclosing template.
-
-Before enabling, move any inline partial you call after its block to the top level of the template, or register it with `RegisterTemplate`. Otherwise those calls throw `Referenced partial name '…' could not be resolved`, or produce `MissingPartialTemplateHandler` output if a handler is configured.
+By default (`true`) an inline partial (`{{#*inline}}`) declared inside a block (`{{#with}}`, `{{#each}}`, `{{#> layout}}`, a custom block helper) or inside an included partial is visible only in that block and its children, as in Handlebarsjs. After the block it can no longer be called, and an outer partial with the same name is visible again. Calling it after the block throws `Referenced partial name '…' could not be resolved` (or produces `MissingPartialTemplateHandler` output if a handler is configured).
+If `false`, restores the earlier Handlebars.Net behavior where such partials stay registered for the rest of the enclosing template, including partials declared inside an included partial (`{{> macros}}{{> button}}`). This was the default up to 2.4.x.
+Use `false` only as a temporary escape hatch; the long-term fix is to declare shared inline partials at the top level of the template, or register them with `RegisterTemplate`.
 
 ##### Areas
 - `Compile-time`
@@ -479,15 +478,15 @@ Before enabling, move any inline partial you call after its block to the top lev
 ##### Example
 ```c#
 [Fact]
-public void BlockScopedInlinePartials()
+public void LegacyInlinePartialScoping()
 {
     var handlebars = Handlebars.Create();
-    handlebars.Configuration.Compatibility.BlockScopedInlinePartials = true;
+    handlebars.Configuration.Compatibility.BlockScopedInlinePartials = false;
 
     var template = handlebars.Compile(
         "{{#*inline \"p\"}}outer{{/inline}}{{#with .}}{{#*inline \"p\"}}inner{{/inline}}{{> p}}{{/with}} {{> p}}");
 
-    Assert.Equal("inner outer", template(new { })); // "inner inner" with the default behavior
+    Assert.Equal("inner inner", template(new { })); // "inner outer" with the default behavior
 }
 ```
 

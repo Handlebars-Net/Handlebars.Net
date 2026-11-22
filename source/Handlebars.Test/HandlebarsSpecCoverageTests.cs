@@ -1024,6 +1024,30 @@ namespace HandlebarsDotNet.Test
             Assert.False(new HandlebarsConfiguration().Compatibility.LegacyStandaloneCaretBehavior);
         }
 
+        // https://github.com/Handlebars-Net/Handlebars.Net/issues/690
+        [Theory]
+        [InlineData("{{#if x}}a{{^}}b{{^}}c{{/if}}")]
+        [InlineData("{{#unless x}}a{{else}}b{{^}}c{{/unless}}")]
+        public void InvertedSection_RepeatedInlineCaretErrorNamesLegacyOptOut(string source)
+        {
+            var exception = Assert.Throws<HandlebarsCompilerException>(() => Handlebars.Create().Compile(source));
+            Assert.Contains("cannot follow another '{{else}}'", exception.Message);
+            Assert.Contains("Configuration.Compatibility.LegacyStandaloneCaretBehavior = true", exception.Message);
+
+            var legacy = Handlebars.Create();
+            legacy.Configuration.Compatibility.LegacyStandaloneCaretBehavior = true;
+            legacy.Compile(source);
+        }
+
+        [Fact]
+        public void InvertedSection_RepeatedElseErrorOmitsCaretOptOut()
+        {
+            var exception = Assert.Throws<HandlebarsCompilerException>(
+                () => Handlebars.Create().Compile("{{#if x}}a{{^}}b{{else}}c{{/if}}"));
+            Assert.Contains("cannot follow another '{{else}}'", exception.Message);
+            Assert.DoesNotContain("LegacyStandaloneCaretBehavior", exception.Message);
+        }
+
         [Fact]
         public void InvertedSection_InlineCaretSyntaxIsLiteralInsideRawBlock()
         {
