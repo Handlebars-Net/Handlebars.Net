@@ -129,7 +129,19 @@ namespace HandlebarsDotNet
         /// </summary>
         internal bool HasFrameHelpers { get; set; }
 
-        public object? Value { get; set; }
+        private object? _value;
+
+        public object? Value
+        {
+            get => _value;
+            set
+            {
+                // Iterators reuse one context for every item. The cached descriptor depends on the
+                // value's type, so it has to be dropped when an item of another type comes in.
+                if (_value?.GetType() != value?.GetType()) Descriptor.Reset();
+                _value = value;
+            }
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BlockParamsValues BlockParams(ChainSegment[] blockParamsVariables) => new BlockParamsValues(this, blockParamsVariables);

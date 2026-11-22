@@ -486,13 +486,19 @@ namespace HandlebarsDotNet.Test
             Assert.Equal("Hello Pete", result4);
         }
 
-        // Inline partial scoping (handlebars.js semantics by default; Compatibility.LegacyInlinePartialScoping opts out)
+        // Inline partial scoping (handlebars.js semantics by default; Compatibility.BlockScopedInlinePartials = false opts out)
         // https://github.com/Handlebars-Net/Handlebars.Net/issues/673, https://github.com/Handlebars-Net/Handlebars.Net/issues/690
         private static IHandlebars CreateWithLegacyInlinePartialScoping()
         {
             var handlebars = Handlebars.Create();
-            handlebars.Configuration.Compatibility.LegacyInlinePartialScoping = true;
+            handlebars.Configuration.Compatibility.BlockScopedInlinePartials = false;
             return handlebars;
+        }
+
+        [Fact]
+        public void BlockScopedInlinePartialsIsDefaultBehavior()
+        {
+            Assert.True(new HandlebarsConfiguration().Compatibility.BlockScopedInlinePartials);
         }
 
         [Fact]
@@ -534,14 +540,14 @@ namespace HandlebarsDotNet.Test
         }
 
         [Fact]
-        public void UnresolvedPartialMessageNamesLegacyInlinePartialScopingOptOut()
+        public void UnresolvedPartialMessageNamesBlockScopedInlinePartialsOptOut()
         {
             var handlebars = Handlebars.Create();
             var template = handlebars.Compile("{{#with .}}{{#*inline \"myPartial\"}}success{{/inline}}{{/with}}{{> myPartial}}");
 
             var exception = Assert.Throws<HandlebarsRuntimeException>(() => template(new { }));
             Assert.Contains("{{#*inline}} inside a block or another partial", exception.Message);
-            Assert.Contains("Configuration.Compatibility.LegacyInlinePartialScoping = true", exception.Message);
+            Assert.Contains("Configuration.Compatibility.BlockScopedInlinePartials = false", exception.Message);
         }
 
         [Fact]
@@ -552,7 +558,7 @@ namespace HandlebarsDotNet.Test
 
             var exception = Assert.Throws<HandlebarsRuntimeException>(() => template(new { }));
             Assert.Contains("'missing' could not be resolved", exception.Message);
-            Assert.DoesNotContain("LegacyInlinePartialScoping", exception.Message);
+            Assert.DoesNotContain("BlockScopedInlinePartials", exception.Message);
         }
 
         // handlebars.js spec/partials.js: "should define inline partials for block"
