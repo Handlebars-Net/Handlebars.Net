@@ -107,7 +107,14 @@ namespace HandlebarsDotNet.Compiler
             if (context.PartialBlockTemplate == null)
             {
                 if (configuration.MissingPartialTemplateHandler == null)
-                    throw new HandlebarsRuntimeException($"Referenced partial name '{partialName}' could not be resolved. If you registered the partial on the static Handlebars class, make sure to also compile and render using the same static class (or register the partial on the IHandlebars instance you are using to compile).");
+                {
+                    var message = $"Referenced partial name '{partialName}' could not be resolved. If you registered the partial on the static Handlebars class, make sure to also compile and render using the same static class (or register the partial on the IHandlebars instance you are using to compile).";
+                    if (configuration.Compatibility.BlockScopedInlinePartials)
+                    {
+                        message += $" If '{partialName}' is declared with {{{{#*inline}}}} inside a block or another partial, it is only visible within that block; move the declaration to the top level of the template, or set Configuration.Compatibility.{nameof(Compatibility.BlockScopedInlinePartials)} = false to restore the previous behavior.";
+                    }
+                    throw new HandlebarsRuntimeException(message);
+                }
                 
                 configuration.MissingPartialTemplateHandler.Handle(configuration, partialName, writer);
                 return;

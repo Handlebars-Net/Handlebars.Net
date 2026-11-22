@@ -12,7 +12,7 @@ namespace HandlebarsDotNet
         /// </summary>
         [Obsolete("@last is supported on Handlebarsjs, so it is always enabled, and the setting should be removed.")]
         public bool SupportLastInObjectIterations { get; set; } = true;
-        
+
         /// <summary>
         /// If <see langword="true"/> enables support for Handlebars.Net helper naming rules.
         /// <para>This enables helper names to be not-valid Handlebars identifiers (e.g. <code>{{ one.two }}</code>)</para>
@@ -33,15 +33,17 @@ namespace HandlebarsDotNet
         public bool LegacyStandaloneCaretBehavior { get; set; } = false;
 
         /// <summary>
-        /// If <see langword="true"/> limits an inline partial (<c>{{#*inline}}</c>) declared inside a block to that block, as in Handlebarsjs.
-        /// <para>The partial is visible in the declaring block and its children only; once the block has rendered it can no longer be
-        /// called, and an outer partial with the same name becomes visible again:
-        /// <c>{{#*inline "p"}}outer{{/inline}}{{#with .}}{{#*inline "p"}}inner{{/inline}}{{> p}}{{/with}} {{> p}}</c> renders <c>inner outer</c>.</para>
-        /// <para>By default (<see langword="false"/>) the earlier Handlebars.Net behavior is kept: inline partials declared inside a block
-        /// (or inside a partial) stay registered on the enclosing scope after it ends, so the template above renders <c>inner inner</c>.</para>
-        /// <para>Templates that call a block's inline partial after the block will throw "could not be resolved" when this is enabled.</para>
+        /// If <see langword="true"/> (the default) limits an inline partial (<c>{{#*inline}}</c>) declared inside a block
+        /// (<c>{{#with}}</c>, <c>{{#each}}</c>, <c>{{#> layout}}</c>, a custom block helper) or inside an included partial
+        /// to that block and its children, as in Handlebarsjs. Once the block has rendered it can no longer be called, and an
+        /// outer partial with the same name becomes visible again:
+        /// <c>{{#*inline "p"}}outer{{/inline}}{{#with .}}{{#*inline "p"}}inner{{/inline}}{{> p}}{{/with}} {{> p}}</c> renders <c>inner outer</c>.
+        /// <para>Set to <see langword="false"/> to restore the earlier Handlebars.Net behavior: such partials stay registered on the
+        /// enclosing scope after the block ends, so the template above renders <c>inner inner</c>, and a partial can declare inline
+        /// partials for its caller to use (<c>{{> macros}}{{> button}}</c>).</para>
+        /// <para>Setting it to <see langword="false"/> is intended only as a temporary escape hatch for templates that depend on the old behavior.</para>
         /// </summary>
-        public bool BlockScopedInlinePartials { get; set; } = false;
+        public bool BlockScopedInlinePartials { get; set; } = true;
 
         /// <summary>
         /// If <see langword="true"/> restores the earlier Handlebars.Net handling of a bare <c>{{else name}}</c>
