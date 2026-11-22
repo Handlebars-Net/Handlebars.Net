@@ -18,7 +18,7 @@ namespace HandlebarsDotNet.Compiler
             BlockAccumulatorContext? context = null;
             if (IsConditionalBlock(item))
             {
-                context = new ConditionalBlockAccumulatorContext(item);
+                context = new ConditionalBlockAccumulatorContext(item, configuration.Compatibility.LegacyBareElseNameBehavior);
             }
             else if (IsPartialBlock(item))
             {

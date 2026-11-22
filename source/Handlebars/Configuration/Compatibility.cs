@@ -44,5 +44,18 @@ namespace HandlebarsDotNet
         /// <para>Setting it to <see langword="false"/> is intended only as a temporary escape hatch for templates that depend on the old behavior.</para>
         /// </summary>
         public bool BlockScopedInlinePartials { get; set; } = true;
+
+        /// <summary>
+        /// If <see langword="true"/> restores the earlier Handlebars.Net handling of a bare <c>{{else name}}</c>
+        /// (nothing after the name) inside <c>{{#if}}</c> / <c>{{#unless}}</c>.
+        /// <para>By default (<see langword="false"/>) it follows Handlebarsjs: <c>{{else name}}</c> is equivalent to
+        /// <c>{{else}}{{#name}}…{{/name}}</c>, so a block helper <c>name</c> is invoked, or else <c>name</c> is resolved as a value:
+        /// <c>{{#if a}}A{{else b}}B{{/if}}</c> renders <c>B</c> only when <c>a</c> is falsy and <c>b</c> is truthy, and iterates when
+        /// <c>b</c> is a list. A bare <c>{{else if}}</c> / <c>{{else unless}}</c> with no condition is a <see cref="HandlebarsCompilerException"/>.</para>
+        /// <para>When <see langword="true"/>, the name is ignored and the branch renders as a plain <c>{{else}}</c>:
+        /// the template above renders <c>B</c> whenever <c>a</c> is falsy.</para>
+        /// <para>Read at compile time. Intended only as a temporary escape hatch for templates that depend on the old behavior.</para>
+        /// </summary>
+        public bool LegacyBareElseNameBehavior { get; set; } = false;
     }
 }
