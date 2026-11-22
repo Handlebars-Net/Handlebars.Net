@@ -80,6 +80,22 @@ namespace HandlebarsDotNet.Test
             Assert.Contains($"{helper} requires exactly one argument", exception.Message);
         }
 
+        // A bare "{{else if}}" / "{{else unless}}" is an error, and the message names the opt-out.
+        // https://github.com/Handlebars-Net/Handlebars.Net/issues/695
+        [Theory]
+        [InlineData("{{#if a}}yes{{else if}}no{{/if}}", "if")]
+        [InlineData("{{#if a}}yes{{else unless}}no{{/if}}", "unless")]
+        [InlineData("{{#unless a}}yes{{else if}}no{{/unless}}", "if")]
+        [InlineData("{{#unless a}}yes{{else unless}}no{{/unless}}", "unless")]
+        public void TestConditionlessElseIfExceptionNamesOptOut(string source, string keyword)
+        {
+            var exception = Assert.Throws<HandlebarsCompilerException>(() => Handlebars.Compile(source));
+
+            Assert.Contains(
+                $"#{keyword} requires exactly one argument. To restore the previous behavior, where a bare '{{{{else {keyword}}}}}' rendered as '{{{{else}}}}', set Configuration.Compatibility.LegacyBareElseNameBehavior = true",
+                exception.Message);
+        }
+
         [Theory]
         [InlineData("{{#if a includeZero=true}}yes{{else}}no{{/if}}", "yes")]
         [InlineData("{{#unless a includeZero=true}}yes{{else}}no{{/unless}}", "no")]

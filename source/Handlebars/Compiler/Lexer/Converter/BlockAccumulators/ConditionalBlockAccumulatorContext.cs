@@ -19,11 +19,15 @@ namespace HandlebarsDotNet.Compiler
 
         private bool _finalBranchClosed;
 
+        private readonly bool _legacyBareElseName;
+
         /// <summary>
         /// "{{else if x}}" is resolved into a flat chain of conditions below, so it must not also be
         /// desugared into a nested block by <see cref="BlockAccumulator"/>. Any other named chain
-        /// ("{{else unless x}}", "{{else customHelper a b}}") is left to that generic desugaring,
-        /// which nests the named block helper inside this block's inverse, as handlebars.js does.
+        /// ("{{else unless x}}", "{{else customHelper a b}}", and a bare "{{else name}}") is left to that
+        /// generic desugaring, which nests the named block helper inside this block's inverse, as handlebars.js does.
+        /// With <see cref="Compatibility.LegacyBareElseNameBehavior"/> a bare "{{else name}}" is kept here
+        /// and renders as a plain "{{else}}".
         /// </summary>
         internal override bool HandlesChainedElseInternally(Expression elseItem)
         {
@@ -31,17 +35,19 @@ namespace HandlebarsDotNet.Compiler
             using var arguments = helperExpression.Arguments.GetEnumerator();
             if (!arguments.MoveNext()) return true;
 
-            var first = arguments.Current;
+            // A non-path first argument ("{{else "x" b}}") keeps the earlier "else if" on the remaining arguments.
+            if (!(arguments.Current is PathExpression path)) return true;
 
-            // "{{else name}}" with nothing after the name has always rendered as a plain "{{else}}".
-            if (!arguments.MoveNext()) return true;
+            if (string.Equals(path.Path, "if", StringComparison.OrdinalIgnoreCase)) return true;
 
-            return !(first is PathExpression path) || string.Equals(path.Path, "if", StringComparison.OrdinalIgnoreCase);
+            // "{{else name}}" with nothing after the name renders as a plain "{{else}}" in legacy mode.
+            return _legacyBareElseName && !arguments.MoveNext();
         }
 
-        public ConditionalBlockAccumulatorContext(Expression startingNode)
+        public ConditionalBlockAccumulatorContext(Expression startingNode, bool legacyBareElseName = false)
             : base(startingNode)
         {
+            _legacyBareElseName = legacyBareElseName;
             startingNode = UnwrapStatement(startingNode);
             var helperExpression = (HelperExpression)startingNode;
             var testType = helperExpression.HelperName[0] == '#' ? TestType.Direct : TestType.Reverse;
@@ -75,6 +81,8 @@ namespace HandlebarsDotNet.Compiler
                         $"'{{{{else}}}}' cannot follow another '{{{{else}}}}' in the same '{BlockName}' block",
                         GetReaderContext(item));
                 }
+
+                if (!_legacyBareElseName) ThrowIfConditionlessElseIf(item);
 
                 _conditionalBlock.Add(Expression.IfThen(_currentCondition, SinglifyExpressions(_bodyBuffer)));
                 if (IsElseIfBlock(item))
@@ -147,6 +155,24 @@ namespace HandlebarsDotNet.Compiler
             return IsElseBlock(item)
                    && ((HelperExpression)item).Arguments.Count() >= 2
                    && HandlesChainedElseInternally(item);
+        }
+
+        /// <summary>
+        /// A bare "{{else if}}" / "{{else unless}}" has no condition. handlebars.js rejects it;
+        /// earlier Handlebars.Net versions rendered it as a plain "{{else}}".
+        /// </summary>
+        private static void ThrowIfConditionlessElseIf(Expression item)
+        {
+            var helperExpression = (HelperExpression)UnwrapStatement(item);
+            using var arguments = helperExpression.Arguments.GetEnumerator();
+            if (!arguments.MoveNext() || !(arguments.Current is PathExpression path) || arguments.MoveNext()) return;
+
+            if (!ValidHelperNames.Contains(path.Path.ToLowerInvariant())) return;
+
+            throw new HandlebarsCompilerException(
+                $"#{path.Path} requires exactly one argument. To restore the previous behavior, where a bare '{{{{else {path.Path}}}}}' rendered as '{{{{else}}}}', " +
+                $"set Configuration.Compatibility.{nameof(Compatibility.LegacyBareElseNameBehavior)} = true",
+                helperExpression.Context);
         }
 
         private Expression GetElseIfTestExpression(Expression item)
