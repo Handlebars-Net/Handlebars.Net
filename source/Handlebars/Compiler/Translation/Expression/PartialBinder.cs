@@ -123,7 +123,7 @@ namespace HandlebarsDotNet.Compiler
             if (!string.IsNullOrEmpty(indent))
             {
                 using var innerWriter = ReusableStringWriter.Get(writer.UnderlyingWriter.FormatProvider);
-                using var textWriter = new EncodedTextWriter(innerWriter, configuration.TextEncoder, FormatterProvider.Current, true);
+                using var textWriter = new EncodedTextWriter(innerWriter, configuration.TextEncoder, FormatterProvider.Current, writer.SuppressEncoding);
                 context.PartialBlockTemplate(textWriter, context);
                 WriteWithIndent(writer, innerWriter.ToString(), indent);
             }
@@ -196,7 +196,7 @@ namespace HandlebarsDotNet.Compiler
                     if (!string.IsNullOrEmpty(indent))
                     {
                         using var innerWriter = ReusableStringWriter.Get(writer.UnderlyingWriter.FormatProvider);
-                        using var textWriter = new EncodedTextWriter(innerWriter, configuration.TextEncoder, FormatterProvider.Current, true);
+                        using var textWriter = new EncodedTextWriter(innerWriter, configuration.TextEncoder, FormatterProvider.Current, writer.SuppressEncoding);
                         partialBlockTemplate(textWriter, context);
                         WriteWithIndent(writer, innerWriter.ToString(), indent);
                     }
@@ -227,7 +227,7 @@ namespace HandlebarsDotNet.Compiler
                     if (!string.IsNullOrEmpty(indent))
                     {
                         using var innerWriter = ReusableStringWriter.Get(writer.UnderlyingWriter.FormatProvider);
-                        using var textWriter = new EncodedTextWriter(innerWriter, configuration.TextEncoder, FormatterProvider.Current, true);
+                        using var textWriter = new EncodedTextWriter(innerWriter, configuration.TextEncoder, FormatterProvider.Current, writer.SuppressEncoding);
                         partial(textWriter, context);
                         WriteWithIndent(writer, innerWriter.ToString(), indent);
                     }
@@ -261,7 +261,7 @@ namespace HandlebarsDotNet.Compiler
                 if (!string.IsNullOrEmpty(indent))
                 {
                     using var innerWriter = ReusableStringWriter.Get(writer.UnderlyingWriter.FormatProvider);
-                    using (var encodedInner = new EncodedTextWriter(innerWriter, configuration.TextEncoder, FormatterProvider.Current, true))
+                    using (var encodedInner = new EncodedTextWriter(innerWriter, configuration.TextEncoder, FormatterProvider.Current, writer.SuppressEncoding))
                     {
                         using var textWriter = encodedInner.CreateWrapper();
                         configuration.RegisteredTemplates[partialName]!(textWriter, context);
