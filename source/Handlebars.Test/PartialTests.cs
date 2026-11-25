@@ -994,6 +994,52 @@ namespace HandlebarsDotNet.Test
             // Each 2-line partial gets "  " prepended to both lines.
             Assert.Equal("  - A\n    (alpha)  - B\n    (beta)", result);
         }
+
+        [Theory]
+        [InlineData("<div>\n    {{> p}}\n</div>", "[{{v}}]")]
+        [InlineData("{{#> p}}[{{v}}]{{/p}}", "<div>\n    {{> @partial-block}}\n</div>")]
+        [InlineData("{{#> p}}[{{v}}]{{/p}}", "<div>\n    {{> missing}}\n</div>")]
+        public void PartialIndentationKeepsValuesEscaped(string source, string partialSource)
+        {
+            var handlebars = Handlebars.Create();
+
+            using (var reader = new StringReader(partialSource))
+            {
+                handlebars.RegisterTemplate("p", handlebars.Compile(reader));
+            }
+
+            var result = handlebars.Compile(source)(new { v = "<b>&" });
+
+            Assert.Equal("<div>\n    [&lt;b&gt;&amp;]</div>", result);
+        }
+
+        [Fact]
+        public void InlinePartialIndentationKeepsValuesEscaped()
+        {
+            var handlebars = Handlebars.Create();
+            var source = "{{#*inline \"p\"}}[{{v}}]{{/inline}}<div>\n    {{> p}}\n</div>";
+
+            var result = handlebars.Compile(source)(new { v = "<b>&" });
+
+            Assert.Equal("<div>\n    [&lt;b&gt;&amp;]</div>", result);
+        }
+
+        [Fact]
+        public void PartialIndentationKeepsNoEscape()
+        {
+            var handlebars = Handlebars.Create(new HandlebarsConfiguration { NoEscape = true });
+            var source = "<div>\n    {{> p}}\n</div>";
+            var partialSource = "[{{v}}]";
+
+            using (var reader = new StringReader(partialSource))
+            {
+                handlebars.RegisterTemplate("p", handlebars.Compile(reader));
+            }
+
+            var result = handlebars.Compile(source)(new { v = "<b>&" });
+
+            Assert.Equal("<div>\n    [<b>&]</div>", result);
+        }
     }
 }
 
