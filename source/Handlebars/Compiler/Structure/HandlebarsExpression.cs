@@ -27,9 +27,9 @@ namespace HandlebarsDotNet.Compiler
 
         public override bool CanReduce { get; } = false;
 
-        public static HelperExpression Helper(string helperName, bool isBlock, IEnumerable<Expression> arguments, bool isRaw = false)
+        public static HelperExpression Helper(string helperName, bool isBlock, IEnumerable<Expression> arguments, bool isRaw = false, IReaderContext? context = null)
         {
-            return new HelperExpression(helperName, isBlock, arguments, isRaw);
+            return new HelperExpression(helperName, isBlock, arguments, isRaw, context);
         }
 
         public static HelperExpression Helper(string helperName, bool isBlock, bool isRaw = false, IReaderContext? context = null)
@@ -48,9 +48,9 @@ namespace HandlebarsDotNet.Compiler
             return new BlockHelperExpression(helperName, arguments, blockParams, body, inversion, isRaw);
         }
 
-        public static PathExpression Path(string path)
+        public static PathExpression Path(string path, IReaderContext? readerContext = null)
         {
-            return new PathExpression(path);
+            return new PathExpression(path, readerContext);
         }
         
         public static BlockParamsExpression BlockParams(string action, string blockParams)

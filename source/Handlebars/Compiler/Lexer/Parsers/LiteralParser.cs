@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Text;
 using HandlebarsDotNet.Pools;
 
 namespace HandlebarsDotNet.Compiler.Lexer
@@ -52,35 +53,11 @@ namespace HandlebarsDotNet.Compiler.Lexer
                     // Handle escape sequences inside delimited literals (e.g. \" inside "...")
                     if (captureDelimiter && (char)node == '\\')
                     {
-                        reader.Read(); // consume the backslash
-                        var next = reader.Peek();
-                        if (next == -1)
-                        {
-                            throw new HandlebarsParserException("Reached end of template before the expression was closed.", reader.GetContext());
-                        }
-                        var nextChar = (char)next;
-                        // If the escaped character is one of the delimiters, emit the raw char
-                        if (delimiters.Contains(nextChar))
-                        {
-                            reader.Read();
-                            buffer.Append(nextChar);
-                            continue;
-                        }
-                        // Otherwise keep the backslash and let the next iteration handle the char
-                        buffer.Append('\\');
+                        AppendEscapeSequence(reader, buffer, delimiters);
                         continue;
                     }
 
-                    if (delimiters.Contains((char)node))
-                    {
-                        if (captureDelimiter)
-                        {
-                            reader.Read();
-                        }
-                        break;
-                    }
-
-                    if (!captureDelimiter && (char)node == '}')
+                    if (IsEndOfLiteral(reader, (char)node, captureDelimiter, delimiters))
                     {
                         break;
                     }
@@ -90,6 +67,42 @@ namespace HandlebarsDotNet.Compiler.Lexer
 
                 return buffer.ToString();
             }
+        }
+
+        private static void AppendEscapeSequence(ExtendedStringReader reader, StringBuilder buffer, char[] delimiters)
+        {
+            reader.Read(); // consume the backslash
+            var next = reader.Peek();
+            if (next == -1)
+            {
+                throw new HandlebarsParserException("Reached end of template before the expression was closed.", reader.GetContext());
+            }
+
+            var nextChar = (char)next;
+            // If the escaped character is one of the delimiters, emit the raw char
+            if (delimiters.Contains(nextChar))
+            {
+                reader.Read();
+                buffer.Append(nextChar);
+                return;
+            }
+
+            // Otherwise keep the backslash and let the next iteration handle the char
+            buffer.Append('\\');
+        }
+
+        private static bool IsEndOfLiteral(ExtendedStringReader reader, char current, bool captureDelimiter, char[] delimiters)
+        {
+            if (delimiters.Contains(current))
+            {
+                if (captureDelimiter)
+                {
+                    reader.Read();
+                }
+                return true;
+            }
+
+            return !captureDelimiter && current == '}';
         }
     }
 }

@@ -467,6 +467,58 @@ public void LegacyStandaloneCaret()
 }
 ```
 
+#### `BlockScopedInlinePartials`
+By default (`true`) an inline partial (`{{#*inline}}`) declared inside a block (`{{#with}}`, `{{#each}}`, `{{#> layout}}`, a custom block helper) or inside an included partial is visible only in that block and its children, as in Handlebarsjs. After the block it can no longer be called, and an outer partial with the same name is visible again. Calling it after the block throws `Referenced partial name '…' could not be resolved` (or produces `MissingPartialTemplateHandler` output if a handler is configured).
+If `false`, restores the earlier Handlebars.Net behavior where such partials stay registered for the rest of the enclosing template, including partials declared inside an included partial (`{{> macros}}{{> button}}`). This was the default up to 2.4.x.
+Use `false` only as a temporary escape hatch; the long-term fix is to declare shared inline partials at the top level of the template, or register them with `RegisterTemplate`.
+
+##### Areas
+- `Compile-time`
+
+##### Example
+```c#
+[Fact]
+public void LegacyInlinePartialScoping()
+{
+    var handlebars = Handlebars.Create();
+    handlebars.Configuration.Compatibility.BlockScopedInlinePartials = false;
+
+    var template = handlebars.Compile(
+        "{{#*inline \"p\"}}outer{{/inline}}{{#with .}}{{#*inline \"p\"}}inner{{/inline}}{{> p}}{{/with}} {{> p}}");
+
+    Assert.Equal("inner inner", template(new { })); // "inner outer" with the default behavior
+}
+```
+
+#### `LegacyBareElseNameBehavior`
+By default a bare `{{else name}}` (nothing after the name) inside `{{#if}}` / `{{#unless}}` follows Handlebarsjs: it is equivalent to `{{else}}{{#name}}…{{/name}}`. A block helper `name` is invoked; otherwise `name` is resolved as a value, so the branch renders only when it is truthy, and iterates when it is a list. A bare `{{else if}}` / `{{else unless}}` with no condition throws `HandlebarsCompilerException` (`#if requires exactly one argument`).
+If `true`, restores the earlier Handlebars.Net behavior where the name is ignored and the branch renders as a plain `{{else}}`.
+Bare `{{else name}}` under other blocks (`{{#each}}`, custom block helpers) is not affected. Use only as a temporary escape hatch; the long-term fix is usually the missing `if` (`{{else if name}}`) or a plain `{{else}}`.
+
+| Template | Data | Default | `LegacyBareElseNameBehavior = true` |
+|---|---|---|---|
+| `{{#if a}}A{{else isAdmin}}B{{/if}}` | `a = false, isAdmin = false` | *(empty)* | `B` |
+| `{{#if a}}A{{else items}}[{{this}}]{{/if}}` | `a = false, items = [1, 2]` | `[1][2]` | `[` + the outer context + `]` |
+| `{{#if a}}A{{else if}}B{{/if}}` | `a = false` | `HandlebarsCompilerException` | `B` |
+
+##### Areas
+- `Compile-time`
+
+##### Example
+```c#
+[Fact]
+public void LegacyBareElseName()
+{
+    var handlebars = Handlebars.Create();
+    handlebars.Configuration.Compatibility.LegacyBareElseNameBehavior = true;
+
+    var template = handlebars.Compile("{{#if user.isAdmin}}Admin tools{{else user.isModerator}}Moderator tools{{/if}}");
+
+    var user = new { isAdmin = false, isModerator = false };
+    Assert.Equal("Moderator tools", template(new { user })); // "" with the default behavior
+}
+```
+
 #### HtmlEncoder
 Used to switch between the legacy Handlebars.Net and the canonical Handlebars rules (or a custom implementation).\
 For Handlebars.Net 2.x.x `HtmlEncoderLegacy` is the default.

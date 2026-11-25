@@ -8,15 +8,16 @@ namespace HandlebarsDotNet.Compiler.Lexer
         public override Token? Parse(ExtendedStringReader reader)
         {
             if (!IsComment(reader)) return null;
-         
+
+            var context = reader.GetContext();
             Token? token = null;
             var buffer = AccumulateComment(reader, out bool isEscaped).Trim();
             if (buffer.StartsWith("<") && !isEscaped) //syntax for layout is {{!< layoutname }} - i.e. its inside a comment block
             {
-                token = Token.Layout(buffer.Substring(1).Trim());
+                token = Token.Layout(buffer.Substring(1).Trim(), context);
             }
 
-            token = token ?? Token.Comment(buffer);
+            token = token ?? Token.Comment(buffer, context);
             return token;
         }
 

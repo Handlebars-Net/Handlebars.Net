@@ -47,8 +47,8 @@ namespace HandlebarsDotNet.Compiler
             {
                 var item = (Expression)enumerator.Current;
 
-                if (!context.HandlesChainedElseInternally
-                    && BlockAccumulatorContext.TryGetChainedElseInvocation(item, out var invocation))
+                if (BlockAccumulatorContext.TryGetChainedElseInvocation(item, out var invocation)
+                    && !context.HandlesChainedElseInternally(item))
                 {
                     return AccumulateChainedElse(item, context, invocation, enumerator);
                 }
@@ -67,7 +67,9 @@ namespace HandlebarsDotNet.Compiler
                     context.HandleElement(item);
                 }
             }
-            throw new HandlebarsCompilerException($"Reached end of template before block expression '{context.BlockName}' was closed");
+            throw new HandlebarsCompilerException(
+                $"Reached end of template before block expression '{context.BlockName}' was closed",
+                BlockAccumulatorContext.GetReaderContext(parentItem));
         }
 
         /// <summary>

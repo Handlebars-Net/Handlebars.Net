@@ -6,10 +6,13 @@ namespace HandlebarsDotNet.Compiler.Lexer
     {
         private readonly string _comment;
 
-        public CommentToken(string comment)
+        public CommentToken(string comment, IReaderContext? context = null)
         {
             _comment = comment.Trim('-', ' ');
+            Context = context;
         }
+
+        public IReaderContext? Context { get; }
 
         public override TokenType Type
         {

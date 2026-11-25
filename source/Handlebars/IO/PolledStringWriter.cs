@@ -5,7 +5,10 @@ using HandlebarsDotNet.Pools;
 
 namespace HandlebarsDotNet
 {
-    public class ReusableStringWriter : StringWriter
+    // Sealed: the only constructor is private, so no external subclass could ever exist.
+    // Dispose(bool) intentionally does not call base.Dispose: the instance is returned to
+    // the pool for reuse rather than closed.
+    public sealed class ReusableStringWriter : StringWriter
     {
         // Retain up to 32K chars (64KB, below the LOH threshold) so that templates producing
         // typical page-sized output keep their grown StringBuilder across renders. The previous

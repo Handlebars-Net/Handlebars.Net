@@ -35,9 +35,12 @@ deprecated. Don't skip the verification steps below to save time.
 3. **Before creating the release**, confirm the intended commit is actually
    on `master` (`git log --oneline -1 origin/master`) and that CI passed for
    whatever merged it — don't race a merge that's still running checks.
-4. **Bump per semver** based on what's actually in the diff since the last
-   tag: patch for bug fixes only, minor for additive features, major for
-   breaking changes. Regression fixes for bugs introduced after the last
+4. **Pick the version bump with judgement** based on what's actually in the
+   diff since the last tag. A patch release can include bug fixes and small,
+   additive-only public changes (a new option, property or overload). Use a
+   minor version for larger new features, and a major version for breaking
+   changes. This is a judgement call, not a mechanical rule: when it's
+   unclear, recommend a version and let the maintainer decide. Regression fixes for bugs introduced after the last
    release (i.e. the last release itself shipped broken) are still a patch
    bump, not a reason to skip versioning.
 5. **Create and publish in one step** with

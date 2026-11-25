@@ -46,7 +46,11 @@ namespace HandlebarsDotNet.Compiler
 
                 if (endExpression.IsEscaped != startExpression.IsEscaped)
                 {
-                    throw new HandlebarsCompilerException("Starting and ending handlebars do not match", endExpression.Context);
+                    var opening = startExpression.IsRaw ? "{{{{" : startExpression.IsEscaped ? "{{" : "{{{";
+                    var closing = endExpression.IsRaw ? "}}}}" : endExpression.IsEscaped ? "}}" : "}}}";
+                    throw new HandlebarsCompilerException(
+                        $"Starting and ending handlebars do not match: expression opened with '{opening}' was closed with '{closing}'",
+                        endExpression.Context);
                 }
 
                 yield return HandlebarsExpression.Statement(

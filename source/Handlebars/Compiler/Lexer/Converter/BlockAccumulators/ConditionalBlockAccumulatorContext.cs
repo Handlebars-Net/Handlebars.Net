@@ -17,13 +17,37 @@ namespace HandlebarsDotNet.Compiler
 
         public sealed override string BlockName { get; protected set; }
 
-        // "else if"/"else unless" is already resolved into a flat chain of conditions below;
-        // it must not also be desugared into a nested block by BlockAccumulator.
-        internal override bool HandlesChainedElseInternally => true;
+        private bool _finalBranchClosed;
 
-        public ConditionalBlockAccumulatorContext(Expression startingNode)
+        private readonly bool _legacyBareElseName;
+
+        /// <summary>
+        /// "{{else if x}}" is resolved into a flat chain of conditions below, so it must not also be
+        /// desugared into a nested block by <see cref="BlockAccumulator"/>. Any other named chain
+        /// ("{{else unless x}}", "{{else customHelper a b}}", and a bare "{{else name}}") is left to that
+        /// generic desugaring, which nests the named block helper inside this block's inverse, as handlebars.js does.
+        /// With <see cref="Compatibility.LegacyBareElseNameBehavior"/> a bare "{{else name}}" is kept here
+        /// and renders as a plain "{{else}}".
+        /// </summary>
+        internal override bool HandlesChainedElseInternally(Expression elseItem)
+        {
+            var helperExpression = (HelperExpression)UnwrapStatement(elseItem);
+            using var arguments = helperExpression.Arguments.GetEnumerator();
+            if (!arguments.MoveNext()) return true;
+
+            // A non-path first argument ("{{else "x" b}}") keeps the earlier "else if" on the remaining arguments.
+            if (!(arguments.Current is PathExpression path)) return true;
+
+            if (string.Equals(path.Path, "if", StringComparison.OrdinalIgnoreCase)) return true;
+
+            // "{{else name}}" with nothing after the name renders as a plain "{{else}}" in legacy mode.
+            return _legacyBareElseName && !arguments.MoveNext();
+        }
+
+        public ConditionalBlockAccumulatorContext(Expression startingNode, bool legacyBareElseName = false)
             : base(startingNode)
         {
+            _legacyBareElseName = legacyBareElseName;
             startingNode = UnwrapStatement(startingNode);
             var helperExpression = (HelperExpression)startingNode;
             var testType = helperExpression.HelperName[0] == '#' ? TestType.Direct : TestType.Reverse;
@@ -34,7 +58,7 @@ namespace HandlebarsDotNet.Compiler
                 throw new HandlebarsCompilerException($"Tried to convert {BlockName} expression to conditional block", helperExpression.Context);
             }
 
-            var (value, hashParameters) = UnwrapBoolishHelperArguments(helperExpression.Arguments, helperExpression.Context);
+            var (value, hashParameters) = UnwrapBoolishHelperArguments(BlockName, helperExpression.Arguments, helperExpression.Context);
             var argument = HandlebarsExpression.Boolish(value, hashParameters);
 
             _currentCondition = BlockName switch
@@ -51,7 +75,19 @@ namespace HandlebarsDotNet.Compiler
         {
             if (IsElseBlock(item))
             {
-                _conditionalBlock.Add(Expression.IfThen(_currentCondition!, SinglifyExpressions(_bodyBuffer)));
+                if (_currentCondition == null)
+                {
+                    var message = $"'{{{{else}}}}' cannot follow another '{{{{else}}}}' in the same '{BlockName}' block";
+                    if (UnwrapStatement(item) is HelperExpression { IsStandaloneCaret: true })
+                    {
+                        message += $". A bare '{{{{^}}}}' is the inverse separator, equivalent to '{{{{else}}}}'; to restore the previous behavior, where it rendered the current context, set Configuration.Compatibility.{nameof(Compatibility.LegacyStandaloneCaretBehavior)} = true";
+                    }
+                    throw new HandlebarsCompilerException(message, GetReaderContext(item));
+                }
+
+                if (!_legacyBareElseName) ThrowIfConditionlessElseIf(item);
+
+                _conditionalBlock.Add(Expression.IfThen(_currentCondition, SinglifyExpressions(_bodyBuffer)));
                 if (IsElseIfBlock(item))
                 {
                     _currentCondition = GetElseIfTestExpression(item);
@@ -68,27 +104,27 @@ namespace HandlebarsDotNet.Compiler
             }
         }
 
-        public override bool IsClosingElement(Expression item)
+        public override bool IsClosingElement(Expression item) => IsClosingNode(item);
+
+        // Runs once the block is complete: either at its own closing tag, or - when the last
+        // branch was a desugared "{{else name ...}}" nested block - after that nested block,
+        // which consumed the shared closing tag itself.
+        private void CloseFinalBranch()
         {
-            if (IsClosingNode(item))
+            if (_finalBranchClosed) return;
+            _finalBranchClosed = true;
+
+            if (_currentCondition != null)
             {
-                if (_currentCondition != null)
-                {
-                    _conditionalBlock.Add(Expression.IfThen(_currentCondition, SinglifyExpressions(_bodyBuffer)));
-                }
-                else
-                {
-                    var lastCondition = _conditionalBlock.Last();
-                    _conditionalBlock[_conditionalBlock.Count - 1] = Expression.IfThenElse(
-                        lastCondition.Test,
-                        lastCondition.IfTrue,
-                        SinglifyExpressions(_bodyBuffer));
-                }
-                return true;
+                _conditionalBlock.Add(Expression.IfThen(_currentCondition, SinglifyExpressions(_bodyBuffer)));
             }
             else
             {
-                return false;
+                var lastCondition = _conditionalBlock.Last();
+                _conditionalBlock[_conditionalBlock.Count - 1] = Expression.IfThenElse(
+                    lastCondition.Test,
+                    lastCondition.IfTrue,
+                    SinglifyExpressions(_bodyBuffer));
             }
         }
 
@@ -96,6 +132,8 @@ namespace HandlebarsDotNet.Compiler
         {
             get
             {
+                CloseFinalBranch();
+
                 ConditionalExpression? singleConditional = null;
                 foreach (var condition in _conditionalBlock.AsEnumerable().Reverse())
                 {
@@ -117,14 +155,35 @@ namespace HandlebarsDotNet.Compiler
         private bool IsElseIfBlock(Expression item)
         {
             item = UnwrapStatement(item);
-            return IsElseBlock(item) && ((HelperExpression)item).Arguments.Count() == 2;
+            return IsElseBlock(item)
+                   && ((HelperExpression)item).Arguments.Count() >= 2
+                   && HandlesChainedElseInternally(item);
+        }
+
+        /// <summary>
+        /// A bare "{{else if}}" / "{{else unless}}" has no condition. handlebars.js rejects it;
+        /// earlier Handlebars.Net versions rendered it as a plain "{{else}}".
+        /// </summary>
+        private static void ThrowIfConditionlessElseIf(Expression item)
+        {
+            var helperExpression = (HelperExpression)UnwrapStatement(item);
+            using var arguments = helperExpression.Arguments.GetEnumerator();
+            if (!arguments.MoveNext() || !(arguments.Current is PathExpression path) || arguments.MoveNext()) return;
+
+            if (!ValidHelperNames.Contains(path.Path.ToLowerInvariant())) return;
+
+            throw new HandlebarsCompilerException(
+                $"#{path.Path} requires exactly one argument. To restore the previous behavior, where a bare '{{{{else {path.Path}}}}}' rendered as '{{{{else}}}}', " +
+                $"set Configuration.Compatibility.{nameof(Compatibility.LegacyBareElseNameBehavior)} = true",
+                helperExpression.Context);
         }
 
         private Expression GetElseIfTestExpression(Expression item)
         {
             item = UnwrapStatement(item);
             var helperExpression = (HelperExpression)item;
-            var (value, hashParameters) = UnwrapBoolishHelperArguments(helperExpression.Arguments.Skip(1), helperExpression.Context);
+            var elseBlockName = helperExpression.Arguments.First() is PathExpression elsePath ? elsePath.Path : BlockName;
+            var (value, hashParameters) = UnwrapBoolishHelperArguments(elseBlockName, helperExpression.Arguments.Skip(1), helperExpression.Context);
             return HandlebarsExpression.Boolish(value, hashParameters);
         }
 
@@ -144,9 +203,10 @@ namespace HandlebarsDotNet.Compiler
             return expressions.SingleOrDefault() ?? Expression.Empty();
         }
 
-        private static (Expression Value, HashParametersExpression HashParameters) UnwrapBoolishHelperArguments(IEnumerable<Expression> arguments, IReaderContext? context)
+        private static (Expression Value, HashParametersExpression HashParameters) UnwrapBoolishHelperArguments(string blockName, IEnumerable<Expression> arguments, IReaderContext? context)
         {
-            var value = arguments.First();
+            var value = arguments.FirstOrDefault()
+                ?? throw new HandlebarsCompilerException($"#{blockName} requires exactly one argument", context);
             if (arguments.Count() == 1)
             {
                 var blankHashParameters = HandlebarsExpression.HashParametersExpression(new Dictionary<string, Expression>());
@@ -158,7 +218,7 @@ namespace HandlebarsDotNet.Compiler
                 return (value, hashParameters);
             }
 
-            throw new HandlebarsCompilerException("Invalid argument list for conditional block.", context);
+            throw new HandlebarsCompilerException($"#{blockName} requires exactly one argument", context);
 
         }
     }

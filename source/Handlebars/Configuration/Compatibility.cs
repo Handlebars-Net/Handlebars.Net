@@ -12,7 +12,7 @@ namespace HandlebarsDotNet
         /// </summary>
         [Obsolete("@last is supported on Handlebarsjs, so it is always enabled, and the setting should be removed.")]
         public bool SupportLastInObjectIterations { get; set; } = true;
-        
+
         /// <summary>
         /// If <see langword="true"/> enables support for Handlebars.Net helper naming rules.
         /// <para>This enables helper names to be not-valid Handlebars identifiers (e.g. <code>{{ one.two }}</code>)</para>
@@ -31,5 +31,31 @@ namespace HandlebarsDotNet
         /// <para>Intended only as a temporary escape hatch for templates that depend on the old behavior.</para>
         /// </summary>
         public bool LegacyStandaloneCaretBehavior { get; set; } = false;
+
+        /// <summary>
+        /// If <see langword="true"/> (the default) limits an inline partial (<c>{{#*inline}}</c>) declared inside a block
+        /// (<c>{{#with}}</c>, <c>{{#each}}</c>, <c>{{#> layout}}</c>, a custom block helper) or inside an included partial
+        /// to that block and its children, as in Handlebarsjs. Once the block has rendered it can no longer be called, and an
+        /// outer partial with the same name becomes visible again:
+        /// <c>{{#*inline "p"}}outer{{/inline}}{{#with .}}{{#*inline "p"}}inner{{/inline}}{{> p}}{{/with}} {{> p}}</c> renders <c>inner outer</c>.
+        /// <para>Set to <see langword="false"/> to restore the earlier Handlebars.Net behavior: such partials stay registered on the
+        /// enclosing scope after the block ends, so the template above renders <c>inner inner</c>, and a partial can declare inline
+        /// partials for its caller to use (<c>{{> macros}}{{> button}}</c>).</para>
+        /// <para>Setting it to <see langword="false"/> is intended only as a temporary escape hatch for templates that depend on the old behavior.</para>
+        /// </summary>
+        public bool BlockScopedInlinePartials { get; set; } = true;
+
+        /// <summary>
+        /// If <see langword="true"/> restores the earlier Handlebars.Net handling of a bare <c>{{else name}}</c>
+        /// (nothing after the name) inside <c>{{#if}}</c> / <c>{{#unless}}</c>.
+        /// <para>By default (<see langword="false"/>) it follows Handlebarsjs: <c>{{else name}}</c> is equivalent to
+        /// <c>{{else}}{{#name}}…{{/name}}</c>, so a block helper <c>name</c> is invoked, or else <c>name</c> is resolved as a value:
+        /// <c>{{#if a}}A{{else b}}B{{/if}}</c> renders <c>B</c> only when <c>a</c> is falsy and <c>b</c> is truthy, and iterates when
+        /// <c>b</c> is a list. A bare <c>{{else if}}</c> / <c>{{else unless}}</c> with no condition is a <see cref="HandlebarsCompilerException"/>.</para>
+        /// <para>When <see langword="true"/>, the name is ignored and the branch renders as a plain <c>{{else}}</c>:
+        /// the template above renders <c>B</c> whenever <c>a</c> is falsy.</para>
+        /// <para>Read at compile time. Intended only as a temporary escape hatch for templates that depend on the old behavior.</para>
+        /// </summary>
+        public bool LegacyBareElseNameBehavior { get; set; } = false;
     }
 }
