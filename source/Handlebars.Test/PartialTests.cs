@@ -994,6 +994,49 @@ namespace HandlebarsDotNet.Test
             // Each 2-line partial gets "  " prepended to both lines.
             Assert.Equal("  - A\n    (alpha)  - B\n    (beta)", result);
         }
+
+        // Indentation must not change escaping: an indented standalone partial escapes {{value}}
+        // exactly like the same partial written without indentation (regression in 2.2.0, see #699).
+        [Theory]
+        [InlineData("registered", "  {{> p}}\n")]
+        [InlineData("inline", "{{#*inline \"p\"}}<b>{{value}}</b>{{/inline}}\n  {{> p}}\n")]
+        [InlineData("partial-block", "{{#> outer}}<b>{{value}}</b>{{/outer}}")]
+        [InlineData("missing-partial-fallback", "  {{#> missing}}\n<b>{{value}}</b>\n  {{/missing}}\n")]
+        public void IndentedPartialEscapesValues(string kind, string source)
+        {
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterTemplate("p", "<b>{{value}}</b>");
+            handlebars.RegisterTemplate("outer", "  {{> @partial-block}}\n");
+
+            var result = handlebars.Compile(source)(new { value = "<i>&\"" });
+
+            Assert.True(result.Contains("<b>&lt;i&gt;&amp;&quot;</b>"), $"{kind}: {result}");
+        }
+
+        [Fact]
+        public void IndentedPartialMatchesUnindentedEscaping()
+        {
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterTemplate("p", "<b>{{value}}</b> {{{value}}}");
+            var data = new { value = "<i>" };
+
+            var indented = handlebars.Compile("  {{> p}}\n")(data);
+            var unindented = handlebars.Compile("{{> p}}\n")(data);
+
+            Assert.Equal("  <b>&lt;i&gt;</b> <i>", indented);
+            Assert.Equal("<b>&lt;i&gt;</b> <i>", unindented);
+        }
+
+        [Fact]
+        public void IndentedPartialHonorsNoEscape()
+        {
+            var handlebars = Handlebars.Create(new HandlebarsConfiguration { NoEscape = true });
+            handlebars.RegisterTemplate("p", "<b>{{value}}</b>");
+
+            var result = handlebars.Compile("  {{> p}}\n")(new { value = "<i>" });
+
+            Assert.Equal("  <b><i></b>", result);
+        }
     }
 }
 
