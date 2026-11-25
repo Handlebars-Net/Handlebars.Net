@@ -1268,5 +1268,99 @@ namespace HandlebarsDotNet.Test
             Assert.Equal("0", hbs.Compile("{{val}}")(new { val = 0 }));
             Assert.Equal("no", hbs.Compile("{{#if val}}yes{{else}}no{{/if}}")(new { val = 0 }));
         }
+
+        // ─────────────────────────────────────────────────────────────
+        // 23. LITERAL NAMES: QUOTED-STRING PATHS, NUMERIC PARTIAL NAMES, {{#.}} SECTIONS
+        //     https://github.com/Handlebars-Net/Handlebars.Net/issues/702
+        // ─────────────────────────────────────────────────────────────
+
+        // handlebars.js spec/security.js "escapes template variables"
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void LiteralPath_QuotedStringWithBackslashIsLookedUpAsKey(IHandlebars hbs)
+        {
+            var data = new Dictionary<string, object> { ["a\\b"] = "c" };
+            Assert.Equal("c", hbs.Compile("{{'a\\b'}}")(data));
+            Assert.Equal("c", hbs.Compile("{{\"a\\b\"}}")(data));
+        }
+
+        // handlebars.js spec/basic.js "literal references": {{"foo bar"}} is the same as {{[foo bar]}}
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void LiteralPath_QuotedStringIsLookedUpAsSingleSegment(IHandlebars hbs)
+        {
+            var data = new Dictionary<string, object>
+            {
+                ["foo bar"] = "spaced",
+                ["a.b"] = "dotted",
+                ["a"] = new Dictionary<string, object> { ["b"] = "nested" },
+            };
+            Assert.Equal("spaced|spaced|dotted", hbs.Compile("{{'foo bar'}}|{{\"foo bar\"}}|{{'a.b'}}")(data));
+            Assert.Equal("", hbs.Compile("{{'missing'}}")(data));
+            Assert.Equal("&lt;b&gt;|<b>", hbs.Compile("{{'k'}}|{{{'k'}}}")(new Dictionary<string, object> { ["k"] = "<b>" }));
+        }
+
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void LiteralPath_QuotedStringResolvesHelperLikeSegmentLiteral(IHandlebars hbs)
+        {
+            hbs.RegisterHelper("shout", (writer, context, arguments) => writer.WriteSafeString("SHOUT"));
+            Assert.Equal(hbs.Compile("{{[shout]}}")(new { }), hbs.Compile("{{'shout'}}")(new { }));
+        }
+
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void LiteralPath_QuotedStringInsideRawBlockIsLeftVerbatim(IHandlebars hbs)
+        {
+            hbs.RegisterHelper("raw", (writer, options, context, arguments) => options.Template(writer, null!));
+            var template = hbs.Compile("{{{{raw}}}}{{'x'}} {{\"y z\"}}{{{{/raw}}}}");
+            Assert.Equal("{{'x'}} {{\"y z\"}}", template(new { x = "X" }));
+        }
+
+        // handlebars.js spec/partials.js "partials with literal paths" / numeric partial name
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void Partial_NumericNameResolvesRegisteredTemplate(IHandlebars hbs)
+        {
+            hbs.RegisterTemplate("404", "{{name}}");
+            var data = new Dictionary<string, object> { ["name"] = "Jeepers" };
+            Assert.Equal("Dudes: Jeepers", hbs.Compile("Dudes: {{> 404}}")(data));
+            Assert.Equal("Dudes: Jeepers", hbs.Compile("Dudes: {{> '404'}}")(data));
+        }
+
+        // handlebars.js spec/regressions.js GH-408 "multiple loops fail"
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void Section_DotIteratesCurrentContextLikeThis(IHandlebars hbs)
+        {
+            var people = new object[]
+            {
+                new Dictionary<string, object> { ["name"] = "John Doe" },
+                new Dictionary<string, object> { ["name"] = "Jane Doe" },
+            };
+            var template = hbs.Compile("{{#.}}{{name}}{{/.}}{{#.}}{{name}}{{/.}}{{#.}}{{name}}{{/.}}");
+            Assert.Equal("John DoeJane DoeJohn DoeJane DoeJohn DoeJane Doe", template(people));
+            Assert.Equal(hbs.Compile("{{#this}}{{name}}{{/this}}")(people), hbs.Compile("{{#.}}{{name}}{{/.}}")(people));
+            Assert.Equal("empty", hbs.Compile("{{^.}}empty{{/.}}")(new object[0]));
+        }
+
+        // [SPEC GAP] handlebars.js spec/regressions.js GH-731 "zero context rendering"
+        //   SPEC:    {{#foo}} with foo = 0 renders the block once with 0 as context → " This is  ~ "
+        //   CURRENT: 0 is treated as falsy for a section, so the block is skipped → ""
+        //   SOURCE:  block sections over a non-helper value use the same falsy test as #if
+        //   COMPAT:  HIGH — templates such as {{#count}}…{{/count}} with count = 0 would start rendering
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void Section_ZeroValueSkipsBlock_SpecGap(IHandlebars hbs)
+        {
+            var data = new Dictionary<string, object> { ["foo"] = 0, ["bar"] = "OK" };
+            Assert.Equal("", hbs.Compile("{{#foo}} This is {{bar}} ~ {{/foo}}")(data));
+        }
+
+        // [SPEC GAP] handlebars.js spec/security.js GH-1558 "should not allow explicit call of helperMissing"
+        //   SPEC:    {{helperMissing}} and {{#helperMissing}}{{/helperMissing}} throw unless allowExplicitCallOfHelperMissing
+        //   CURRENT: the built-in helperMissing / blockHelperMissing run and render nothing
+        //   SOURCE:  Features/MissingHelperFeature.cs registers them as ordinary named helpers
+        //   COMPAT:  MEDIUM — templates that call the hook directly and render today would throw
+        [Theory, ClassData(typeof(HandlebarsEnvGenerator))]
+        public void HelperMissing_ExplicitCallRendersEmpty_SpecGap(IHandlebars hbs)
+        {
+            var data = new Dictionary<string, object>();
+            Assert.Equal("", hbs.Compile("{{helperMissing}}")(data));
+            Assert.Equal("", hbs.Compile("{{#helperMissing}}{{/helperMissing}}")(data));
+        }
     }
 }
