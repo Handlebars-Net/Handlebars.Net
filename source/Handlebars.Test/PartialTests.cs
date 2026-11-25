@@ -1001,12 +1001,16 @@ namespace HandlebarsDotNet.Test
         [InlineData("registered", "  {{> p}}\n")]
         [InlineData("inline", "{{#*inline \"p\"}}<b>{{value}}</b>{{/inline}}\n  {{> p}}\n")]
         [InlineData("partial-block", "{{#> outer}}<b>{{value}}</b>{{/outer}}")]
-        [InlineData("missing-partial-fallback", "  {{#> missing}}\n<b>{{value}}</b>\n  {{/missing}}\n")]
+        [InlineData("missing-partial-fallback", "{{#> outerMissing}}<b>{{value}}</b>{{/outerMissing}}")]
+        [InlineData("nested", "  {{> wrapper}}\n")]
         public void IndentedPartialEscapesValues(string kind, string source)
         {
             var handlebars = Handlebars.Create();
             handlebars.RegisterTemplate("p", "<b>{{value}}</b>");
             handlebars.RegisterTemplate("outer", "  {{> @partial-block}}\n");
+            // "missing" is not registered, so the indented call falls back to the partial block.
+            handlebars.RegisterTemplate("outerMissing", "  {{> missing}}\n");
+            handlebars.RegisterTemplate("wrapper", "{{> p}}");
 
             var result = handlebars.Compile(source)(new { value = "<i>&\"" });
 
@@ -1025,6 +1029,17 @@ namespace HandlebarsDotNet.Test
 
             Assert.Equal("  <b>&lt;i&gt;</b> <i>", indented);
             Assert.Equal("<b>&lt;i&gt;</b> <i>", unindented);
+        }
+
+        [Fact]
+        public void PartialIndentationKeepsValuesEscaped()
+        {
+            var handlebars = Handlebars.Create();
+            handlebars.RegisterTemplate("p", "[{{v}}]");
+
+            var result = handlebars.Compile("<div>\n    {{> p}}\n</div>")(new { v = "<b>&" });
+
+            Assert.Equal("<div>\n    [&lt;b&gt;&amp;]</div>", result);
         }
 
         [Fact]
