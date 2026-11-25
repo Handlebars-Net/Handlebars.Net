@@ -70,16 +70,18 @@ namespace HandlebarsDotNet.Compiler
             }
         }
 
-        private bool IsRegisteredHelperName(string name)
+        private bool IsRegisteredHelperName(string name) => IsRegisteredHelperName(name, _configuration);
+
+        internal static bool IsRegisteredHelperName(string name, ICompiledHandlebarsConfiguration configuration)
         {
             var pathInfo = PathInfo.Parse(name);
 #pragma warning disable CS0618
-            if (!pathInfo.IsValidHelperLiteral && !_configuration.Compatibility.RelaxedHelperNaming) return false;
+            if (!pathInfo.IsValidHelperLiteral && !configuration.Compatibility.RelaxedHelperNaming) return false;
 #pragma warning restore CS0618
             if (pathInfo.IsBlockHelper || pathInfo.IsInversion || pathInfo.IsBlockClose || pathInfo.IsThis) return false;
             name = pathInfo.TrimmedPath!;
-            
-            return _configuration.Helpers.ContainsKey(pathInfo) || _configuration.Decorators.ContainsKey(pathInfo) || BuiltInHelpers.Contains(name);
+
+            return configuration.Helpers.ContainsKey(pathInfo) || configuration.Decorators.ContainsKey(pathInfo) || BuiltInHelpers.Contains(name);
         }
 
         private bool IsRegisteredBlockHelperName(string name, bool isRaw)
@@ -101,9 +103,9 @@ namespace HandlebarsDotNet.Compiler
         {
             var pathInfo = PathInfo.Parse(name);
 #pragma warning disable CS0618
-            if (!pathInfo.IsValidHelperLiteral && !_configuration.Compatibility.RelaxedHelperNaming) return false;
+            if (!pathInfo.IsValidHelperLiteral && !_configuration.Compatibility.RelaxedHelperNaming && !IsCurrentContextBlock(name)) return false;
 #pragma warning restore CS0618
-            
+
             if (!isRaw && !(pathInfo.IsBlockHelper || pathInfo.IsInversion)) return false;
             if (pathInfo.IsBlockClose) return false;
             name = name.Substring(1);
@@ -115,6 +117,14 @@ namespace HandlebarsDotNet.Compiler
             var expectedBlockName = $"/{name}";
             return sequence.OfType<WordExpressionToken>().Any(o =>
                 string.Equals(o.Value, expectedBlockName, StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// "{{#.}}" / "{{^.}}" open a section over the current context, the same as "{{#this}}" / "{{^this}}".
+        /// </summary>
+        private static bool IsCurrentContextBlock(string name)
+        {
+            return name.Length == 2 && (name[0] == '#' || name[0] == '^') && name[1] == '.';
         }
 
         private static object GetNext(IEnumerator<object> enumerator)

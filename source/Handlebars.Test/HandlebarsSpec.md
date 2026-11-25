@@ -1674,6 +1674,52 @@ behavior is purely additive with zero breakage to existing working templates.
 
 ---
 
+### Gap 5: A section over the number `0` is skipped
+
+**Behavioral gap:**
+Handlebars.js `blockHelperMissing` only treats `false`, `null`/`undefined` and empty arrays as "skip the block";
+any other value (including `0` and `""`) renders the block once with that value as the context
+(spec/regressions.js GH-731 "zero context rendering"):
+```
+Template: {{#foo}} This is {{bar}} ~ {{/foo}}
+Data:     { foo: 0, bar: "OK" }
+Handlebars.js:  " This is  ~ "
+Handlebars.Net: ""
+```
+
+**Technical root cause:**
+A `{{#name}}` section over a plain (non-helper) value uses the same falsy test as `{{#if}}`, where `0` is falsy.
+
+**Backward-compatibility risk: HIGH.**
+Templates such as `{{#unreadCount}}You have {{.}} new messages{{/unreadCount}}` rely on `0` hiding the block today;
+matching Handlebars.js would make them start rendering "You have 0 new messages". Changing this needs either a
+major version or an opt-in compatibility flag.
+
+**Regression test:** `Section_ZeroValueSkipsBlock_SpecGap` (asserts `""`).
+
+---
+
+### Gap 6: Explicitly calling `helperMissing` / `blockHelperMissing` renders empty instead of throwing
+
+**Behavioral gap:**
+Since 4.6 (GH-1558), Handlebars.js throws when a template calls `{{helperMissing}}` or
+`{{#helperMissing}}{{/helperMissing}}` directly, unless the runtime option `allowExplicitCallOfHelperMissing` is set.
+Handlebars.Net runs the built-in hooks and renders `""`.
+
+**Technical root cause:**
+`Features/MissingHelperFeature.cs` registers `helperMissing` and `blockHelperMissing` as ordinary named helpers,
+so templates can reference them like any other helper. There is no `allowExplicitCallOfHelperMissing` option.
+
+**Backward-compatibility risk: MEDIUM.**
+The Handlebars.js restriction is a defence against untrusted templates calling the hooks directly; with the default
+hooks, a direct call in Handlebars.Net only renders nothing. Throwing would break any template that renders today
+with such a call (for example one that invokes a custom `helperMissing` hook registered via `RegisterMissingHelperHook`
+or `RegisterHelper("helperMissing", ...)`). Matching Handlebars.js needs an opt-in option or a major version.
+
+**Regression test:** `HelperMissing_ExplicitCallRendersEmpty_SpecGap` (asserts `""`).
+
+---
+
 ## Coverage Gaps (Priority Areas for New Tests)
 
 1. HTML encoding: `'`, `` ` ``, `=` characters specifically

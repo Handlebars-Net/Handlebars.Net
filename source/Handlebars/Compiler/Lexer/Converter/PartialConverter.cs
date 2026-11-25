@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using HandlebarsDotNet.Compiler.Lexer;
@@ -38,6 +39,12 @@ namespace HandlebarsDotNet.Compiler
                 if (partialName is PathExpression expression)
                 {
                     partialName = Expression.Constant(expression.Path);
+                }
+                else if (partialName is UnaryExpression { NodeType: ExpressionType.Convert, Operand: ConstantExpression { Value: not string and not null } constant })
+                {
+                    // Undelimited literals such as "{{> 404}}" or "{{> true}}" were typed as numbers/booleans
+                    // by LiteralConverter; as a partial name they mean the template registered under that text.
+                    partialName = Expression.Constant(System.Convert.ToString(constant.Value, CultureInfo.InvariantCulture));
                 }
 
                 switch (arguments.Count)

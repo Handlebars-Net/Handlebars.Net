@@ -10,6 +10,7 @@ namespace HandlebarsDotNet.Compiler
         {
             tokens = HelperConverter.Convert(tokens, configuration);
             tokens = RawHelperAccumulator.Accumulate(tokens);
+            tokens = LoneStringLiteralConverter.Convert(tokens, configuration);
             tokens = InverseSeparatorConverter.Convert(tokens, configuration);
             tokens = CommentAndLayoutConverter.Convert(tokens);
             tokens = LiteralConverter.Convert(tokens);
