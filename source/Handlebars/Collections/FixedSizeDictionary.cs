@@ -393,9 +393,7 @@ namespace HandlebarsDotNet.Collections
         {
             _count = 0;
             
-            unchecked { ++_version; }
-            
-            if (_version == 0) _version = 1;
+            NextVersion();
         }
 
         /// <summary>
@@ -415,9 +413,24 @@ namespace HandlebarsDotNet.Collections
 
             _count = 0;
             
+            NextVersion();
+        }
+
+        /// <summary>
+        /// Moves to the next version. Entries left from earlier versions are kept for speed and
+        /// count as absent only while their version differs from the current one, so when the
+        /// version wraps every slot is wiped: an entry must never come back as current.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void NextVersion()
+        {
             unchecked { ++_version; }
 
-            if (_version == 0) _version = 1;
+            if (_version != 0) return;
+
+            Array.Clear(_entries, 0, _entries.Length);
+            Array.Clear(_indexes, 0, _indexes.Length);
+            _version = 1;
         }
         
         /// <summary>
