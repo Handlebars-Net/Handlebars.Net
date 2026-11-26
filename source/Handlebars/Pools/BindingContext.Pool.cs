@@ -1,3 +1,4 @@
+using System;
 using HandlebarsDotNet.Compiler;
 using HandlebarsDotNet.Pools;
 
@@ -60,7 +61,10 @@ namespace HandlebarsDotNet
 
                     item.BlockParamsObject.OptionalClear();
                     item.ContextDataObject.OptionalClear();
-                    
+                    // Indexes into ContextDataObject from this use must not survive into the next one:
+                    // once the dictionary's byte version wraps they would look current again.
+                    Array.Clear(item.WellKnownVariables, 0, item.WellKnownVariables.Length);
+
                     item.Descriptor.Reset();
 
                     return true;

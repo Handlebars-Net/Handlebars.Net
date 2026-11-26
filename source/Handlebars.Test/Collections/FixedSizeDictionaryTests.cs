@@ -284,6 +284,57 @@ namespace HandlebarsDotNet.Test.Collections
             }
         }
 
+        [Fact]
+        public void AdjustIndexesCarriesLiveIndexes()
+        {
+            var source = new FixedSizeDictionary<object, object, CollisionsComparer>(16, 7, new CollisionsComparer(0));
+            var destination = new FixedSizeDictionary<object, object, CollisionsComparer>(16, 7, new CollisionsComparer(0));
+            var sourceIndexes = new EntryIndex<object>[2];
+            var targetIndexes = new EntryIndex<object>[2];
+
+            source.AddOrReplace(new object(), "value", out sourceIndexes[0]);
+            source.CopyTo(destination);
+            source.AdjustIndexes(sourceIndexes, destination, targetIndexes);
+
+            Assert.True(destination.TryGetValue(targetIndexes[0], out var value));
+            Assert.Equal("value", value);
+        }
+
+        // https://github.com/Handlebars-Net/Handlebars.Net/issues/707
+        [Fact]
+        public void AdjustIndexesKeepsEmptyIndexesEmpty()
+        {
+            var source = new FixedSizeDictionary<object, object, CollisionsComparer>(16, 7, new CollisionsComparer(0));
+            var destination = new FixedSizeDictionary<object, object, CollisionsComparer>(16, 7, new CollisionsComparer(0));
+            var sourceIndexes = new EntryIndex<object>[2];
+            var targetIndexes = new EntryIndex<object>[2];
+
+            // occupies slot 0, which an empty index would otherwise be restamped to point at
+            destination.AddOrReplace(new object(), "other key", out _);
+            source.AdjustIndexes(sourceIndexes, destination, targetIndexes);
+
+            Assert.False(targetIndexes[1].IsNotEmpty);
+            Assert.False(destination.TryGetValue(targetIndexes[1], out _));
+        }
+
+        // https://github.com/Handlebars-Net/Handlebars.Net/issues/707
+        [Fact]
+        public void AdjustIndexesDropsStaleIndexes()
+        {
+            var source = new FixedSizeDictionary<object, object, CollisionsComparer>(16, 7, new CollisionsComparer(0));
+            var destination = new FixedSizeDictionary<object, object, CollisionsComparer>(16, 7, new CollisionsComparer(0));
+            var sourceIndexes = new EntryIndex<object>[2];
+            var targetIndexes = new EntryIndex<object>[2];
+
+            source.AddOrReplace(new object(), "previous use", out sourceIndexes[0]);
+            source.Reset();
+            destination.AddOrReplace(new object(), "other key", out _);
+            source.AdjustIndexes(sourceIndexes, destination, targetIndexes);
+
+            Assert.False(targetIndexes[0].IsNotEmpty);
+            Assert.False(destination.TryGetValue(targetIndexes[0], out _));
+        }
+
         public void Dispose()
         {
             FixedSizeDictionary.OptionalClear();
