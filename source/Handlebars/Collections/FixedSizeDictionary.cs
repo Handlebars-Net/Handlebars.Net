@@ -381,7 +381,13 @@ namespace HandlebarsDotNet.Collections
             
             for (var i = 0; i < source.Length; i++)
             {
-                target[i] = new EntryIndex<TKey>(source[i].Index, destination._version);
+                // Only carry over indexes that are live in this dictionary. Restamping an empty or stale
+                // index with the destination's version would make it point at whatever entry sits in
+                // that slot, under a different key.
+                var index = source[i];
+                target[i] = index.IsNotEmpty && index.Version == _version
+                    ? new EntryIndex<TKey>(index.Index, destination._version)
+                    : default;
             }
         }
 
