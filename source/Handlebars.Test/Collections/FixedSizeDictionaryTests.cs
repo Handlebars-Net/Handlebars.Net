@@ -284,6 +284,35 @@ namespace HandlebarsDotNet.Test.Collections
             }
         }
 
+        [Theory]
+        [InlineData(nameof(FixedSizeDictionary<object, object, EqualityComparer<object>>.Reset))]
+        [InlineData(nameof(FixedSizeDictionary<object, object, EqualityComparer<object>>.OptionalClear))]
+        public void EntryFromAnEarlierUseStaysGoneOnceTheVersionWraps(string clear)
+        {
+            var dictionary = new FixedSizeDictionary<string, string, StringComparerAdapter>(16, 7, new StringComparerAdapter());
+            dictionary.AddOrReplace("earlier", "earlier value", out _);
+
+            // The version is a byte: 255 resets bring it back to the value it had when "earlier" was added
+            for (var i = 0; i < 255; i++)
+            {
+                if (clear == nameof(dictionary.Reset)) dictionary.Reset();
+                else dictionary.OptionalClear();
+            }
+
+            dictionary.AddOrReplace("current", "current value", out _);
+
+            Assert.False(dictionary.TryGetValue("earlier", out var value), $"found \"{value}\" from before the resets");
+            Assert.False(dictionary.ContainsKey("earlier"));
+            Assert.Single(dictionary);
+        }
+
+        private readonly struct StringComparerAdapter : IEqualityComparer<string>
+        {
+            public bool Equals(string? x, string? y) => string.Equals(x, y, StringComparison.Ordinal);
+
+            public int GetHashCode(string obj) => StringComparer.Ordinal.GetHashCode(obj);
+        }
+
         public void Dispose()
         {
             FixedSizeDictionary.OptionalClear();
