@@ -1,6 +1,5 @@
 ﻿using System.Linq.Expressions;
-using Expressions.Shortcuts;
-using static Expressions.Shortcuts.ExpressionShortcuts;
+using static HandlebarsDotNet.ExpressionShortcuts.ExpressionShortcuts;
 
 namespace HandlebarsDotNet.Compiler
 {
